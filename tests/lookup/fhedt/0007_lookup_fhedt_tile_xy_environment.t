@@ -17,22 +17,22 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     --env "SIXEL_FHEDT_TILE_XY=9" \
     --env "SIXEL_LOOKUP_FHEDT_TILE_XY=5" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "FHEDT tile_xy environment conversion failed"
+    printf '\n%s\n' "not ok 1 - FHEDT tile_xy environment conversion failed"
     exit 0
 }
 case "${trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${trace}" in *LSXFHD1\|precision=8bit\|tile_xy=5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "canonical FHEDT tile_xy did not win"
+    printf '\n%s\n' "not ok 1 - canonical FHEDT tile_xy did not win"
     exit 0
 }
 
-echo "ok" 1 - "canonical FHEDT tile_xy precedes its legacy alias"
+printf '\n%s\n' "ok 1 - canonical FHEDT tile_xy precedes its legacy alias"
 exit 0

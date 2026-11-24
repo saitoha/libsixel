@@ -7,8 +7,8 @@ set -v
 status=0
  "$SIXEL_TEST_COMPARE" -s "$TOP_SRCDIR/tests/tools/compare/data" "$TOP_SRCDIR/tests/tools/compare/data/empty" || status=$?
 test "$status" -eq 2 || {
-    echo 'not ok 1 - a directory input is a read error'
+    printf '\n%s\n' 'not ok 1 - a directory input is a read error'
     exit 0
 }
-echo 'ok 1 - a directory input is a read error'
+printf '\n%s\n' 'ok 1 - a directory input is a read error'
 exit 0

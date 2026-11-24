@@ -25,12 +25,12 @@ env_output="${artifact_dir}/0066-quantize-center-auto_fft_threshold-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 64 "-Qcenter:Aauto:Qadaptive:F256" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "center:auto_fft_threshold short conversion failed"
+    printf '\n%s\n' "not ok 1 - center:auto_fft_threshold short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=auto_fft_threshold\|stored=1\|binding=quantize_model_kcenter_auto_fft_threshold,quantize_model_kcenter_auto_fft_threshold_override\|value=256**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "auto_fft_threshold short value was not stored"
+    printf '\n%s\n' "not ok 1 - auto_fft_threshold short value was not stored"
     exit 0
 }
 
@@ -38,12 +38,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD=256" -p 64 "-Qcenter:Aauto:Qadaptive" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "center:auto_fft_threshold env conversion failed"
+    printf '\n%s\n' "not ok 1 - center:auto_fft_threshold env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=auto_fft_threshold\|stored=1\|binding=quantize_model_kcenter_auto_fft_threshold,quantize_model_kcenter_auto_fft_threshold_override\|value=256**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "auto_fft_threshold environment value was not stored"
+    printf '\n%s\n' "not ok 1 - auto_fft_threshold environment value was not stored"
     exit 0
 }
 
@@ -52,26 +52,26 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD=4294967296" \
     -p 64 "-Qcenter:Aauto:Qadaptive" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "center:auto_fft_threshold width conversion failed"
+    printf '\n%s\n' "not ok 1 - center:auto_fft_threshold width conversion failed"
     exit 0
 }
 
 case "${width_trace}" in *LSXSUB1\|*key=auto_fft_threshold\|stored=1*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "auto_fft_threshold accepted an over-width value"
+    printf '\n%s\n' "not ok 1 - auto_fft_threshold accepted an over-width value"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "center:auto_fft_threshold short and env output differ"
+    printf '\n%s\n' "not ok 1 - center:auto_fft_threshold short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "center:auto_fft_threshold preserves image output"
+printf '\n%s\n' "ok 1 - center:auto_fft_threshold preserves image output"
 exit 0

@@ -28,22 +28,22 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite round decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite round decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ round-join\ vector\ stroke\ coverage\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite did not apply base round-join vector stroke coverage"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite did not apply base round-join vector stroke coverage"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ miter-join\ vector\ stroke\ coverage\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly used base miter-join trace for round join"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite unexpectedly used base miter-join trace for round join"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps base round-join vector stroke coverage contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps base round-join vector stroke coverage contract"
 exit 0

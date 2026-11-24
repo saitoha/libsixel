@@ -23,7 +23,7 @@ msg=$(
         "${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico" \
         -o/dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "invalid env WIC suboption unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid env WIC suboption unexpectedly succeeded"
     exit 0
 }
 
@@ -31,7 +31,7 @@ case "${msg}" in
     *"invalid wic suboption"*)
         ;;
     *)
-        echo "not ok" 1 - "missing env WIC suboption diagnostic"
+        printf '\n%s\n' "not ok 1 - missing env WIC suboption diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -42,12 +42,12 @@ case "${msg}" in
     *"\"abc\""*"\"ico_minsize\""*"positive integer"*)
         ;;
     *)
-        echo "not ok" 1 - "missing token/expectation details for invalid env WIC suboption"
+        printf '\n%s\n' "not ok 1 - missing token/expectation details for invalid env WIC suboption"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "invalid env WIC suboption is rejected"
+printf '\n%s\n' "ok 1 - invalid env WIC suboption is rejected"
 exit 0

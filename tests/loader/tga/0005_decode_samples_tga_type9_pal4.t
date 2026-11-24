@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${TOP_SRCDIR}/tests/data/loader/builtin_expected/snake-tga-type9-pal4-samples.ppm" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type9-pal4.tga" \
     'builtin:cms_engine=none!' 0 || {
-    echo "not ok 1 - decoded TGA samples differ from the external reference"
+    printf '\n%s\n' "not ok 1 - decoded TGA samples differ from the external reference"
     exit 0
 }
 
-echo "ok 1 - decoded TGA samples match the external reference"
+printf '\n%s\n' "ok 1 - decoded TGA samples match the external reference"
 exit 0

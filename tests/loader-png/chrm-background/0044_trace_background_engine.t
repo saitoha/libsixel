@@ -15,15 +15,15 @@ trace=$(SIXEL_CHRM_TRACE_FAULT=wrong-background-engine SIXEL_RUNTIME=sh \
     TEST_RUNNER_PATH="${TOP_SRCDIR}/tests/_support/loader/libpng/chrm_trace_control.sh" \
     sh "${TOP_SRCDIR}/tests/loader-png/chrm-source-selection/0051_lcms2_16_file_bg_zero_icc_chrm_samples.t" 2>/dev/null) || result=$?
 test "$result" -eq 0 || {
-    echo "not ok 1 - source TAP did not exit normally"
+    printf '\n%s\n' "not ok 1 - source TAP did not exit normally"
     exit 0
 }
 # Compare only stdout; shell source tracing on stderr is not TAP evidence.
 test "$trace" = "$plan
 not ok 1 - ICC apply 2 fields differ" || {
-    echo "not ok 1 - trace checker background engine"
+    printf '\n%s\n' "not ok 1 - trace checker background engine"
     exit 0
 }
 set -xv
-echo "ok 1 - trace checker background engine"
+printf '\n%s\n' "ok 1 - trace checker background engine"
 exit 0

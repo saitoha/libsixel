@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" assessment/0013_pixel_delta_peak reset || {
-    echo "not ok 1 - pixel_delta_reset"
+    printf '\n%s\n' "not ok 1 - pixel_delta_reset"
     exit 0
 }
-echo "ok 1 - pixel_delta_reset"
+printf '\n%s\n' "ok 1 - pixel_delta_reset"
 exit 0

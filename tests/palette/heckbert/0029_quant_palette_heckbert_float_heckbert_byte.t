@@ -9,9 +9,9 @@ set -v
 SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0029_heckbert_byte >/dev/null || {
-    echo "not ok 1 - native Heckbert byte"
+    printf '\n%s\n' "not ok 1 - native Heckbert byte"
     exit 0
 }
 
-echo "ok 1 - native Heckbert byte"
+printf '\n%s\n' "ok 1 - native Heckbert byte"
 exit 0

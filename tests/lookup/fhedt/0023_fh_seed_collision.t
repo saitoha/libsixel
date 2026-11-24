@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0013_fh_seed_collision || {
-    echo "not ok 1 - fhedt seed collision"
+    printf '\n%s\n' "not ok 1 - fhedt seed collision"
     exit 0
 }
 
-echo "ok 1 - fhedt seed collision"
+printf '\n%s\n' "ok 1 - fhedt seed collision"
 exit 0

@@ -21,13 +21,13 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "unexpected success: monochrome conflicts with cover policy"
+    printf '\n%s\n' "not ok 1 - unexpected success: monochrome conflicts with cover policy"
     exit 0
 }
 case "${msg}" in *option\ -a,\ --cover-policy\ conflicts\ with\ -e,\ --monochrome.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing monochrome and cover policy conflict diagnostic"
+    printf '\n%s\n' "not ok 1 - missing monochrome and cover policy conflict diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "monochrome then cover policy is rejected"
+printf '\n%s\n' "ok 1 - monochrome then cover policy is rejected"
 exit 0

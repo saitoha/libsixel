@@ -24,9 +24,9 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_4}"
 
 cmp -s "${parallel_indexed_1}" "${parallel_indexed_4}" >/dev/null || {
-    echo "not ok" 1 - "parallel indexed diverges"
+    printf '\n%s\n' "not ok 1 - parallel indexed diverges"
     exit 0
 }
 
-echo "ok" 1 - "parallel indexed matches serial"
+printf '\n%s\n' "ok 1 - parallel indexed matches serial"
 exit 0

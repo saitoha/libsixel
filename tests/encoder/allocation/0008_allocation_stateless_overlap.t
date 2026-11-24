@@ -38,7 +38,7 @@ while test "$#" -gt 0; do
         "${precision}" -d "${kernel}" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         >"${ARTIFACT_LOCAL_DIR}/allocation-serial.six" || {
-        echo "not ok 1 - serial ${kernel} conversion failed"
+        printf '\n%s\n' "not ok 1 - serial ${kernel} conversion failed"
         exit 0
     }
     trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
@@ -46,14 +46,14 @@ while test "$#" -gt 0; do
         "${precision}" -d "${kernel}" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         2>&1 >"${ARTIFACT_LOCAL_DIR}/allocation-default.six") || {
-        echo "not ok 1 - automatic ${kernel} conversion failed"
+        printf '\n%s\n' "not ok 1 - automatic ${kernel} conversion failed"
         exit 0
     }
     case "${trace}" in
         *LSXDTH1\|*band_overlap=0\|*) true ;;
         *) false ;;
     esac || {
-        echo "not ok 1 - ${kernel} automatic overlap is not zero"
+        printf '\n%s\n' "not ok 1 - ${kernel} automatic overlap is not zero"
         exit 0
     }
     trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
@@ -61,14 +61,14 @@ while test "$#" -gt 0; do
         "${precision}" -d "${kernel}:band_overwrap=6" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         2>&1 >"${ARTIFACT_LOCAL_DIR}/allocation-explicit.six") || {
-        echo "not ok 1 - explicit ${kernel} conversion failed"
+        printf '\n%s\n' "not ok 1 - explicit ${kernel} conversion failed"
         exit 0
     }
     case "${trace}" in
         *LSXDTH1\|*band_overlap=6\|*) true ;;
         *) false ;;
     esac || {
-        echo "not ok 1 - ${kernel} explicit overlap was ignored"
+        printf '\n%s\n' "not ok 1 - ${kernel} explicit overlap was ignored"
         exit 0
     }
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
@@ -76,10 +76,10 @@ while test "$#" -gt 0; do
         "${ARTIFACT_LOCAL_DIR}/allocation-serial.six" \
         "${ARTIFACT_LOCAL_DIR}/allocation-default.six" \
         "${ARTIFACT_LOCAL_DIR}/allocation-explicit.six" || {
-        echo "not ok 1 - ${kernel} decoded pixels differ"
+        printf '\n%s\n' "not ok 1 - ${kernel} decoded pixels differ"
         exit 0
     }
 done
 
-echo "ok 1 - stateless policies preserve pixels across overlap choices"
+printf '\n%s\n' "ok 1 - stateless policies preserve pixels across overlap choices"
 exit 0

@@ -20,19 +20,19 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - incompatible quantizer fallback was accepted"
+    printf '\n%s\n' "not ok 1 - incompatible quantizer fallback was accepted"
     exit 0
 }
 
 case "${trace}" in *palette\ fallback\ quantizer\ cannot\ consume**) true ;; *) false ;; esac || {
-    echo "not ok 1 - incompatible fallback diagnostic is missing"
+    printf '\n%s\n' "not ok 1 - incompatible fallback diagnostic is missing"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=2\|quantizer_effective=-1\|quantizer_origin=explicit\|quantizer_phase=unresolved\|quantizer_reason=none\|binning_requested=hard\|binning_effective=unset\|binning_origin=explicit\|binning_phase=unresolved\|binning_reason=none\|points=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - failed fallback published partial policy state"
+    printf '\n%s\n' "not ok 1 - failed fallback published partial policy state"
     exit 0
 }
 
-echo "ok 1 - incompatible quantizer fallback preserves policy state"
+printf '\n%s\n' "ok 1 - incompatible quantizer fallback preserves policy state"
 exit 0

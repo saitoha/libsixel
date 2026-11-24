@@ -37,10 +37,10 @@ resolved=$(set +xv
     PKG_CONFIG_PATH=".${PKG_CONFIG_PATH:+${path_separator}${PKG_CONFIG_PATH}}" \
         "${SIXEL_TEST_PKG_CONFIG}" --static --cflags --libs libsixel 2>&1
 ) || {
-    echo "not ok 1 - pkg-config cannot resolve libsixel.pc"
+    printf '\n%s\n' "not ok 1 - pkg-config cannot resolve libsixel.pc"
     printf '%s\n' "${resolved}" >&2
     exit 0
 }
 
-echo "ok 1 - pkg-config resolves libsixel.pc with its private requirements"
+printf '\n%s\n' "ok 1 - pkg-config resolves libsixel.pc with its private requirements"
 exit 0

@@ -18,10 +18,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d x_dither:scan=serpentine --precision-policy=8bit -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "positional 8-bit x_dither serpentine failed"
+    printf '\n%s\n' "not ok 1 - positional 8-bit x_dither serpentine failed"
     exit 0
 }
 
-echo "ok" 1 - "positional 8-bit x_dither serpentine passed"
+printf '\n%s\n' "ok 1 - positional 8-bit x_dither serpentine passed"
 
 exit 0

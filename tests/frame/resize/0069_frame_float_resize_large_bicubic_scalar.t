@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=scalar \
     frame/0018_float_resampling large_bicubic 6 || {
-    echo "not ok 1 - float resize large_bicubic scalar"
+    printf '\n%s\n' "not ok 1 - float resize large_bicubic scalar"
     exit 0
 }
-echo "ok 1 - float resize large_bicubic scalar"
+printf '\n%s\n' "ok 1 - float resize large_bicubic scalar"
 exit 0

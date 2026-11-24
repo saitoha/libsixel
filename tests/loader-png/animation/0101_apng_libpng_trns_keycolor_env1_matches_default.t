@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - libpng APNG default render failed"
+    printf '\n%s\n' "not ok 1 - libpng APNG default render failed"
     exit 0
 }
 
@@ -35,16 +35,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_env1}" || {
-    echo "not ok 1 - libpng APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
+    printf '\n%s\n' "not ok 1 - libpng APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_env1}" || {
-    echo "not ok 1 - libpng APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 differs from default output"
+    printf '\n%s\n' "not ok 1 - libpng APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 differs from default output"
     exit 0
 }
 
-    echo "ok 1 - libpng APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 matches default output"
+    printf '\n%s\n' "ok 1 - libpng APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 matches default output"
 
 
 exit 0

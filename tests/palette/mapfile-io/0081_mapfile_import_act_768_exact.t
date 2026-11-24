@@ -21,14 +21,14 @@ expected_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-black-white-count-
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m act:"${input_palette}" \
     -M act:"${actual_palette}" -o /dev/null "${input_image}" || {
-    echo "not ok" 1 - "768-byte ACT palette import failed"
+    printf '\n%s\n' "not ok 1 - 768-byte ACT palette import failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - "768-byte ACT did not import as 256 ordered entries"
+    printf '\n%s\n' "not ok 1 - 768-byte ACT did not import as 256 ordered entries"
     exit 0
 }
 
-echo "ok" 1 - "768-byte ACT imports all 256 entries in order"
+printf '\n%s\n' "ok 1 - 768-byte ACT imports all 256 entries in order"
 exit 0

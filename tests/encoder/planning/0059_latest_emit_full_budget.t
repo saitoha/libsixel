@@ -14,11 +14,11 @@ result=0
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0059_latest_emit_full_budget 2>&1) || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - latest emit full budget"
+    printf '\n%s\n' "not ok 1 - latest emit full budget"
     echo "${trace}"
     exit 0
 }
@@ -26,9 +26,9 @@ case "${trace}" in
     *'budget=8 '*'prepare_workers=8 '*'latest leases: palette=4 prepare=0 emit=8'*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - latest planner lost the session or emission budget"
+    printf '\n%s\n' "not ok 1 - latest planner lost the session or emission budget"
     echo "${trace}"
     exit 0
 }
-echo "ok 1 - latest emit full budget"
+printf '\n%s\n' "ok 1 - latest emit full budget"
 exit 0

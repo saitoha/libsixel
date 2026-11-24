@@ -23,7 +23,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 test "$result" -eq 0 || {
-    echo "not ok 1 - numeric route qualification failed"
+    printf '\n%s\n' "not ok 1 - numeric route qualification failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threading-policy=greedy:global_budget=1 \
@@ -33,8 +33,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threading-polic
     -m MS-SSIM -b MS-SSIM:0.98 \
     "${TOP_SRCDIR}/tests/data/loader/quality/d4fb74c0-jpeg-precision-12bit-cmyk-seq444-reference.ppm" \
     - 1>&2 || {
-    echo "not ok 1 - independent 12bit-cmyk-seq444 colorsync quality below 0.98"
+    printf '\n%s\n' "not ok 1 - independent 12bit-cmyk-seq444 colorsync quality below 0.98"
     exit 0
 }
-echo "ok 1 - independent 12bit-cmyk-seq444 colorsync quality"
+printf '\n%s\n' "ok 1 - independent 12bit-cmyk-seq444 colorsync quality"
 exit 0

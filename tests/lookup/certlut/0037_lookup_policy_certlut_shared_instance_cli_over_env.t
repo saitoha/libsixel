@@ -27,7 +27,7 @@ baseline_cksum=$(
 set -x
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "baseline certlut command failed"
+    printf '\n%s\n' "not ok 1 - baseline certlut command failed"
     exit 0
 }
 run_status=0
@@ -44,15 +44,15 @@ override_cksum=$(
 set -x
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "certlut CLI shared_instance override command failed"
+    printf '\n%s\n' "not ok 1 - certlut CLI shared_instance override command failed"
     exit 0
 }
 
 test "${baseline_cksum}" = "${override_cksum}" || {
-    echo "not ok" 1 - "certlut CLI shared_instance override changed output"
+    printf '\n%s\n' "not ok 1 - certlut CLI shared_instance override changed output"
     exit 0
 }
 
-echo "ok" 1 - "certlut shared_instance CLI suboption works with env"
+printf '\n%s\n' "ok 1 - certlut shared_instance CLI suboption works with env"
 
 exit 0

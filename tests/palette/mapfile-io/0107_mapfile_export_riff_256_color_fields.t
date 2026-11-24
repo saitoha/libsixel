@@ -21,7 +21,7 @@ actual_size=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m pal-jasc:"${input_palette}" \
     -M pal-riff:"${actual_palette}" -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - "256-color RIFF PAL export failed"
+    printf '\n%s\n' "not ok 1 - 256-color RIFF PAL export failed"
     exit 0
 }
 
@@ -30,7 +30,7 @@ test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
     actual_size=$(stat -c %s "${actual_palette}")
 }
 test "${actual_size}" -eq 1048 || {
-    echo "not ok" 1 - "256-color RIFF PAL size is not 1048 bytes"
+    printf '\n%s\n' "not ok 1 - 256-color RIFF PAL size is not 1048 bytes"
     exit 0
 }
 
@@ -39,9 +39,9 @@ test "${actual_size}" -eq 1048 || {
 set -- $(od -An -tx1 -j20 -N4 "${actual_palette}")
 { test "$#" -eq 4 && test "$1" = 00 && test "$2" = 03 && \
     test "$3" = 00 && test "$4" = 01; } || {
-    echo "not ok" 1 - "RIFF PAL 256-color version or count field changed"
+    printf '\n%s\n' "not ok 1 - RIFF PAL 256-color version or count field changed"
     exit 0
 }
 
-echo "ok" 1 - "RIFF PAL export writes exact 256-color size and count"
+printf '\n%s\n' "ok 1 - RIFF PAL export writes exact 256-color size and count"
 exit 0

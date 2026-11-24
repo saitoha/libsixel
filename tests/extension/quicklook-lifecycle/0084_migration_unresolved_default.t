@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'wrong-final' 'migration-pending' || {
-    echo "not ok 1 - Unresolved original default remains pending and nonzero."
+    printf '\n%s\n' "not ok 1 - Unresolved original default remains pending and nonzero."
     exit 0
 }
-echo "ok 1 - Unresolved original default remains pending and nonzero."
+printf '\n%s\n' "ok 1 - Unresolved original default remains pending and nonzero."
 exit 0

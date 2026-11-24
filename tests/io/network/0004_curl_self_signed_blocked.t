@@ -31,7 +31,7 @@ test -n "${PYTHON}" || {
 }
 
 test -n "${PYTHON}" || {
-    printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'
+    printf '\nok 1 - self-signed fetch blocked # SKIP python missing\n'
     exit 0
 }
 
@@ -69,7 +69,7 @@ test -s "${port_file}" && {
 test -n "${server_port}" || {
     kill "${server_pid}" 2>/dev/null || :
     wait "${server_pid}" 2>/dev/null || :
-    printf 'ok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
+    printf '\nok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
     exit 0
 }
 
@@ -82,13 +82,13 @@ wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "self-signed fetch unexpectedly succeeded without -k"
+    printf '\n%s\n' "not ok 1 - self-signed fetch unexpectedly succeeded without -k"
     exit 0
 }
 
 test ! -s "${verify_output}" || {
-    echo "not ok" 1 - "self-signed fetch produced output without -k"
+    printf '\n%s\n' "not ok 1 - self-signed fetch produced output without -k"
     exit 0
 }
 
-echo "ok" 1 - "self-signed fetch blocked without -k"
+printf '\n%s\n' "ok 1 - self-signed fetch blocked without -k"

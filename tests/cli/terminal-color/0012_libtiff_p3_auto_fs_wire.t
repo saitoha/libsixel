@@ -25,15 +25,15 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/tiff-layout-rgb16-o6.tif" 2>&1) || {
     echo "$trace" >&2
-    echo "not ok 1 - libtiff_p3_auto_fs_wire conversion"
+    printf '\n%s\n' "not ok 1 - libtiff_p3_auto_fs_wire conversion"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0036_cli_color_wire \
     libtiff-p3 "$trace" || {
-    echo "not ok 1 - libtiff_p3_auto_fs_wire independent values or structure"
+    printf '\n%s\n' "not ok 1 - libtiff_p3_auto_fs_wire independent values or structure"
     exit 0
 }
 
-echo "ok 1 - libtiff_p3_auto_fs_wire independent RGB101 values and structure"
+printf '\n%s\n' "ok 1 - libtiff_p3_auto_fs_wire independent RGB101 values and structure"
 exit 0

@@ -13,13 +13,13 @@ set -v
 
 output=$("${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" preflight /non-system-volume \
     "${TOP_BUILDDIR}/quicklook-extension/package/payload-manifest.json" 2>&1) && {
-    echo "not ok 1 - Non-system target was accepted"
+    printf '\n%s\n' "not ok 1 - Non-system target was accepted"
     exit 0
 }
 test "$output" = "Quick Look package: Only the system volume / is supported" || {
-    echo "not ok 1 - Expected target-volume refusal"
+    printf '\n%s\n' "not ok 1 - Expected target-volume refusal"
     exit 0
 }
 
-echo "ok 1 - Package preflight rejects non-system target volumes."
+printf '\n%s\n' "ok 1 - Package preflight rejects non-system target volumes."
 exit 0

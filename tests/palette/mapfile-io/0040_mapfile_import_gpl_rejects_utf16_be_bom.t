@@ -20,15 +20,15 @@ gpl_file="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-utf16-bom-invalid.gpl"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m gpl:"${gpl_file}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "GPL UTF-16BE BOM unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - GPL UTF-16BE BOM unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_gpl:\ unsupported\ text\ encoding.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing GPL UTF-16BE diagnostic"
+    printf '\n%s\n' "not ok 1 - missing GPL UTF-16BE diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "GPL UTF-16BE BOM is rejected"
+printf '\n%s\n' "ok 1 - GPL UTF-16BE BOM is rejected"
 
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     filter/0046_filter_sample_parallel_exact 1 1 2 1 8 || {
-    echo "not ok 1 - pal8 clip full t8 output equals serial extraction"
+    printf '\n%s\n' "not ok 1 - pal8 clip full t8 output equals serial extraction"
     exit 0
 }
-echo "ok 1 - pal8 clip full t8 output equals serial extraction"
+printf '\n%s\n' "ok 1 - pal8 clip full t8 output equals serial extraction"
 exit 0

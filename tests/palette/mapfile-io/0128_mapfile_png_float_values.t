@@ -35,18 +35,18 @@ actual_palette=$(
         --precision-policy=float32 -m "${mapfile_png}" -M pal:- -o /dev/null \
         "${input_image}"
 ) || {
-    echo "not ok" 1 - "PNG mapfile export failed with float32 precision"
+    printf '\n%s\n' "not ok 1 - PNG mapfile export failed with float32 precision"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "PNG mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PNG mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "float PNG mapfile lost original color values"
+    printf '\n%s\n' "not ok 1 - float PNG mapfile lost original color values"
     exit 0
 }
 
-echo "ok" 1 - "float PNG mapfile retains original color values"
+printf '\n%s\n' "ok 1 - float PNG mapfile retains original color values"
 exit 0

@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0108_presentation_option_atomicity" || {
-    echo "not ok 1 - presentation option atomicity"
+    printf '\n%s\n' "not ok 1 - presentation option atomicity"
     exit 0
 }
-echo "ok 1 - presentation option atomicity"
+printf '\n%s\n' "ok 1 - presentation option atomicity"
 exit 0

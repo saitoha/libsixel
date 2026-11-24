@@ -16,9 +16,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_png}" >/dev/null && {
-    echo "not ok" 1 - "forced builtin loader accepted corrupted PNG"
+    printf '\n%s\n' "not ok 1 - forced builtin loader accepted corrupted PNG"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader rejects corrupted PNG"
+printf '\n%s\n' "ok 1 - forced builtin loader rejects corrupted PNG"
 exit 0

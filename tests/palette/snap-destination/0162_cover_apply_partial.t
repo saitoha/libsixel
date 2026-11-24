@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0002_pipeline cover 1 || {
-    echo "not ok 1 - P3 snap post-cover partial"
+    printf '\n%s\n' "not ok 1 - P3 snap post-cover partial"
     exit 0
 }
 
-echo "ok 1 - P3 snap post-cover partial"
+printf '\n%s\n' "ok 1 - P3 snap post-cover partial"
 exit 0

@@ -13,8 +13,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -V >/dev/null || {
-    echo "not ok" 1 - "version option failed"
+    printf '\n%s\n' "not ok 1 - version option failed"
 }
 
-echo "ok" 1 - "prints version"
+printf '\n%s\n' "ok 1 - prints version"
 exit 0

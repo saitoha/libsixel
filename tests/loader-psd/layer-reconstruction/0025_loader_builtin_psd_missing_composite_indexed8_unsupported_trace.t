@@ -18,10 +18,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported file without merged/composite image"*)
-        echo "ok" 1 - "layer-only Indexed8 PSD is rejected as unsupported outside fallback scope"
+        printf '\n%s\n' "ok 1 - layer-only Indexed8 PSD is rejected as unsupported outside fallback scope"
         ;;
     *)
-        echo "not ok" 1 - "indexed layer-only unsupported trace is missing"
+        printf '\n%s\n' "not ok 1 - indexed layer-only unsupported trace is missing"
         exit 0
         ;;
 esac

@@ -15,9 +15,9 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -dstucki -thls -B"#a0B030" "${snake_ppm}" -o/dev/null || {
-    echo "not ok" 1 - "inspection with diffusion failed"
+    printf '\n%s\n' "not ok 1 - inspection with diffusion failed"
     exit 0
 }
 
-echo "ok" 1 - "inspection with diffusion and background works"
+printf '\n%s\n' "ok 1 - inspection with diffusion and background works"
 exit 0

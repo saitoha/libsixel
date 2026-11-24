@@ -20,7 +20,7 @@ log_lo="${ARTIFACT_LOCAL_DIR}/builtin-req255-cms0.log"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms_engine=none! \
               -B#ffffff -d none -p255 \
               "${input_png}" -o/dev/null 2>"${log_lo}" || {
-    echo "not ok 1 - builtin reqcolors=255 render failed"
+    printf '\n%s\n' "not ok 1 - builtin reqcolors=255 render failed"
     exit 0
 }
 
@@ -35,10 +35,10 @@ while IFS= read -r line; do
 done < "${log_lo}"
 
 test "${pal8_path_found}" -eq 0 || {
-    echo "not ok 1 - builtin reqcolors=255 unexpectedly kept pal8 work format"
+    printf '\n%s\n' "not ok 1 - builtin reqcolors=255 unexpectedly kept pal8 work format"
     exit 0
 }
 
-echo "ok 1 - builtin reqcolors=255 moved off pal8 work format"
+printf '\n%s\n' "ok 1 - builtin reqcolors=255 moved off pal8 work format"
 
 exit 0

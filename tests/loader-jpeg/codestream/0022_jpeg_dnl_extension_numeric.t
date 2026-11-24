@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0221_jpeg_dnl_extension_numeric" 1>&2 || {
-    echo "not ok 1 - Skip bounded DNL extension bytes without decoding them"
+    printf '\n%s\n' "not ok 1 - Skip bounded DNL extension bytes without decoding them"
     exit 0
 }
-echo "ok 1 - Skip bounded DNL extension bytes without decoding them"
+printf '\n%s\n' "ok 1 - Skip bounded DNL extension bytes without decoding them"
 exit 0

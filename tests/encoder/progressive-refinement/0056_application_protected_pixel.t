@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0056_application_protected_pixel" || {
-    echo "not ok 1 - application protected pixel"
+    printf '\n%s\n' "not ok 1 - application protected pixel"
     exit 0
 }
-echo "ok 1 - application protected pixel"
+printf '\n%s\n' "ok 1 - application protected pixel"
 exit 0

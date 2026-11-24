@@ -16,9 +16,9 @@ set -v
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.psd"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input_psd}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader failed to decode PSD"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode PSD"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes PSD"
+printf '\n%s\n' "ok 1 - builtin loader decodes PSD"
 exit 0

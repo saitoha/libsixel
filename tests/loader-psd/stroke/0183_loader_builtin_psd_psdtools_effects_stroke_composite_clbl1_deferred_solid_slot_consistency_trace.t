@@ -34,13 +34,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
 case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
 
@@ -48,19 +48,19 @@ diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 case "${diag_line}" in *FX_SOLID_OVERLAY_BASE**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing base solid overlay code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing base solid overlay code"
     exit 0
 }
 
 case "${diag_line}" in *FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred solid unsuppressed-skip code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred solid unsuppressed-skip code"
     exit 0
 }
 
 case "${diag_line}" in *FX_DEFERRED_SOLID_OVERLAY_CLIP**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite emitted deferred solid replay code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite emitted deferred solid replay code"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps clbl=1 solid slot consistency"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps clbl=1 solid slot consistency"
 exit 0

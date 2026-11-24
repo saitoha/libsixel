@@ -8,12 +8,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup vptree \
     vptree/gpu_exact_2_0_33 || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - vptree gpu exact 2 0 33"
+    printf '\n%s\n' "not ok 1 - vptree gpu exact 2 0 33"
     exit 0
 }
-echo "ok 1 - vptree gpu exact 2 0 33"
+printf '\n%s\n' "ok 1 - vptree gpu exact 2 0 33"
 exit 0

@@ -18,10 +18,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: malformed layer/mask section"*|*"builtin PSD: malformed layer record table"*)
-        echo "ok" 1 - "broken layer metadata is reported as malformed"
+        printf '\n%s\n' "ok 1 - broken layer metadata is reported as malformed"
         ;;
     *)
-        echo "not ok" 1 - "malformed layer/mask trace is missing"
+        printf '\n%s\n' "not ok 1 - malformed layer/mask trace is missing"
         exit 0
         ;;
 esac

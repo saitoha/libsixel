@@ -20,18 +20,18 @@ set -v
 input="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png"
 libpng_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng! -ldisable "${input}") || {
-    echo "not ok 1 - libpng APNG conversion failed"
+    printf '\n%s\n' "not ok 1 - libpng APNG conversion failed"
     exit 0
 }
 builtin_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -ldisable "${input}") || {
-    echo "not ok 1 - builtin APNG conversion failed"
+    printf '\n%s\n' "not ok 1 - builtin APNG conversion failed"
     exit 0
 }
 test "${libpng_output}" = "${builtin_output}" || {
-    echo "not ok 1 - libpng and builtin APNG output are identical"
+    printf '\n%s\n' "not ok 1 - libpng and builtin APNG output are identical"
     exit 0
 }
 
-echo "ok 1 - libpng and builtin APNG output are identical"
+printf '\n%s\n' "ok 1 - libpng and builtin APNG output are identical"
 exit 0

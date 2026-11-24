@@ -30,27 +30,27 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred gradient overlay trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred gradient overlay trace"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback"*builtin\ PSD:\ applying\ deferred\ stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred stroke trace after deferred gradient"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred stroke trace after deferred gradient"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback"*"builtin PSD: applying deferred stroke on clipped group"*builtin\ PSD:\ using\ post-effect\ offscreen\ group\ backdrop\ for\ deferred\ stroke\ blend**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing post-effect backdrop trace after deferred stroke"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing post-effect backdrop trace after deferred stroke"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite runs deferred stroke after post-effect gradient backdrop"
+printf '\n%s\n' "ok 1 - effects/stroke-composite runs deferred stroke after post-effect gradient backdrop"
 exit 0

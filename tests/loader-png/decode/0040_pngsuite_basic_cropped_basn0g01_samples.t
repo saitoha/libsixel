@@ -22,12 +22,12 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/basn0g01-srgb-bl
 output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-basn0g01.sixel"
 
 test -f "${expected_ppm}" || {
-    echo "not ok" 1 - "missing expected image: 0047_pngsuite_basic_cropped_basn0g01_msssim.ppm"
+    printf '\n%s\n' "not ok 1 - missing expected image: 0047_pngsuite_basic_cropped_basn0g01_msssim.ppm"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --binning-policy=exact --sampling-policy=full-frame --lookup-policy=none -dnone -Acomposite -B#000 -Nexplicit_first -c16x16+8+8 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
@@ -36,8 +36,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --binning-policy=exact --sampling-policy=f
 # PPM16 and float roundoff. Every sample and the 16x16 size must agree.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${expected_ppm}" "${output_sixel}" 'builtin:Enone!' 1.8 || {
-    echo "not ok 1 - cropped samples differ from the independent reference"
+    printf '\n%s\n' "not ok 1 - cropped samples differ from the independent reference"
     exit 0
 }
-echo "ok 1 - crop coordinates and color samples match"
+printf '\n%s\n' "ok 1 - crop coordinates and color samples match"
 exit 0

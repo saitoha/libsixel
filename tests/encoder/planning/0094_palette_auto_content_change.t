@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0094_palette_auto_content_change || {
-    echo "not ok 1 - palette auto content change"
+    printf '\n%s\n' "not ok 1 - palette auto content change"
     exit 0
 }
-echo "ok 1 - palette auto content change"
+printf '\n%s\n' "ok 1 - palette auto content change"
 exit 0

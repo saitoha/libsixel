@@ -17,15 +17,15 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 result=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "planner/allocation/0006_allocation_effective_none" \
     "${ARTIFACT_LOCAL_DIR}/allocation.jsonl" 2>&1) || {
-    echo "not ok 1 - resolved allocation or phase ordering differs"
+    printf '\n%s\n' "not ok 1 - resolved allocation or phase ordering differs"
     echo "${result}"
     exit 0
 }
 case "${result}" in
     *'allocation: compiler disables parallel apply'*)
-        echo "ok 1 # SKIP compiler disables parallel application"
+        printf '\n%s\n' "ok 1 # SKIP compiler disables parallel application"
         exit 0 ;;
 esac
 
-echo "ok 1 - resolved allocation and callback budget agree"
+printf '\n%s\n' "ok 1 - resolved allocation and callback budget agree"
 exit 0

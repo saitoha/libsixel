@@ -13683,6 +13683,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	build/layout/0011_support_excluded.sh \
 	build/layout/0012_execution_modes.sh \
 	build/layout/0013_symlink.sh build/layout/0014_unnumbered.sh \
+	_static/awk/tap-result-newline.awk \
+	_static/sh/staticcheck-tap-result-newline.sh \
 	_static/awk/shell-words.awk _static/awk/no-find.awk \
 	_static/sh/staticcheck-no-find.sh build/no-find/0001_direct.sh \
 	build/no-find/0002_substitution.sh \

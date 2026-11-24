@@ -11,12 +11,12 @@ set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -=greedy:B1 -Goff -p32 -Qheckbert:profile=speed:cut=median:order=population:weights=1/2/3 -scenter \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - profile_speed_explicit conversion"
+    printf '\n%s\n' "not ok 1 - profile_speed_explicit conversion"
     exit 0
 }
 case "$trace" in *'LSXHBC1|rep=1|cut=median|order=population|weights=1/2/3'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - profile_speed_explicit effective settings"
+    printf '\n%s\n' "not ok 1 - profile_speed_explicit effective settings"
     exit 0
 }
-echo "ok 1 - profile_speed_explicit"
+printf '\n%s\n' "ok 1 - profile_speed_explicit"
 exit 0

@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0100_loader_builtin_tga_truecolor24_numeric" || {
-    echo "not ok 1 - TGA type-2 exact RGB component lanes"
+    printf '\n%s\n' "not ok 1 - TGA type-2 exact RGB component lanes"
     exit 0
 }
 
-echo "ok 1 - TGA type-2 exact RGB component lanes"
+printf '\n%s\n' "ok 1 - TGA type-2 exact RGB component lanes"
 exit 0

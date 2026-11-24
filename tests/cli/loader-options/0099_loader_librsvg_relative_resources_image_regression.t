@@ -31,12 +31,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Llibrsvg:A1!" -w16 -h16 "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "relative_resources short conversion failed"
+    printf '\n%s\n' "not ok 1 - relative_resources short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=relative_resources\|stored=1\|binding=librsvg_allow_relative_resources\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "relative_resources short value was not stored"
+    printf '\n%s\n' "not ok 1 - relative_resources short value was not stored"
     exit 0
 }
 
@@ -45,38 +45,38 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1" \
     "-Llibrsvg!" -w16 -h16 "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "relative_resources environment conversion failed"
+    printf '\n%s\n' "not ok 1 - relative_resources environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=relative_resources\|stored=1\|binding=librsvg_allow_relative_resources\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "relative_resources environment value was not stored"
+    printf '\n%s\n' "not ok 1 - relative_resources environment value was not stored"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Llibrsvg:A0!" -w16 -h16 "${input_image}" \
     >"${control_output}" || {
-    echo "not ok" 1 - "relative_resources control conversion failed"
+    printf '\n%s\n' "not ok 1 - relative_resources control conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "relative_resources short and env output differ"
+    printf '\n%s\n' "not ok 1 - relative_resources short and env output differ"
     exit 0
 }
 
 cmp -s "${short_output}" "${control_output}" && {
-    echo "not ok" 1 - "relative_resources did not affect image output"
+    printf '\n%s\n' "not ok 1 - relative_resources did not affect image output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "relative_resources preserves image output"
+printf '\n%s\n' "ok 1 - relative_resources preserves image output"
 exit 0

@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0057_loader_gd_can_try_policy" "optional_webp_consistency" || {
-    echo "not ok 1 - gd can_try optional_webp_consistency"
+    printf '\n%s\n' "not ok 1 - gd can_try optional_webp_consistency"
     exit 0
 }
 
-echo "ok 1 - gd can_try optional_webp_consistency"
+printf '\n%s\n' "ok 1 - gd can_try optional_webp_consistency"
 exit 0

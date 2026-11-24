@@ -19,11 +19,11 @@ test "$status" -ne 77 || {
 echo "1..1"
 set -v
 test "$status" -eq 0 || {
-    echo "not ok 1 - Inspect PNG metadata gamma-only RGBA8 with builtin"
+    printf '\n%s\n' "not ok 1 - Inspect PNG metadata gamma-only RGBA8 with builtin"
     exit 0
 }
 case "${output}" in *"PNGMETA|evaluator="*) true ;; *) false ;; esac || {
-    echo "not ok 1 - PNG metadata evaluator marker"
+    printf '\n%s\n' "not ok 1 - PNG metadata evaluator marker"
     exit 0
 }
 evaluator=${output##*"PNGMETA|evaluator="}
@@ -35,7 +35,7 @@ case "${output}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || count=
 second=${first#*"LSXCMS2|event=apply|"}
 case "${first}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || count=2
 { case "${second}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac && test "$expected" = "$count"; } || {
-    echo "not ok 1 - PNG metadata apply count"
+    printf '\n%s\n' "not ok 1 - PNG metadata apply count"
     exit 0
 }
 newline='
@@ -43,20 +43,20 @@ newline='
 first=${first%%"$newline"*}
 second=${second%%"$newline"*}
 test "$count" -eq 0 || case "${first}" in engine="$evaluator"\|*) true ;; *) false ;; esac || {
-    echo "not ok 1 - PNG metadata image evaluator"
+    printf '\n%s\n' "not ok 1 - PNG metadata image evaluator"
     exit 0
 }
 test "$count" -eq 0 || case "${first}" in *\|ok=1) true ;; *) false ;; esac || {
-    echo "not ok 1 - PNG metadata image application"
+    printf '\n%s\n' "not ok 1 - PNG metadata image application"
     exit 0
 }
 test "$count" -lt 2 || case "${second}" in engine="$evaluator"\|*) true ;; *) false ;; esac || {
-    echo "not ok 1 - PNG metadata background evaluator"
+    printf '\n%s\n' "not ok 1 - PNG metadata background evaluator"
     exit 0
 }
 test "$count" -lt 2 || case "${second}" in *\|ok=1) true ;; *) false ;; esac || {
-    echo "not ok 1 - PNG metadata background application"
+    printf '\n%s\n' "not ok 1 - PNG metadata background application"
     exit 0
 }
-echo "ok 1 - Inspect PNG metadata gamma-only RGBA8 with builtin"
+printf '\n%s\n' "ok 1 - Inspect PNG metadata gamma-only RGBA8 with builtin"
 exit 0

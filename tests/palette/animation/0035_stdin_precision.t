@@ -15,9 +15,9 @@ GIMP Palette
 88 88 88
 255 0 0
 PALETTE
-    echo "not ok 1 - fixed animation stdin precision"
+    printf '\n%s\n' "not ok 1 - fixed animation stdin precision"
     exit 0
 }
 
-echo "ok 1 - fixed animation stdin precision"
+printf '\n%s\n' "ok 1 - fixed animation stdin precision"
 exit 0

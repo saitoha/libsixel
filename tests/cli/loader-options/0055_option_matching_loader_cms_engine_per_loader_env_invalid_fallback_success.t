@@ -23,7 +23,7 @@ output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_invalid_ref_cms1.six"
 output_invalid_per_loader="${ARTIFACT_LOCAL_DIR}/cms_engine_env_invalid_per_loader.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
-    echo "not ok" 1 - "cms=1 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=1 reference decode failed"
     exit 0
 }
 
@@ -31,14 +31,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=invalid-token" \
     -Llibwebp! "${input_webp}" >"${output_invalid_per_loader}" || {
-    echo "not ok" 1 - "invalid per-loader cms engine env decode failed"
+    printf '\n%s\n' "not ok 1 - invalid per-loader cms engine env decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_cms1}" "${output_invalid_per_loader}" || {
-    echo "not ok" 1 - "invalid per-loader env did not fallback to global cms engine"
+    printf '\n%s\n' "not ok 1 - invalid per-loader env did not fallback to global cms engine"
     exit 0
 }
-echo "ok" 1 - "invalid per-loader env fallback follows global value"
+printf '\n%s\n' "ok 1 - invalid per-loader env fallback follows global value"
 
 exit 0

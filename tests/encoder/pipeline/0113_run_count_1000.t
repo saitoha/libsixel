@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0113_run_count_1000" || {
-    echo "not ok 1 - run count 1000"
+    printf '\n%s\n' "not ok 1 - run count 1000"
     exit 0
 }
-echo "ok 1 - run count 1000"
+printf '\n%s\n' "ok 1 - run count 1000"
 exit 0

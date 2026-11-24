@@ -8,8 +8,8 @@ set -v
 
 SIXEL_LOG_PATH='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     writer/png/0055_stdout_failure_borrows_stream || {
-    echo "not ok 1 - PNG write failure leaves standard output open"
+    printf '\n%s\n' "not ok 1 - PNG write failure leaves standard output open"
     exit 0
 }
-echo "ok 1 - PNG write failure leaves standard output open"
+printf '\n%s\n' "ok 1 - PNG write failure leaves standard output open"
 exit 0

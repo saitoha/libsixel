@@ -18,7 +18,7 @@ png_path="${ARTIFACT_LOCAL_DIR}/indexed8.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         <"${TOP_SRCDIR}/images/map8.six" >"${png_path}" || {
-    echo "not ok" 1 - "indexed PNG conversion failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG conversion failed"
     exit 0
 }
 
@@ -27,9 +27,9 @@ actual_ihdr_format_cksum=$(dd bs=1 skip=24 count=2 if="${png_path}" \
         2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_ihdr_format_cksum}" = "${expected_ihdr_format_cksum}" || {
-    echo "not ok" 1 - "default output is not indexed 8-bit PNG"
+    printf '\n%s\n' "not ok 1 - default output is not indexed 8-bit PNG"
     exit 0
 }
 
-echo "ok" 1 - "default output is indexed 8-bit PNG"
+printf '\n%s\n' "ok 1 - default output is indexed 8-bit PNG"
 exit 0

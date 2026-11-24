@@ -27,17 +27,17 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     --env "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE=invalid" \
     "-Lbuiltin:Tlinear:U0!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "hdr_header_exposure short conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=hdr_header_exposure\|stored=1\|binding=hdr_use_header_exposure\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_header_exposure short value was not stored"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *builtin\ HDR:\ final\ controls*use_header=off*mode=disabled**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_header_exposure short value did not reach HDR"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure short value did not reach HDR"
     exit 0
 }
 
@@ -45,43 +45,43 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE=0" \
     "-Lbuiltin:Tlinear!" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "hdr_header_exposure environment conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=hdr_header_exposure\|stored=1\|binding=hdr_use_header_exposure\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_header_exposure environment value was not stored"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *builtin\ HDR:\ final\ controls*use_header=off*mode=disabled**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_header_exposure environment value did not reach HDR"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure environment value did not reach HDR"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "hdr_header_exposure short and environment differ"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure short and environment differ"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE=1" \
     "-Lbuiltin:Tlinear!" "${input_image}" >"${control_output}" || {
-    echo "not ok" 1 - "hdr_header_exposure control conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure control conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${control_output}" && {
-    echo "not ok" 1 - "hdr_header_exposure did not alter HDR output"
+    printf '\n%s\n' "not ok 1 - hdr_header_exposure did not alter HDR output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "hdr_header_exposure preserves HDR image output"
+printf '\n%s\n' "ok 1 - hdr_header_exposure preserves HDR image output"
 exit 0

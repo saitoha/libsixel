@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/hls/0006_builtin_float || {
-    echo "not ok 1 - Native HLS builtin float."
+    printf '\n%s\n' "not ok 1 - Native HLS builtin float."
     exit 0
 }
-echo "ok 1 - Native HLS builtin float."
+printf '\n%s\n' "ok 1 - Native HLS builtin float."
 exit 0

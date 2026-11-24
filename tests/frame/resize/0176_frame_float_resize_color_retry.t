@@ -6,8 +6,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0054_float_geometry_state color retry || {
-    echo "not ok 1 - float frame resize retries after mask allocation failure"
+    printf '\n%s\n' "not ok 1 - float frame resize retries after mask allocation failure"
     exit 0
 }
-echo "ok 1 - float frame resize retries after mask allocation failure"
+printf '\n%s\n' "ok 1 - float frame resize retries after mask allocation failure"
 exit 0

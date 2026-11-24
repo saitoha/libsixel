@@ -21,25 +21,25 @@ printf '%s\n' 'sentinel-before-run' >"${log_path}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
     -o "${output_a}" "${small_ppm}" || {
-    echo "not ok" 1 - "first conversion run failed"
+    printf '\n%s\n' "not ok 1 - first conversion run failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_path}" --lookup-policy=certlut -p 4 \
     -o "${output_b}" "${small_ppm}" || {
-    echo "not ok" 1 - "second conversion run failed"
+    printf '\n%s\n' "not ok 1 - second conversion run failed"
     exit 0
 }
 
 test -s "${output_a}" || {
-    echo "not ok" 1 - "one of the conversion outputs is empty"
+    printf '\n%s\n' "not ok 1 - one of the conversion outputs is empty"
     exit 0
 }
 
 test -s "${output_b}" || {
-    echo "not ok" 1 - "one of the conversion outputs is empty"
+    printf '\n%s\n' "not ok 1 - one of the conversion outputs is empty"
     exit 0
 }
 
-echo "ok" 1 - "pre-existing log file path is accepted"
+printf '\n%s\n' "ok 1 - pre-existing log file path is accepted"
 exit 0

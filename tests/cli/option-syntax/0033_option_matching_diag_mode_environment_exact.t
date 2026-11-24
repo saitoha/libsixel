@@ -24,24 +24,24 @@ case_message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || case_status=$?
 
 test "${prefix_status}" -eq 2 || {
-    echo "not ok" 1 - "diagnostics prefix exit status mismatch"
+    printf '\n%s\n' "not ok 1 - diagnostics prefix exit status mismatch"
     exit 0
 }
 
 test "${case_status}" -eq 2 || {
-    echo "not ok" 1 - "diagnostics case exit status mismatch"
+    printf '\n%s\n' "not ok 1 - diagnostics case exit status mismatch"
     exit 0
 }
 
 case "${prefix_message}" in *\(matches:**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "diagnostics environment accepted a prefix"
+    printf '\n%s\n' "not ok 1 - diagnostics environment accepted a prefix"
     exit 0
 }
 
 case "${case_message}" in *\(matches:**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "diagnostics environment ignored case"
+    printf '\n%s\n' "not ok 1 - diagnostics environment ignored case"
     exit 0
 }
 
-echo "ok" 1 - "diagnostics environment matching remains exact"
+printf '\n%s\n' "ok 1 - diagnostics environment matching remains exact"
 exit 0

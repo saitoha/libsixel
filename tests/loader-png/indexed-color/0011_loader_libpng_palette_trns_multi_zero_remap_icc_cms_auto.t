@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! \
               -B#ffffff \
               -d none -p256 \
               "${input_multi}" >"${out_multi}" || {
-    echo "not ok 1 - libpng multi-zero cms=auto render failed"
+    printf '\n%s\n' "not ok 1 - libpng multi-zero cms=auto render failed"
     exit 0
 }
 
@@ -35,16 +35,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=auto! \
               -B#ffffff \
               -d none -p256 \
               "${input_single}" >"${out_single}" || {
-    echo "not ok 1 - libpng single-zero cms=auto render failed"
+    printf '\n%s\n' "not ok 1 - libpng single-zero cms=auto render failed"
     exit 0
 }
 
 # Palette-index remapping must preserve every decoded display sample.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${out_single}" "${out_multi}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - palette remapping changed decoded display samples"
+    printf '\n%s\n' "not ok 1 - palette remapping changed decoded display samples"
     exit 0
 }
 
-echo "ok 1 - libpng multi-zero remap matches single-zero under cms=auto"
+printf '\n%s\n' "ok 1 - libpng multi-zero remap matches single-zero under cms=auto"
 exit 0

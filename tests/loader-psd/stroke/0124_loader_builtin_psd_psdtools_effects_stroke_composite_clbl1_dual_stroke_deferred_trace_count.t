@@ -29,28 +29,28 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ deferring\ dual-stroke\ ownership\ to\ clipped\ group\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred ownership trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred ownership trace"
     exit 0
 }
 case "${trace_output}" in *"builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback"*builtin\ PSD:\ deferring\ dual-stroke\ ownership\ to\ clipped\ group\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite duplicated deferred ownership trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite duplicated deferred ownership trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing owned deferred apply trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing owned deferred apply trace"
     exit 0
 }
 case "${trace_output}" in *"builtin PSD: applying owned deferred dual-stroke on clipped group"*builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite duplicated owned deferred apply trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite duplicated owned deferred apply trace"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred dual-stroke ownership/apply counts stable"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps deferred dual-stroke ownership/apply counts stable"
 exit 0

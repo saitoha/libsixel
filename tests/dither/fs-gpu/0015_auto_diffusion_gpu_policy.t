@@ -6,12 +6,12 @@ status=0
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     dither/fs-gpu/0015_auto_diffusion_gpu_policy || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU diffusion unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU diffusion unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - GPU policy applies to resolved automatic diffusion'
+    printf '\n%s\n' 'not ok 1 - GPU policy applies to resolved automatic diffusion'
     exit 0
 }
-echo 'ok 1 - GPU policy applies to resolved automatic diffusion'
+printf '\n%s\n' 'ok 1 - GPU policy applies to resolved automatic diffusion'
 exit 0

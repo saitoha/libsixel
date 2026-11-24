@@ -23,13 +23,13 @@ output=$("${TOP_SRCDIR}/tools/quicklook-extension.bash" install \
 status=$?
 set -e
 test "$status" = 77 || {
-    echo "not ok 1 - Missing privilege failure status"
+    printf '\n%s\n' "not ok 1 - Missing privilege failure status"
     exit 0
 }
 case "$output" in
     *'Run as administrator: /usr/sbin/installer -pkg "/nonexistent package/SixelQuickLook.pkg" -target /'*) ;;
-    *) echo "not ok 1 - Missing actionable Installer command"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - Missing actionable Installer command"; exit 0 ;;
 esac
 
-echo "ok 1 - Nonroot installation is refused without elevation."
+printf '\n%s\n' "ok 1 - Nonroot installation is refused without elevation."
 exit 0

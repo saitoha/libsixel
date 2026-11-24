@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0069_packet_sparse_overlay" || {
-    echo "not ok 1 - packet sparse overlay"
+    printf '\n%s\n' "not ok 1 - packet sparse overlay"
     exit 0
 }
-echo "ok 1 - packet sparse overlay"
+printf '\n%s\n' "ok 1 - packet sparse overlay"
 exit 0

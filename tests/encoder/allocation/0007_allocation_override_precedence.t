@@ -24,7 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=6 \
     -d 'fs:band_width=9:band_overwrap=0' \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - explicit allocation conversion failed"
+    printf '\n%s\n' "not ok 1 - explicit allocation conversion failed"
     exit 0
 }
 
@@ -32,9 +32,9 @@ case "${trace}" in
     *LSXDTH1\|*band_height=12\|*band_overlap=0\|*dither_threads=1\|encode_threads=3\|*allocation_mode=pipeline\|*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - explicit allocation lost precedence"
+    printf '\n%s\n' "not ok 1 - explicit allocation lost precedence"
     exit 0
 }
 
-echo "ok 1 - explicit allocation outranks environment and automatic defaults"
+printf '\n%s\n' "ok 1 - explicit allocation outranks environment and automatic defaults"
 exit 0

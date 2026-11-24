@@ -23,21 +23,21 @@ out_unknown="${ARTIFACT_LOCAL_DIR}/builtin_gif_unknown_ext_unknown.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Lbuiltin! -S -ldisable -d none:scan=raster -p 256 \
               "${base_gif}" >"${out_base}" || {
-    echo "not ok" 1 - "baseline GIF decode failed"
+    printf '\n%s\n' "not ok 1 - baseline GIF decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Lbuiltin! -S -ldisable -d none:scan=raster -p 256 \
               "${unknown_ext_gif}" >"${out_unknown}" || {
-    echo "not ok" 1 - "unknown-extension GIF decode failed"
+    printf '\n%s\n' "not ok 1 - unknown-extension GIF decode failed"
     exit 0
 }
 
 cmp -s "${out_base}" "${out_unknown}" || {
-    echo "not ok" 1 - "unknown legal extension changed decoded output"
+    printf '\n%s\n' "not ok 1 - unknown legal extension changed decoded output"
     exit 0
 }
 
-echo "ok" 1 - "unknown legal GIF extension is ignored"
+printf '\n%s\n' "ok 1 - unknown legal GIF extension is ignored"
 exit 0

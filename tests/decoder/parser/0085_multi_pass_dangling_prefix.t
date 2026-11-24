@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0075_multi_pass_dangling_prefix" || {
-    echo "not ok 1 - dangling prefix"
+    printf '\n%s\n' "not ok 1 - dangling prefix"
     exit 0
 }
 
-echo "ok 1 - dangling prefix"
+printf '\n%s\n' "ok 1 - dangling prefix"
 exit 0

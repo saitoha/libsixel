@@ -25,21 +25,21 @@ output_mixed="${ARTIFACT_LOCAL_DIR}/cms_engine_case_mixed_auto.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_lower}" || {
-    echo "not ok" 1 - "--cms-engine=auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - --cms-engine=auto reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=AuTo \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_mixed}" || {
-    echo "not ok" 1 - "mixed-case --cms-engine value was rejected"
+    printf '\n%s\n' "not ok 1 - mixed-case --cms-engine value was rejected"
     exit 0
 }
 
 cmp -s "${output_lower}" "${output_mixed}" || {
-    echo "not ok" 1 - "mixed-case --cms-engine output diverged from lower-case"
+    printf '\n%s\n' "not ok 1 - mixed-case --cms-engine output diverged from lower-case"
     exit 0
 }
 
-echo "ok" 1 - "--cms-engine value matching is case insensitive"
+printf '\n%s\n' "ok 1 - --cms-engine value matching is case insensitive"
 exit 0

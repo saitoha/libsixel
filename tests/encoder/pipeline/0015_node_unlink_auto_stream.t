@@ -11,9 +11,9 @@ export SIXEL_ENCODER_THREADING_POLICY
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0043_node_unlink_auto_stream" || {
-    echo "not ok 1 - auto node unlink wire snapshots"
+    printf '\n%s\n' "not ok 1 - auto node unlink wire snapshots"
     exit 0
 }
 
-echo "ok 1 - auto node unlink wire snapshots"
+printf '\n%s\n' "ok 1 - auto node unlink wire snapshots"
 exit 0

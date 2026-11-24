@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/retained/0045_advance_gpu_keep" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - advance gpu keep'
+    printf '\n%s\n' 'not ok 1 - advance gpu keep'
     exit 0
 }
-echo 'ok 1 - advance gpu keep'
+printf '\n%s\n' 'ok 1 - advance gpu keep'
 exit 0

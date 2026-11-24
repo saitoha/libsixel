@@ -14,24 +14,24 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - lab linear profile colorsync"
+    printf '\n%s\n' "not ok 1 - lab linear profile colorsync"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - requested CMS did not apply"
+    printf '\n%s\n' "not ok 1 - requested CMS did not apply"
     exit 0
 }
 case "${trace}" in *"|src=8|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - Lab to float RGB apply was not observed"
+    printf '\n%s\n' "not ok 1 - Lab to float RGB apply was not observed"
     exit 0
 }
 negative=${trace#*"TLINPROFILE|negative-begin"}
 case "${negative}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - mismatched profile reached CMS apply"
+    printf '\n%s\n' "not ok 1 - mismatched profile reached CMS apply"
     exit 0
 }
-echo "ok 1 - lab linear profile colorsync"
+printf '\n%s\n' "ok 1 - lab linear profile colorsync"
 exit 0

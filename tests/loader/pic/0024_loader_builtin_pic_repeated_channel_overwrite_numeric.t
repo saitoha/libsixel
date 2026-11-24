@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0089_loader_builtin_pic_repeated_channel_overwrite_numeric" || {
-    echo "not ok 1 - PIC repeated-channel packet overwrite order"
+    printf '\n%s\n' "not ok 1 - PIC repeated-channel packet overwrite order"
     exit 0
 }
 
-echo "ok 1 - PIC repeated-channel packet overwrite order"
+printf '\n%s\n' "ok 1 - PIC repeated-channel packet overwrite order"
 exit 0

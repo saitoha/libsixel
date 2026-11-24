@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0157_loader_builtin_png_cgbi_numeric" 1>&2 || {
-    echo "not ok" 1 - "builtin CgBI normalization produces exact RGB"
+    printf '\n%s\n' "not ok 1 - builtin CgBI normalization produces exact RGB"
     exit 0
 }
 
-echo "ok" 1 - "builtin CgBI normalization produces exact RGB"
+printf '\n%s\n' "ok 1 - builtin CgBI normalization produces exact RGB"
 exit 0

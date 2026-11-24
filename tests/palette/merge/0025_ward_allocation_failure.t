@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/merge_float/0001_merge_contract common 0 0 2 || {
-    echo "not ok 1 - ward allocation failure"
+    printf '\n%s\n' "not ok 1 - ward allocation failure"
     exit 0
 }
 
-echo "ok 1 - ward allocation failure"
+printf '\n%s\n' "ok 1 - ward allocation failure"
 exit 0

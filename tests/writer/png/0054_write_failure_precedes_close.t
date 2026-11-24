@@ -8,8 +8,8 @@ set -v
 
 SIXEL_LOG_PATH='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     writer/png/0054_write_failure_precedes_close || {
-    echo "not ok 1 - PNG close failure preserves the earlier write error"
+    printf '\n%s\n' "not ok 1 - PNG close failure preserves the earlier write error"
     exit 0
 }
-echo "ok 1 - PNG close failure preserves the earlier write error"
+printf '\n%s\n' "ok 1 - PNG close failure preserves the earlier write error"
 exit 0

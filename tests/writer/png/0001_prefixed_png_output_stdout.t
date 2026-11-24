@@ -17,7 +17,7 @@ stdout_png="${ARTIFACT_LOCAL_DIR}/snake-prefixed-stdout.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o "png:-" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" >"${stdout_png}" || {
-    echo "not ok" 1 - "png:- conversion failed"
+    printf '\n%s\n' "not ok 1 - png:- conversion failed"
     exit 0
 }
 
@@ -25,9 +25,9 @@ expected_header_cksum="3308842558 4"
 actual_header_cksum=$(dd bs=1 count=4 if="${stdout_png}" 2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    echo "not ok" 1 - "png:- did not write PNG data to stdout"
+    printf '\n%s\n' "not ok 1 - png:- did not write PNG data to stdout"
     exit 0
 }
 
-echo "ok" 1 - "png:- writes the post-SIXEL PNG snapshot to stdout"
+printf '\n%s\n' "ok 1 - png:- writes the post-SIXEL PNG snapshot to stdout"
 exit 0

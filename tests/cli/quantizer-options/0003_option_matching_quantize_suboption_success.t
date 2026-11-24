@@ -15,9 +15,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:Ip:T0.120 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q kmeans suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - -Q kmeans suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts kmeans suboptions"
+printf '\n%s\n' "ok 1 - -Q accepts kmeans suboptions"
 exit 0

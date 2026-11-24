@@ -30,17 +30,17 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing clbl=1 overlay suppression trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred gradient overlay trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred gradient overlay trace"
     exit 0
 }
 
@@ -50,9 +50,9 @@ case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gra
 # That known rendering limitation must not be hidden by a lower threshold.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_dimensions \
     "${output_sixel}" 256 256 || {
-    echo "not ok 1 - compositor output dimensions differ"
+    printf '\n%s\n' "not ok 1 - compositor output dimensions differ"
     exit 0
 }
 
-echo "ok 1 - compositor route and output dimensions match"
+printf '\n%s\n' "ok 1 - compositor route and output dimensions match"
 exit 0

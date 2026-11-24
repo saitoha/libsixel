@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/cover_float/0001_cover_contract values 2 0 0 || {
-    echo "not ok 1 - merge midpoint"
+    printf '\n%s\n' "not ok 1 - merge midpoint"
     exit 0
 }
 
-echo "ok 1 - merge midpoint"
+printf '\n%s\n' "ok 1 - merge midpoint"
 exit 0

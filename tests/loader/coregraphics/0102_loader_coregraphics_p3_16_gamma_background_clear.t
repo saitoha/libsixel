@@ -10,25 +10,25 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0187_coregraphics_png p3 16 rgba 0 1 1 colorsync \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-p3-16-rgba.png" 2>&1) || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP CoreGraphics is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP CoreGraphics is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - p3 16 original alpha over gamma background with clear"
+    printf '\n%s\n' "not ok 1 - p3 16 original alpha over gamma background with clear"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=4|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - original RGB float did not use ColorSync"
+    printf '\n%s\n' "not ok 1 - original RGB float did not use ColorSync"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) false ;; *) true ;; esac || {
-    echo "not ok 1 - builtin substituted for the native source transform"
+    printf '\n%s\n' "not ok 1 - builtin substituted for the native source transform"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|"*) false ;; *) true ;; esac || {
-    echo "not ok 1 - Little CMS substituted for the native source transform"
+    printf '\n%s\n' "not ok 1 - Little CMS substituted for the native source transform"
     exit 0
 }
-echo "ok 1 - p3 16 original alpha over gamma background with clear"
+printf '\n%s\n' "ok 1 - p3 16 original alpha over gamma background with clear"
 exit 0

@@ -27,7 +27,7 @@ planner_log=$(
                   -Llibpng:cms_engine=none! \
                   -o "${output_sixel}" "${input_png}" 2>&1
 ) || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
@@ -35,10 +35,10 @@ case "${planner_log}" in
     *"formats: source=rgb-f32 work=rgb-f32"*)
         ;;
     *)
-        echo "not ok" 1 - "planner downgraded float32 input"
+        printf '\n%s\n' "not ok 1 - planner downgraded float32 input"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "planner keeps libpng rgb16 source in float32 work format"
+printf '\n%s\n' "ok 1 - planner keeps libpng rgb16 source in float32 work format"
 exit 0

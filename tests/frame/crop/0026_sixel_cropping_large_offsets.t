@@ -14,10 +14,10 @@ set -v
 snake_six="${TOP_SRCDIR}/images/map8.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -c200x200+2000+2000 "${snake_six}" -o/dev/null || {
-    echo "not ok" 1 - "Sixel cropping with large offsets fails"
+    printf '\n%s\n' "not ok 1 - Sixel cropping with large offsets fails"
     exit 0
 }
 
-echo "ok" 1 - "Sixel cropping tolerates large offsets"
+printf '\n%s\n' "ok 1 - Sixel cropping tolerates large offsets"
 
 exit 0

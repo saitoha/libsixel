@@ -25,21 +25,21 @@ output_disabled="${ARTIFACT_LOCAL_DIR}/cms_engine_alias_disabled_alias.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_none}" || {
-    echo "not ok" 1 - "--cms-engine=none reference decode failed"
+    printf '\n%s\n' "not ok 1 - --cms-engine=none reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=disabled \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_disabled}" || {
-    echo "not ok" 1 - "--cms-engine=disabled was rejected"
+    printf '\n%s\n' "not ok 1 - --cms-engine=disabled was rejected"
     exit 0
 }
 
 cmp -s "${output_none}" "${output_disabled}" || {
-    echo "not ok" 1 - "--cms-engine=disabled diverged from --cms-engine=none"
+    printf '\n%s\n' "not ok 1 - --cms-engine=disabled diverged from --cms-engine=none"
     exit 0
 }
 
-echo "ok" 1 - "--cms-engine=disabled matches --cms-engine=none"
+printf '\n%s\n' "ok 1 - --cms-engine=disabled matches --cms-engine=none"
 exit 0

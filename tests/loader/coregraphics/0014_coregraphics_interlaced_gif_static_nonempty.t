@@ -21,14 +21,14 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_interlaced_static.six" || {
-    echo "not ok" 1 - "static interlaced GIF decode failed on coregraphics"
+    printf '\n%s\n' "not ok 1 - static interlaced GIF decode failed on coregraphics"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_interlaced_static.six" || {
-    echo "not ok" 1 - "static interlaced GIF decode produced empty output"
+    printf '\n%s\n' "not ok 1 - static interlaced GIF decode produced empty output"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics emits non-empty static output for interlaced GIF"
+printf '\n%s\n' "ok 1 - coregraphics emits non-empty static output for interlaced GIF"
 exit 0

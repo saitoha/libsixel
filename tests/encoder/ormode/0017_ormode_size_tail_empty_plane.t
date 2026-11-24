@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder-core/0018_ormode_size_tail_empty_plane" || {
-    echo "not ok 1 - ormode_size_tail_empty_plane"
+    printf '\n%s\n' "not ok 1 - ormode_size_tail_empty_plane"
     exit 0
 }
 
-echo "ok 1 - ormode_size_tail_empty_plane"
+printf '\n%s\n' "ok 1 - ormode_size_tail_empty_plane"
 exit 0

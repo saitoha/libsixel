@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0106_horizontal_a0_j65 || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - horizontal a0 j65"
+    printf '\n%s\n' "not ok 1 - horizontal a0 j65"
     exit 0
 }
-echo "ok 1 - horizontal a0 j65"
+printf '\n%s\n' "ok 1 - horizontal a0 j65"
 exit 0

@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder/highcolor/0096_byte_fs_saturation || {
-    echo "not ok 1 - high-color Floyd-Steinberg saturation"
+    printf '\n%s\n' "not ok 1 - high-color Floyd-Steinberg saturation"
     exit 0
 }
-echo "ok 1 - high-color Floyd-Steinberg saturation"
+printf '\n%s\n' "ok 1 - high-color Floyd-Steinberg saturation"
 exit 0

@@ -26,17 +26,17 @@ env_output="${artifact_dir}/0083-lookup-6bit-shared_instance-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=2 "-~6bit:S1" "${input_image}" -o "${short_output}" 2>&1) || {
-    echo "not ok" 1 - "6bit:shared_instance short conversion failed"
+    printf '\n%s\n' "not ok 1 - 6bit:shared_instance short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=shared_instance\|stored=1\|binding=lut_policy_shared_instance,lut_policy_shared_instance_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "shared_instance short value was not stored"
+    printf '\n%s\n' "not ok 1 - shared_instance short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXDTH1\|*shared=1\|shared_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "6bit shared_instance did not reach the dither"
+    printf '\n%s\n' "not ok 1 - 6bit shared_instance did not reach the dither"
     exit 0
 }
 
@@ -44,17 +44,17 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOOKUP_6BIT_SHARED_INSTANCE=1" --threading-policy=greedy:global_budget=2 "-~6bit" \
     "${input_image}" -o "${env_output}" 2>&1) || {
-    echo "not ok" 1 - "6bit:shared_instance env conversion failed"
+    printf '\n%s\n' "not ok 1 - 6bit:shared_instance env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=shared_instance\|stored=1\|binding=lut_policy_shared_instance,lut_policy_shared_instance_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "shared_instance environment value was not stored"
+    printf '\n%s\n' "not ok 1 - shared_instance environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXDTH1\|*shared=1\|shared_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "6bit environment shared_instance did not reach the dither"
+    printf '\n%s\n' "not ok 1 - 6bit environment shared_instance did not reach the dither"
     exit 0
 }
 
@@ -63,7 +63,7 @@ equivalence_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
     -m MS-SSIM -b "MS-SSIM:0.98" "${short_output}" "${env_output}" 2>&1) || \
     equivalence_status=$?
 test "${equivalence_status:-0}" -eq 0 || {
-    echo "not ok" 1 - "6bit:shared_instance short and env output diverged"
+    printf '\n%s\n' "not ok 1 - 6bit:shared_instance short and env output diverged"
     printf "# %s\n" "${equivalence_error}"
     exit 0
 }
@@ -72,10 +72,10 @@ lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
     -m MS-SSIM -b "MS-SSIM:0.98" "${reference_image}" \
     "${short_output}" 2>&1) || lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {
-    echo "not ok" 1 - "6bit:shared_instance image quality regressed"
+    printf '\n%s\n' "not ok 1 - 6bit:shared_instance image quality regressed"
     printf "# %s\\n" "${lsqa_error}"
     exit 0
 }
 
-echo "ok" 1 - "6bit:shared_instance preserves image output"
+printf '\n%s\n' "ok 1 - 6bit:shared_instance preserves image output"
 exit 0

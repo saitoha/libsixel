@@ -15,10 +15,10 @@ set -v
 snake_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! -w105% -h100 -B"#000000000" -rne <"${snake_gif}" -o/dev/null || {
-    echo "not ok" 1 - "GIF conversion with filters failed"
+    printf '\n%s\n' "not ok 1 - GIF conversion with filters failed"
     exit 0
 }
 
-echo "ok" 1 - "GIF conversion with filters succeeded"
+printf '\n%s\n' "ok 1 - GIF conversion with filters succeeded"
 
 exit 0

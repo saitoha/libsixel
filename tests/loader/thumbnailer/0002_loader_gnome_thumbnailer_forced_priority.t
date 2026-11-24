@@ -28,10 +28,10 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_
               -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" 2>&1) || {
     case "${msg}" in
         *gnome-thumbnailer*|*thumbnailer*)
-            echo "not ok" 1 - "gnome-thumbnailer runtime should be available"
+            printf '\n%s\n' "not ok 1 - gnome-thumbnailer runtime should be available"
             ;;
         *)
-            echo "not ok" 1 - "forced gnome-thumbnailer loader path failed"
+            printf '\n%s\n' "not ok 1 - forced gnome-thumbnailer loader path failed"
             ;;
     esac
     printf '%s\n' '--- stderr ---' >&2
@@ -40,9 +40,9 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "forced gnome-thumbnailer loader path failed"
+    printf '\n%s\n' "not ok 1 - forced gnome-thumbnailer loader path failed"
     exit 0
 }
 
-echo "ok" 1 - "forced gnome-thumbnailer loader path succeeds"
+printf '\n%s\n' "ok 1 - forced gnome-thumbnailer loader path succeeds"
 exit 0

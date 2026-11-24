@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0123_loader_builtin_tga_rle_overrun_reject" || {
-    echo "not ok 1 - TGA RLE packet overrun is rejected"
+    printf '\n%s\n' "not ok 1 - TGA RLE packet overrun is rejected"
     exit 0
 }
 
-echo "ok 1 - TGA RLE packet overrun is rejected"
+printf '\n%s\n' "ok 1 - TGA RLE packet overrun is rejected"
 exit 0

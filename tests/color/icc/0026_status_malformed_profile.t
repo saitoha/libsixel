@@ -8,9 +8,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" icc/0026_status_malformed_profile || {
-    echo "not ok 1 - truncated supported payload is malformed"
+    printf '\n%s\n' "not ok 1 - truncated supported payload is malformed"
     exit 0
 }
 
-echo "ok 1 - truncated supported payload is malformed"
+printf '\n%s\n' "ok 1 - truncated supported payload is malformed"
 exit 0

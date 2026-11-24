@@ -25,7 +25,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set -x
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "directory mapfile exit status mismatch"
+    printf '\n%s\n' "not ok 1 - directory mapfile exit status mismatch"
     exit 0
 }
 
@@ -33,12 +33,12 @@ case "${msg}" in
     *'path refers to a directory; expected a file input.'*)
         ;;
     *)
-        echo "not ok" 1 - "directory rejection diagnostic was not emitted"
+        printf '\n%s\n' "not ok 1 - directory rejection diagnostic was not emitted"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "directory arguments are rejected for file-only options"
+printf '\n%s\n' "ok 1 - directory arguments are rejected for file-only options"
 exit 0

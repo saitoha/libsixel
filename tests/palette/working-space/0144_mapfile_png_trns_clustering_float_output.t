@@ -19,12 +19,12 @@ expected_output=$(
         -Lbuiltin:cms_engine=none! --precision-policy=float -Xoklab \
         -Wgamma -Fnone -_none -m "${mapfile_png}" -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "PNG tRNS mapfile baseline encode failed"
+    printf '\n%s\n' "not ok 1 - PNG tRNS mapfile baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "PNG tRNS mapfile output is empty"
+    printf '\n%s\n' "not ok 1 - PNG tRNS mapfile output is empty"
     exit 0
 }
 
@@ -33,14 +33,14 @@ actual_output=$(
         -Lbuiltin:cms_engine=none! --precision-policy=auto -Xoklab \
         -Wgamma -Fnone -_none -m "${mapfile_png}" -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "PNG tRNS mapfile encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - PNG tRNS mapfile encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "PNG tRNS mapfile lost float clustering precision"
+    printf '\n%s\n' "not ok 1 - PNG tRNS mapfile lost float clustering precision"
     exit 0
 }
 
-echo "ok" 1 - "PNG tRNS mapfile retains required clustering precision"
+printf '\n%s\n' "ok 1 - PNG tRNS mapfile retains required clustering precision"
 exit 0

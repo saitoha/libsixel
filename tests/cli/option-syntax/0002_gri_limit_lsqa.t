@@ -17,24 +17,24 @@ plain_output=''
 limited_output=''
 
 plain_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B1 "${input_image}") || {
-    echo "not ok" 1 - "img2sixel plain encode failed"
+    printf '\n%s\n' "not ok 1 - img2sixel plain encode failed"
     exit 0
 }
 
 limited_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B1 --gri-limit "${input_image}") || {
-    echo "not ok" 1 - "img2sixel --gri-limit encode failed"
+    printf '\n%s\n' "not ok 1 - img2sixel --gri-limit encode failed"
     exit 0
 }
 
 test -n "${plain_output}" || {
-    echo "not ok" 1 - "plain SIXEL output is empty"
+    printf '\n%s\n' "not ok 1 - plain SIXEL output is empty"
     exit 0
 }
 
 test "${plain_output}" = "${limited_output}" || {
-    echo "not ok" 1 - "gri-limit deterministic output mismatch"
+    printf '\n%s\n' "not ok 1 - gri-limit deterministic output mismatch"
     exit 0
 }
 
-echo "ok" 1 - "gri-limit deterministic output matches"
+printf '\n%s\n' "ok 1 - gri-limit deterministic output matches"
 exit 0

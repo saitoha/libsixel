@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-grayscale.jpg" \
     >/dev/null || {
-    echo "not ok" 1 - "gd failed to decode grayscale JPEG input"
+    printf '\n%s\n' "not ok 1 - gd failed to decode grayscale JPEG input"
     exit 0
 }
 
-echo "ok" 1 - "gd decodes grayscale JPEG input"
+printf '\n%s\n' "ok 1 - gd decodes grayscale JPEG input"
 exit 0

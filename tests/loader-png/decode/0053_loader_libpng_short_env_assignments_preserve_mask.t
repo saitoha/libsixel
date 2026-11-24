@@ -23,7 +23,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEY
               -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! -d fs:scan=raster \
               "${input_png}" >"${out}" || {
-    echo "not ok 1 - repeated short -% render failed"
+    printf '\n%s\n' "not ok 1 - repeated short -% render failed"
     exit 0
 }
 
@@ -32,10 +32,10 @@ out_text=""
 IFS= read -r out_text < "${out}" || test -n "${out_text}"
 case "${out_text}" in
     *"$(printf '\033')P0;1q"*)
-        echo "ok 1 - repeated short -% preserves the mask"
+        printf '\n%s\n' "ok 1 - repeated short -% preserves the mask"
         ;;
     *)
-        echo "not ok 1 - repeated short -% lost the mask"
+        printf '\n%s\n' "not ok 1 - repeated short -% lost the mask"
         ;;
 esac
 

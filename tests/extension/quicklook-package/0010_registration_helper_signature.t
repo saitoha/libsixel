@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" signature \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Payload/Library/Application Support/libsixel/QuickLook/register_sixel_preview" || {
-    echo "not ok 1 - Invalid helper signature"
+    printf '\n%s\n' "not ok 1 - Invalid helper signature"
     exit 0
 }
 
-echo "ok 1 - Packaged registration helper signature is valid."
+printf '\n%s\n' "ok 1 - Packaged registration helper signature is valid."
 exit 0

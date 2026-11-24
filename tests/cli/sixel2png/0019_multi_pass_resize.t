@@ -16,15 +16,15 @@ dimensions=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --input-mode=6delta-progressive -s 8 \
     -i "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-16.six" | \
     od -An -tx1 -j16 -N8) || {
-    echo "not ok 1 - final image resize failed"
+    printf '\n%s\n' "not ok 1 - final image resize failed"
     exit 0
 }
 # shellcheck disable=SC2086
 set -- ${dimensions}
 test "$*" = "00 00 00 08 00 00 00 08" || {
-    echo "not ok 1 - unexpected final PNG dimensions"
+    printf '\n%s\n' "not ok 1 - unexpected final PNG dimensions"
     exit 0
 }
 
-echo "ok 1 - multi pass resize"
+printf '\n%s\n' "ok 1 - multi pass resize"
 exit 0

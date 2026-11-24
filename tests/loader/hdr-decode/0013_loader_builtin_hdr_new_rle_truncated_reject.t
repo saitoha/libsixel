@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0132_loader_builtin_hdr_new_rle_truncated_reject" || {
-    echo "not ok 1 - HDR component RLE rejects truncation"
+    printf '\n%s\n' "not ok 1 - HDR component RLE rejects truncation"
     exit 0
 }
 
-echo "ok 1 - HDR component RLE rejects truncation"
+printf '\n%s\n' "ok 1 - HDR component RLE rejects truncation"
 exit 0

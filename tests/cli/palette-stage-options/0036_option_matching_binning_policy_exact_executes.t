@@ -16,14 +16,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --binning-policy=exact -Qauto -dnone -p16 "-~none" \
     -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
-    echo "not ok 1 - exact palette binning encode failed"
+    printf '\n%s\n' "not ok 1 - exact palette binning encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=0\|quantizer_effective=2\|quantizer_origin=auto\|quantizer_phase=executed\|quantizer_reason=quantizer-capability\|binning_requested=exact\|binning_effective=exact\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=**) true ;; *) false ;; esac || {
-    echo "not ok 1 - exact palette binning state was not committed"
+    printf '\n%s\n' "not ok 1 - exact palette binning state was not committed"
     exit 0
 }
 
-echo "ok 1 - exact palette binning executes through K-means"
+printf '\n%s\n' "ok 1 - exact palette binning executes through K-means"
 exit 0

@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0057_ormode_tail_band" || {
-    echo "not ok 1 - ormode_tail_band"
+    printf '\n%s\n' "not ok 1 - ormode_tail_band"
     exit 0
 }
 
-echo "ok 1 - ormode_tail_band"
+printf '\n%s\n' "ok 1 - ormode_tail_band"
 exit 0

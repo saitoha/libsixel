@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-byte-target-0.png" \
     || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP direct gAMA contract or requested loader is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP direct gAMA contract or requested loader is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - libpng gAMA 45455 final byte target"
+    printf '\n%s\n' "not ok 1 - libpng gAMA 45455 final byte target"
     exit 0
 }
-echo "ok 1 - libpng gAMA 45455 rounds only at the byte target"
+printf '\n%s\n' "ok 1 - libpng gAMA 45455 rounds only at the byte target"
 exit 0

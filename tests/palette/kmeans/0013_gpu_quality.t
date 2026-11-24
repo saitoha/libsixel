@@ -27,27 +27,27 @@ case "$trace" in *LSXKMEANS1\|requested=gpu\|effective=metal\|*|*LSXKMEANS1\|req
 test "$conversion_status:$backend_ok" = 0:1 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - GPU device probe failed"
+    printf '\n%s\n' "not ok 1 - GPU device probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - GPU quality conversion failed"
+    printf '\n%s\n' "not ok 1 - GPU quality conversion failed"
     exit 0
 }
 test "$backend_ok" -eq 1 || {
-    echo "not ok 1 - GPU quality test did not execute the selected GPU backend"
+    printf '\n%s\n' "not ok 1 - GPU quality test did not execute the selected GPU backend"
     printf '# %s\n' "$trace"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" \
     "${ARTIFACT_LOCAL_DIR}/gpu.six" >/dev/null || {
-    echo "not ok 1 - GPU palette quality is below MS-SSIM 0.98"
+    printf '\n%s\n' "not ok 1 - GPU palette quality is below MS-SSIM 0.98"
     exit 0
 }
-echo "ok 1 - GPU palette meets MS-SSIM 0.98"
+printf '\n%s\n' "ok 1 - GPU palette meets MS-SSIM 0.98"
 exit 0

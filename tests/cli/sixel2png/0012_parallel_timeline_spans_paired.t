@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threading-policy=greedy:global_budget=2 
     -J "${timeline_log}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o /dev/null || {
-    echo "not ok" 1 - "parallel decoder timeline conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel decoder timeline conversion failed"
     exit 0
 }
 
@@ -39,21 +39,21 @@ while IFS= read -r line; do
 done < "${timeline_log}"
 
 test "${parse_start}" -gt 0 || {
-    echo "not ok" 1 - "parallel decoder timeline omitted parse starts"
+    printf '\n%s\n' "not ok 1 - parallel decoder timeline omitted parse starts"
     exit 0
 }
 test "${parse_start}" -eq "${parse_finish}" || {
-    echo "not ok" 1 - "parallel decoder parse spans are unpaired"
+    printf '\n%s\n' "not ok 1 - parallel decoder parse spans are unpaired"
     exit 0
 }
 test "${gather_start}" -gt 0 || {
-    echo "not ok" 1 - "parallel decoder timeline omitted gather starts"
+    printf '\n%s\n' "not ok 1 - parallel decoder timeline omitted gather starts"
     exit 0
 }
 test "${gather_start}" -eq "${gather_finish}" || {
-    echo "not ok" 1 - "parallel decoder gather spans are unpaired"
+    printf '\n%s\n' "not ok 1 - parallel decoder gather spans are unpaired"
     exit 0
 }
 
-echo "ok" 1 - "parallel decoder timeline spans are paired"
+printf '\n%s\n' "ok 1 - parallel decoder timeline spans are paired"
 exit 0

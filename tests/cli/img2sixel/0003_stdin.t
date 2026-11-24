@@ -25,9 +25,9 @@ printf "a\n" >"${input_file}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" - <"${input_file}" >"${output_file}" && :
 
 test ! -s "${output_file}" || {
-    echo "not ok" 1 - "img2sixel produced output for invalid stdin"
+    printf '\n%s\n' "not ok 1 - img2sixel produced output for invalid stdin"
     exit 0
 }
 
-echo "ok" 1 - "invalid stdin rejected without output"
+printf '\n%s\n' "ok 1 - invalid stdin rejected without output"
 exit 0

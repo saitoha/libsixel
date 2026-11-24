@@ -21,13 +21,13 @@ svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-explicit-size.svg"
 sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-explicit-size.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${sixel_path}" || {
-    echo "not ok" 1 - "librsvg explicit-size conversion failed"
+    printf '\n%s\n' "not ok 1 - librsvg explicit-size conversion failed"
     exit 0
 }
 
 IFS='"' read -r _ raster _ <"${sixel_path}" || :
 test -n "${raster-}" || {
-    echo "not ok" 1 - "failed to read sixel raster for explicit geometry"
+    printf '\n%s\n' "not ok 1 - failed to read sixel raster for explicit geometry"
     exit 0
 }
 raster="${raster%%#*}"
@@ -35,10 +35,10 @@ case "${raster}" in
     "1;1;13;7")
         ;;
     *)
-        echo "not ok" 1 - "explicit width/height geometry is not 13x7"
+        printf '\n%s\n' "not ok 1 - explicit width/height geometry is not 13x7"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg explicit width/height geometry is respected"
+printf '\n%s\n' "ok 1 - librsvg explicit width/height geometry is respected"
 exit 0

@@ -28,21 +28,21 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ pseudo-layer\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred dual-stroke pseudo-layer trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred dual-stroke pseudo-layer trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred FXPRI overlap trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred FXPRI overlap trace"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite enters deferred dual-stroke pseudo-layer path"
+printf '\n%s\n' "ok 1 - effects/stroke-composite enters deferred dual-stroke pseudo-layer path"
 exit 0

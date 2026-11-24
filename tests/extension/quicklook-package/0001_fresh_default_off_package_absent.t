@@ -18,13 +18,13 @@ set -v
 
 { test -f "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/config.h" &&
     test -x "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/converters/img2sixel"; } || {
-    echo "not ok 1 - Fresh default-off input is missing or incomplete"
+    printf '\n%s\n' "not ok 1 - Fresh default-off input is missing or incomplete"
     exit 0
 }
 test ! -e "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/quicklook-extension/package/SixelQuickLook.pkg" || {
-    echo "not ok 1 - Fresh default-off build has no package"
+    printf '\n%s\n' "not ok 1 - Fresh default-off build has no package"
     exit 0
 }
 
-echo "ok 1 - Fresh default-off build has no package."
+printf '\n%s\n' "ok 1 - Fresh default-off build has no package."
 exit 0

@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     clarans-residual-eval-order-determinism \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS residual eval-order determinism failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS residual eval-order determinism failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS residual eval-order determinism passed"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS residual eval-order determinism passed"
 exit 0

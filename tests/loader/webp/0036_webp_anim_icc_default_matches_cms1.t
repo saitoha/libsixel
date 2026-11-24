@@ -22,20 +22,20 @@ output_default="${ARTIFACT_LOCAL_DIR}/webp-anim-icc-default.sixel"
 output_cms1="${ARTIFACT_LOCAL_DIR}/webp-anim-icc-cms1.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp! -S "${input_webp_icc}" >"${output_default}" || {
-    echo "not ok" 1 - "libwebp default decode failed for animated ICC input"
+    printf '\n%s\n' "not ok 1 - libwebp default decode failed for animated ICC input"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! -S "${input_webp_icc}" >"${output_cms1}" || {
-    echo "not ok" 1 - "libwebp cms=1 decode failed for animated ICC input"
+    printf '\n%s\n' "not ok 1 - libwebp cms=1 decode failed for animated ICC input"
     exit 0
 }
 
 # Equivalent input/settings require identical output bytes.
 { test -s "${output_default}" && cmp -s "${output_default}" "${output_cms1}"; } || {
-    echo "not ok 1 - equivalent WebP output differs or is empty"
+    printf '\n%s\n' "not ok 1 - equivalent WebP output differs or is empty"
     exit 0
 }
 
-echo "ok" 1 - "libwebp default cms behavior matches explicit cms=1 for animated ICC input"
+printf '\n%s\n' "ok 1 - libwebp default cms behavior matches explicit cms=1 for animated ICC input"
 exit 0

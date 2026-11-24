@@ -16,16 +16,16 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:restarts=0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid center restarts unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid center restarts unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *restarts\ must\ be\ in\ range\ 1-32.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing center restarts range diagnostic"
+    printf '\n%s\n' "not ok 1 - missing center restarts range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "center restarts lower bound is rejected"
+printf '\n%s\n' "ok 1 - center restarts lower bound is rejected"
 exit 0

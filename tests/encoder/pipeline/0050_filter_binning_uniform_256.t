@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0041_filter_binning_uniform_256" || {
-    echo "not ok 1 - uniform-256 hard-grid contract"
+    printf '\n%s\n' "not ok 1 - uniform-256 hard-grid contract"
     exit 0
 }
 
-echo "ok 1 - uniform-256 hard-grid contract"
+printf '\n%s\n' "ok 1 - uniform-256 hard-grid contract"
 exit 0

@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/sierra3-gpu/0008_reject_negative_deadzone" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - reject negative deadzone"
+    printf '\n%s\n' "not ok 1 - reject negative deadzone"
     exit 0
 }
-echo "ok 1 - reject negative deadzone"
+printf '\n%s\n' "ok 1 - reject negative deadzone"
 exit 0

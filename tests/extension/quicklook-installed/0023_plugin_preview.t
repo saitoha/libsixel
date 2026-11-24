@@ -38,8 +38,8 @@ status=0
     'plugin:preview' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - PlugInKit installed instance matches preview"
+    printf '\n%s\n' "not ok 1 - PlugInKit installed instance matches preview"
     exit 0
 }
-echo "ok 1 - PlugInKit installed instance matches preview"
+printf '\n%s\n' "ok 1 - PlugInKit installed instance matches preview"
 exit 0

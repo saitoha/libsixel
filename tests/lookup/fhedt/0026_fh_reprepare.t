@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0016_fh_reprepare || {
-    echo "not ok 1 - fhedt reprepare"
+    printf '\n%s\n' "not ok 1 - fhedt reprepare"
     exit 0
 }
 
-echo "ok 1 - fhedt reprepare"
+printf '\n%s\n' "ok 1 - fhedt reprepare"
 exit 0

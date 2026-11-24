@@ -20,24 +20,24 @@ trace_log=$(set +xv; printf '\211PNG\r\n\032\n' | \
     SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable - \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "gd,builtin unexpectedly accepted PNG signature-only data"
+    printf '\n%s\n' "not ok 1 - gd,builtin unexpectedly accepted PNG signature-only data"
     exit 0
 }
 
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "gd failure code was not reported"
+    printf '\n%s\n' "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin loader was not attempted after gd failure"
+    printf '\n%s\n' "not ok 1 - builtin loader was not attempted after gd failure"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*"LSXLOAD1|event=try|loader=builtin|code=L_TRY"*LSXLOAD1\|event=fail\|loader=builtin\|code=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin loader failure code was not reported"
+    printf '\n%s\n' "not ok 1 - builtin loader failure code was not reported"
     exit 0
 }
 
-echo "ok" 1 - "PNG signature-only failure reaches builtin after gd"
+printf '\n%s\n' "ok 1 - PNG signature-only failure reaches builtin after gd"
 exit 0

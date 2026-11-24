@@ -19,16 +19,16 @@ planner_log=$(set +xv; SIXEL_PRECISION_POLICY=auto \
     --precision-policy=8bit -Wlinear -dnone -p16 \
     -o/dev/null "${input_image}" 2>&1) || status=$?
 test "${status}" -ne 0 || {
-    echo "not ok 1 - 8bit with a linear working space was accepted"
+    printf '\n%s\n' "not ok 1 - 8bit with a linear working space was accepted"
     exit 0
 }
 case "${planner_log}" in
     *'precision-policy=8bit requires the gamma working colorspace'*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - rejection did not name the working colorspace"
+    printf '\n%s\n' "not ok 1 - rejection did not name the working colorspace"
     exit 0
 }
 
-echo "ok 1 - 8bit rejects a linear working space"
+printf '\n%s\n' "ok 1 - 8bit rejects a linear working space"
 exit 0

@@ -14,26 +14,26 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - ColorSync curv rgb mixed generic"
+    printf '\n%s\n' "not ok 1 - ColorSync curv rgb mixed generic"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - native ColorSync did not apply"
+    printf '\n%s\n' "not ok 1 - native ColorSync did not apply"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) false ;; *) true ;; esac || {
-    echo "not ok 1 - builtin substituted for ColorSync"
+    printf '\n%s\n' "not ok 1 - builtin substituted for ColorSync"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=lcms2|"*) false ;; *) true ;; esac || {
-    echo "not ok 1 - Little CMS substituted for ColorSync"
+    printf '\n%s\n' "not ok 1 - Little CMS substituted for ColorSync"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=source-profile-adapter|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unexpected source preparation path"
+    printf '\n%s\n' "not ok 1 - unexpected source preparation path"
     exit 0
 }
-echo "ok 1 - ColorSync curv rgb mixed generic"
+printf '\n%s\n' "ok 1 - ColorSync curv rgb mixed generic"
 exit 0

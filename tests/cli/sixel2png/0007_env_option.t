@@ -18,25 +18,25 @@ out_opt="${ARTIFACT_LOCAL_DIR}/sixel2png_env_opt.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_DECODER_THREADING_POLICY=greedy --env SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     -i "${input_six}" -o "${out_env}" || {
-    echo "not ok" 1 - "reference environment decode failed"
+    printf '\n%s\n' "not ok 1 - reference environment decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -% SIXEL_DECODER_THREADING_POLICY=greedy -% SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 -% SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     -i "${input_six}" -o "${out_opt}" || {
-    echo "not ok" 1 - "-% decode failed"
+    printf '\n%s\n' "not ok 1 - -% decode failed"
     exit 0
 }
 
 cmp -s "${out_env}" "${out_opt}" || {
-    echo "not ok" 1 - "-% output differs from process environment"
+    printf '\n%s\n' "not ok 1 - -% output differs from process environment"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -% INVALID -i "${input_six}" > /dev/null && {
-    echo "not ok" 1 - "invalid -% argument should fail"
+    printf '\n%s\n' "not ok 1 - invalid -% argument should fail"
     exit 0
 }
 
-echo "ok" 1 - "invalid -% argument rejected"
+printf '\n%s\n' "ok 1 - invalid -% argument rejected"
 exit 0

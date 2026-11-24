@@ -15,10 +15,10 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -p 8 -h200 -fnorm -rlanczos2 -dnone \
         "${snake_jpg}" -o/dev/null || {
-    echo "not ok" 1 - "Lanczos2 scaling without diffusion fails"
+    printf '\n%s\n' "not ok 1 - Lanczos2 scaling without diffusion fails"
     exit 0
 }
 
-echo "ok" 1 - "Lanczos2 scaling without diffusion succeeds"
+printf '\n%s\n' "ok 1 - Lanczos2 scaling without diffusion succeeds"
 
 exit 0

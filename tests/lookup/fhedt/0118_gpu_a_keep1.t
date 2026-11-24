@@ -8,12 +8,12 @@ status=0
 SIXEL_LOOKUP_FHEDT_RESOLUTION=64 SIXEL_LOOKUP_FHEDT_REFINE=1 SIXEL_LOOKUP_FHEDT_USE_DIST2=0 SIXEL_LOOKUP_FHEDT_USE_CACHE=0 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
     fhedt/gpu_apply 4 1 33 || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - gpu a keep1"
+    printf '\n%s\n' "not ok 1 - gpu a keep1"
     exit 0
 }
-echo "ok 1 - gpu a keep1"
+printf '\n%s\n' "ok 1 - gpu a keep1"
 exit 0

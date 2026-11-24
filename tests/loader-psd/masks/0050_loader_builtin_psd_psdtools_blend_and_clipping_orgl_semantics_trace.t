@@ -31,20 +31,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "advanced-blending decode failed"
+    printf '\n%s\n' "not ok 1 - advanced-blending decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "advanced-blending missing diagnostic header line"
+    printf '\n%s\n' "not ok 1 - advanced-blending missing diagnostic header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "advanced-blending diagnostic header is malformed"
+        printf '\n%s\n' "not ok 1 - advanced-blending diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -52,7 +52,7 @@ esac
 case "${diag_line}" in
     *FX_ORGL_SEM*) ;;
     *)
-        echo "not ok" 1 - "advanced-blending diagnostic code FX_ORGL_SEM is missing"
+        printf '\n%s\n' "not ok 1 - advanced-blending diagnostic code FX_ORGL_SEM is missing"
         exit 0
         ;;
 esac
@@ -60,8 +60,8 @@ esac
 case "${diag_line}" in
     *FX_ORGL_INACTIVE_PARSE*) ;;
     *)
-        echo "not ok" 1 - \
-            "advanced-blending diagnostic code FX_ORGL_INACTIVE_PARSE is missing"
+        printf '\n%s\n' \
+            "not ok 1 - advanced-blending diagnostic code FX_ORGL_INACTIVE_PARSE is missing"
         exit 0
         ;;
 esac
@@ -69,7 +69,7 @@ esac
 case "${diag_line}" in
     *FX_IRGL_SEM*) ;;
     *)
-        echo "not ok" 1 - "advanced-blending diagnostic code FX_IRGL_SEM is missing"
+        printf '\n%s\n' "not ok 1 - advanced-blending diagnostic code FX_IRGL_SEM is missing"
         exit 0
         ;;
 esac
@@ -77,8 +77,8 @@ esac
 case "${diag_line}" in
     *FX_IRGL_INACTIVE_PARSE*) ;;
     *)
-        echo "not ok" 1 - \
-            "advanced-blending diagnostic code FX_IRGL_INACTIVE_PARSE is missing"
+        printf '\n%s\n' \
+            "not ok 1 - advanced-blending diagnostic code FX_IRGL_INACTIVE_PARSE is missing"
         exit 0
         ;;
 esac
@@ -86,8 +86,8 @@ esac
 case "${diag_line}" in
     *FX_BEVEL_LIGHT_SEM*) ;;
     *)
-        echo "not ok" 1 - \
-            "advanced-blending diagnostic code FX_BEVEL_LIGHT_SEM is missing"
+        printf '\n%s\n' \
+            "not ok 1 - advanced-blending diagnostic code FX_BEVEL_LIGHT_SEM is missing"
         exit 0
         ;;
 esac
@@ -95,12 +95,12 @@ esac
 case "${diag_line}" in
     *FX_EBBL_INACTIVE_PARSE*) ;;
     *)
-        echo "not ok" 1 - \
-            "advanced-blending diagnostic code FX_EBBL_INACTIVE_PARSE is missing"
+        printf '\n%s\n' \
+            "not ok 1 - advanced-blending diagnostic code FX_EBBL_INACTIVE_PARSE is missing"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "advanced-blending keeps psd diagnostic code contract"
+printf '\n%s\n' \
+    "ok 1 - advanced-blending keeps psd diagnostic code contract"
 exit 0

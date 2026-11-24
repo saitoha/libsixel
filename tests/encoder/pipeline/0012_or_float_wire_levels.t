@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder-core/0040_or_float_wire_levels || {
-    echo "not ok 1 - or float wire levels"
+    printf '\n%s\n' "not ok 1 - or float wire levels"
     exit 0
 }
-echo "ok 1 - or float wire levels"
+printf '\n%s\n' "ok 1 - or float wire levels"
 exit 0

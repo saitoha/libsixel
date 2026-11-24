@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0015_heckbert_ward >/dev/null || {
-    echo "not ok 1 - native Heckbert ward"
+    printf '\n%s\n' "not ok 1 - native Heckbert ward"
     exit 0
 }
 
-echo "ok 1 - native Heckbert ward"
+printf '\n%s\n' "ok 1 - native Heckbert ward"
 exit 0

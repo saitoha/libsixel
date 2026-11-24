@@ -17,9 +17,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fdat_sequence_gap.png" \
     -o/dev/null && {
-    echo "not ok" 1 - "APNG fdAT sequence gap unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - APNG fdAT sequence gap unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "APNG fdAT sequence gap is rejected"
+printf '\n%s\n' "ok 1 - APNG fdAT sequence gap is rejected"
 exit 0

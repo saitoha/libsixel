@@ -14,10 +14,10 @@ set -v
 snake_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bxterm16 "${snake_six}" -o/dev/null || {
-    echo "not ok" 1 - "xterm16 preset failed"
+    printf '\n%s\n' "not ok 1 - xterm16 preset failed"
     exit 0
 }
 
-echo "ok" 1 - "xterm16 preset re-encodes Sixel"
+printf '\n%s\n' "ok 1 - xterm16 preset re-encodes Sixel"
 
 exit 0

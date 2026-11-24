@@ -7,8 +7,8 @@ set -v
 
 SIXEL_LOG_PATH='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     writer/png/0058_iccp_short_write_cleanup || {
-    echo "not ok 1 - short iCCP write releases the profile and stream"
+    printf '\n%s\n' "not ok 1 - short iCCP write releases the profile and stream"
     exit 0
 }
-echo "ok 1 - short iCCP write releases the profile and stream"
+printf '\n%s\n' "ok 1 - short iCCP write releases the profile and stream"
 exit 0

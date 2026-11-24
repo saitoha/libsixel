@@ -19,7 +19,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \
     -d bluenoise:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_zero}" "${input_image}" || {
-    echo "not ok" 1 - "float32 bluenoise zero gradient_factor baseline failed"
+    printf '\n%s\n' "not ok 1 - float32 bluenoise zero gradient_factor baseline failed"
     exit 0
 }
 
@@ -27,14 +27,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=1 \
     -d bluenoise:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_grad}" "${input_image}" || {
-    echo "not ok" 1 - "float32 bluenoise gradient_factor run failed"
+    printf '\n%s\n' "not ok 1 - float32 bluenoise gradient_factor run failed"
     exit 0
 }
 
 cmp -s "${output_zero}" "${output_grad}" && {
-    echo "not ok" 1 - "float32 bluenoise gradient_factor produced no output change"
+    printf '\n%s\n' "not ok 1 - float32 bluenoise gradient_factor produced no output change"
     exit 0
 }
 
-echo "ok" 1 - "float32 bluenoise gradient_factor changes output"
+printf '\n%s\n' "ok 1 - float32 bluenoise gradient_factor changes output"
 exit 0

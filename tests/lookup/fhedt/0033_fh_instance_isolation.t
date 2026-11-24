@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0023_fh_instance_isolation || {
-    echo "not ok 1 - fhedt instance isolation"
+    printf '\n%s\n' "not ok 1 - fhedt instance isolation"
     exit 0
 }
 
-echo "ok 1 - fhedt instance isolation"
+printf '\n%s\n' "ok 1 - fhedt instance isolation"
 exit 0

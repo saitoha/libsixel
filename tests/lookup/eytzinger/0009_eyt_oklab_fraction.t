@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0008_eyt_oklab_fraction || {
-    echo "not ok 1 - eytzinger oklab fraction"
+    printf '\n%s\n' "not ok 1 - eytzinger oklab fraction"
     exit 0
 }
 
-echo "ok 1 - eytzinger oklab fraction"
+printf '\n%s\n' "ok 1 - eytzinger oklab fraction"
 exit 0

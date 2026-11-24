@@ -17,9 +17,9 @@ selective_blur_full=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
 selective_blur_short=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -ds:T24 \
     <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${selective_blur_full}" = "${selective_blur_short}" || {
-    echo "not ok" 1 - "compact selective_blur form changed output"
+    printf '\n%s\n' "not ok 1 - compact selective_blur form changed output"
     exit 0
 }
 
-echo "ok" 1 - "compact selective_blur form matches full spelling"
+printf '\n%s\n' "ok 1 - compact selective_blur form matches full spelling"
 exit 0

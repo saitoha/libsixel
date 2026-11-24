@@ -18,13 +18,13 @@ P3
 51 51 51
 PNM
 ) || {
-    echo "not ok 1 - uniform gray 51 with 5bit"
+    printf '\n%s\n' "not ok 1 - uniform gray 51 with 5bit"
     exit 0
 }
 case "$sixel" in *'#0;2;20;20;20#0'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - gray 51 must emit 20 percent with 5bit"
+    printf '\n%s\n' "not ok 1 - gray 51 must emit 20 percent with 5bit"
     exit 0
 }
 
-echo "ok 1 - gray 51 emits 20 percent with 5bit"
+printf '\n%s\n' "ok 1 - gray 51 emits 20 percent with 5bit"
 exit 0

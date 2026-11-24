@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0047_selection_full_domain" || {
-    echo "not ok 1 - selection full domain"
+    printf '\n%s\n' "not ok 1 - selection full domain"
     exit 0
 }
-echo "ok 1 - selection full domain"
+printf '\n%s\n' "ok 1 - selection full domain"
 exit 0

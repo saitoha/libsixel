@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0080_multi_pass_force_gpu" || {
-    echo "not ok 1 - force gpu"
+    printf '\n%s\n' "not ok 1 - force gpu"
     exit 0
 }
 
-echo "ok 1 - force gpu"
+printf '\n%s\n' "ok 1 - force gpu"
 exit 0

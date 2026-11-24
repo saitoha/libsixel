@@ -10,13 +10,13 @@ actual=$(sh "$TOP_SRCDIR/tools/embed-metal.sh" - - <<'METAL'
 "a\b??/"
 METAL
 ) || {
-    echo 'not ok 1 - Metal literal generation failed'
+    printf '\n%s\n' 'not ok 1 - Metal literal generation failed'
     exit 0
 }
 test "${actual##*
 }" = '("\"a\\b\?\?/\"\n"),' || {
-    echo 'not ok 1 - Metal spelling is not preserved by C escaping'
+    printf '\n%s\n' 'not ok 1 - Metal spelling is not preserved by C escaping'
     exit 0
 }
-echo 'ok 1 - Metal spelling is preserved by C escaping'
+printf '\n%s\n' 'ok 1 - Metal spelling is preserved by C escaping'
 exit 0

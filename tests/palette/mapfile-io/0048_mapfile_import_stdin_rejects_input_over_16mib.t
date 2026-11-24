@@ -20,10 +20,10 @@ gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-over-16mib.gpl"
 (set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m gpl:- "${snake_png}" \
           -o/dev/null <"${gpl_palette}" >/dev/null 2>&1) && {
-    echo "not ok" 1 - "stdin mapfile over 16 MiB unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - stdin mapfile over 16 MiB unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "stdin mapfile over 16 MiB is rejected"
+printf '\n%s\n' "ok 1 - stdin mapfile over 16 MiB is rejected"
 
 exit 0

@@ -18,14 +18,14 @@ trace=$(
         "${ARTIFACT_LOCAL_DIR}/animation.six" 2>&1
 ) || {
     printf '%s\n' "${trace}" >&2
-    echo "not ok 1 - builtin pipeline numeric output"
+    printf '\n%s\n' "not ok 1 - builtin pipeline numeric output"
     exit 0
 }
 
 case "${trace}" in *"event=callback_handoff_decide handoff=pipeline"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - APNG uses frame pipeline"
+    printf '\n%s\n' "not ok 1 - APNG uses frame pipeline"
     exit 0
 }
 
-echo "ok 1 - builtin pipeline numeric output"
+printf '\n%s\n' "ok 1 - builtin pipeline numeric output"
 exit 0

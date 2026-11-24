@@ -23,14 +23,14 @@ scale_has_keycolor=0
 scale_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - scaled pal8 transparent render failed"
+    printf '\n%s\n' "not ok 1 - scaled pal8 transparent render failed"
     exit 0
 }
 
 scale_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}") || {
-    echo "not ok 1 - scaled pal8 transparent sixel output failed"
+    printf '\n%s\n' "not ok 1 - scaled pal8 transparent sixel output failed"
     exit 0
 }
 
@@ -47,14 +47,14 @@ case "${scale_out}" in
 esac
 
 test "${scale_rgb}" = 1 || {
-    echo "not ok 1 - scale path did not promote to rgb888 work format"
+    printf '\n%s\n' "not ok 1 - scale path did not promote to rgb888 work format"
     exit 0
 }
 
 test "${scale_has_keycolor}" = 1 || {
-    echo "not ok 1 - scaled output lost transparent keycolor header"
+    printf '\n%s\n' "not ok 1 - scaled output lost transparent keycolor header"
     exit 0
 }
 
-echo "ok 1 - scale geometry promotes pal8 transparent input to rgb+mask path"
+printf '\n%s\n' "ok 1 - scale geometry promotes pal8 transparent input to rgb+mask path"
 exit 0

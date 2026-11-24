@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threading-policy=greedy:global_budget=2 
     -J "${timeline_log}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o /dev/null || {
-    echo "not ok" 1 - "parallel decoder timeline conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel decoder timeline conversion failed"
     exit 0
 }
 
@@ -41,21 +41,21 @@ while IFS= read -r line; do
 done < "${timeline_log}"
 
 test "${gather_ready}" -eq 2 || {
-    echo "not ok" 1 - "not every gather worker reached the barrier"
+    printf '\n%s\n' "not ok 1 - not every gather worker reached the barrier"
     exit 0
 }
 test "${gather_started_early}" -eq 0 || {
-    echo "not ok" 1 - "gather started before every worker was ready"
+    printf '\n%s\n' "not ok 1 - gather started before every worker was ready"
     exit 0
 }
 test "${gather_start}" -eq 2 || {
-    echo "not ok" 1 - "not every gather worker started"
+    printf '\n%s\n' "not ok 1 - not every gather worker started"
     exit 0
 }
 test "${gather_finish}" -eq 2 || {
-    echo "not ok" 1 - "not every gather worker finished"
+    printf '\n%s\n' "not ok 1 - not every gather worker finished"
     exit 0
 }
 
-echo "ok" 1 - "parallel gather workers cross one release barrier"
+printf '\n%s\n' "ok 1 - parallel gather workers cross one release barrier"
 exit 0

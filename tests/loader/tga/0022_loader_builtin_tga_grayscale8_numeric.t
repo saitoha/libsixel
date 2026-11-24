@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0101_loader_builtin_tga_grayscale8_numeric" || {
-    echo "not ok 1 - TGA type-3 exact grayscale expansion"
+    printf '\n%s\n' "not ok 1 - TGA type-3 exact grayscale expansion"
     exit 0
 }
 
-echo "ok 1 - TGA type-3 exact grayscale expansion"
+printf '\n%s\n' "ok 1 - TGA type-3 exact grayscale expansion"
 exit 0

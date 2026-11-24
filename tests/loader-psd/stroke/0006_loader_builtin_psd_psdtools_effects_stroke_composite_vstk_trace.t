@@ -28,19 +28,19 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ parsed\ vstk\ vector\ stroke\ style\ payload**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite did not parse vstk payload"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite did not parse vstk payload"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ suppressing\ stroke\ approximation\ on\ vector-mask\ non-pixel\ fill\ layer**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly suppressed stroke approximation"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly suppressed stroke approximation"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps vstk parse and no-suppress trace contract"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps vstk parse and no-suppress trace contract"
 exit 0

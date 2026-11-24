@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "icc/0008_icc_builtin_d2b_b2d_legacy_lut" 1>&2 || {
-    echo "not ok" 1 - "icc builtin D2B0/B2D0 legacy LUT routing"
+    printf '\n%s\n' "not ok 1 - icc builtin D2B0/B2D0 legacy LUT routing"
     exit 0
 }
 
-echo "ok" 1 - "icc builtin D2B0/B2D0 legacy LUT routing"
+printf '\n%s\n' "ok 1 - icc builtin D2B0/B2D0 legacy LUT routing"
 exit 0

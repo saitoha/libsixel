@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0010_loader_gdk_pixbuf_pixelformat" "rgba_opaque_bg_rgb888" || {
-    echo "not ok 1 - gdk-pixbuf2 rgba_opaque_bg_rgb888"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 rgba_opaque_bg_rgb888"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 rgba_opaque_bg_rgb888"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 rgba_opaque_bg_rgb888"
 exit 0

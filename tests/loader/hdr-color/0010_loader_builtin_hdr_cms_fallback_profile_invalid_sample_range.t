@@ -19,7 +19,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/builtin-hdr-cms-fallback-invalid.six"
 
 SIXEL_LOADER_HDR_FALLBACK_PROFILE=invalid-profile \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! "${input_hdr}" >"${output_sixel}" || {
-    echo "not ok" 1 - "builtin loader failed to decode HDR with invalid fallback profile"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode HDR with invalid fallback profile"
     exit 0
 }
 
@@ -27,9 +27,9 @@ SIXEL_LOADER_HDR_FALLBACK_PROFILE=invalid-profile \
 # cannot be evidence that the image differs from a solid black/white frame.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_sample_range \
     "${output_sixel}" 1 || {
-    echo "not ok 1 - HDR output lost its RGB sample range"
+    printf '\n%s\n' "not ok 1 - HDR output lost its RGB sample range"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes HDR with invalid fallback profile and avoids black output collapse"
+printf '\n%s\n' "ok 1 - builtin loader decodes HDR with invalid fallback profile and avoids black output collapse"
 exit 0

@@ -27,12 +27,12 @@ env_output="${artifact_dir}/0074-quantize-center-rare_keep-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 64 "-Qcenter:R8" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "center:rare_keep short conversion failed"
+    printf '\n%s\n' "not ok 1 - center:rare_keep short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override\|value=8**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "rare_keep short value was not stored"
+    printf '\n%s\n' "not ok 1 - rare_keep short value was not stored"
     exit 0
 }
 
@@ -40,12 +40,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_RARE_KEEP=8" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "center:rare_keep env conversion failed"
+    printf '\n%s\n' "not ok 1 - center:rare_keep env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override\|value=8**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "rare_keep environment value was not stored"
+    printf '\n%s\n' "not ok 1 - rare_keep environment value was not stored"
     exit 0
 }
 
@@ -53,12 +53,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_RARE_KEEP=-0" \
     -p 64 "-Qcenter" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "center:rare_keep signed-zero conversion failed"
+    printf '\n%s\n' "not ok 1 - center:rare_keep signed-zero conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1\|binding=quantize_model_kcenter_rare_keep,quantize_model_kcenter_rare_keep_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "center rare_keep did not preserve unsigned-long parsing"
+    printf '\n%s\n' "not ok 1 - center rare_keep did not preserve unsigned-long parsing"
     exit 0
 }
 
@@ -66,26 +66,26 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_RARE_KEEP=4294967296" \
     -p 64 "-Qcenter" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "center:rare_keep width conversion failed"
+    printf '\n%s\n' "not ok 1 - center:rare_keep width conversion failed"
     exit 0
 }
 
 case "${width_trace}" in *LSXSUB1\|*key=rare_keep\|stored=1*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "center rare_keep accepted an over-width value"
+    printf '\n%s\n' "not ok 1 - center rare_keep accepted an over-width value"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "center:rare_keep short and env output differ"
+    printf '\n%s\n' "not ok 1 - center:rare_keep short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "center:rare_keep preserves image output"
+printf '\n%s\n' "ok 1 - center:rare_keep preserves image output"
 exit 0

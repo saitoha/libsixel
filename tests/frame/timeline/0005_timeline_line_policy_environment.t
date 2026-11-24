@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0005_timeline_line_policy_environment" || {
-    echo "not ok 1 - timeline line policy environment parsing changed"
+    printf '\n%s\n' "not ok 1 - timeline line policy environment parsing changed"
     exit 0
 }
 
-echo "ok 1 - timeline line policy environment parsing is stable"
+printf '\n%s\n' "ok 1 - timeline line policy environment parsing is stable"
 exit 0

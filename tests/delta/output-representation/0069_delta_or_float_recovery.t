@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0212_delta_or_float_recovery || {
-    echo "not ok 1 - or float recovery"
+    printf '\n%s\n' "not ok 1 - or float recovery"
     exit 0
 }
-echo "ok 1 - or float recovery"
+printf '\n%s\n' "ok 1 - or float recovery"
 exit 0

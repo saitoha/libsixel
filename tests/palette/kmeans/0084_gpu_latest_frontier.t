@@ -12,12 +12,12 @@ run_status=0
 SIXEL_GPU_POLICY=force SIXEL_PALETTE_KMEANS_BACKEND=gpu \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "gpu-kmeans/0084_gpu_latest_frontier" || run_status=$?
 test "$run_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$run_status" -eq 0 || {
-    echo "not ok 1 - gpu latest frontier"
+    printf '\n%s\n' "not ok 1 - gpu latest frontier"
     exit 0
 }
-echo "ok 1 - gpu latest frontier"
+printf '\n%s\n' "ok 1 - gpu latest frontier"
 exit 0

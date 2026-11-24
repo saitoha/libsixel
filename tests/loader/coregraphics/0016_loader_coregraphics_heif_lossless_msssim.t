@@ -26,16 +26,16 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-heif-lossless-64.heif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_heif_lossless.six" || {
-    echo "not ok" 1 - "coregraphics HEIF decode failed"
+    printf '\n%s\n' "not ok 1 - coregraphics HEIF decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/loader/quality/cbfca59f-snake_64.ppm" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_heif_lossless.six" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics HEIF decode preserves quality"
+printf '\n%s\n' "ok 1 - coregraphics HEIF decode preserves quality"
 exit 0

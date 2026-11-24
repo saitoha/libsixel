@@ -16,12 +16,12 @@ expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -g -L builtin! -ldisable -e -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "monochrome GIF baseline encode failed"
+    printf '\n%s\n' "not ok 1 - monochrome GIF baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "monochrome GIF output is empty"
+    printf '\n%s\n' "not ok 1 - monochrome GIF output is empty"
     exit 0
 }
 
@@ -29,14 +29,14 @@ actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -g -L builtin! -ldisable -X oklab -e -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "monochrome GIF encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - monochrome GIF encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "monochrome GIF output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - monochrome GIF output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "monochrome GIF output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - monochrome GIF output ignores clustering colorspace"
 exit 0

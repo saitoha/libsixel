@@ -29,18 +29,18 @@ actual_palette=$(
         --gpu-policy=off -Wgamma -Ugamma -m "${mapfile_image}" \
         -M pal-jasc:- -o/dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "PNM image mapfile conversion failed"
+    printf '\n%s\n' "not ok 1 - PNM image mapfile conversion failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "PNM mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PNM mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PNM image constructed an unexpected map palette"
+    printf '\n%s\n' "not ok 1 - PNM image constructed an unexpected map palette"
     exit 0
 }
 
-echo "ok" 1 - "PNM image constructs a deterministic mapfile palette"
+printf '\n%s\n' "ok 1 - PNM image constructs a deterministic mapfile palette"
 exit 0

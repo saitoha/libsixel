@@ -22,21 +22,21 @@ output_cms1="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms1.sixel"
 output_cms0="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms0.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
-    echo "not ok" 1 - "libwebp lossy ICC decode failed (cms=1)"
+    printf '\n%s\n' "not ok 1 - libwebp lossy ICC decode failed (cms=1)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_cms0}" || {
-    echo "not ok" 1 - "libwebp lossy ICC decode failed (cms=0)"
+    printf '\n%s\n' "not ok 1 - libwebp lossy ICC decode failed (cms=0)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "lossy ICC cms=1 and cms=0 outputs were not distinguishable: ${lsqa_msg-}"
+    printf '\n%s\n' "not ok 1 - lossy ICC cms=1 and cms=0 outputs were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "lossy ICC input changes output when cms=1 is enabled"
+printf '\n%s\n' "ok 1 - lossy ICC input changes output when cms=1 is enabled"
 exit 0

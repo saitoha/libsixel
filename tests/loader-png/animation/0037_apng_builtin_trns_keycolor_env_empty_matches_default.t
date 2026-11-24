@@ -23,21 +23,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYC
               -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_empty}" || {
-    echo "not ok 1 - builtin APNG empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR render failed"
+    printf '\n%s\n' "not ok 1 - builtin APNG empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR render failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - builtin APNG default render failed"
+    printf '\n%s\n' "not ok 1 - builtin APNG default render failed"
     exit 0
 }
 
 cmp -s "${out_empty}" "${out_default}" || {
-    echo "not ok 1 - builtin APNG empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR unexpectedly differs from default"
+    printf '\n%s\n' "not ok 1 - builtin APNG empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR unexpectedly differs from default"
     exit 0
 }
 
-echo "ok 1 - builtin APNG empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR matches default"
+printf '\n%s\n' "ok 1 - builtin APNG empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR matches default"
 exit 0

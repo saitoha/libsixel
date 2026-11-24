@@ -28,15 +28,15 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Akeep -Bblack -w8 -h4 -rnearest \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-p3-16-rgba.png" 2>&1) || {
     echo "$trace" >&2
-    echo "not ok 1 - libpng CLI conversion failed"
+    printf '\n%s\n' "not ok 1 - libpng CLI conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0036_cli_color_wire \
     libpng "$trace" || {
-    echo "not ok 1 - libpng CLI wire values or structure"
+    printf '\n%s\n' "not ok 1 - libpng CLI wire values or structure"
     exit 0
 }
 
-echo "ok 1 - libpng CLI independent RGB101 values and structure"
+printf '\n%s\n' "ok 1 - libpng CLI independent RGB101 values and structure"
 exit 0

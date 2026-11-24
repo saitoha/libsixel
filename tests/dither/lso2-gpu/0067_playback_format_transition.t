@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "lso2_gpu/playback_format_transition" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU playback unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU playback unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - playback format transition'
+    printf '\n%s\n' 'not ok 1 - playback format transition'
     exit 0
 }
-echo 'ok 1 - playback format transition'
+printf '\n%s\n' 'ok 1 - playback format transition'
 exit 0

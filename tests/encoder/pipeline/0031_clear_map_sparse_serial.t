@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0059_clear_map_sparse_serial" || {
-    echo "not ok 1 - clear map sparse serial"
+    printf '\n%s\n' "not ok 1 - clear map sparse serial"
     exit 0
 }
 
-echo "ok 1 - clear map sparse serial"
+printf '\n%s\n' "ok 1 - clear map sparse serial"
 exit 0

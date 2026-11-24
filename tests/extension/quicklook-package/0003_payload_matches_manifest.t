@@ -12,9 +12,9 @@ echo "1..1"
 set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" verify "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Payload" "${TOP_BUILDDIR}/quicklook-extension/package/payload-manifest.json" || {
-    echo "not ok 1 - Expanded payload differs from manifest"
+    printf '\n%s\n' "not ok 1 - Expanded payload differs from manifest"
     exit 0
 }
 
-echo "ok 1 - Expanded package payload matches the final manifest."
+printf '\n%s\n' "ok 1 - Expanded package payload matches the final manifest."
 exit 0

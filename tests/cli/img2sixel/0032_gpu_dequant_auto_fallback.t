@@ -19,20 +19,20 @@ cpu_output="${ARTIFACT_LOCAL_DIR}/0032-gpu-cpu-control-$$.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -d lso_undither:Vlight \
     -G auto:D4294967295 <"${input_image}" >"${auto_output}" || {
-    echo "not ok 1 - unavailable automatic GPU conversion failed"
+    printf '\n%s\n' "not ok 1 - unavailable automatic GPU conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -d lso_undither:Vlight \
     -G off <"${input_image}" >"${cpu_output}" || {
-    echo "not ok 1 - CPU control conversion failed"
+    printf '\n%s\n' "not ok 1 - CPU control conversion failed"
     exit 0
 }
 
 cmp -s "${auto_output}" "${cpu_output}" || {
-    echo "not ok 1 - automatic GPU fallback differs from CPU output"
+    printf '\n%s\n' "not ok 1 - automatic GPU fallback differs from CPU output"
     exit 0
 }
 
-echo "ok 1 - unavailable automatic GPU dequantization falls back to CPU"
+printf '\n%s\n' "ok 1 - unavailable automatic GPU dequantization falls back to CPU"
 exit 0

@@ -30,34 +30,34 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred offscreen-group commit trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred offscreen-group commit trace"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: compositing deferred offscreen clipped group buffer to canvas"*builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite duplicated deferred offscreen-group commit trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite duplicated deferred offscreen-group commit trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred stroke apply trace before commit"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred stroke apply trace before commit"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: applying deferred stroke on clipped group"*builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite did not commit offscreen group after deferred stroke"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite did not commit offscreen group after deferred stroke"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps one offscreen-group commit per deferred pass"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps one offscreen-group commit per deferred pass"
 exit 0

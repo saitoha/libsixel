@@ -21,7 +21,7 @@ pipeline_log=$(
                   --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
                   --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6 \
                   -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" 2>&1) || {
-    echo "not ok" 1 - "override bands/queue/mode run failed"
+    printf '\n%s\n' "not ok 1 - override bands/queue/mode run failed"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
@@ -29,15 +29,15 @@ printf '%s' "${pipeline_log}" >&2
 case "${pipeline_log}" in
     *"bands="*) ;;
     *)
-        echo "not ok" 1 - "override bands/queue/mode"
+        printf '\n%s\n' "not ok 1 - override bands/queue/mode"
         exit 0
         ;;
 esac
 
 test -n "${pipeline_log}" || {
-    echo "not ok" 1 - "override bands/queue/mode"
+    printf '\n%s\n' "not ok 1 - override bands/queue/mode"
     exit 0
 }
 
-echo "ok" 1 - "override bands/queue/mode"
+printf '\n%s\n' "ok 1 - override bands/queue/mode"
 exit 0

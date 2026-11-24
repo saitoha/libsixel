@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/carry/0022_carry_keep_lookup_incoming" || {
-    echo "not ok 1 - keep_lookup_incoming"
+    printf '\n%s\n' "not ok 1 - keep_lookup_incoming"
     exit 0
 }
-echo "ok 1 - keep_lookup_incoming"
+printf '\n%s\n' "ok 1 - keep_lookup_incoming"
 exit 0

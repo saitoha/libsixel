@@ -38,50 +38,50 @@ set -- --env SIXEL_CLIPBOARD_BACKEND=file \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_clipboard_dir}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none "$@" "${sixel_src}" >"${sixel_tmp}" || {
-    echo "not ok" 1 - "failed to prepare sixel input"
+    printf '\n%s\n' "not ok 1 - failed to prepare sixel input"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i "${sixel_tmp}" -o png:clipboard: || {
-    echo "not ok" 1 - "failed to write PNG into fake clipboard"
+    printf '\n%s\n' "not ok 1 - failed to write PNG into fake clipboard"
     exit 0
 }
 
 test -s "${fake_png_slot}" || {
-    echo "not ok" 1 - "fake clipboard PNG slot missing"
+    printf '\n%s\n' "not ok 1 - fake clipboard PNG slot missing"
     exit 0
 }
 
 png_signature_cksum=$(dd if="${fake_png_slot}" bs=1 count=8 2>/dev/null | "${CKSUM:-cksum}")
 test "${png_signature_cksum}" = "4074750897 8" || {
-    echo "not ok" 1 - "fake clipboard PNG slot has invalid signature"
+    printf '\n%s\n' "not ok 1 - fake clipboard PNG slot has invalid signature"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none "$@" -o clipboard: clipboard: || {
-    echo "not ok" 1 - "failed to read/write fake clipboard SIXEL payload"
+    printf '\n%s\n' "not ok 1 - failed to read/write fake clipboard SIXEL payload"
     exit 0
 }
 
 test -s "${fake_text_slot}" || {
-    echo "not ok" 1 - "fake clipboard text slot missing"
+    printf '\n%s\n' "not ok 1 - fake clipboard text slot missing"
     exit 0
 }
 
 IFS=P read -r text_prefix _ < "${fake_text_slot}" || true
 text_prefix_cksum=$(printf "%sP" "${text_prefix}" | "${CKSUM:-cksum}")
 test "${text_prefix_cksum}" = "3058461199 2" || {
-    echo "not ok" 1 - "fake clipboard text slot is not SIXEL text"
+    printf '\n%s\n' "not ok 1 - fake clipboard text slot is not SIXEL text"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i clipboard: -o "${roundtrip_png}" || {
-    echo "not ok" 1 - "failed to decode fake clipboard payload"
+    printf '\n%s\n' "not ok 1 - failed to decode fake clipboard payload"
     exit 0
 }
 
 test -s "${roundtrip_png}" || {
-    echo "not ok" 1 - "round-trip PNG missing"
+    printf '\n%s\n' "not ok 1 - round-trip PNG missing"
     exit 0
 }
 
@@ -90,18 +90,18 @@ test -s "${roundtrip_png}" || {
 # transport differs, so the decoded RGB samples must match exactly.
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${sixel_tmp}" \
     -o "${reference_png}" || {
-    echo "not ok 1 - file reference PNG conversion failed"
+    printf '\n%s\n' "not ok 1 - file reference PNG conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none "${reference_png}" \
     >"${reference_sixel}" || {
-    echo "not ok 1 - file reference SIXEL conversion failed"
+    printf '\n%s\n' "not ok 1 - file reference SIXEL conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_sixel}" "${roundtrip_png}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - clipboard transport changed decoded RGB samples"
+    printf '\n%s\n' "not ok 1 - clipboard transport changed decoded RGB samples"
     exit 0
 }
 
-echo "ok" 1 - "fake clipboard backend round-trip succeeded"
+printf '\n%s\n' "ok 1 - fake clipboard backend round-trip succeeded"

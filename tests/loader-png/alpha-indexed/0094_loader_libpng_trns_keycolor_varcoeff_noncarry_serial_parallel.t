@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_
               -Llibpng:cms_engine=none! \
               -d lso2:scan=raster \
               "${input_png}" >"${output_six}" || {
-    echo "not ok 1 - lso2 serial render failed"
+    printf '\n%s\n' "not ok 1 - lso2 serial render failed"
     exit 0
 }
 
@@ -33,10 +33,10 @@ output_six_text=""
 IFS= read -r output_six_text < "${output_six}" || test -n "${output_six_text}"
 case "${output_six_text}" in
     *"$(printf '\033')P0;1q"*)
-        echo "ok 1 - lso2 serial keeps keycolor header"
+        printf '\n%s\n' "ok 1 - lso2 serial keeps keycolor header"
         ;;
     *)
-        echo "not ok 1 - lso2 serial lost keycolor header"
+        printf '\n%s\n' "not ok 1 - lso2 serial lost keycolor header"
         ;;
 esac
 

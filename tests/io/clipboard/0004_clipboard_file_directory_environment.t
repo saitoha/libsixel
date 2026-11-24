@@ -20,11 +20,11 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${clipboard_dir}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o png:clipboard: || {
-    echo "not ok" 1 - "file clipboard directory was not used"
+    printf '\n%s\n' "not ok 1 - file clipboard directory was not used"
     exit 0
 }
 test -s "${clipboard_dir}/image.bin" || {
-    echo "not ok" 1 - "file clipboard directory lacks its image slot"
+    printf '\n%s\n' "not ok 1 - file clipboard directory lacks its image slot"
     exit 0
 }
 
@@ -33,9 +33,9 @@ test -s "${clipboard_dir}/image.bin" || {
     --env SIXEL_CLIPBOARD_FILE_DIR= \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o png:clipboard: >/dev/null 2>&1 || {
-    echo "not ok" 1 - "empty file clipboard directory was accepted"
+    printf '\n%s\n' "not ok 1 - empty file clipboard directory was accepted"
     exit 0
 }
 
-echo "ok" 1 - "file clipboard directory preserves populated and empty behavior"
+printf '\n%s\n' "ok 1 - file clipboard directory preserves populated and empty behavior"
 exit 0

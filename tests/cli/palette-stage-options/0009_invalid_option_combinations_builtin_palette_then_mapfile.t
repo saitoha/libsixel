@@ -22,17 +22,17 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "unexpected success: built-in palette conflicts with mapfile"
+    printf '\n%s\n' "not ok 1 - unexpected success: built-in palette conflicts with mapfile"
     exit 0
 }
 
 case "${msg}" in
 *"option -m, --mapfile conflicts with -b, --builtin-palette."*) ;;
 *)
-    echo "not ok" 1 - "missing built-in palette and mapfile conflict diagnostic"
+    printf '\n%s\n' "not ok 1 - missing built-in palette and mapfile conflict diagnostic"
     exit 0
     ;;
 esac
 
-echo "ok" 1 - "invalid option combination rejected"
+printf '\n%s\n' "ok 1 - invalid option combination rejected"
 exit 0

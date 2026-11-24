@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_policy/bucket_none_exact >/dev/null || {
-    echo "not ok 1 - bucket_none_exact"
+    printf '\n%s\n' "not ok 1 - bucket_none_exact"
     exit 0
 }
 
-echo "ok 1 - bucket_none_exact"
+printf '\n%s\n' "ok 1 - bucket_none_exact"
 exit 0

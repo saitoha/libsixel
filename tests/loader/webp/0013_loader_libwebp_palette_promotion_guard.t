@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0019_loader_libwebp_palette_promotion_guard" || {
-    echo "not ok 1 - loader/0019_loader_libwebp_palette_promotion_guard"
+    printf '\n%s\n' "not ok 1 - loader/0019_loader_libwebp_palette_promotion_guard"
     exit 0
 }
 
-echo "ok 1 - loader/0019_loader_libwebp_palette_promotion_guard"
+printf '\n%s\n' "ok 1 - loader/0019_loader_libwebp_palette_promotion_guard"
 exit 0

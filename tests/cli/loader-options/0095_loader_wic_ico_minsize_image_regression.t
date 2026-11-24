@@ -34,12 +34,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lwic:I2147483647!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "wic:ico_minsize short conversion failed"
+    printf '\n%s\n' "not ok 1 - wic:ico_minsize short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=ico_minsize\|stored=1\|binding=wic_ico_minsize\|value=2147483647**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "ico_minsize short value was not stored"
+    printf '\n%s\n' "not ok 1 - ico_minsize short value was not stored"
     exit 0
 }
 
@@ -47,12 +47,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_WIC_ICO_MINSIZE=2147483647" "-Lwic!" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "wic:ico_minsize env conversion failed"
+    printf '\n%s\n' "not ok 1 - wic:ico_minsize env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=ico_minsize\|stored=1\|binding=wic_ico_minsize\|value=2147483647**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "ico_minsize environment value was not stored"
+    printf '\n%s\n' "not ok 1 - ico_minsize environment value was not stored"
     exit 0
 }
 
@@ -60,26 +60,26 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_WIC_ICO_MINSIZE=2147483648" "-Lwic!" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "wic:ico_minsize upper conversion failed"
+    printf '\n%s\n' "not ok 1 - wic:ico_minsize upper conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=ico_minsize\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "ico_minsize accepted a value above INT_MAX"
+    printf '\n%s\n' "not ok 1 - ico_minsize accepted a value above INT_MAX"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "wic:ico_minsize short and env output differ"
+    printf '\n%s\n' "not ok 1 - wic:ico_minsize short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "wic:ico_minsize preserves image output"
+printf '\n%s\n' "ok 1 - wic:ico_minsize preserves image output"
 exit 0

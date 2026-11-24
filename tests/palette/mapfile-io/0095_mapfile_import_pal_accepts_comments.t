@@ -36,18 +36,18 @@ JASC-PAL
 # after colors
 PAL
 ) || {
-    echo "not ok" 1 - "JASC PAL comments were rejected"
+    printf '\n%s\n' "not ok 1 - JASC PAL comments were rejected"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "JASC PAL output normalization failed"
+    printf '\n%s\n' "not ok 1 - JASC PAL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "JASC PAL comments changed imported entries"
+    printf '\n%s\n' "not ok 1 - JASC PAL comments changed imported entries"
     exit 0
 }
 
-echo "ok" 1 - "JASC PAL comment lines are ignored"
+printf '\n%s\n' "ok 1 - JASC PAL comment lines are ignored"
 exit 0

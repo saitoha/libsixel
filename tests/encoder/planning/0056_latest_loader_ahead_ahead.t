@@ -15,11 +15,11 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0075_latest_emit_priority_loans available || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - palette scheduler capability query failed"
+    printf '\n%s\n' "not ok 1 - palette scheduler capability query failed"
     exit 0
 }
 
@@ -28,15 +28,15 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_latest \
     -=greedy:B4:palette=latest:load=ahead:prepare=ahead:load_depth=4 \
     -4 full-frame -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" 2>&1) || {
-    echo "not ok 1 - latest RGB loader execution failed"
+    printf '\n%s\n' "not ok 1 - latest RGB loader execution failed"
     exit 0
 }
 case "${trace}" in
     *'LSXLATEST1|frame=1|palette=1|'*'LSXLATEST1|frame=2|'*'LSXLATEST1|frame=3|'*'LSXLATEST1|frame=4|'*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - RGB loader did not preserve session sequence across loops"
+    printf '\n%s\n' "not ok 1 - RGB loader did not preserve session sequence across loops"
     exit 0
 }
-echo "ok 1 - latest loader ahead/ahead loop sequence"
+printf '\n%s\n' "ok 1 - latest loader ahead/ahead loop sequence"
 exit 0

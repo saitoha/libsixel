@@ -30,24 +30,24 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
     "${input_webp}" >/dev/null || {
-    printf "ok 1 # SKIP libwebp loader cannot decode WebP in this runtime\n"
+    printf "\nok 1 # SKIP libwebp loader cannot decode WebP in this runtime\n"
     exit 0
 }
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${input_webp}" 2>&1 >/dev/null) && {
-    echo "not ok 1 - gd unexpectedly accepted unsupported WebP"
+    printf '\n%s\n' "not ok 1 - gd unexpectedly accepted unsupported WebP"
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd-only WebP failure missed generic decode error"
+    printf '\n%s\n' "not ok 1 - gd-only WebP failure missed generic decode error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
-    echo "not ok 1 - gd-only WebP failure should not report GD error"
+    printf '\n%s\n' "not ok 1 - gd-only WebP failure should not report GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
@@ -55,19 +55,19 @@ case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
 trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,libwebp! -ldisable "${input_webp}" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - gd,libwebp fallback failed for unsupported WebP"
+    printf '\n%s\n' "not ok 1 - gd,libwebp fallback failed for unsupported WebP"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd loader was not attempted"
+    printf '\n%s\n' "not ok 1 - gd loader was not attempted"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ libwebp\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - libwebp fallback was not attempted"
+    printf '\n%s\n' "not ok 1 - libwebp fallback was not attempted"
     exit 0
 }
 
-echo "ok 1 - unsupported GD WebP path delegates to libwebp"
+printf '\n%s\n' "ok 1 - unsupported GD WebP path delegates to libwebp"
 exit 0

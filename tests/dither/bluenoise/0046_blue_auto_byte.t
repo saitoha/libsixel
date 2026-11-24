@@ -10,9 +10,9 @@ SIXEL_DITHER_A_DITHER_STRENGTH=invalid \
 SIXEL_DITHER_X_DITHER_STRENGTH=invalid \
 SIXEL_DITHER_BLUENOISE_STRENGTH=invalid \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" dither/positional/precision/0070_blue_auto_byte || {
-    echo "not ok 1 - blue auto byte"
+    printf '\n%s\n' "not ok 1 - blue auto byte"
     exit 0
 }
 
-echo "ok 1 - blue auto byte"
+printf '\n%s\n' "ok 1 - blue auto byte"
 exit 0

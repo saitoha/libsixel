@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0116_loader_builtin_psd_rgb16_zip_pred_numeric" || {
-    echo "not ok 1 - PSD RGB16 ZIP prediction numeric samples"
+    printf '\n%s\n' "not ok 1 - PSD RGB16 ZIP prediction numeric samples"
     exit 0
 }
 
-echo "ok 1 - PSD RGB16 ZIP prediction numeric samples"
+printf '\n%s\n' "ok 1 - PSD RGB16 ZIP prediction numeric samples"
 exit 0

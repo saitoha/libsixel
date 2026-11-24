@@ -16,10 +16,10 @@ map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map8_palette}" \
     -o/dev/null "${snake_gray_png}" || {
-    echo "not ok" 1 - "grayscale PNG palette conversion fails"
+    printf '\n%s\n' "not ok 1 - grayscale PNG palette conversion fails"
     exit 0
 }
 
-echo "ok" 1 - "grayscale PNG with external palette works"
+printf '\n%s\n' "ok 1 - grayscale PNG with external palette works"
 
 exit 0

@@ -18,7 +18,7 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 gpl_palette="${ARTIFACT_LOCAL_DIR}/palette.gpl"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six" "${snake_png}" || {
-    echo "not ok" 1 - "GPL palette export failed"
+    printf '\n%s\n' "not ok 1 - GPL palette export failed"
     exit 0
 }
 
@@ -26,16 +26,16 @@ IFS= read -r gpl_header < "${gpl_palette}" || gpl_header=""
 case "${gpl_header}" in
     *"GIMP Palette"*) ;;
     *)
-        echo "not ok" 1 - "GPL palette missing GIMP header"
+        printf '\n%s\n' "not ok 1 - GPL palette missing GIMP header"
         exit 0
         ;;
 esac
 
 test -n "${gpl_header}" || {
-    echo "not ok" 1 - "GPL palette missing GIMP header"
+    printf '\n%s\n' "not ok 1 - GPL palette missing GIMP header"
     exit 0
 }
 
-echo "ok" 1 - "GPL palette exported with GIMP header"
+printf '\n%s\n' "ok 1 - GPL palette exported with GIMP header"
 
 exit 0

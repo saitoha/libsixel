@@ -18,12 +18,12 @@ input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=windows" \
     -Lbuiltin! "${input_bmp}" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "windows env unexpectedly succeeded on OS/2 info40 sample"
+    printf '\n%s\n' "not ok 1 - windows env unexpectedly succeeded on OS/2 info40 sample"
     exit 0
 }
 
 case "${msg}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "windows env path failed at option parsing"
+    printf '\n%s\n' "not ok 1 - windows env path failed at option parsing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -32,11 +32,11 @@ case "${msg}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) tr
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=os2" \
     -Lbuiltin! "${input_bmp}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "os2 env did not enable OS/2 info40 decode"
+    printf '\n%s\n' "not ok 1 - os2 env did not enable OS/2 info40 decode"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=os2 is applied"
+printf '\n%s\n' "ok 1 - SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=os2 is applied"
 exit 0

@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0117_loader_builtin_psd_rgb32_rle_numeric" || {
-    echo "not ok 1 - PSD RGB32 RLE numeric samples"
+    printf '\n%s\n' "not ok 1 - PSD RGB32 RLE numeric samples"
     exit 0
 }
 
-echo "ok 1 - PSD RGB32 RLE numeric samples"
+printf '\n%s\n' "ok 1 - PSD RGB32 RLE numeric samples"
 exit 0

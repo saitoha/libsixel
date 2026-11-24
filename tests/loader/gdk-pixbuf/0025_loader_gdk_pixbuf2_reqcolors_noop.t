@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0010_loader_gdk_pixbuf_pixelformat" "reqcolors_noop" || {
-    echo "not ok 1 - gdk-pixbuf2 reqcolors_noop"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 reqcolors_noop"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 reqcolors_noop"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 reqcolors_noop"
 exit 0

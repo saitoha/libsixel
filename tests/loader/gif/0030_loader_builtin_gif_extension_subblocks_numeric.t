@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0075_loader_builtin_gif_extension_subblocks_numeric" || {
-    echo "not ok 1 - GIF extension sub-block skipping"
+    printf '\n%s\n' "not ok 1 - GIF extension sub-block skipping"
     exit 0
 }
 
-echo "ok 1 - GIF extension sub-block skipping"
+printf '\n%s\n' "ok 1 - GIF extension sub-block skipping"
 exit 0

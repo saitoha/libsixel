@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0001_grid 2 4 || {
-    echo "not ok 1 - P3 grid table din99d"
+    printf '\n%s\n' "not ok 1 - P3 grid table din99d"
     exit 0
 }
 
-echo "ok 1 - P3 grid table din99d"
+printf '\n%s\n' "ok 1 - P3 grid table din99d"
 exit 0

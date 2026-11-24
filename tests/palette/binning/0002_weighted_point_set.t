@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0031_weighted_point_set" || {
-    echo "not ok 1 - weighted point set contract"
+    printf '\n%s\n' "not ok 1 - weighted point set contract"
     exit 0
 }
 
-echo "ok 1 - weighted point set contract"
+printf '\n%s\n' "ok 1 - weighted point set contract"
 exit 0

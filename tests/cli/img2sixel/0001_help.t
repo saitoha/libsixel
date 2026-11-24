@@ -14,9 +14,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -H >/dev/null || {
-    echo "not ok" 1 - "help output failed"
+    printf '\n%s\n' "not ok 1 - help output failed"
     exit 0
 }
 
-echo "ok" 1 - "help output available"
+printf '\n%s\n' "ok 1 - help output available"
 exit 0

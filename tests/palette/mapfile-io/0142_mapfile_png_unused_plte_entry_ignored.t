@@ -33,18 +33,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none -m "${mapfile_png}" \
         -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "indexed PNG mapfile export failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG mapfile export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "indexed PNG palette normalization failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG palette normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "unused indexed PNG PLTE entry was retained"
+    printf '\n%s\n' "not ok 1 - unused indexed PNG PLTE entry was retained"
     exit 0
 }
 
-echo "ok" 1 - "indexed PNG mapfiles omit unused PLTE entries"
+printf '\n%s\n' "ok 1 - indexed PNG mapfiles omit unused PLTE entries"
 exit 0

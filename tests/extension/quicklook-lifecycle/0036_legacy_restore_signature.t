@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_FIXTURE}" 'legacy' 'legacy-signature' || {
-    echo "not ok 1 - Restored legacy signature match original evidence."
+    printf '\n%s\n' "not ok 1 - Restored legacy signature match original evidence."
     exit 0
 }
-echo "ok 1 - Restored legacy signature match original evidence."
+printf '\n%s\n' "ok 1 - Restored legacy signature match original evidence."
 exit 0

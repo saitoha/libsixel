@@ -97,16 +97,16 @@ echo "1..1"
 set -v
 
 some_command >/dev/null || {
-    echo "not ok 1 - behavior under test"
+    printf '\n%s\n' "not ok 1 - behavior under test"
     exit 0
 }
 
 test "${observed}" = "${expected}" || {
-    echo "not ok 1 - behavior under test"
+    printf '\n%s\n' "not ok 1 - behavior under test"
     exit 0
 }
 
-echo "ok 1 - behavior under test"
+printf '\n%s\n' "ok 1 - behavior under test"
 exit 0
 ```
 
@@ -158,7 +158,7 @@ This is the narrow exception to the normal rule against directory operations. Te
 
 ### TAP purity
 
-Only TAP belongs on standard output. Redirect output from tested programs and helpers when it would contaminate the TAP stream. Diagnostic context for a failed assertion should be prefixed or sent to standard error without changing the planned observation count.
+Only TAP belongs on standard output. Prefix each result, including a per-observation skip, with a newline in the same command. Use `printf '\n%s\n' "ok 1 - description"`. The source check in `make staticcheck` recognizes direct `echo` and `printf` spellings in shell TAP tests. Redirect output from tested programs and helpers when it would contaminate the TAP stream. Diagnostic context for a failed assertion should be prefixed or sent to standard error without changing the planned observation count.
 
 Skip output must explain the unavailable capability. A missing optional dependency is a skip only when that feature-disabled configuration is supported.
 
@@ -376,6 +376,7 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | TG-16 | Literal command, substitution, Make shell, wrapper, nested shell and Python process-argument controls are rejected while an inert printed word remains valid. | [tests/build/no-find/0001_direct.sh](../../tests/build/no-find/0001_direct.sh), [tests/build/no-find/0002_substitution.sh](../../tests/build/no-find/0002_substitution.sh), [tests/build/no-find/0003_make_shell.sh](../../tests/build/no-find/0003_make_shell.sh), [tests/build/no-find/0004_wrapped.sh](../../tests/build/no-find/0004_wrapped.sh), [tests/build/no-find/0005_shell_code.sh](../../tests/build/no-find/0005_shell_code.sh), [tests/build/no-find/0006_inert_word.sh](../../tests/build/no-find/0006_inert_word.sh), [tests/build/no-find/0007_python_subprocess.sh](../../tests/build/no-find/0007_python_subprocess.sh) |
 | TG-17 | Child-time supervision preserves one original-parent run identity across sibling commands and retains a caller-supplied identity. | [tests/tools/child-time/0002_binding_run_identity.py](../../tests/tools/child-time/0002_binding_run_identity.py) |
 | TG-18 | New or enlarged literal raster fixture uses cannot inherit an existing oversized-use exception. | [tests/_static/sh/staticcheck-test-image-size.sh](../../tests/_static/sh/staticcheck-test-image-size.sh) |
+| TG-19 | Direct shell TAP result emitters prefix successful, failed and skipped observations with a newline. | [tests/_static/sh/staticcheck-tap-result-newline.sh](../../tests/_static/sh/staticcheck-tap-result-newline.sh) |
 
 ### Coverage boundary
 

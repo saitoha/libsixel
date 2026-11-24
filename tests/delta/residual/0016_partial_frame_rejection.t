@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-residual/0016_partial_frame_rejection || {
-    echo "not ok 1 - partial frame rejection"
+    printf '\n%s\n' "not ok 1 - partial frame rejection"
     exit 0
 }
-echo "ok 1 - partial frame rejection"
+printf '\n%s\n' "ok 1 - partial frame rejection"
 exit 0

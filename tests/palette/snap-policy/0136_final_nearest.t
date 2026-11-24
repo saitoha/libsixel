@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "palette/snap_hooks/final_nearest" || {
-    echo "not ok 1 - Typed partial snap blends extended coordinates toward independent targets"
+    printf '\n%s\n' "not ok 1 - Typed partial snap blends extended coordinates toward independent targets"
     exit 0
 }
-echo "ok 1 - Typed partial snap blends extended coordinates toward independent targets"
+printf '\n%s\n' "ok 1 - Typed partial snap blends extended coordinates toward independent targets"
 exit 0

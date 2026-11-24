@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/cover_float/0001_cover_contract hard 4 3 0 || {
-    echo "not ok 1 - hard cielab midpoint"
+    printf '\n%s\n' "not ok 1 - hard cielab midpoint"
     exit 0
 }
 
-echo "ok 1 - hard cielab midpoint"
+printf '\n%s\n' "ok 1 - hard cielab midpoint"
 exit 0

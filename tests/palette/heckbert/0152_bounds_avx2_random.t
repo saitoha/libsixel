@@ -7,12 +7,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/heckbert/0152_bounds_avx2_random" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP AVX2 is unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP AVX2 is unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - bounds AVX2 random exactness'
+    printf '\n%s\n' 'not ok 1 - bounds AVX2 random exactness'
     exit 0
 }
-echo 'ok 1 - bounds AVX2 random exactness'
+printf '\n%s\n' 'ok 1 - bounds AVX2 random exactness'
 exit 0

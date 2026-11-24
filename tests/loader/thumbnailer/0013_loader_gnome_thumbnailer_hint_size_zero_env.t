@@ -29,7 +29,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "PATH=${bin_dir}:${PATH}" \
     --env "THUMB_LOG=${default_log}" \
     -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
@@ -52,7 +52,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "THUMB_LOG=${zero_log}" \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=0" \
     -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
@@ -70,14 +70,14 @@ ${zero_size_line}"
 done < "${zero_log}"
 
 test -n "${default_size}" || {
-    echo "not ok" 1 - "zero hint-size env fallback check failed"
+    printf '\n%s\n' "not ok 1 - zero hint-size env fallback check failed"
     exit 0
 }
 
 test "${default_size}" = "${zero_size}" || {
-    echo "not ok" 1 - "zero hint-size env fallback check failed"
+    printf '\n%s\n' "not ok 1 - zero hint-size env fallback check failed"
     exit 0
 }
 
-echo "ok" 1 - "zero hint-size env falls back to default"
+printf '\n%s\n' "ok 1 - zero hint-size env falls back to default"
 exit 0

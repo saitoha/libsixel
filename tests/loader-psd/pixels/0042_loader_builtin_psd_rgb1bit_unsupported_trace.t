@@ -17,10 +17,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported bit depth (1) for RGB"*)
-        echo "ok" 1 - "RGB depth=1 is rejected as unsupported"
+        printf '\n%s\n' "ok 1 - RGB depth=1 is rejected as unsupported"
         ;;
     *)
-        echo "not ok" 1 - "RGB depth unsupported trace is missing"
+        printf '\n%s\n' "not ok 1 - RGB depth unsupported trace is missing"
         exit 0
         ;;
 esac

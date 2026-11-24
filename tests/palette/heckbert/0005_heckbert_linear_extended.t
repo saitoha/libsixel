@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0005_heckbert_linear_extended >/dev/null || {
-    echo "not ok 1 - native Heckbert linear extended"
+    printf '\n%s\n' "not ok 1 - native Heckbert linear extended"
     exit 0
 }
 
-echo "ok 1 - native Heckbert linear extended"
+printf '\n%s\n' "ok 1 - native Heckbert linear extended"
 exit 0

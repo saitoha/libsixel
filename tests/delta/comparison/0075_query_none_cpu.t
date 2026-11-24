@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0075_query_none_cpu" >/dev/null || {
-    echo "not ok 1 - query none cpu"
+    printf '\n%s\n' "not ok 1 - query none cpu"
     exit 0
 }
 
-echo "ok 1 - query none cpu"
+printf '\n%s\n' "ok 1 - query none cpu"
 exit 0

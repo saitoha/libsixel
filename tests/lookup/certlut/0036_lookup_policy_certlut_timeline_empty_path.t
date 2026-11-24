@@ -17,14 +17,14 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/timeline-empty-path.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH= --env SIXEL_LOG_LINES=3 \
     --lookup-policy=certlut -p 4 -o "${output_sixel}" "${small_ppm}" || {
-    echo "not ok" 1 - "conversion failed with empty SIXEL_LOG_PATH"
+    printf '\n%s\n' "not ok 1 - conversion failed with empty SIXEL_LOG_PATH"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "output file is empty with empty SIXEL_LOG_PATH"
+    printf '\n%s\n' "not ok 1 - output file is empty with empty SIXEL_LOG_PATH"
     exit 0
 }
 
-echo "ok" 1 - "empty SIXEL_LOG_PATH keeps conversion successful"
+printf '\n%s\n' "ok 1 - empty SIXEL_LOG_PATH keeps conversion successful"
 exit 0

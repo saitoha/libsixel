@@ -15,7 +15,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine= \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "empty --cms-engine value unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - empty --cms-engine value unexpectedly succeeded"
     exit 0
 }
 
@@ -23,7 +23,7 @@ case "${msg}" in
     *"--cms-engine"* )
         ;;
     *)
-        echo "not ok" 1 - "missing --cms-engine context for empty value diagnostic"
+        printf '\n%s\n' "not ok 1 - missing --cms-engine context for empty value diagnostic"
         exit 0
         ;;
 esac
@@ -32,10 +32,10 @@ case "${msg}" in
     *"cms-engine accepts none, auto, builtin, lcms2, or colorsync."*)
         ;;
     *)
-        echo "not ok" 1 - "missing candidate list for empty --cms-engine value"
+        printf '\n%s\n' "not ok 1 - missing candidate list for empty --cms-engine value"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "empty --cms-engine value is rejected"
+printf '\n%s\n' "ok 1 - empty --cms-engine value is rejected"
 exit 0

@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:Abandit:S7 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q medoids short suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - -Q medoids short suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts short medoids suboptions"
+printf '\n%s\n' "ok 1 - -Q accepts short medoids suboptions"
 exit 0

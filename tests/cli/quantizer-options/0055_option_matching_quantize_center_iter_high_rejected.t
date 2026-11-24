@@ -16,16 +16,16 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:iter=65 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid center iter unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid center iter unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *iter\ must\ be\ in\ range\ 1-64.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing center iter range diagnostic"
+    printf '\n%s\n' "not ok 1 - missing center iter range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "center iter upper bound is rejected"
+printf '\n%s\n' "ok 1 - center iter upper bound is rejected"
 exit 0

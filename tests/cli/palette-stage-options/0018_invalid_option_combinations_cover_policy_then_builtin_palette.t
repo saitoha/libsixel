@@ -21,13 +21,13 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "unexpected success: cover policy conflicts with built-in palette"
+    printf '\n%s\n' "not ok 1 - unexpected success: cover policy conflicts with built-in palette"
     exit 0
 }
 case "${msg}" in *option\ -b,\ --builtin-palette\ conflicts\ with\ -a,\ --cover-policy.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing cover policy and built-in conflict diagnostic"
+    printf '\n%s\n' "not ok 1 - missing cover policy and built-in conflict diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "cover policy then built-in palette is rejected"
+printf '\n%s\n' "ok 1 - cover policy then built-in palette is rejected"
 exit 0

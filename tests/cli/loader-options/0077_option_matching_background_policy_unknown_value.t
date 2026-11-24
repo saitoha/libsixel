@@ -21,17 +21,17 @@ status=$?
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "background-policy accepted an unknown value"
+    printf '\n%s\n' "not ok 1 - background-policy accepted an unknown value"
     exit 0
 }
 
 case "${output}" in
     *"valid values: file_first, explicit_first"*) ;;
     *)
-        echo "not ok" 1 - "background-policy valid-value diagnostic mismatch"
+        printf '\n%s\n' "not ok 1 - background-policy valid-value diagnostic mismatch"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "background-policy rejects an unknown value"
+printf '\n%s\n' "ok 1 - background-policy rejects an unknown value"
 exit 0

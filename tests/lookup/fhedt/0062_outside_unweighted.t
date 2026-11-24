@@ -9,9 +9,9 @@ set -v
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_weight/0010_outside_unweighted || {
-    echo "not ok 1 - FHEDT outside unweighted"
+    printf '\n%s\n' "not ok 1 - FHEDT outside unweighted"
     exit 0
 }
 
-echo "ok 1 - FHEDT outside unweighted"
+printf '\n%s\n' "ok 1 - FHEDT outside unweighted"
 exit 0

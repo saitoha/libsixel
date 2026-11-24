@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "cli/0035_cli_lookup_policy_initial_prefixes" || {
-    echo "not ok 1 - registered lookup policy initials"
+    printf '\n%s\n' "not ok 1 - registered lookup policy initials"
     exit 0
 }
 
-echo "ok 1 - registered lookup policy initials"
+printf '\n%s\n' "ok 1 - registered lookup policy initials"
 exit 0

@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "apng/0001_float" 1 || {
-    echo "not ok 1 - builtin APNG alpha16 lowbits"
+    printf '\n%s\n' "not ok 1 - builtin APNG alpha16 lowbits"
     exit 0
 }
-echo "ok 1 - builtin APNG alpha16 lowbits"
+printf '\n%s\n' "ok 1 - builtin APNG alpha16 lowbits"
 exit 0

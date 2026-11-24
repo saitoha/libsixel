@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - APNG default render failed"
+    printf '\n%s\n' "not ok 1 - APNG default render failed"
     exit 0
 }
 
@@ -34,16 +34,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
-    echo "not ok 1 - APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
+    printf '\n%s\n' "not ok 1 - APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_off}" || {
-    echo "not ok 1 - libpng APNG default keycolor is changed by the compatibility switch"
+    printf '\n%s\n' "not ok 1 - libpng APNG default keycolor is changed by the compatibility switch"
     exit 0
 }
 
-    echo "ok 1 - libpng APNG alpha keycolor is enabled by default"
+    printf '\n%s\n' "ok 1 - libpng APNG alpha keycolor is enabled by default"
 
 
 exit 0

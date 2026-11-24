@@ -23,7 +23,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin loader failed to decode fallback payload case: ${trace_output}"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode fallback payload case: ${trace_output}"
     exit 0
 }
 
@@ -31,7 +31,7 @@ case "${trace_output}" in
     *"builtin PSD: unknown layer blend mode; falling back to Normal"*)
         ;;
     *)
-        echo "not ok" 1 - "expected info trace is missing"
+        printf '\n%s\n' "not ok 1 - expected info trace is missing"
         exit 0
         ;;
 esac
@@ -41,9 +41,9 @@ esac
 # floating-point arithmetic in addition to that one-level sample budget.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    printf '\n%s\n' "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "fallback payload case decodes and matches reference pixel values with expected info trace"
+printf '\n%s\n' "ok 1 - fallback payload case decodes and matches reference pixel values with expected info trace"
 exit 0

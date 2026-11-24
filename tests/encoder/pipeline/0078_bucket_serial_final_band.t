@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0078_bucket_serial_fin
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket serial final band # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket serial final band # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket serial final band"
+    printf '\n%s\n' "not ok 1 - bucket serial final band"
     exit 0
 }
-echo "ok 1 - bucket serial final band"
+printf '\n%s\n' "ok 1 - bucket serial final band"
 exit 0

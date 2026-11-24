@@ -9,12 +9,12 @@ set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0002_pipeline stage merge-refinement 3 2>&1) || {
-    echo "not ok 1 - merge_refinement_heckbert: $trace"
+    printf '\n%s\n' "not ok 1 - merge_refinement_heckbert: $trace"
     exit 0
 }
 case "$trace" in
     *'|merge=4|'*) ;;
-    *) echo "not ok 1 - requested stage did not execute"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - requested stage did not execute"; exit 0 ;;
 esac
-echo "ok 1 - merge_refinement_heckbert"
+printf '\n%s\n' "ok 1 - merge_refinement_heckbert"
 exit 0

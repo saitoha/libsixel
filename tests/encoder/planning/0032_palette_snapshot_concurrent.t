@@ -12,8 +12,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0032_palette_snapshot_concurrent || {
-    echo "not ok 1 - concurrent snapshot lifetime and private application"
+    printf '\n%s\n' "not ok 1 - concurrent snapshot lifetime and private application"
     exit 0
 }
-echo "ok 1 - concurrent snapshot lifetime and private application"
+printf '\n%s\n' "ok 1 - concurrent snapshot lifetime and private application"
 exit 0

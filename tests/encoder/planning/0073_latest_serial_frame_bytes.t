@@ -20,7 +20,7 @@ reference=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d fs --lookup-policy=none -4 full-frame \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     && printf '.') || {
-    echo "not ok 1 - frame conversion failed: lazy/delta/float32/serial/ahead"
+    printf '\n%s\n' "not ok 1 - frame conversion failed: lazy/delta/float32/serial/ahead"
     exit 0
 }
 actual=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -30,16 +30,16 @@ actual=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d fs --lookup-policy=none -4 full-frame \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     && printf '.') || {
-    echo "not ok 1 - latest conversion failed: lazy/delta/float32/serial/ahead"
+    printf '\n%s\n' "not ok 1 - latest conversion failed: lazy/delta/float32/serial/ahead"
     exit 0
 }
 test "${reference}" != '.' || {
-    echo "not ok 1 - serial reference is empty"
+    printf '\n%s\n' "not ok 1 - serial reference is empty"
     exit 0
 }
 test "${reference}" = "${actual}" || {
-    echo "not ok 1 - serial latest differs: lazy/delta/float32/serial/ahead"
+    printf '\n%s\n' "not ok 1 - serial latest differs: lazy/delta/float32/serial/ahead"
     exit 0
 }
-echo "ok 1 - serial latest matches frame bytes for lazy float delta animation"
+printf '\n%s\n' "ok 1 - serial latest matches frame bytes for lazy float delta animation"
 exit 0

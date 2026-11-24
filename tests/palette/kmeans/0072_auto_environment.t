@@ -13,7 +13,7 @@ trace=$(set +xv; SIXEL_PALETTE_KMEANS_BACKEND=auto SIXEL_TRACE_TOPIC=kmeans_back
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto -Qkmeans:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - auto environment status"
+    printf '\n%s\n' "not ok 1 - auto environment status"
     printf '# %s\n' "$trace"
     exit 0
 }
@@ -21,9 +21,9 @@ case "$trace" in
     *requested=auto*effective=cpu*reason=workload-small*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - auto environment contract"
+    printf '\n%s\n' "not ok 1 - auto environment contract"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - auto environment"
+printf '\n%s\n' "ok 1 - auto environment"
 exit 0

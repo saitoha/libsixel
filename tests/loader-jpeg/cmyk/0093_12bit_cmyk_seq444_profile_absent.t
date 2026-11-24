@@ -14,19 +14,19 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - 12bit-cmyk-seq444 profile absent"
+    printf '\n%s\n' "not ok 1 - 12bit-cmyk-seq444 profile absent"
     exit 0
 }
 case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - target marker is absent"
+    printf '\n%s\n' "not ok 1 - target marker is absent"
     exit 0
 }
 observed=${trace#*"JCMYK|target-begin"}
 case "${observed}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unexpected CMS apply on the fallback path"
+    printf '\n%s\n' "not ok 1 - unexpected CMS apply on the fallback path"
     exit 0
 }
-echo "ok 1 - 12bit-cmyk-seq444 profile absent"
+printf '\n%s\n' "ok 1 - 12bit-cmyk-seq444 profile absent"
 exit 0

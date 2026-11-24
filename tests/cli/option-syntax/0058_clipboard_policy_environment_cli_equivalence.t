@@ -21,7 +21,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${cli_dir}" \
     -yfile -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o png:clipboard: || {
-    echo "not ok" 1 - "clipboard policy CLI conversion failed"
+    printf '\n%s\n' "not ok 1 - clipboard policy CLI conversion failed"
     exit 0
 }
 
@@ -30,14 +30,14 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${env_dir}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o png:clipboard: || {
-    echo "not ok" 1 - "clipboard policy environment conversion failed"
+    printf '\n%s\n' "not ok 1 - clipboard policy environment conversion failed"
     exit 0
 }
 
 cmp -s "${cli_dir}/image.bin" "${env_dir}/image.bin" || {
-    echo "not ok" 1 - "clipboard policy CLI and environment outputs differ"
+    printf '\n%s\n' "not ok 1 - clipboard policy CLI and environment outputs differ"
     exit 0
 }
 
-echo "ok" 1 - "clipboard policy CLI overrides and matches its environment"
+printf '\n%s\n' "ok 1 - clipboard policy CLI overrides and matches its environment"
 exit 0

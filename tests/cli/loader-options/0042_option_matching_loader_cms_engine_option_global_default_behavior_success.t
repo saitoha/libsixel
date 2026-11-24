@@ -26,38 +26,38 @@ output_option_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_option_auto.
 output_option_none="${ARTIFACT_LOCAL_DIR}/cms_engine_option_default_option_none.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
-    echo "not ok" 1 - "cms=1 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=1 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
-    echo "not ok" 1 - "cms=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=0 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp! "${input_webp}" >"${output_option_auto}" || {
-    echo "not ok" 1 - "--cms-engine=auto with implicit cms decode failed"
+    printf '\n%s\n' "not ok 1 - --cms-engine=auto with implicit cms decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp! "${input_webp}" >"${output_option_none}" || {
-    echo "not ok" 1 - "--cms-engine=none with implicit cms decode failed"
+    printf '\n%s\n' "not ok 1 - --cms-engine=none with implicit cms decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_cms1}" "${output_option_auto}" || {
-    echo "not ok" 1 - "--cms-engine=auto did not enable implicit loader cms"
+    printf '\n%s\n' "not ok 1 - --cms-engine=auto did not enable implicit loader cms"
     exit 0
 }
 
 cmp -s "${output_ref_cms0}" "${output_option_none}" || {
-    echo "not ok" 1 - "--cms-engine=none did not disable implicit loader cms"
+    printf '\n%s\n' "not ok 1 - --cms-engine=none did not disable implicit loader cms"
     exit 0
 }
 
-echo "ok" 1 - "--cms-engine controls implicit loader cms defaults"
+printf '\n%s\n' "ok 1 - --cms-engine controls implicit loader cms defaults"
 exit 0

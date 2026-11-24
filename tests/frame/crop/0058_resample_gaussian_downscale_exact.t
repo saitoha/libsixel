@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     gaussian \
     "${fixture_root}/gaussian-downscale-input.ppm" \
     "${fixture_root}/gaussian-downscale-expected.ppm" || {
-    echo "not ok" 1 - "gaussian downscale pixels changed"
+    printf '\n%s\n' "not ok 1 - gaussian downscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "gaussian downscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - gaussian downscale pixels match the oracle"
 exit 0

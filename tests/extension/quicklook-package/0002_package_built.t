@@ -12,9 +12,9 @@ echo "1..1"
 set -v
 
 test -s "${TOP_BUILDDIR}/quicklook-extension/package/SixelQuickLook.pkg" || {
-    echo "not ok 1 - Package is missing"
+    printf '\n%s\n' "not ok 1 - Package is missing"
     exit 0
 }
 
-echo "ok 1 - Normal enabled build produces a package."
+printf '\n%s\n' "ok 1 - Normal enabled build produces a package."
 exit 0

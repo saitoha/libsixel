@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 cmp "${TOP_BUILDDIR}/quicklook-extension/SixelPreviewBridge" "${TOP_BUILDDIR}/quicklook-extension/products/SixelPreviewBridge.app/Contents/MacOS/SixelPreviewBridge" || {
-    echo "not ok 1 - Bridge bundle contains the completed executable"
+    printf '\n%s\n' "not ok 1 - Bridge bundle contains the completed executable"
     exit 0
 }
-echo "ok 1 - Bridge bundle contains the completed executable"
+printf '\n%s\n' "ok 1 - Bridge bundle contains the completed executable"
 exit 0

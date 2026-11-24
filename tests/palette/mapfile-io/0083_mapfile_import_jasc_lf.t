@@ -26,18 +26,18 @@ actual_palette=$(
         -m pal-jasc:"${input_palette}" -M pal-jasc:- \
         -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "LF JASC PAL import failed"
+    printf '\n%s\n' "not ok 1 - LF JASC PAL import failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "LF JASC PAL output normalization failed"
+    printf '\n%s\n' "not ok 1 - LF JASC PAL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "LF JASC PAL entries changed"
+    printf '\n%s\n' "not ok 1 - LF JASC PAL entries changed"
     exit 0
 }
 
-echo "ok" 1 - "JASC PAL import accepts LF line endings"
+printf '\n%s\n' "ok 1 - JASC PAL import accepts LF line endings"
 exit 0

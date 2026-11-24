@@ -38,8 +38,8 @@ status=0
     'duplicates:host' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Registration has exactly one instance host"
+    printf '\n%s\n' "not ok 1 - Registration has exactly one instance host"
     exit 0
 }
-echo "ok 1 - Registration has exactly one instance host"
+printf '\n%s\n' "ok 1 - Registration has exactly one instance host"
 exit 0

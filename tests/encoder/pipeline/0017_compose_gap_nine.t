@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0045_compose_gap_nine" || {
-    echo "not ok 1 - compose gap nine"
+    printf '\n%s\n' "not ok 1 - compose gap nine"
     exit 0
 }
 
-echo "ok 1 - compose gap nine"
+printf '\n%s\n' "ok 1 - compose gap nine"
 exit 0

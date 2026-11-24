@@ -27,22 +27,22 @@ nl='
 '
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w192 -h192 -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${expected_sixel}" || {
-    echo "not ok" 1 - "libpng baseline conversion failed"
+    printf '\n%s\n' "not ok 1 - libpng baseline conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w192 -h192 --env SIXEL_BACKGROUND_POLICY=explicit_first \
               -B#fff -Lbuiltin:cms_engine=none! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 - "builtin bKGD cli override conversion failed"
+    printf '\n%s\n' "not ok 1 - builtin bKGD cli override conversion failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM \
     -b "MS-SSIM:${lsqa_floor}" "${expected_sixel}" "${output_sixel}" 2>&1) || {
     lsqa_line=${lsqa_msg%%"${nl}"*}
-    echo "not ok" 1 - "builtin bKGD override fell below MS-SSIM ${lsqa_floor}: ${lsqa_line}"
+    printf '\n%s\n' "not ok 1 - builtin bKGD override fell below MS-SSIM ${lsqa_floor}: ${lsqa_line}"
     exit 0
 }
 
-echo "ok" 1 - "builtin explicit_first policy overrides embedded bKGD (matches libpng)"
+printf '\n%s\n' "ok 1 - builtin explicit_first policy overrides embedded bKGD (matches libpng)"
 exit 0

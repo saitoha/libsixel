@@ -39,27 +39,27 @@ test "${SIXEL_CLIPBOARD_USE_SYSTEM-}" = 1 || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none "$@" "${sixel_src}" >"${sixel_tmp}" || {
-    echo "not ok" 1 - "failed to prepare sixel input"
+    printf '\n%s\n' "not ok 1 - failed to prepare sixel input"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i "${sixel_tmp}" -o png:clipboard: || {
-    printf "ok 1 # SKIP clipboard backend unavailable\n"
+    printf "\nok 1 # SKIP clipboard backend unavailable\n"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none "$@" -o clipboard: clipboard: || {
-    printf "ok 1 # SKIP clipboard backend unavailable\n"
+    printf "\nok 1 # SKIP clipboard backend unavailable\n"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" "$@" -i clipboard: -o "${roundtrip_png}" || {
-    printf "ok 1 # SKIP clipboard backend unavailable\n"
+    printf "\nok 1 # SKIP clipboard backend unavailable\n"
     exit 0
 }
 
 test -s "${roundtrip_png}" || {
-    echo "not ok" 1 - "round-trip PNG missing"
+    printf '\n%s\n' "not ok 1 - round-trip PNG missing"
     exit 0
 }
 
@@ -68,18 +68,18 @@ test -s "${roundtrip_png}" || {
 # transport differs, so the decoded RGB samples must match exactly.
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${sixel_tmp}" \
     -o "${reference_png}" || {
-    echo "not ok 1 - file reference PNG conversion failed"
+    printf '\n%s\n' "not ok 1 - file reference PNG conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none "${reference_png}" \
     >"${reference_sixel}" || {
-    echo "not ok 1 - file reference SIXEL conversion failed"
+    printf '\n%s\n' "not ok 1 - file reference SIXEL conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_sixel}" "${roundtrip_png}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - clipboard transport changed decoded RGB samples"
+    printf '\n%s\n' "not ok 1 - clipboard transport changed decoded RGB samples"
     exit 0
 }
 
-echo "ok" 1 - "clipboard round-trip succeeded (${clipboard_backend_mode})"
+printf '\n%s\n' "ok 1 - clipboard round-trip succeeded (${clipboard_backend_mode})"

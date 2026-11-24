@@ -36,18 +36,18 @@ Columns: 2
 
 GPL
 ) || {
-    echo "not ok" 1 - "GPL blank lines were rejected"
+    printf '\n%s\n' "not ok 1 - GPL blank lines were rejected"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "GPL output normalization failed"
+    printf '\n%s\n' "not ok 1 - GPL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "GPL blank lines changed imported entries"
+    printf '\n%s\n' "not ok 1 - GPL blank lines changed imported entries"
     exit 0
 }
 
-echo "ok" 1 - "GPL blank lines are ignored"
+printf '\n%s\n' "ok 1 - GPL blank lines are ignored"
 exit 0

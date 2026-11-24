@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/auto_cover_float/0012_byte_auto_eligible || {
-    echo "not ok 1 - byte auto eligible"
+    printf '\n%s\n' "not ok 1 - byte auto eligible"
     exit 0
 }
-echo "ok 1 - byte auto eligible"
+printf '\n%s\n' "ok 1 - byte auto eligible"
 exit 0

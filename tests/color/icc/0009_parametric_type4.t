@@ -8,9 +8,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "icc/0009_parametric_type4" || {
-    echo "not ok 1 - parametric type4"
+    printf '\n%s\n' "not ok 1 - parametric type4"
     exit 0
 }
 
-echo "ok 1 - parametric type4"
+printf '\n%s\n' "ok 1 - parametric type4"
 exit 0

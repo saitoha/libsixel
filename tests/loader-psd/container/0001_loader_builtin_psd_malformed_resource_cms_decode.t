@@ -22,7 +22,7 @@ case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader was not attempted"
+        printf '\n%s\n' "not ok 1 - builtin loader was not attempted"
         exit 0
         ;;
 esac
@@ -31,7 +31,7 @@ case "${trace_log}" in
     *"libsixel: builtin PSD: malformed ICC resource section; skipping ICC conversion"*)
         ;;
     *)
-        echo "not ok" 1 - "missing malformed-ICC trace for PSD resource section"
+        printf '\n%s\n' "not ok 1 - missing malformed-ICC trace for PSD resource section"
         exit 0
         ;;
 esac
@@ -40,10 +40,10 @@ case "${trace_log}" in
     *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader failed on PSD with malformed resource signature"
+        printf '\n%s\n' "not ok 1 - builtin loader failed on PSD with malformed resource signature"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin loader logs malformed PSD ICC resource and still decodes"
+printf '\n%s\n' "ok 1 - builtin loader logs malformed PSD ICC resource and still decodes"
 exit 0

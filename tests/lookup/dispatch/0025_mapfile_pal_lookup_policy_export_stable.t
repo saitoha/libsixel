@@ -39,11 +39,11 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile export failed with -~ none"
+    printf '\n%s\n' "not ok 1 - PAL mapfile export failed with -~ none"
     exit 0
 }
 actual_none=$(printf "%s" "${actual_none}" | tr -d '\015') || {
-    echo "not ok" 1 - "PAL none mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PAL none mapfile output normalization failed"
     exit 0
 }
 
@@ -63,11 +63,11 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile export failed with -~ eytzinger"
+    printf '\n%s\n' "not ok 1 - PAL mapfile export failed with -~ eytzinger"
     exit 0
 }
 actual_eytzinger=$(printf "%s" "${actual_eytzinger}" | tr -d '\015') || {
-    echo "not ok" 1 - "PAL eytzinger mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PAL eytzinger mapfile output normalization failed"
     exit 0
 }
 
@@ -87,26 +87,26 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile export failed with -~ fhedt"
+    printf '\n%s\n' "not ok 1 - PAL mapfile export failed with -~ fhedt"
     exit 0
 }
 actual_fhedt=$(printf "%s" "${actual_fhedt}" | tr -d '\015') || {
-    echo "not ok" 1 - "PAL fhedt mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PAL fhedt mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_none}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PAL mapfile changed under -~ none"
+    printf '\n%s\n' "not ok 1 - PAL mapfile changed under -~ none"
     exit 0
 }
 test "${actual_eytzinger}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PAL mapfile changed under -~ eytzinger"
+    printf '\n%s\n' "not ok 1 - PAL mapfile changed under -~ eytzinger"
     exit 0
 }
 test "${actual_fhedt}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PAL mapfile changed under -~ fhedt"
+    printf '\n%s\n' "not ok 1 - PAL mapfile changed under -~ fhedt"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile export is stable under lookup policies"
+printf '\n%s\n' "ok 1 - PAL mapfile export is stable under lookup policies"
 exit 0

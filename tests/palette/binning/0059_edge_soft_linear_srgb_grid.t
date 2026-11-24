@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/binning_float/0001_binning_contract \
     edge 1 2 1 || {
-    echo "not ok 1 - edge soft linear srgb grid"
+    printf '\n%s\n' "not ok 1 - edge soft linear srgb grid"
     exit 0
 }
-echo "ok 1 - edge soft linear srgb grid"
+printf '\n%s\n' "ok 1 - edge soft linear srgb grid"
 exit 0

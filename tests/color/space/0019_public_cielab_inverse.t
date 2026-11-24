@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "colorspace/public_float" "6" || {
-    echo "not ok 1 - public colorspace cielab inverse"
+    printf '\n%s\n' "not ok 1 - public colorspace cielab inverse"
     exit 0
 }
-echo "ok 1 - public colorspace cielab inverse"
+printf '\n%s\n' "ok 1 - public colorspace cielab inverse"
 exit 0

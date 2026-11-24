@@ -30,31 +30,31 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 
 case "${trace_output}" in *builtin\ PSD:\ hardening\ vector-style\ clipping\ sibling\ alpha\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing clipping sibling trace marker"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing clipping sibling trace marker"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: hardening vector-style clipping sibling alpha in layer fallback"*builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression after sibling marker"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing clbl=1 overlay suppression after sibling marker"
     exit 0
 }
 
 
 case "${trace_output}" in *"builtin PSD: hardening vector-style clipping sibling alpha in layer fallback"*"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base solid overlay after sibling suppression"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly applied base solid overlay after sibling suppression"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: hardening vector-style clipping sibling alpha in layer fallback"*"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base gradient overlay after sibling suppression"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly applied base gradient overlay after sibling suppression"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps overlay suppression through clipping sibling pass"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps overlay suppression through clipping sibling pass"
 exit 0

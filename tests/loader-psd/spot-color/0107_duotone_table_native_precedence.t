@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/psd/0261_duotone_table_native_precedence 1>&2 || {
-    echo "not ok 1 - duotone table native precedence"
+    printf '\n%s\n' "not ok 1 - duotone table native precedence"
     exit 0
 }
-echo "ok 1 - duotone table native precedence"
+printf '\n%s\n' "ok 1 - duotone table native precedence"
 exit 0

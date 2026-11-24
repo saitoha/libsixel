@@ -13,7 +13,7 @@ trace=$(set +xv; SIXEL_PALETTE_KMEANS_BACKEND=auto SIXEL_TRACE_TOPIC=kmeans_back
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto -Qkmeans:backend=cpu:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - auto cli precedence status"
+    printf '\n%s\n' "not ok 1 - auto cli precedence status"
     printf '# %s\n' "$trace"
     exit 0
 }
@@ -21,9 +21,9 @@ case "$trace" in
     *requested=cpu*effective=cpu*reason=cpu-requested*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - auto cli precedence contract"
+    printf '\n%s\n' "not ok 1 - auto cli precedence contract"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - auto cli precedence"
+printf '\n%s\n' "ok 1 - auto cli precedence"
 exit 0

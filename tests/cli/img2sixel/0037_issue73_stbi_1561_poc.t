@@ -24,10 +24,10 @@ set -e
 
 # Accept success or mapped error exits without crashing.
 test "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
-    echo "not ok" 1 - "issue #73 PoC handling failed"
+    printf '\n%s\n' "not ok 1 - issue #73 PoC handling failed"
     exit 0
 }
 
-echo "ok" 1 - "issue #73 PoC rejected safely"
+printf '\n%s\n' "ok 1 - issue #73 PoC rejected safely"
 
 exit 0

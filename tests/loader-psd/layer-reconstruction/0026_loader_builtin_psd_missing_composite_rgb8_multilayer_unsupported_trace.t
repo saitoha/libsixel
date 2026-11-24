@@ -18,13 +18,13 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported layer fallback layout"*)
-        echo "ok" 1 - "layer-only RGB8 PSD with multiple layers is rejected by fallback layout policy"
+        printf '\n%s\n' "ok 1 - layer-only RGB8 PSD with multiple layers is rejected by fallback layout policy"
         ;;
     *"builtin PSD: malformed layer record geometry"*)
-        echo "ok" 1 - "layer-only RGB8 malformed geometry is diagnosed as malformed"
+        printf '\n%s\n' "ok 1 - layer-only RGB8 malformed geometry is diagnosed as malformed"
         ;;
     *)
-        echo "not ok" 1 - "multi-layer RGB8 fallback layout trace is missing"
+        printf '\n%s\n' "not ok 1 - multi-layer RGB8 fallback layout trace is missing"
         exit 0
         ;;
 esac

@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0071_multi_pass_repeated_save" || {
-    echo "not ok 1 - repeated save"
+    printf '\n%s\n' "not ok 1 - repeated save"
     exit 0
 }
 
-echo "ok 1 - repeated save"
+printf '\n%s\n' "ok 1 - repeated save"
 exit 0

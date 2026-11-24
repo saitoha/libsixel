@@ -12,13 +12,13 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0041_ormode_legacy_zero_is_color" || status=$?
 
 test "${status}" != 77 || {
-    echo "ok 1 # SKIP compiler cannot suppress deprecated API diagnostics"
+    printf '\n%s\n' "ok 1 # SKIP compiler cannot suppress deprecated API diagnostics"
     exit 0
 }
 test "${status}" = 0 || {
-    echo "not ok 1 - legacy OR decode failed"
+    printf '\n%s\n' "not ok 1 - legacy OR decode failed"
     exit 0
 }
 
-echo "ok 1 - 0041_ormode_legacy_zero_is_color"
+printf '\n%s\n' "ok 1 - 0041_ormode_legacy_zero_is_color"
 exit 0

@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q medoids base value was rejected"
+    printf '\n%s\n' "not ok 1 - -Q medoids base value was rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts medoids base value"
+printf '\n%s\n' "ok 1 - -Q accepts medoids base value"
 exit 0

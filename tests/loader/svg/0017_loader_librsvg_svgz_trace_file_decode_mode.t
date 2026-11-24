@@ -23,7 +23,7 @@ trace_log=$(
         --env SIXEL_TRACE_TOPIC=loader \
         -L librsvg! "${svgz_path}" -o/dev/null 2>&1
 ) || {
-    echo "not ok" 1 - "trace-enabled file-path .svgz conversion failed"
+    printf '\n%s\n' "not ok 1 - trace-enabled file-path .svgz conversion failed"
     exit 0
 }
 
@@ -31,10 +31,10 @@ case "${trace_log}" in
     *"librsvg: decode_mode=file"*)
         ;;
     *)
-        echo "not ok" 1 - "file-path .svgz trace mode was not reported"
+        printf '\n%s\n' "not ok 1 - file-path .svgz trace mode was not reported"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg .svgz file-path trace decode mode is reported"
+printf '\n%s\n' "ok 1 - librsvg .svgz file-path trace decode mode is reported"
 exit 0

@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder/highcolor/0087_byte_atkinson_neighborhood || {
-    echo "not ok 1 - legacy high-color Atkinson diffusion"
+    printf '\n%s\n' "not ok 1 - legacy high-color Atkinson diffusion"
     exit 0
 }
-echo "ok 1 - legacy high-color Atkinson diffusion"
+printf '\n%s\n' "ok 1 - legacy high-color Atkinson diffusion"
 exit 0

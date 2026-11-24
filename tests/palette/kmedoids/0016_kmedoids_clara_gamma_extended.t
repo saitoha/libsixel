@@ -9,9 +9,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     values 1 0 1 none || {
-    echo "not ok 1 - kmedoids clara gamma extended"
+    printf '\n%s\n' "not ok 1 - kmedoids clara gamma extended"
     exit 0
 }
 
-echo "ok 1 - kmedoids clara gamma extended"
+printf '\n%s\n' "ok 1 - kmedoids clara gamma extended"
 exit 0

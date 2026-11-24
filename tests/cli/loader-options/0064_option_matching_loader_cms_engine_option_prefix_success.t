@@ -26,33 +26,33 @@ output_short_prefix="${ARTIFACT_LOCAL_DIR}/cms_engine_prefix_short_au.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref}" || {
-    echo "not ok" 1 - "--cms-engine=auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - --cms-engine=auto reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=au \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_long_prefix}" || {
-    echo "not ok" 1 - "--cms-engine=au prefix was rejected"
+    printf '\n%s\n' "not ok 1 - --cms-engine=au prefix was rejected"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -# au \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_short_prefix}" || {
-    echo "not ok" 1 - "-# au prefix was rejected"
+    printf '\n%s\n' "not ok 1 - -# au prefix was rejected"
     exit 0
 }
 
 cmp -s "${output_ref}" "${output_long_prefix}" || {
-    echo "not ok" 1 - "--cms-engine=au diverged from --cms-engine=auto"
+    printf '\n%s\n' "not ok 1 - --cms-engine=au diverged from --cms-engine=auto"
     exit 0
 }
 
 cmp -s "${output_ref}" "${output_short_prefix}" || {
-    echo "not ok" 1 - "-# au diverged from --cms-engine=auto"
+    printf '\n%s\n' "not ok 1 - -# au diverged from --cms-engine=auto"
     exit 0
 }
 
-echo "ok" 1 - "--cms-engine and -# accept unique prefixes"
+printf '\n%s\n' "ok 1 - --cms-engine and -# accept unique prefixes"
 exit 0

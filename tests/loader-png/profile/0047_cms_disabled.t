@@ -14,13 +14,13 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - Keep original palette bytes and indices with CMS disabled"
+    printf '\n%s\n' "not ok 1 - Keep original palette bytes and indices with CMS disabled"
     exit 0
 }
 case "$trace" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unexpected ICC transform"
+    printf '\n%s\n' "not ok 1 - unexpected ICC transform"
     exit 0
 }
-echo "ok 1 - Keep original palette bytes and indices with CMS disabled"
+printf '\n%s\n' "ok 1 - Keep original palette bytes and indices with CMS disabled"
 exit 0

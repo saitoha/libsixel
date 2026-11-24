@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "frame/0015_float_failure_atomic" nonfinite || {
-    echo "not ok 1 - frame float nonfinite atomic"
+    printf '\n%s\n' "not ok 1 - frame float nonfinite atomic"
     exit 0
 }
-echo "ok 1 - frame float nonfinite atomic"
+printf '\n%s\n' "ok 1 - frame float nonfinite atomic"
 exit 0

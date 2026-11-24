@@ -22,7 +22,7 @@ set -v
 # Read the compiled dither capability; keep serial option routing covered.
 parallel_dither=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/allocation/0001_allocation_slots parallel-dither) || {
-    echo "not ok 1 - cannot query the compiled dither capability"
+    printf '\n%s\n' "not ok 1 - cannot query the compiled dither capability"
     exit 0
 }
 expected_dither=3
@@ -37,15 +37,15 @@ env_output="${artifact_dir}/0118-threading-encode-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     "-=greedy:B6:E3" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "threading encode short conversion failed"
+    printf '\n%s\n' "not ok 1 - threading encode short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=encode\|stored=1\|binding=encode_threads,encode_threads_override\|value=3**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading encode short value was not stored"
+    printf '\n%s\n' "not ok 1 - threading encode short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXDTH1\|*dither_threads=${expected_dither}\|encode_threads=3**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading encode short did not reserve the encode workers"
+    printf '\n%s\n' "not ok 1 - threading encode short did not reserve the encode workers"
     exit 0
 }
 
@@ -53,15 +53,15 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_ENCODER_THREADING_ENCODE=3" \
     "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "threading encode environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading encode environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=encode\|stored=1\|binding=encode_threads,encode_threads_override\|value=3**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading encode environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threading encode environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXDTH1\|*dither_threads=${expected_dither}\|encode_threads=3**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading encode environment did not reserve the encode workers"
+    printf '\n%s\n' "not ok 1 - threading encode environment did not reserve the encode workers"
     exit 0
 }
 
@@ -69,24 +69,24 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_ENCODER_THREADING_ENCODE=-1" \
     "-=greedy:B6" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "threading encode out-of-range conversion failed"
+    printf '\n%s\n' "not ok 1 - threading encode out-of-range conversion failed"
     exit 0
 }
 case "${range_trace}" in *LSXSUB1\|*key=encode\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "threading encode accepted an out-of-range environment value"
+    printf '\n%s\n' "not ok 1 - threading encode accepted an out-of-range environment value"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "threading encode short and environment output differ"
+    printf '\n%s\n' "not ok 1 - threading encode short and environment output differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "threading encode preserves effective image output"
+printf '\n%s\n' "ok 1 - threading encode preserves effective image output"
 exit 0

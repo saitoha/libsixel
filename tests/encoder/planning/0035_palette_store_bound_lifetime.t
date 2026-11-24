@@ -12,8 +12,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0035_palette_store_bound_lifetime || {
-    echo "not ok 1 - palette store bound lifetime"
+    printf '\n%s\n' "not ok 1 - palette store bound lifetime"
     exit 0
 }
-echo "ok 1 - palette store bound lifetime"
+printf '\n%s\n' "ok 1 - palette store bound lifetime"
 exit 0

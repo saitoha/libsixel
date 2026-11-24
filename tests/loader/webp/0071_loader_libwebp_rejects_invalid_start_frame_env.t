@@ -21,7 +21,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "non-integer start-frame env unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - non-integer start-frame env unexpectedly succeeded"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -29,10 +29,10 @@ msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
 
 case "${msg}" in
     *"SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer."*)
-        echo "ok" 1 - "libwebp rejects non-integer start-frame env"
+        printf '\n%s\n' "ok 1 - libwebp rejects non-integer start-frame env"
         ;;
     *)
-        echo "not ok" 1 - "expected non-integer diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected non-integer diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0

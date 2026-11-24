@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only clara_sample=0 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only clara_sample=0 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:clara_sample=1048576 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only clara_sample upper bound was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only clara_sample upper bound was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:clara_sample=63 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI clara_sample unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI clara_sample unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *-Q\ clara_sample\ must\ be\ 0\ or\ in\ range\ 64-1048576.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI clara_sample diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI clara_sample diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:clara_sample=1048576 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI clara_sample did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI clara_sample did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "medoids clara_sample follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - medoids clara_sample follows env/CLI acceptance and CLI priority"
 exit 0

@@ -16,9 +16,9 @@ set -v
 input_tga="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type2-rgb.tga"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_tga}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader RGB TGA fallback failed"
+    printf '\n%s\n' "not ok 1 - builtin loader RGB TGA fallback failed"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader falls back for non-indexed TGA"
+printf '\n%s\n' "ok 1 - builtin loader falls back for non-indexed TGA"
 exit 0

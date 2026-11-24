@@ -37,20 +37,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite outside decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite outside decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite outside missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite outside missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite outside malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite outside malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -58,8 +58,8 @@ esac
 case "${diag_line}" in
     *FX_EFFECT_STROKE_BASE*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite outside missing FX_EFFECT_STROKE_BASE"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite outside missing FX_EFFECT_STROKE_BASE"
         exit 0
         ;;
 esac
@@ -67,8 +67,8 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_STROKE_CLIPPED*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite outside missing FX_DEFERRED_STROKE_CLIPPED"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite outside missing FX_DEFERRED_STROKE_CLIPPED"
         exit 0
         ;;
 esac
@@ -76,12 +76,12 @@ esac
 case "${diag_line}" in
     *FX_DUAL_SOURCE_DEFER*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite outside missing FX_DUAL_SOURCE_DEFER"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite outside missing FX_DUAL_SOURCE_DEFER"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite outside keeps dual-source deferred code contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite outside keeps dual-source deferred code contract"
 exit 0

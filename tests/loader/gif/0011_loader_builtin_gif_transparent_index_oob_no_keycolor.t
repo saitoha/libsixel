@@ -21,7 +21,7 @@ keycolor_header="$(printf '\033P0;1q')"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Lbuiltin! -ldisable -d fs:scan=raster \
               "${input_gif}" >"${out_six}" || {
-    echo "not ok" 1 - "transparent-index-oob GIF decode failed"
+    printf '\n%s\n' "not ok 1 - transparent-index-oob GIF decode failed"
     exit 0
 }
 
@@ -30,10 +30,10 @@ out_six_text=""
 IFS= read -r out_six_text < "${out_six}" || test -n "${out_six_text}"
 case "${out_six_text}" in
     *"${keycolor_header}"*)
-        echo "not ok" 1 - "transparent-index-oob unexpectedly emitted keycolor header"
+        printf '\n%s\n' "not ok 1 - transparent-index-oob unexpectedly emitted keycolor header"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "transparent-index-oob is treated as opaque"
+printf '\n%s\n' "ok 1 - transparent-index-oob is treated as opaque"
 exit 0

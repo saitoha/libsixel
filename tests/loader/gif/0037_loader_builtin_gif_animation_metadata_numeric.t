@@ -11,9 +11,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0127_loader_builtin_gif_animation_metadata_numeric" || {
-    echo "not ok 1 - GIF animation metadata"
+    printf '\n%s\n' "not ok 1 - GIF animation metadata"
     exit 0
 }
 
-echo "ok 1 - GIF animation metadata is exact"
+printf '\n%s\n' "ok 1 - GIF animation metadata is exact"
 exit 0

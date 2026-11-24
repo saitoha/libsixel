@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m PSNR_Y -d l:Vl \
         "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" \
         "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" >/dev/null || {
-    echo "not ok" 1 - "lsqa compact Vlight dequantize alias rejected"
+    printf '\n%s\n' "not ok 1 - lsqa compact Vlight dequantize alias rejected"
     exit 0
 }
 
-echo "ok" 1 - "lsqa accepts compact Vlight dequantize alias"
+printf '\n%s\n' "ok 1 - lsqa accepts compact Vlight dequantize alias"
 exit 0

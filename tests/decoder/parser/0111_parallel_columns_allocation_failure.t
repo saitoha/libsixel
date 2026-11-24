@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0101_parallel_columns_allocation_failure" || {
-    echo "not ok 1 - 0101_parallel_columns_allocation_failure"
+    printf '\n%s\n' "not ok 1 - 0101_parallel_columns_allocation_failure"
     exit 0
 }
 
-echo "ok 1 - 0101_parallel_columns_allocation_failure"
+printf '\n%s\n' "ok 1 - 0101_parallel_columns_allocation_failure"
 exit 0

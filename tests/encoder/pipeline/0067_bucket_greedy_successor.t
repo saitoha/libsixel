@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0067_bucket_greedy_suc
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket greedy successor # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket greedy successor # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket greedy successor"
+    printf '\n%s\n' "not ok 1 - bucket greedy successor"
     exit 0
 }
-echo "ok 1 - bucket greedy successor"
+printf '\n%s\n' "ok 1 - bucket greedy successor"
 exit 0

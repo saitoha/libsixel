@@ -32,8 +32,8 @@ status=0
     'receipt:location' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Receipt system location matches"
+    printf '\n%s\n' "not ok 1 - Receipt system location matches"
     exit 0
 }
-echo "ok 1 - Receipt system location matches"
+printf '\n%s\n' "ok 1 - Receipt system location matches"
 exit 0

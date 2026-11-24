@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu/eytzinger_fractional_ties || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU fractional probe unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU fractional probe unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - eytzinger fractional ties"
+    printf '\n%s\n' "not ok 1 - eytzinger fractional ties"
     exit 0
 }
-echo "ok 1 - eytzinger fractional ties"
+printf '\n%s\n' "ok 1 - eytzinger fractional ties"
 exit 0

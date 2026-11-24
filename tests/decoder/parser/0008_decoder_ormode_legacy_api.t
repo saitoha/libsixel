@@ -13,13 +13,13 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0006_decoder_ormode_legacy_api" || status=$?
 
 test "${status}" != 77 || {
-    echo "ok 1 # SKIP compiler cannot suppress deprecated API diagnostics"
+    printf '\n%s\n' "ok 1 # SKIP compiler cannot suppress deprecated API diagnostics"
     exit 0
 }
 test "${status}" = 0 || {
-    echo "not ok 1 - legacy OR decode failed"
+    printf '\n%s\n' "not ok 1 - legacy OR decode failed"
     exit 0
 }
 
-echo "ok 1 - 0006_decoder_ormode_legacy_api"
+printf '\n%s\n' "ok 1 - 0006_decoder_ormode_legacy_api"
 exit 0

@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     nearest \
     "${fixture_root}/nearest-downscale-input.ppm" \
     "${fixture_root}/nearest-downscale-expected.ppm" || {
-    echo "not ok" 1 - "nearest downscale pixels changed"
+    printf '\n%s\n' "not ok 1 - nearest downscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "nearest downscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - nearest downscale pixels match the oracle"
 exit 0

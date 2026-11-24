@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/mahalanobis/0017_mah_linear_oracle || {
-    echo "not ok 1 - mahalanobis linear oracle"
+    printf '\n%s\n' "not ok 1 - mahalanobis linear oracle"
     exit 0
 }
 
-echo "ok 1 - mahalanobis linear oracle"
+printf '\n%s\n' "ok 1 - mahalanobis linear oracle"
 exit 0

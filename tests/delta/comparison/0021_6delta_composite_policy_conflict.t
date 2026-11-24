@@ -22,17 +22,17 @@ status=$?
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok 1 - 6delta accepted alpha-policy=composite"
+    printf '\n%s\n' "not ok 1 - 6delta accepted alpha-policy=composite"
     exit 0
 }
 
 case "${output}" in
     *"6delta requires alpha-policy=auto or keep"*) ;;
     *)
-        echo "not ok 1 - 6delta alpha-policy conflict message mismatch"
+        printf '\n%s\n' "not ok 1 - 6delta alpha-policy conflict message mismatch"
         exit 0
         ;;
 esac
 
-echo "ok 1 - 6delta rejects composite policy"
+printf '\n%s\n' "ok 1 - 6delta rejects composite policy"
 exit 0

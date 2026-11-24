@@ -22,7 +22,7 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
 ) || {
-    echo "not ok" 1 - "img2sixel failed while collecting resize planner log"
+    printf '\n%s\n' "not ok 1 - img2sixel failed while collecting resize planner log"
     exit 0
 }
 printf '%s' "${resize_log}" >&2
@@ -30,29 +30,29 @@ printf '%s' "${resize_log}" >&2
 case "${resize_log}" in
     *"scale -> colorspace(post)"*) ;;
     *)
-        echo "not ok" 1 - "missing scale -> colorspace(post)"
+        printf '\n%s\n' "not ok 1 - missing scale -> colorspace(post)"
         exit 0
         ;;
 esac
 
 test -n "${resize_log}" || {
-    echo "not ok" 1 - "missing scale -> colorspace(post)"
+    printf '\n%s\n' "not ok 1 - missing scale -> colorspace(post)"
     exit 0
 }
 
 case "${resize_log}" in
     *"colorspace(post) -> dither"*) ;;
     *)
-        echo "not ok" 1 - "missing colorspace(post) -> dither"
+        printf '\n%s\n' "not ok 1 - missing colorspace(post) -> dither"
         exit 0
         ;;
 esac
 
 test -n "${resize_log}" || {
-    echo "not ok" 1 - "missing colorspace(post) -> dither"
+    printf '\n%s\n' "not ok 1 - missing colorspace(post) -> dither"
     exit 0
 }
 
-echo "ok" 1 - "colorspace conversion placed after scaler"
+printf '\n%s\n' "ok 1 - colorspace conversion placed after scaler"
 
 exit 0

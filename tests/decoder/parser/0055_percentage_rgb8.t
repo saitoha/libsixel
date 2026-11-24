@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0053_percentage_rgb8" || {
-    echo "not ok 1 - wire percentages reconstruct exact RGB8"
+    printf '\n%s\n' "not ok 1 - wire percentages reconstruct exact RGB8"
     exit 0
 }
 
-echo "ok 1 - wire percentages reconstruct exact RGB8"
+printf '\n%s\n' "ok 1 - wire percentages reconstruct exact RGB8"
 exit 0

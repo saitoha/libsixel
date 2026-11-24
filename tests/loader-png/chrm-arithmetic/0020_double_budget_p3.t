@@ -9,12 +9,12 @@ set -v
 result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/0205_png_arith_double 1 || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP required arithmetic representation is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP required arithmetic representation is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - double budget p3"
+    printf '\n%s\n' "not ok 1 - double budget p3"
     exit 0
 }
-echo "ok 1 - double budget p3"
+printf '\n%s\n' "ok 1 - double budget p3"
 exit 0

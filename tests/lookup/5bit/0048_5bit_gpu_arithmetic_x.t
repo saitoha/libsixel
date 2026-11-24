@@ -8,12 +8,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette-direct \
     5bit/gpu_arithmetic_x || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - 5bit GPU arithmetic x"
+    printf '\n%s\n' "not ok 1 - 5bit GPU arithmetic x"
     exit 0
 }
-echo "ok 1 - 5bit GPU arithmetic x"
+printf '\n%s\n' "ok 1 - 5bit GPU arithmetic x"
 exit 0

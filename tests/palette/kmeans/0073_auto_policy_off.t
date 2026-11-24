@@ -13,7 +13,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Qkmeans:backend=auto:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - auto policy off status"
+    printf '\n%s\n' "not ok 1 - auto policy off status"
     printf '# %s\n' "$trace"
     exit 0
 }
@@ -21,9 +21,9 @@ case "$trace" in
     *requested=auto*effective=cpu*reason=policy-off*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - auto policy off contract"
+    printf '\n%s\n' "not ok 1 - auto policy off contract"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - auto policy off"
+printf '\n%s\n' "ok 1 - auto policy off"
 exit 0

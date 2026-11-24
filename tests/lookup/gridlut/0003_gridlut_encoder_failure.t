@@ -9,12 +9,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup gridlut \
     gpu-palette/0028_gridlut_encoder_failure || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU gridlut program unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU gridlut program unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - gridlut encoder failure falls back and rebuilds"
+    printf '\n%s\n' "not ok 1 - gridlut encoder failure falls back and rebuilds"
     exit 0
 }
-echo "ok 1 - gridlut encoder failure falls back and rebuilds"
+printf '\n%s\n' "ok 1 - gridlut encoder failure falls back and rebuilds"
 exit 0

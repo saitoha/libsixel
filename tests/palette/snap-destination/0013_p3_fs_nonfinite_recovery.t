@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0061_p3_fs_error_contract finite || {
-    echo "not ok 1 - P3 FS nonfinite recovery"
+    printf '\n%s\n' "not ok 1 - P3 FS nonfinite recovery"
     exit 0
 }
 
-echo "ok 1 - P3 FS nonfinite recovery"
+printf '\n%s\n' "ok 1 - P3 FS nonfinite recovery"
 exit 0

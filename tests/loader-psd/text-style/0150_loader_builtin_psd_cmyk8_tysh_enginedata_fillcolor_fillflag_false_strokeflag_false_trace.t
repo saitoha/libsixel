@@ -27,7 +27,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin loader failed to decode CMYK8 TySh StrokeFlag=false fixture: ${trace_output}"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode CMYK8 TySh StrokeFlag=false fixture: ${trace_output}"
     exit 0
 }
 
@@ -35,14 +35,14 @@ case "${trace_output}" in
     *"builtin PSD: skipping non-pixel fill payload due to FillFlag=false"*)
         ;;
     *)
-        echo "not ok" 1 - "FillFlag=false skip trace is missing"
+        printf '\n%s\n' "not ok 1 - FillFlag=false skip trace is missing"
         exit 0
         ;;
 esac
 
 case "${trace_output}" in
     *"builtin PSD: rendering non-pixel stroke payload in layer fallback"*)
-        echo "not ok" 1 - "stroke payload render trace must not appear when StrokeFlag=false"
+        printf '\n%s\n' "not ok 1 - stroke payload render trace must not appear when StrokeFlag=false"
         exit 0
         ;;
     *)
@@ -54,9 +54,9 @@ esac
 # half a level; allow one RGB byte level plus float conversion roundoff.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${expected_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    printf '\n%s\n' "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "PSD CMYK8 TySh StrokeFlag=false keeps skip trace matches reference pixel values"
+printf '\n%s\n' "ok 1 - PSD CMYK8 TySh StrokeFlag=false keeps skip trace matches reference pixel values"
 exit 0

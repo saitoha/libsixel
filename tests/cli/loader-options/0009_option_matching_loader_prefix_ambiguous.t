@@ -28,5 +28,5 @@ esac
 echo "1..1"
 set -v
 
-echo "ok" 1 - "ambiguous -L prefix is rejected"
+printf '\n%s\n' "ok 1 - ambiguous -L prefix is rejected"
 exit 0

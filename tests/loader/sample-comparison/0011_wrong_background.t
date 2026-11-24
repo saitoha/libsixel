@@ -11,8 +11,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_white_values \
     "${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png" \
     'builtin:cms_engine=none!' 0.004 || status=$?
 test "${status}" -eq 1 || {
-    echo "not ok 1 - Reject composition against the wrong background"
+    printf '\n%s\n' "not ok 1 - Reject composition against the wrong background"
     exit 0
 }
-echo "ok 1 - Reject composition against the wrong background"
+printf '\n%s\n' "ok 1 - Reject composition against the wrong background"
 exit 0

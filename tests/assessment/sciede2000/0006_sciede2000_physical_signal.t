@@ -6,8 +6,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "assessment/0044_sciede2000_physical_signal" || {
-    echo "not ok 1 - sciede2000 physical signal"
+    printf '\n%s\n' "not ok 1 - sciede2000 physical signal"
     exit 0
 }
-echo "ok 1 - sciede2000 physical signal"
+printf '\n%s\n' "ok 1 - sciede2000 physical signal"
 exit 0

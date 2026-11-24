@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0076_loader_builtin_gif_truncated_raster_reject" || {
-    echo "not ok 1 - GIF truncated raster sub-block rejection"
+    printf '\n%s\n' "not ok 1 - GIF truncated raster sub-block rejection"
     exit 0
 }
 
-echo "ok 1 - GIF truncated raster sub-block rejection"
+printf '\n%s\n' "ok 1 - GIF truncated raster sub-block rejection"
 exit 0

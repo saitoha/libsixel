@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0086_multi_pass_allocation_failure" || {
-    echo "not ok 1 - allocation failure"
+    printf '\n%s\n' "not ok 1 - allocation failure"
     exit 0
 }
 
-echo "ok 1 - allocation failure"
+printf '\n%s\n' "ok 1 - allocation failure"
 exit 0

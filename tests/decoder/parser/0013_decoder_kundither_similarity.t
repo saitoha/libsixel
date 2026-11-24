@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0011_decoder_kundither_similarity" || {
-    echo "not ok 1 - 0011_decoder_kundither_similarity"
+    printf '\n%s\n' "not ok 1 - 0011_decoder_kundither_similarity"
     exit 0
 }
 
-echo "ok 1 - 0011_decoder_kundither_similarity"
+printf '\n%s\n' "ok 1 - 0011_decoder_kundither_similarity"
 exit 0

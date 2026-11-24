@@ -21,7 +21,7 @@ actual_size=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m pal-jasc:"${input_palette}" \
     -M act:"${actual_palette}" -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - "256-color ACT export failed"
+    printf '\n%s\n' "not ok 1 - 256-color ACT export failed"
     exit 0
 }
 
@@ -30,7 +30,7 @@ test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
     actual_size=$(stat -c %s "${actual_palette}")
 }
 test "${actual_size}" -eq 772 || {
-    echo "not ok" 1 - "256-color ACT size is not 772 bytes"
+    printf '\n%s\n' "not ok 1 - 256-color ACT size is not 772 bytes"
     exit 0
 }
 
@@ -39,9 +39,9 @@ test "${actual_size}" -eq 772 || {
 set -- $(od -An -tx1 -j768 -N4 "${actual_palette}")
 { test "$#" -eq 4 && test "$1" = 01 && test "$2" = 00 && \
     test "$3" = 00 && test "$4" = 00; } || {
-    echo "not ok" 1 - "ACT 256-color count or transparency field changed"
+    printf '\n%s\n' "not ok 1 - ACT 256-color count or transparency field changed"
     exit 0
 }
 
-echo "ok" 1 - "ACT export writes exact 256-color trailer"
+printf '\n%s\n' "ok 1 - ACT export writes exact 256-color trailer"
 exit 0

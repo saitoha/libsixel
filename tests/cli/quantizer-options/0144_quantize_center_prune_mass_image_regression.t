@@ -26,12 +26,12 @@ env_output="${artifact_dir}/0075-quantize-center-prune_mass-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 64 "-Qcenter:U0.95" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "center:prune_mass short conversion failed"
+    printf '\n%s\n' "not ok 1 - center:prune_mass short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=prune_mass\|stored=1\|binding=quantize_model_kcenter_prune_mass,quantize_model_kcenter_prune_mass_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "prune_mass short value was not stored"
+    printf '\n%s\n' "not ok 1 - prune_mass short value was not stored"
     exit 0
 }
 
@@ -39,26 +39,26 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_PRUNE_MASS=0.95" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "center:prune_mass env conversion failed"
+    printf '\n%s\n' "not ok 1 - center:prune_mass env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=prune_mass\|stored=1\|binding=quantize_model_kcenter_prune_mass,quantize_model_kcenter_prune_mass_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "prune_mass environment value was not stored"
+    printf '\n%s\n' "not ok 1 - prune_mass environment value was not stored"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "center:prune_mass short and env output differ"
+    printf '\n%s\n' "not ok 1 - center:prune_mass short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "center:prune_mass preserves image output"
+printf '\n%s\n' "ok 1 - center:prune_mass preserves image output"
 exit 0

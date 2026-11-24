@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0069_loader_background_colorspace_reset" || {
-    echo "not ok 1 - loader background colorspace override reset"
+    printf '\n%s\n' "not ok 1 - loader background colorspace override reset"
     exit 0
 }
 
-echo "ok 1 - loader background colorspace override reset"
+printf '\n%s\n' "ok 1 - loader background colorspace override reset"
 exit 0

@@ -19,20 +19,20 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six"         "${snake_png}" || {
-    echo "not ok" 1 - "Preparing ACT palette for import failed"
+    printf '\n%s\n' "not ok 1 - Preparing ACT palette for import failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six"         "${snake_png}" || {
-    echo "not ok" 1 - "ACT palette conversion failed"
+    printf '\n%s\n' "not ok 1 - ACT palette conversion failed"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/from-act.six" || {
-    echo "not ok" 1 - "ACT palette conversion produced no data"
+    printf '\n%s\n' "not ok 1 - ACT palette conversion produced no data"
     exit 0
 }
 
-echo "ok" 1 - "ACT palette import by extension works"
+printf '\n%s\n' "ok 1 - ACT palette import by extension works"
 
 exit 0

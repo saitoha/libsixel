@@ -25,14 +25,14 @@ iter_more=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set -x
 
 test "${iter_only}" = "${iter_and_max}" || {
-    echo "not ok" 1 - "iter did not take precedence over iter_max"
+    printf '\n%s\n' "not ok 1 - iter did not take precedence over iter_max"
     exit 0
 }
 
 test "${iter_only}" != "${iter_more}" || {
-    echo "not ok" 1 - "iter precedence check lacked an iteration contrast"
+    printf '\n%s\n' "not ok 1 - iter precedence check lacked an iteration contrast"
     exit 0
 }
 
-echo "ok" 1 - "kmeans iter takes precedence over iter_max"
+printf '\n%s\n' "ok 1 - kmeans iter takes precedence over iter_max"
 exit 0

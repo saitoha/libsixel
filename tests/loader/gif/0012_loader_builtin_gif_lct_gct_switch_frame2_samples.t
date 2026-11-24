@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
               --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
               -Lbuiltin! -ldisable -d none:scan=raster -p 256 -g \
               "${input_gif}" >"${output_six}" || {
-    echo "not ok" 1 - "LCT/GCT switch GIF frame2 decode failed"
+    printf '\n%s\n' "not ok 1 - LCT/GCT switch GIF frame2 decode failed"
     exit 0
 }
 
@@ -32,20 +32,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
 # that prefix before removing it for the standalone SIXEL loader.
 prefix=$(dd if="${output_six}" bs=3 count=1 2>/dev/null)
 test "${prefix}" = "$(printf '\033[H')" || {
-    echo "not ok 1 - selected animation frame has an unexpected prefix"
+    printf '\n%s\n' "not ok 1 - selected animation frame has an unexpected prefix"
     exit 0
 }
 dd if="${output_six}" of="${normalized_six}" bs=1 skip=3 2>/dev/null || {
-    echo "not ok 1 - selected animation frame normalization failed"
+    printf '\n%s\n' "not ok 1 - selected animation frame normalization failed"
     exit 0
 }
 
 # Palette switching must preserve every decoded component exactly.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_png}" "${normalized_six}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - selected GIF frame values differ from the reference"
+    printf '\n%s\n' "not ok 1 - selected GIF frame values differ from the reference"
     exit 0
 }
 
-echo "ok 1 - selected GIF frame values match the reference"
+printf '\n%s\n' "ok 1 - selected GIF frame values match the reference"
 exit 0

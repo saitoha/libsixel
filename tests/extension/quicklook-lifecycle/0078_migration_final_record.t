@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'normal' 'migration-journal' || {
-    echo "not ok 1 - Migration distinguishes observed restoration from removal readiness."
+    printf '\n%s\n' "not ok 1 - Migration distinguishes observed restoration from removal readiness."
     exit 0
 }
-echo "ok 1 - Migration distinguishes observed restoration from removal readiness."
+printf '\n%s\n' "ok 1 - Migration distinguishes observed restoration from removal readiness."
 exit 0

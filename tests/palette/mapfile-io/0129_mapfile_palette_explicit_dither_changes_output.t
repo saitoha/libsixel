@@ -18,7 +18,7 @@ none_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -m "${mapfile_palette}" -d none -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "mapfile palette encode failed with -d none"
+    printf '\n%s\n' "not ok 1 - mapfile palette encode failed with -d none"
     exit 0
 }
 
@@ -26,22 +26,22 @@ fs_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -m "${mapfile_palette}" -d fs -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "mapfile palette encode failed with -d fs"
+    printf '\n%s\n' "not ok 1 - mapfile palette encode failed with -d fs"
     exit 0
 }
 
 test -n "${none_output}" || {
-    echo "not ok" 1 - "mapfile palette -d none output is empty"
+    printf '\n%s\n' "not ok 1 - mapfile palette -d none output is empty"
     exit 0
 }
 test -n "${fs_output}" || {
-    echo "not ok" 1 - "mapfile palette -d fs output is empty"
+    printf '\n%s\n' "not ok 1 - mapfile palette -d fs output is empty"
     exit 0
 }
 test "${none_output}" != "${fs_output}" || {
-    echo "not ok" 1 - "mapfile palette dither methods produced identical output"
+    printf '\n%s\n' "not ok 1 - mapfile palette dither methods produced identical output"
     exit 0
 }
 
-echo "ok" 1 - "mapfile palette output changes under explicit dither methods"
+printf '\n%s\n' "ok 1 - mapfile palette output changes under explicit dither methods"
 exit 0

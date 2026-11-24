@@ -14,15 +14,15 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/merge_float/0001_merge_contract worker 0 1 0 2>&1) || {
-    echo "not ok 1 - kmeans srgb worker"
+    printf '\n%s\n' "not ok 1 - kmeans srgb worker"
     exit 0
 }
 
 case "${trace}" in *"job_ready=1"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - Ward palette worker dispatch"
+    printf '\n%s\n' "not ok 1 - Ward palette worker dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - kmeans srgb worker"
+printf '\n%s\n' "ok 1 - kmeans srgb worker"
 exit 0

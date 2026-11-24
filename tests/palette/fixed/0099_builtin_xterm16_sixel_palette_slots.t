@@ -15,22 +15,22 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin -b xterm16 -o - "${input_image}") || {
-    echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - xterm16 SIXEL palette slot range changed"
     exit 0
 }
 
 case "${sixel_output}" in *#0\;2\;0\;0\;0*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - xterm16 SIXEL palette slot range changed"
     exit 0
 }
 case "${sixel_output}" in *#15\;2\;100\;100\;100*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - xterm16 SIXEL palette slot range changed"
     exit 0
 }
 case "${sixel_output}" in *#16\;2\;*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "xterm16 SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - xterm16 SIXEL palette slot range changed"
     exit 0
 }
 
-echo "ok" 1 - "xterm16 SIXEL output defines slots 0 through 15"
+printf '\n%s\n' "ok 1 - xterm16 SIXEL output defines slots 0 through 15"
 exit 0

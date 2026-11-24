@@ -18,19 +18,19 @@ env_output="${ARTIFACT_LOCAL_DIR}/loaders-env-$$.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input}" \
     >"${cli_output}" || {
-    echo "not ok 1 - loaders CLI conversion failed"
+    printf '\n%s\n' "not ok 1 - loaders CLI conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_PRIORITY_LIST=builtin! "${input}" \
     >"${env_output}" || {
-    echo "not ok 1 - loaders environment conversion failed"
+    printf '\n%s\n' "not ok 1 - loaders environment conversion failed"
     exit 0
 }
 cmp -s "${cli_output}" "${env_output}" || {
-    echo "not ok 1 - loaders environment and CLI differ"
+    printf '\n%s\n' "not ok 1 - loaders environment and CLI differ"
     exit 0
 }
 
-echo "ok 1 - loaders environment matches CLI"
+printf '\n%s\n' "ok 1 - loaders environment matches CLI"
 exit 0

@@ -27,17 +27,17 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=invalid" \
     "-Lbuiltin:Tlinear:Fsrgb!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "hdr_fallback_profile short conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=hdr_fallback_profile\|stored=1\|binding=hdr_fallback_profile\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_fallback_profile short value was not stored"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *builtin\ HDR:\ final\ controls*fallback=srgb**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_fallback_profile short value did not reach HDR"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile short value did not reach HDR"
     exit 0
 }
 
@@ -45,43 +45,43 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=srgb" \
     "-Lbuiltin:Tlinear!" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "hdr_fallback_profile environment conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=hdr_fallback_profile\|stored=1\|binding=hdr_fallback_profile\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_fallback_profile environment value was not stored"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *builtin\ HDR:\ final\ controls*fallback=srgb**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_fallback_profile environment did not reach HDR"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile environment did not reach HDR"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "hdr_fallback_profile short and environment differ"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile short and environment differ"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=linear-srgb" \
     "-Lbuiltin:Tlinear!" "${input_image}" >"${control_output}" || {
-    echo "not ok" 1 - "hdr_fallback_profile control conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile control conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${control_output}" && {
-    echo "not ok" 1 - "hdr_fallback_profile did not alter HDR output"
+    printf '\n%s\n' "not ok 1 - hdr_fallback_profile did not alter HDR output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "hdr_fallback_profile preserves HDR image output"
+printf '\n%s\n' "ok 1 - hdr_fallback_profile preserves HDR image output"
 exit 0

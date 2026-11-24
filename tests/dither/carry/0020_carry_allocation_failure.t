@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/carry/0020_carry_allocation_failure" || {
-    echo "not ok 1 - allocation_failure"
+    printf '\n%s\n' "not ok 1 - allocation_failure"
     exit 0
 }
-echo "ok 1 - allocation_failure"
+printf '\n%s\n' "ok 1 - allocation_failure"
 exit 0

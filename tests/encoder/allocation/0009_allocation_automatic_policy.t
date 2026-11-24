@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "planner/allocation/0009_allocation_automatic_policy" || {
-    echo "not ok 1 - automatic allocation respects method and budget boundaries"
+    printf '\n%s\n' "not ok 1 - automatic allocation respects method and budget boundaries"
     exit 0
 }
 
-echo "ok 1 - automatic allocation respects method and budget boundaries"
+printf '\n%s\n' "ok 1 - automatic allocation respects method and budget boundaries"
 exit 0

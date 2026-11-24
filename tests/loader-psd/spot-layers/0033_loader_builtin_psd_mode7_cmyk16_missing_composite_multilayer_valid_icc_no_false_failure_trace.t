@@ -28,13 +28,13 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PAT
     "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "mode7 CMYK16 multi-layer valid ICC decode failed: ${trace_log}"
+    printf '\n%s\n' "not ok 1 - mode7 CMYK16 multi-layer valid ICC decode failed: ${trace_log}"
     exit 0
 }
 
 case "${trace_log}" in
     *"embedded ICC conversion failed"*)
-        echo "not ok" 1 - "mode7 CMYK16 multi-layer valid ICC emitted false failure trace"
+        printf '\n%s\n' "not ok 1 - mode7 CMYK16 multi-layer valid ICC emitted false failure trace"
         exit 0
         ;;
 esac
@@ -43,10 +43,10 @@ case "${trace_log}" in
     *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader did not finish successfully"
+        printf '\n%s\n' "not ok 1 - builtin loader did not finish successfully"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "mode7 CMYK16 multi-layer valid ICC avoids false embedded-ICC failure trace"
+printf '\n%s\n' "ok 1 - mode7 CMYK16 multi-layer valid ICC avoids false embedded-ICC failure trace"
 exit 0

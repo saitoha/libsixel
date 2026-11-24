@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0091_parallel_inherited_register" || {
-    echo "not ok 1 - parallel_inherited_register"
+    printf '\n%s\n' "not ok 1 - parallel_inherited_register"
     exit 0
 }
 
-echo "ok 1 - parallel_inherited_register"
+printf '\n%s\n' "ok 1 - parallel_inherited_register"
 exit 0

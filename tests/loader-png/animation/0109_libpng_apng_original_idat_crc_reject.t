@@ -11,8 +11,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract crc || {
-    echo "not ok 1 - libpng apng original idat crc reject"
+    printf '\n%s\n' "not ok 1 - libpng apng original idat crc reject"
     exit 0
 }
-echo "ok 1 - libpng apng original idat crc reject"
+printf '\n%s\n' "ok 1 - libpng apng original idat crc reject"
 exit 0

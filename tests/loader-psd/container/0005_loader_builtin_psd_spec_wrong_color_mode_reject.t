@@ -16,9 +16,9 @@ set -v
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_colormode6_raw.psd"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null && {
-    echo "not ok" 1 - "unsupported color mode (6) was unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - unsupported color mode (6) was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "unsupported color mode (6) is rejected"
+printf '\n%s\n' "ok 1 - unsupported color mode (6) is rejected"
 exit 0

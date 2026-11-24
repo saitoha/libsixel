@@ -17,69 +17,69 @@ input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-2x2.
 
 out_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - default alpha policy render failed"
+    printf '\n%s\n' "not ok 1 - default alpha policy render failed"
     exit 0
 }
 
 out_auto=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=auto \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - auto alpha policy render failed"
+    printf '\n%s\n' "not ok 1 - auto alpha policy render failed"
     exit 0
 }
 
 out_clear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=clear \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - clear alpha policy render failed"
+    printf '\n%s\n' "not ok 1 - clear alpha policy render failed"
     exit 0
 }
 
 out_composite=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=composite \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - composite alpha policy render failed"
+    printf '\n%s\n' "not ok 1 - composite alpha policy render failed"
     exit 0
 }
 
 out_invalid=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=invalid \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - invalid alpha policy render failed"
+    printf '\n%s\n' "not ok 1 - invalid alpha policy render failed"
     exit 0
 }
 
 out_keep=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=keep \
     -Lbuiltin:cms_engine=none! -B#fff -d fs:scan=raster "${input_bmp}") || {
-    echo "not ok 1 - keep alpha policy render failed"
+    printf '\n%s\n' "not ok 1 - keep alpha policy render failed"
     exit 0
 }
 
 test "${out_default}" = "${out_auto}" || {
-    echo "not ok 1 - default policy mismatch against explicit auto"
+    printf '\n%s\n' "not ok 1 - default policy mismatch against explicit auto"
     exit 0
 }
 
 test "${out_default}" = "${out_clear}" || {
-    echo "not ok 1 - default auto policy did not resolve to clear"
+    printf '\n%s\n' "not ok 1 - default auto policy did not resolve to clear"
     exit 0
 }
 
 test "${out_default}" = "${out_invalid}" || {
-    echo "not ok 1 - invalid alpha policy did not fall back to default"
+    printf '\n%s\n' "not ok 1 - invalid alpha policy did not fall back to default"
     exit 0
 }
 
 test "${out_default}" != "${out_composite}" || {
-    echo "not ok 1 - composite did not change alpha-zero behavior"
+    printf '\n%s\n' "not ok 1 - composite did not change alpha-zero behavior"
     exit 0
 }
 
 test "${out_default}" != "${out_keep}" || {
-    echo "not ok 1 - keep policy did not change the DCS request"
+    printf '\n%s\n' "not ok 1 - keep policy did not change the DCS request"
     exit 0
 }
 
-echo "ok 1 - alpha policy strict parse/fallback and mode switch verified"
+printf '\n%s\n' "ok 1 - alpha policy strict parse/fallback and mode switch verified"
 exit 0

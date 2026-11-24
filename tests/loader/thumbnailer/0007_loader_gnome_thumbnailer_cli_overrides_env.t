@@ -29,15 +29,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "SIXEL_LOADER_PRIORITY_LIST=builtin!" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" || {
-    echo "not ok" 1 - "CLI override for loader priority list failed"
+    printf '\n%s\n' "not ok 1 - CLI override for loader priority list failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "CLI override for loader priority list failed"
+    printf '\n%s\n' "not ok 1 - CLI override for loader priority list failed"
     exit 0
 }
 
-echo "ok" 1 - "-L overrides SIXEL_LOADER_PRIORITY_LIST"
+printf '\n%s\n' "ok 1 - -L overrides SIXEL_LOADER_PRIORITY_LIST"
 
 exit 0

@@ -25,16 +25,16 @@ trace_log=''
 
 trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
     "${input_psd}" -o /dev/null 2>&1) && {
-    echo "not ok" 1 - "8BPB+version1 was unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - 8BPB+version1 was unexpectedly accepted"
     exit 0
 }
 
 case "${trace_log}" in
     *"builtin PSD: malformed section length/offset"*)
-        echo "ok" 1 - "8BPB+version1 mismatch is rejected as malformed header"
+        printf '\n%s\n' "ok 1 - 8BPB+version1 mismatch is rejected as malformed header"
         ;;
     *)
-        echo "not ok" 1 - "expected mismatch rejection trace is missing"
+        printf '\n%s\n' "not ok 1 - expected mismatch rejection trace is missing"
         exit 0
         ;;
 esac

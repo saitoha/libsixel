@@ -17,12 +17,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:unknown=1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown medoids suboption key unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown medoids suboption key unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing unknown medoids key diagnostic"
+    printf '\n%s\n' "not ok 1 - missing unknown medoids key diagnostic"
     exit 0
 }
 
@@ -30,9 +30,9 @@ valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
 case "${valid_keys_line}" in *algo*seed*iter*sample*clara_trials*clara_sample*clarans_local*clarans_neighbors*bandit_iter*bandit_candidates*bandit_batch*histbits*point_budget*rare_keep*prune_mass*auction*auction_shortlist*sample_target**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing medoids key candidate list"
+    printf '\n%s\n' "not ok 1 - missing medoids key candidate list"
     exit 0
 }
 
-echo "ok" 1 - "unknown medoids suboption key is rejected with candidates"
+printf '\n%s\n' "ok 1 - unknown medoids suboption key is rejected with candidates"
 exit 0

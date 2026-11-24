@@ -19,12 +19,12 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "valid VP8X first chunk was rejected"
+    printf '\n%s\n' "not ok 1 - valid VP8X first chunk was rejected"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "valid VP8X first chunk is accepted"
+printf '\n%s\n' "ok 1 - valid VP8X first chunk is accepted"
 
 exit 0

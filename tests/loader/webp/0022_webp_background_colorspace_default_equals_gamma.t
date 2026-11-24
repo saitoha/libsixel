@@ -22,7 +22,7 @@ output_default="${ARTIFACT_LOCAL_DIR}/webp-bgcs-default.six"
 output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-gamma.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! -S -B#808080 "${input_webp}" >"${output_default}" || {
-    echo "not ok" 1 - "libwebp default background colorspace decode failed"
+    printf '\n%s\n' "not ok 1 - libwebp default background colorspace decode failed"
     exit 0
 }
 
@@ -30,15 +30,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
-    echo "not ok" 1 - "libwebp gamma background colorspace decode failed"
+    printf '\n%s\n' "not ok 1 - libwebp gamma background colorspace decode failed"
     exit 0
 }
 
 # Equivalent input/settings require identical output bytes.
 { test -s "${output_default}" && cmp -s "${output_default}" "${output_gamma}"; } || {
-    echo "not ok 1 - equivalent WebP output differs or is empty"
+    printf '\n%s\n' "not ok 1 - equivalent WebP output differs or is empty"
     exit 0
 }
 
-echo "ok" 1 - "default background colorspace matches gamma for libwebp"
+printf '\n%s\n' "ok 1 - default background colorspace matches gamma for libwebp"
 exit 0

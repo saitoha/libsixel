@@ -20,7 +20,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_truncated_second_chunk_header.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted truncated second chunk header"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted truncated second chunk header"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -30,13 +30,13 @@ case "${msg}" in
     *"webp decode: chunk header is truncated."*)
         ;;
     *)
-        echo "not ok" 1 - "expected truncated chunk header diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected truncated chunk header diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects truncated second chunk header"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects truncated second chunk header"
 
 exit 0

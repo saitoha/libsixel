@@ -25,7 +25,7 @@ abort_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env SIXEL_ABORT_TRACE=1
     "aborttrace/0001_img2sixel_aborttrace" 2>&1) || rc=$?
 
 test "${rc:-0}" -eq 77 && {
-    echo "ok" 1 - "abort trace # SKIP abort trace disabled"
+    printf '\n%s\n' "ok 1 - abort trace # SKIP abort trace disabled"
     exit 0
 }
 
@@ -38,17 +38,17 @@ case "${abort_output}" in *libsixel:\ abort\ trace\ complete*) true ;; *) false 
 test "${abort_detected}" = "1" || {
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${abort_output}" >&2
-    echo "not ok" 1 - "abort trace missing"
+    printf '\n%s\n' "not ok 1 - abort trace missing"
     exit 0
 }
 
 test "${abort_complete}" = "1" || {
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${abort_output}" >&2
-    echo "not ok" 1 - "abort trace missing"
+    printf '\n%s\n' "not ok 1 - abort trace missing"
     exit 0
 }
 
-echo "ok" 1 - "abort trace emitted"
+printf '\n%s\n' "ok 1 - abort trace emitted"
 
 exit 0

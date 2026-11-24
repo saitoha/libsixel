@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "scale/0002_parallel_min_bytes_environment" || {
-    echo "not ok 1 - scale threshold missed parallel dispatch"
+    printf '\n%s\n' "not ok 1 - scale threshold missed parallel dispatch"
     exit 0
 }
 
-echo "ok 1 - scale threshold reaches parallel dispatch"
+printf '\n%s\n' "ok 1 - scale threshold reaches parallel dispatch"
 exit 0

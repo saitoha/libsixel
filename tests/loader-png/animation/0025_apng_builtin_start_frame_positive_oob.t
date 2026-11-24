@@ -18,9 +18,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apn
     -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null && {
-    echo "not ok" 1 - "builtin loader accepted an out-of-range positive start frame"
+    printf '\n%s\n' "not ok 1 - builtin loader accepted an out-of-range positive start frame"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader rejects positive out-of-range start frame"
+printf '\n%s\n' "ok 1 - builtin loader rejects positive out-of-range start frame"
 exit 0

@@ -15,8 +15,8 @@ parallel=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xgamma \
     -fnorm -Qheckbert:Tsse:Osse -=greedy:B8 -M gpl:- -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png")
 { test -n "$single" && test "$single" = "$parallel"; } || {
-    echo "not ok 1 - worker count changed SSE palette"
+    printf '\n%s\n' "not ok 1 - worker count changed SSE palette"
     exit 0
 }
-echo "ok 1 - gamma_norm_threads"
+printf '\n%s\n' "ok 1 - gamma_norm_threads"
 exit 0

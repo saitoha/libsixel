@@ -9,9 +9,9 @@ set -v
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_weight/0013_instance_metric_isolation || {
-    echo "not ok 1 - FHEDT instance metric isolation"
+    printf '\n%s\n' "not ok 1 - FHEDT instance metric isolation"
     exit 0
 }
 
-echo "ok 1 - FHEDT instance metric isolation"
+printf '\n%s\n' "ok 1 - FHEDT instance metric isolation"
 exit 0

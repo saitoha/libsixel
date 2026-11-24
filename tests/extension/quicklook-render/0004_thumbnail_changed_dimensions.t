@@ -20,8 +20,8 @@ set +e
 status=$?
 set -e
 test "$status" = 1 || {
-    echo "not ok 1 - Thumbnail output rejects changed dimensions"
+    printf '\n%s\n' "not ok 1 - Thumbnail output rejects changed dimensions"
     exit 0
 }
-echo "ok 1 - Thumbnail output rejects changed dimensions"
+printf '\n%s\n' "ok 1 - Thumbnail output rejects changed dimensions"
 exit 0

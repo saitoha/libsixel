@@ -32,7 +32,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
@@ -56,11 +56,11 @@ done <<EOF
 $trace_output
 EOF
 test "$replayed" -eq 1 || {
-    echo "not ok 1 - deferred gradient replay did not follow suppression"
+    printf '\n%s\n' "not ok 1 - deferred gradient replay did not follow suppression"
     exit 0
 }
 test "$alpha_preserved" -eq 1 || {
-    echo "not ok 1 - missing deferred gradient alpha-invariant trace"
+    printf '\n%s\n' "not ok 1 - missing deferred gradient alpha-invariant trace"
     exit 0
 }
 
@@ -70,9 +70,9 @@ test "$alpha_preserved" -eq 1 || {
 # That known rendering limitation must not be hidden by a lower threshold.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_dimensions \
     "${output_sixel}" 256 256 || {
-    echo "not ok 1 - compositor output dimensions differ"
+    printf '\n%s\n' "not ok 1 - compositor output dimensions differ"
     exit 0
 }
 
-echo "ok 1 - compositor route and output dimensions match"
+printf '\n%s\n' "ok 1 - compositor route and output dimensions match"
 exit 0

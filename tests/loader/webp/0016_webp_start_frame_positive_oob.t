@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=999 -L libwebp! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >/dev/null && {
-    echo "not ok" 1 - "libwebp positive out-of-range start frame unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - libwebp positive out-of-range start frame unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "libwebp positive out-of-range start frame is rejected"
+printf '\n%s\n' "ok 1 - libwebp positive out-of-range start frame is rejected"
 exit 0

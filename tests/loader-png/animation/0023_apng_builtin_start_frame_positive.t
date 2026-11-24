@@ -18,7 +18,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apn
     -Lbuiltin! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" || {
-    echo "not ok" 1 - "APNG decode with positive start frame failed"
+    printf '\n%s\n' "not ok 1 - APNG decode with positive start frame failed"
     exit 0
 }
 
@@ -26,9 +26,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apn
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2_builtin_start_frame_positive_reference.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - selected APNG frame differs from the fixed reference"
+    printf '\n%s\n' "not ok 1 - selected APNG frame differs from the fixed reference"
     exit 0
 }
 
-echo "ok" 1 - "builtin APNG positive start frame matches static reference"
+printf '\n%s\n' "ok 1 - builtin APNG positive start frame matches static reference"
 exit 0

@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check executables \
     "${TOP_BUILDDIR}/quicklook-extension/package" host || {
-    echo "not ok 1 - Host has the required declared regular executable payload file."
+    printf '\n%s\n' "not ok 1 - Host has the required declared regular executable payload file."
     exit 0
 }
 
-echo "ok 1 - Host has the required declared regular executable payload file."
+printf '\n%s\n' "ok 1 - Host has the required declared regular executable payload file."
 exit 0

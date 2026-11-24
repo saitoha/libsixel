@@ -32,21 +32,21 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite diagnostic header is malformed"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -54,7 +54,7 @@ esac
 case "${diag_line}" in
     *FX_LRFX_MERGE*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite did not merge legacy lrFX"
         exit 0
         ;;
 esac
@@ -62,18 +62,18 @@ esac
 case "${diag_line}" in
     *FX_GRFL_PARSE*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost active lfx2 GrFl parse"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost active lfx2 GrFl parse"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_GRFL_INACTIVE_PARSE*)
-        echo "not ok" 1 - "effects/stroke-composite regressed GrFl into inactive"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite regressed GrFl into inactive"
         exit 0
         ;;
     *) ;;
 esac
 
-echo "ok" 1 - "effects/stroke-composite keeps active lfx2 channels"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps active lfx2 channels"
 exit 0

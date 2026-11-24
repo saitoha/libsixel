@@ -28,14 +28,14 @@ reference_ppm="${TOP_SRCDIR}/tests/data/loader/quality/9bbd3d10-0003_snake_64_in
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake-64-builtin-indexed-png-icc.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin:cms_engine=auto! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 - "builtin decode failed"
+    printf '\n%s\n' "not ok 1 - builtin decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${reference_ppm}" "${output_sixel}" >/dev/null || {
-    echo "not ok" 1 - "builtin output mismatched converted reference"
+    printf '\n%s\n' "not ok 1 - builtin output mismatched converted reference"
     exit 0
 }
 
-echo "ok" 1 - "builtin indexed PNG ICC conversion matches fixed PNM reference"
+printf '\n%s\n' "ok 1 - builtin indexed PNG ICC conversion matches fixed PNM reference"
 exit 0

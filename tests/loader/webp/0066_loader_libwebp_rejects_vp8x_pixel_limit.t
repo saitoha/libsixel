@@ -20,7 +20,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_vp8x_image_exceeds_pixel_limit.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted over-budget VP8X pixel count"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted over-budget VP8X pixel count"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -30,13 +30,13 @@ case "${msg}" in
     *"webp decode: image exceeds pixel limit."*)
         ;;
     *)
-        echo "not ok" 1 - "expected pixel-limit diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected pixel-limit diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects over-budget VP8X pixel count"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects over-budget VP8X pixel count"
 
 exit 0

@@ -32,8 +32,8 @@ status=0
     'signature:registration-helper' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Installed code signature matches distribution registration-helper"
+    printf '\n%s\n' "not ok 1 - Installed code signature matches distribution registration-helper"
     exit 0
 }
-echo "ok 1 - Installed code signature matches distribution registration-helper"
+printf '\n%s\n' "ok 1 - Installed code signature matches distribution registration-helper"
 exit 0

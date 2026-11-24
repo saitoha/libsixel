@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
               -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - builtin palette+tRNS default render failed"
+    printf '\n%s\n' "not ok 1 - builtin palette+tRNS default render failed"
     exit 0
 }
 
@@ -31,15 +31,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_env1}" || {
-    echo "not ok 1 - builtin palette+tRNS SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
+    printf '\n%s\n' "not ok 1 - builtin palette+tRNS SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_env1}" || {
-    echo "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 unexpectedly changes palette+tRNS output"
+    printf '\n%s\n' "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 unexpectedly changes palette+tRNS output"
     exit 0
 }
 
-echo "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS output"
+printf '\n%s\n' "ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 is ignored for palette+tRNS output"
 
 exit 0

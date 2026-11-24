@@ -9,10 +9,10 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/map_precision/0022_map_allocation_fs 2>&1) || {
-    echo "not ok 1 - map allocation_fs"
+    printf '\n%s\n' "not ok 1 - map allocation_fs"
     printf '# %s\n' "${trace}"
     exit 0
 }
 
-echo "ok 1 - map allocation_fs"
+printf '\n%s\n' "ok 1 - map allocation_fs"
 exit 0

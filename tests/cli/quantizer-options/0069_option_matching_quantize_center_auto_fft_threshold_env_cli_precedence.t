@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only center auto_fft_threshold=1024 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only center auto_fft_threshold=1024 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:auto_fft_threshold=4096 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only center auto_fft_threshold=4096 was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only center auto_fft_threshold=4096 was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:auto_fft_threshold=70000 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI auto_fft_threshold unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI auto_fft_threshold unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *auto_fft_threshold**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI center auto_fft_threshold diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI center auto_fft_threshold diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:auto_fft_threshold=2048 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI center auto_fft_threshold did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI center auto_fft_threshold did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "center auto_fft_threshold follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - center auto_fft_threshold follows env/CLI acceptance and CLI priority"
 exit 0

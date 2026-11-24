@@ -9,8 +9,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/macro/0019_highcolor_p3_c1 "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok 1 - highcolor p3 c1"
+    printf '\n%s\n' "not ok 1 - highcolor p3 c1"
     exit 0
 }
-echo "ok 1 - highcolor p3 c1"
+printf '\n%s\n' "ok 1 - highcolor p3 c1"
 exit 0

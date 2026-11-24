@@ -19,10 +19,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: malformed PSB layer channel length"*)
-        echo "ok" 1 - "PSB mode4 CMYK8 channel-length overflow keeps dedicated malformed trace"
+        printf '\n%s\n' "ok 1 - PSB mode4 CMYK8 channel-length overflow keeps dedicated malformed trace"
         ;;
     *)
-        echo "not ok" 1 - "PSB mode4 CMYK8 channel-length overflow trace is missing"
+        printf '\n%s\n' "not ok 1 - PSB mode4 CMYK8 channel-length overflow trace is missing"
         exit 0
         ;;
 esac

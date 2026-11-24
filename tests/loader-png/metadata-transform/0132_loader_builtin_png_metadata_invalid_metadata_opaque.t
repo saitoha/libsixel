@@ -14,8 +14,8 @@ printf '%s\n' "$output" >&2
 echo "1..1"
 set -v
 test "$status" -eq 0 || {
-    echo "not ok 1 - Classify singular opaque PNG metadata before the profile factory"
+    printf '\n%s\n' "not ok 1 - Classify singular opaque PNG metadata before the profile factory"
     exit 0
 }
-echo "ok 1 - Classify singular opaque PNG metadata before the profile factory"
+printf '\n%s\n' "ok 1 - Classify singular opaque PNG metadata before the profile factory"
 exit 0

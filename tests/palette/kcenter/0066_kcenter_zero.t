@@ -11,9 +11,9 @@ SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     zero 0 0 0 1 || {
-    echo "not ok 1 - kcenter zero"
+    printf '\n%s\n' "not ok 1 - kcenter zero"
     exit 0
 }
 
-echo "ok 1 - kcenter zero"
+printf '\n%s\n' "ok 1 - kcenter zero"
 exit 0

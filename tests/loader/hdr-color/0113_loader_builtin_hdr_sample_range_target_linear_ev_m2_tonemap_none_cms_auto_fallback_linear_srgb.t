@@ -29,7 +29,7 @@ SIXEL_LOADER_HDR_EXPOSURE_EV="${SIXEL_HDR_EXPOSURE_EV}" \
 SIXEL_LOADER_HDR_TONEMAP="${SIXEL_HDR_TONEMAP}" \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:cms_engine=${SIXEL_HDR_CMS_ENGINE}!" "${input_hdr}" >"${output_sixel}" || {
-    echo "not ok 1 - builtin HDR sample range decode failed (${SIXEL_HDR_CASE_LABEL})"
+    printf '\n%s\n' "not ok 1 - builtin HDR sample range decode failed (${SIXEL_HDR_CASE_LABEL})"
     exit 0
 }
 
@@ -37,9 +37,9 @@ SIXEL_LOADER_HDR_TONEMAP="${SIXEL_HDR_TONEMAP}" \
 # cannot be evidence that the image differs from a solid black/white frame.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_sample_range \
     "${output_sixel}" 1 || {
-    echo "not ok 1 - HDR output lost its RGB sample range"
+    printf '\n%s\n' "not ok 1 - HDR output lost its RGB sample range"
     exit 0
 }
 
-echo "ok 1 - builtin HDR sample range high-risk guard (${SIXEL_HDR_CASE_LABEL})"
+printf '\n%s\n' "ok 1 - builtin HDR sample range high-risk guard (${SIXEL_HDR_CASE_LABEL})"
 exit 0

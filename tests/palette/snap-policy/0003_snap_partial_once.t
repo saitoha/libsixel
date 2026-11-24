@@ -6,8 +6,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/0048_snap_partial_once || {
-    echo "not ok 1 - partial snap was rounded or repeated"
+    printf '\n%s\n' "not ok 1 - partial snap was rounded or repeated"
     exit 0
 }
-echo "ok 1 - partial snap preserves one float blend"
+printf '\n%s\n' "ok 1 - partial snap preserves one float blend"
 exit 0

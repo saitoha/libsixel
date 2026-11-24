@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0071_query_playback_cpu" >/dev/null || {
-    echo "not ok 1 - query playback cpu"
+    printf '\n%s\n' "not ok 1 - query playback cpu"
     exit 0
 }
 
-echo "ok 1 - query playback cpu"
+printf '\n%s\n' "ok 1 - query playback cpu"
 exit 0

@@ -20,7 +20,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_CHANNEL=mono \
     -d bluenoise:scan=raster --precision-policy=8bit -p 16 \
     -o "${output_env}" "${input_image}" || {
-    echo "not ok" 1 - "8-bit bluenoise env baseline failed"
+    printf '\n%s\n' "not ok 1 - 8-bit bluenoise env baseline failed"
     exit 0
 }
 
@@ -28,14 +28,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_CHANNEL=mono \
     -d bluenoise:channel=rgb:scan=raster --precision-policy=8bit -p 16 \
     -o "${output_cli}" "${input_image}" || {
-    echo "not ok" 1 - "8-bit bluenoise channel override failed"
+    printf '\n%s\n' "not ok 1 - 8-bit bluenoise channel override failed"
     exit 0
 }
 
 cmp -s "${output_env}" "${output_cli}" && {
-    echo "not ok" 1 - "8-bit bluenoise channel CLI override had no effect"
+    printf '\n%s\n' "not ok 1 - 8-bit bluenoise channel CLI override had no effect"
     exit 0
 }
 
-echo "ok" 1 - "8-bit bluenoise channel CLI override takes precedence"
+printf '\n%s\n' "ok 1 - 8-bit bluenoise channel CLI override takes precedence"
 exit 0

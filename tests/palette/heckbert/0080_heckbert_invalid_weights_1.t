@@ -15,12 +15,12 @@ message=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 status=$?
 set -e
 test "$status" -ne 0 || {
-    echo "not ok 1 - unsupported request unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unsupported request unexpectedly succeeded"
     exit 0
 }
 case "$message" in *weights*) true ;; *) false ;; esac || {
-    echo "not ok 1 - invalid ratio accepted or undiagnosed"
+    printf '\n%s\n' "not ok 1 - invalid ratio accepted or undiagnosed"
     exit 0
 }
-echo "ok 1 - invalid_weights_1"
+printf '\n%s\n' "ok 1 - invalid_weights_1"
 exit 0

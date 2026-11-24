@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/mahalanobis/0026_mah_gamma_oracle_small || {
-    echo "not ok 1 - mahalanobis gamma oracle_small"
+    printf '\n%s\n' "not ok 1 - mahalanobis gamma oracle_small"
     exit 0
 }
 
-echo "ok 1 - mahalanobis gamma oracle_small"
+printf '\n%s\n' "ok 1 - mahalanobis gamma oracle_small"
 exit 0

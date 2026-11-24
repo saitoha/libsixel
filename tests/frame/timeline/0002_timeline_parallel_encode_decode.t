@@ -40,18 +40,18 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     echo "# timeline JSONL path: ${log_path}"
     test -f "${log_path}" || {
         echo "# timeline JSONL is missing from TAP shell"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     IFS= read -r first_line < "${log_path}" || first_line=
     echo "# timeline JSONL first line: ${first_line}"
-    echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+    printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
     exit 0
 }
 
 test -f "${log_path}" || {
     echo "# timeline JSONL is missing from TAP shell"
-    echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+    printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
     exit 0
 }
 
@@ -60,44 +60,44 @@ while IFS= read -r line; do
     test "${line_count}" -ne 1 || first_line=${line}
     case "${line}" in *\"ts\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing ts: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     case "${line}" in *\"session_id\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing session_id: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     case "${line}" in *\"thread\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing thread: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     case "${line}" in *\"worker\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing worker: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     case "${line}" in *\"role\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing role: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     case "${line}" in *\"event\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing event: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     case "${line}" in *\"job\":*) true ;; *) false ;; esac || {
         echo "# timeline JSONL line is missing job: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     session_tail=${line#*\"session_id\":}
     session_id=${session_tail%%,*}
     test -n "${session_id}" || {
         echo "# timeline JSONL line has invalid session_id: ${line}"
-        echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+        printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
         exit 0
     }
     test -n "${first_session}" || first_session=${session_id}
@@ -106,16 +106,16 @@ done < "${log_path}"
 
 test "${line_count}" -gt 0 || {
     echo "# timeline JSONL is empty: ${log_path}"
-    echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+    printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
     exit 0
 }
 
 test "${saw_other_session}" = 1 || {
     echo "# timeline JSONL has fewer than two sessions"
     echo "# timeline JSONL first line: ${first_line}"
-    echo "not ok 1 - 0002_timeline_parallel_encode_decode"
+    printf '\n%s\n' "not ok 1 - 0002_timeline_parallel_encode_decode"
     exit 0
 }
 
-echo "ok 1 - 0002_timeline_parallel_encode_decode"
+printf '\n%s\n' "ok 1 - 0002_timeline_parallel_encode_decode"
 exit 0

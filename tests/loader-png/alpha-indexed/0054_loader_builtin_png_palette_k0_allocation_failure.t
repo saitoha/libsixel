@@ -8,8 +8,8 @@ set -v
 
 SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0190_png_palette_failure" || {
-    echo "not ok 1 - PNG RGB palette allocation ownership"
+    printf '\n%s\n' "not ok 1 - PNG RGB palette allocation ownership"
     exit 0
 }
-echo "ok 1 - PNG RGB palette allocation ownership"
+printf '\n%s\n' "ok 1 - PNG RGB palette allocation ownership"
 exit 0

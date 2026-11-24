@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0011_loader_gd_pixelformat" "opaque_rgb_gamma_fastpath" || {
-    echo "not ok 1 - gd opaque_rgb_gamma_fastpath"
+    printf '\n%s\n' "not ok 1 - gd opaque_rgb_gamma_fastpath"
     exit 0
 }
 
-echo "ok 1 - gd opaque_rgb_gamma_fastpath"
+printf '\n%s\n' "ok 1 - gd opaque_rgb_gamma_fastpath"
 exit 0

@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0037_cli_color_parser \
     s3-only || {
-    echo "not ok 1 - terminal color parser s3 only p3"
+    printf '\n%s\n' "not ok 1 - terminal color parser s3 only p3"
     exit 0
 }
 
-echo "ok 1 - terminal color parser s3 only p3"
+printf '\n%s\n' "ok 1 - terminal color parser s3 only p3"
 exit 0

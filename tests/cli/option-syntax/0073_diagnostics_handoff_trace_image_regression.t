@@ -29,11 +29,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,encode_handoff \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=0" "-xhuman:H1" \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "handoff trace short conversion failed"
+    printf '\n%s\n' "not ok 1 - handoff trace short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=handoff_trace\|stored=1\|binding=handoff_trace,handoff_trace_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "handoff trace short value was not stored"
+    printf '\n%s\n' "not ok 1 - handoff trace short value was not stored"
     exit 0
 }
 
@@ -41,33 +41,33 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,encode_handoff \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" -xhuman \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "handoff trace environment conversion failed"
+    printf '\n%s\n' "not ok 1 - handoff trace environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=handoff_trace\|stored=1\|binding=handoff_trace,handoff_trace_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "handoff trace environment value was not stored"
+    printf '\n%s\n' "not ok 1 - handoff trace environment value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *event=callback_handoff_decide**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "handoff trace omitted its decision event"
+    printf '\n%s\n' "not ok 1 - handoff trace omitted its decision event"
     exit 0
 }
 case "${short_trace}" in *event=callback_enter**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "handoff trace retained verbose events"
+    printf '\n%s\n' "not ok 1 - handoff trace retained verbose events"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "handoff trace outputs differ"
+    printf '\n%s\n' "not ok 1 - handoff trace outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "handoff trace preserves image and trace output"
+printf '\n%s\n' "ok 1 - handoff trace preserves image and trace output"
 exit 0

@@ -19,10 +19,10 @@ command_status=$?
 set -e
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "deprecated complexion option must be accepted as no-op"
+    printf '\n%s\n' "not ok 1 - deprecated complexion option must be accepted as no-op"
     exit 0
 }
 
-echo "ok" 1 - "deprecated complexion option is accepted without overflow path"
+printf '\n%s\n' "ok 1 - deprecated complexion option is accepted without overflow path"
 
 exit 0

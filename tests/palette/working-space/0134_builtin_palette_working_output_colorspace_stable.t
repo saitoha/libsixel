@@ -37,18 +37,18 @@ actual_palette=$(
         --working-colorspace=linear --output-colorspace=linear \
         -bxterm16 -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "builtin palette export failed with -W/-U linear"
+    printf '\n%s\n' "not ok 1 - builtin palette export failed with -W/-U linear"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "builtin palette output normalization failed"
+    printf '\n%s\n' "not ok 1 - builtin palette output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "builtin palette changed under -W/-U linear"
+    printf '\n%s\n' "not ok 1 - builtin palette changed under -W/-U linear"
     exit 0
 }
 
-echo "ok" 1 - "built-in palette is stable under working/output colorspaces"
+printf '\n%s\n' "ok 1 - built-in palette is stable under working/output colorspaces"
 exit 0

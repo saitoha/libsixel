@@ -20,14 +20,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || status=$?
 
 test "$status" -ne 0 || {
-    echo "not ok 1 - failed float Heckbert build was silently retried"
+    printf '\n%s\n' "not ok 1 - failed float Heckbert build was silently retried"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=1\|quantizer_effective=-1\|quantizer_origin=explicit\|quantizer_phase=unresolved\|quantizer_reason=none\|binning_requested=none\|binning_effective=unset\|binning_origin=explicit\|binning_phase=unresolved\|binning_reason=none\|points=0\|quantizer_retries=0*) true ;; *) false ;; esac || {
-    echo "not ok 1 - failed float Heckbert build published success state"
+    printf '\n%s\n' "not ok 1 - failed float Heckbert build published success state"
     exit 0
 }
 
-echo "ok 1 - failed float Heckbert preserves the error and uncommitted state"
+printf '\n%s\n' "ok 1 - failed float Heckbert preserves the error and uncommitted state"
 exit 0

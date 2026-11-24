@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_ORDER}" 'two-errors' 'order-errors' || {
-    echo "not ok 1 - Lifecycle errors separate."
+    printf '\n%s\n' "not ok 1 - Lifecycle errors separate."
     exit 0
 }
-echo "ok 1 - Lifecycle errors separate."
+printf '\n%s\n' "ok 1 - Lifecycle errors separate."
 exit 0

@@ -27,7 +27,7 @@ SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans -Fward \
     -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "img2sixel merge kmeans 8bit failed"
+    printf '\n%s\n' "not ok 1 - img2sixel merge kmeans 8bit failed"
     exit 0
 }
 
@@ -37,15 +37,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "merge kmeans 8bit lsqa passed"
+    printf '\n%s\n' "ok 1 - merge kmeans 8bit lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "merge kmeans 8bit lsqa failed"
+printf '\n%s\n' "not ok 1 - merge kmeans 8bit lsqa failed"
 
 exit 0

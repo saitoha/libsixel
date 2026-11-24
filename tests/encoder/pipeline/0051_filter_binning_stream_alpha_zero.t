@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0042_filter_binning_stream_alpha_zero" || {
-    echo "not ok 1 - sample-stream alpha-zero exclusion"
+    printf '\n%s\n' "not ok 1 - sample-stream alpha-zero exclusion"
     exit 0
 }
 
-echo "ok 1 - sample-stream alpha-zero exclusion"
+printf '\n%s\n' "ok 1 - sample-stream alpha-zero exclusion"
 exit 0

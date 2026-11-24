@@ -21,7 +21,7 @@ image_lossy_alpha="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-key
 msg_false=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S -B#000 "${image_lossy_alpha}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "alpha+bg decode failed with force-rgb value 0"
+    printf '\n%s\n' "not ok 1 - alpha+bg decode failed with force-rgb value 0"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_false}" >&2
     exit 0
@@ -31,7 +31,7 @@ case "${msg_false}" in
     *"static decode path=lossy_yuva "*)
         ;;
     *)
-        echo "not ok" 1 - "force-rgb value 0 changed alpha+bg path"
+        printf '\n%s\n' "not ok 1 - force-rgb value 0 changed alpha+bg path"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_false}" >&2
         exit 0
@@ -41,7 +41,7 @@ esac
 msg_true=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S -B#000 "${image_lossy_alpha}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "alpha+bg decode failed with force-rgb value 1"
+    printf '\n%s\n' "not ok 1 - alpha+bg decode failed with force-rgb value 1"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_true}" >&2
     exit 0
@@ -51,12 +51,12 @@ case "${msg_true}" in
     *"static decode path=rgba_u8 "*)
         ;;
     *)
-        echo "not ok" 1 - "force-rgb value 1 did not select rgba_u8"
+        printf '\n%s\n' "not ok 1 - force-rgb value 1 did not select rgba_u8"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_true}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "force-rgb values switch alpha+bg static decode path"
+printf '\n%s\n' "ok 1 - force-rgb values switch alpha+bg static decode path"
 exit 0

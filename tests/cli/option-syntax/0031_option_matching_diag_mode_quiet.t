@@ -25,29 +25,29 @@ quiet_message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || quiet_status=$?
 
 test "${verbose_status}" -eq 2 || {
-    echo "not ok" 1 - "verbose diagnostic exit status mismatch"
+    printf '\n%s\n' "not ok 1 - verbose diagnostic exit status mismatch"
     exit 0
 }
 
 test "${quiet_status}" -eq 2 || {
-    echo "not ok" 1 - "quiet diagnostic exit status mismatch"
+    printf '\n%s\n' "not ok 1 - quiet diagnostic exit status mismatch"
     exit 0
 }
 
 case "${verbose_message}" in *-d\ DIFFUSION,**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "verbose diagnostic omits option help"
+    printf '\n%s\n' "not ok 1 - verbose diagnostic omits option help"
     exit 0
 }
 
 case "${quiet_message}" in *-d\ DIFFUSION,**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "quiet diagnostic includes option help"
+    printf '\n%s\n' "not ok 1 - quiet diagnostic includes option help"
     exit 0
 }
 
 case "${quiet_message}" in *unknown\ option\ base\ value\ \"invalidvalue\".**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "quiet diagnostic detail is missing"
+    printf '\n%s\n' "not ok 1 - quiet diagnostic detail is missing"
     exit 0
 }
 
-echo "ok" 1 - "quiet code diagnostic suppresses option help"
+printf '\n%s\n' "ok 1 - quiet code diagnostic suppresses option help"
 exit 0

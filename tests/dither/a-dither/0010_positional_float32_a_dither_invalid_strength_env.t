@@ -19,10 +19,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_A_DITHER_STRENGTH=abc \
         -d a_dither:scan=raster --precision-policy=float32 -p 16 \
         -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "positional float32 a_dither invalid strength env failed"
+    printf '\n%s\n' "not ok 1 - positional float32 a_dither invalid strength env failed"
     exit 0
 }
 
-echo "ok" 1 - "positional float32 a_dither invalid strength env passed"
+printf '\n%s\n' "ok 1 - positional float32 a_dither invalid strength env passed"
 
 exit 0

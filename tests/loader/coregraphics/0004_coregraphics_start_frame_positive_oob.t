@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=999 \
     -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null && {
-    echo "not ok" 1 - "coregraphics positive out-of-range start frame succeeded"
+    printf '\n%s\n' "not ok 1 - coregraphics positive out-of-range start frame succeeded"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics positive out-of-range start frame is rejected"
+printf '\n%s\n' "ok 1 - coregraphics positive out-of-range start frame is rejected"
 exit 0

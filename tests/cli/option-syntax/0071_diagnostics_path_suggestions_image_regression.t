@@ -25,11 +25,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_PATH_SUGGESTIONS=0" "-xhuman:S1" \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "path suggestions short conversion failed"
+    printf '\n%s\n' "not ok 1 - path suggestions short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=path_suggestions\|stored=1\|binding=path_suggestions,path_suggestions_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "path suggestions short value was not stored"
+    printf '\n%s\n' "not ok 1 - path suggestions short value was not stored"
     exit 0
 }
 
@@ -37,11 +37,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_PATH_SUGGESTIONS=1" -xhuman \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "path suggestions environment conversion failed"
+    printf '\n%s\n' "not ok 1 - path suggestions environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=path_suggestions\|stored=1\|binding=path_suggestions,path_suggestions_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "path suggestions environment value was not stored"
+    printf '\n%s\n' "not ok 1 - path suggestions environment value was not stored"
     exit 0
 }
 
@@ -49,27 +49,27 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_PATH_SUGGESTIONS=0" \
     -xhuman:S1 "${TOP_SRCDIR}/tests/data/inputs/xxxxx.xxx" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "path suggestions accepted a missing input"
+    printf '\n%s\n' "not ok 1 - path suggestions accepted a missing input"
     exit 0
 }
 suggestion_found=0
 case "${message}" in *Suggestion**) true ;; *) false ;; esac && suggestion_found=1
 case "${message}" in *No\ nearby\ matches**) true ;; *) false ;; esac && suggestion_found=1
 test "${suggestion_found}" -eq 1 || {
-    echo "not ok" 1 - "path suggestions did not reach consumer"
+    printf '\n%s\n' "not ok 1 - path suggestions did not reach consumer"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "path suggestions outputs differ"
+    printf '\n%s\n' "not ok 1 - path suggestions outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "path suggestions preserve image and diagnostic output"
+printf '\n%s\n' "ok 1 - path suggestions preserve image and diagnostic output"
 exit 0

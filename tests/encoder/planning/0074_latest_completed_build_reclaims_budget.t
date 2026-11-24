@@ -15,11 +15,11 @@ result=0
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0074_latest_completed_build_reclaims_budget 2>&1) || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - latest completed build reclaims budget"
+    printf '\n%s\n' "not ok 1 - latest completed build reclaims budget"
     echo "${trace}"
     exit 0
 }
@@ -27,9 +27,9 @@ case "${trace}" in
     *'latest emit trace: frame=2 budget=8 emit=8 '*'latest emit trace: frame=2 budget=4 emit=4 '*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - latest planner lost the session or emission budget"
+    printf '\n%s\n' "not ok 1 - latest planner lost the session or emission budget"
     echo "${trace}"
     exit 0
 }
-echo "ok 1 - latest completed build reclaims budget"
+printf '\n%s\n' "ok 1 - latest completed build reclaims budget"
 exit 0

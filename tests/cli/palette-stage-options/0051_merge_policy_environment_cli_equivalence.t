@@ -19,18 +19,18 @@ env_output="${ARTIFACT_LOCAL_DIR}/merge-policy-env-$$.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qheckbert -F ward \
     "${input}" >"${cli_output}" || {
-    echo "not ok 1 - merge policy CLI conversion failed"
+    printf '\n%s\n' "not ok 1 - merge policy CLI conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qheckbert \
     --env SIXEL_PALETTE_FINAL_MERGE=ward "${input}" >"${env_output}" || {
-    echo "not ok 1 - merge policy environment conversion failed"
+    printf '\n%s\n' "not ok 1 - merge policy environment conversion failed"
     exit 0
 }
 cmp -s "${cli_output}" "${env_output}" || {
-    echo "not ok 1 - merge policy environment and CLI differ"
+    printf '\n%s\n' "not ok 1 - merge policy environment and CLI differ"
     exit 0
 }
 
-echo "ok 1 - merge policy environment matches CLI"
+printf '\n%s\n' "ok 1 - merge policy environment matches CLI"
 exit 0

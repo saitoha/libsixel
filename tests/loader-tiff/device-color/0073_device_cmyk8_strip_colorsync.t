@@ -14,13 +14,13 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - cmyk8 strip colorsync"
+    printf '\n%s\n' "not ok 1 - cmyk8 strip colorsync"
     exit 0
 }
 case "$trace" in *"LSXCMS2|event=apply|engine=colorsync|"*"|src=7|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - selected CMS did not apply"
+    printf '\n%s\n' "not ok 1 - selected CMS did not apply"
     exit 0
 }
-echo "ok 1 - cmyk8 strip colorsync"
+printf '\n%s\n' "ok 1 - cmyk8 strip colorsync"
 exit 0

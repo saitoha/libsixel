@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/auto_cover_float/0024_masked_p3_default || {
-    echo "not ok 1 - masked p3 default"
+    printf '\n%s\n' "not ok 1 - masked p3 default"
     exit 0
 }
-echo "ok 1 - masked p3 default"
+printf '\n%s\n' "ok 1 - masked p3 default"
 exit 0

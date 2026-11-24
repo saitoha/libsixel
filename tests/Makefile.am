@@ -9730,6 +9730,9 @@ EXTRA_DIST += build/layout/fixture.sh \
     build/layout/0013_symlink.sh \
     build/layout/0014_unnumbered.sh
 
+EXTRA_DIST += _static/awk/tap-result-newline.awk \
+    _static/sh/staticcheck-tap-result-newline.sh
+
 EXTRA_DIST += _static/awk/shell-words.awk _static/awk/no-find.awk _static/sh/staticcheck-no-find.sh
 
 EXTRA_DIST += build/no-find/0001_direct.sh \

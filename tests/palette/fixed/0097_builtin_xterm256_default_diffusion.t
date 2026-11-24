@@ -19,33 +19,33 @@ undiffused_output="${ARTIFACT_LOCAL_DIR}/undiffused.six"
 trace=$(SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -bxterm256 "${input_image}" \
     2>&1 >"${default_output}") || {
-    echo "not ok 1 - default diffusion conversion failed"
+    printf '\n%s\n' "not ok 1 - default diffusion conversion failed"
     exit 0
 }
 case "${trace}" in
     *LSXDTH1\|rc=0\|diffuse=fs\|*\|apply=1\|apply_ok=1\|*) ;;
     *)
-        echo "not ok 1 - default diffusion did not reach the pixel consumer"
+        printf '\n%s\n' "not ok 1 - default diffusion did not reach the pixel consumer"
         exit 0
         ;;
 esac
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bxterm256 \
     -d fs "${input_image}" >"${explicit_output}" || {
-    echo "not ok 1 - explicit diffusion conversion failed"
+    printf '\n%s\n' "not ok 1 - explicit diffusion conversion failed"
     exit 0
 }
 cmp -s "${default_output}" "${explicit_output}" || {
-    echo "not ok 1 - default and explicit diffusion outputs differ"
+    printf '\n%s\n' "not ok 1 - default and explicit diffusion outputs differ"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bxterm256 \
     -d none "${input_image}" >"${undiffused_output}" || {
-    echo "not ok 1 - undiffused control conversion failed"
+    printf '\n%s\n' "not ok 1 - undiffused control conversion failed"
     exit 0
 }
 cmp -s "${default_output}" "${undiffused_output}" && {
-    echo "not ok 1 - default diffusion did not affect pixel output"
+    printf '\n%s\n' "not ok 1 - default diffusion did not affect pixel output"
     exit 0
 }
-echo "ok 1 - fixed palette applies the default diffusion"
+printf '\n%s\n' "ok 1 - fixed palette applies the default diffusion"
 exit 0

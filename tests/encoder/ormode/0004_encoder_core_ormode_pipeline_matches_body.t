@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0005_encoder_core_ormode_pipeline_matches_body" || {
-    echo "not ok 1 - 0005_encoder_core_ormode_pipeline_matches_body"
+    printf '\n%s\n' "not ok 1 - 0005_encoder_core_ormode_pipeline_matches_body"
     exit 0
 }
 
-echo "ok 1 - 0005_encoder_core_ormode_pipeline_matches_body"
+printf '\n%s\n' "ok 1 - 0005_encoder_core_ormode_pipeline_matches_body"
 exit 0

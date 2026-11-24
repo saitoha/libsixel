@@ -24,7 +24,7 @@ trace=$(SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-p3-8-rgb.png" 2>&1) || {
     echo "$trace" >&2
-    echo "not ok 1 - byte-source float clustering encode"
+    printf '\n%s\n' "not ok 1 - byte-source float clustering encode"
     exit 0
 }
 # Other diagnostic fields may follow rgb101 before the status codes.
@@ -32,9 +32,9 @@ case "$trace" in
     *'|rgb101=1|'*) ;;
     *)
         echo "$trace" >&2
-        echo "not ok 1 - float clustering lost native palette"
+        printf '\n%s\n' "not ok 1 - float clustering lost native palette"
         exit 0
         ;;
 esac
-echo "ok 1 - float clustering selects native palette"
+printf '\n%s\n' "ok 1 - float clustering selects native palette"
 exit 0

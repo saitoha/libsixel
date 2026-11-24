@@ -12,9 +12,9 @@ measurement="${TOP_SRCDIR}/docs/encoder/preprocessing/resampling/measurements/re
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_measurement_baseline \
     frequency "${baseline}" "${measurement}" || {
-    echo "not ok" 1 - "frequency-response numeric baseline changed"
+    printf '\n%s\n' "not ok 1 - frequency-response numeric baseline changed"
     exit 0
 }
 
-echo "ok" 1 - "frequency-response numeric baseline is within tolerance"
+printf '\n%s\n' "ok 1 - frequency-response numeric baseline is within tolerance"
 exit 0

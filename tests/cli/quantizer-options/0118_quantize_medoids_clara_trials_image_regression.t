@@ -25,12 +25,12 @@ env_output="${artifact_dir}/0049-quantize-medoids-clara_trials-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 "-Qmedoids:Asample:T32" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "medoids:clara_trials short conversion failed"
+    printf '\n%s\n' "not ok 1 - medoids:clara_trials short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=clara_trials\|stored=1\|binding=quantize_model_kmedoids_clara_trials,quantize_model_kmedoids_clara_trials_override\|value=32**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "clara_trials short value was not stored"
+    printf '\n%s\n' "not ok 1 - clara_trials short value was not stored"
     exit 0
 }
 
@@ -38,12 +38,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=33" -p 16 "-Qmedoids:Asample" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "medoids:clara_trials env conversion failed"
+    printf '\n%s\n' "not ok 1 - medoids:clara_trials env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=clara_trials\|stored=1\|binding=quantize_model_kmedoids_clara_trials,quantize_model_kmedoids_clara_trials_override\|value=32**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "clara_trials environment value was not stored"
+    printf '\n%s\n' "not ok 1 - clara_trials environment value was not stored"
     exit 0
 }
 
@@ -51,12 +51,12 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=0" \
     -p 16 "-Qmedoids:Asample" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "medoids:clara_trials lower conversion failed"
+    printf '\n%s\n' "not ok 1 - medoids:clara_trials lower conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=clara_trials\|stored=1*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "medoids clara_trials accepted zero"
+    printf '\n%s\n' "not ok 1 - medoids clara_trials accepted zero"
     exit 0
 }
 
@@ -64,26 +64,26 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS=4294967296" \
     -p 16 "-Qmedoids:Asample" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "medoids:clara_trials width conversion failed"
+    printf '\n%s\n' "not ok 1 - medoids:clara_trials width conversion failed"
     exit 0
 }
 
 case "${width_trace}" in *LSXSUB1\|*key=clara_trials\|stored=1*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "medoids clara_trials accepted an over-width value"
+    printf '\n%s\n' "not ok 1 - medoids clara_trials accepted an over-width value"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "medoids:clara_trials short and env output differ"
+    printf '\n%s\n' "not ok 1 - medoids:clara_trials short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "medoids:clara_trials preserves image output"
+printf '\n%s\n' "ok 1 - medoids:clara_trials preserves image output"
 exit 0

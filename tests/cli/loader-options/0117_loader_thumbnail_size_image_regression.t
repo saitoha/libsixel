@@ -41,22 +41,22 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=32" \
     "-Lgnome-thumbnailer:Z64!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "thumbnail_size short conversion failed"
+    printf '\n%s\n' "not ok 1 - thumbnail_size short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=thumbnail_size\|stored=1\|binding=thumbnail_size_hint\|value=64**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size short value was not stored"
+    printf '\n%s\n' "not ok 1 - thumbnail_size short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXTHM1\|size=64\|runtime_hint=0\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size short value was not effective"
+    printf '\n%s\n' "not ok 1 - thumbnail_size short value was not effective"
     exit 0
 }
 
 case "${short_trace}" in *LSXTHM2\|size=64**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size short value did not reach thumbnailer"
+    printf '\n%s\n' "not ok 1 - thumbnail_size short value did not reach thumbnailer"
     exit 0
 }
 
@@ -67,27 +67,27 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=64" \
     "-Lgnome-thumbnailer!" "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "thumbnail_size environment conversion failed"
+    printf '\n%s\n' "not ok 1 - thumbnail_size environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=thumbnail_size\|stored=1\|binding=thumbnail_size_hint\|value=64**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size environment value was not stored"
+    printf '\n%s\n' "not ok 1 - thumbnail_size environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXTHM1\|size=64\|runtime_hint=0\|explicit=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size environment value was not effective"
+    printf '\n%s\n' "not ok 1 - thumbnail_size environment value was not effective"
     exit 0
 }
 
 case "${env_trace}" in *LSXTHM2\|size=64**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size environment value did not reach thumbnailer"
+    printf '\n%s\n' "not ok 1 - thumbnail_size environment value did not reach thumbnailer"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "thumbnail_size short and environment output differ"
+    printf '\n%s\n' "not ok 1 - thumbnail_size short and environment output differ"
     exit 0
 }
 
@@ -95,17 +95,17 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=2147483648" \
     "-Lbuiltin!" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "thumbnail_size range conversion failed"
+    printf '\n%s\n' "not ok 1 - thumbnail_size range conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=thumbnail_size\|stored=1\|binding=thumbnail_size_hint\|value=2147483647**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size maximum was not clamped"
+    printf '\n%s\n' "not ok 1 - thumbnail_size maximum was not clamped"
     exit 0
 }
 
 case "${range_trace}" in *LSXTHM1\|size=2147483647\|runtime_hint=0\|explicit=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size clamped value was not effective"
+    printf '\n%s\n' "not ok 1 - thumbnail_size clamped value was not effective"
     exit 0
 }
 
@@ -113,17 +113,17 @@ zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=0" "-Lbuiltin!" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "thumbnail_size zero conversion failed"
+    printf '\n%s\n' "not ok 1 - thumbnail_size zero conversion failed"
     exit 0
 }
 
 case "${zero_trace}" in *LSXSUB1\|*key=thumbnail_size\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "thumbnail_size accepted zero"
+    printf '\n%s\n' "not ok 1 - thumbnail_size accepted zero"
     exit 0
 }
 
 case "${zero_trace}" in *LSXTHM1\|size=512\|runtime_hint=0\|explicit=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size zero did not retain the default"
+    printf '\n%s\n' "not ok 1 - thumbnail_size zero did not retain the default"
     exit 0
 }
 
@@ -131,12 +131,12 @@ runtime_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w 8 \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=64" "-Lbuiltin!" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "thumbnail_size runtime hint conversion failed"
+    printf '\n%s\n' "not ok 1 - thumbnail_size runtime hint conversion failed"
     exit 0
 }
 
 case "${runtime_trace}" in *LSXTHM1\|size=16\|runtime_hint=16\|explicit=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "resize hint did not override the environment"
+    printf '\n%s\n' "not ok 1 - resize hint did not override the environment"
     exit 0
 }
 
@@ -144,21 +144,21 @@ precedence_trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w 8 \
     --env "SIXEL_THUMBNAILER_HINT_SIZE=32" \
     "-Lbuiltin:Z64!" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "thumbnail_size precedence conversion failed"
+    printf '\n%s\n' "not ok 1 - thumbnail_size precedence conversion failed"
     exit 0
 }
 
 case "${precedence_trace}" in *LSXTHM1\|size=64\|runtime_hint=16\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "thumbnail_size did not override the resize hint"
+    printf '\n%s\n' "not ok 1 - thumbnail_size did not override the resize hint"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "thumbnail_size preserves image output"
+printf '\n%s\n' "ok 1 - thumbnail_size preserves image output"
 exit 0

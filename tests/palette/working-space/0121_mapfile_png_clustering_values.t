@@ -32,19 +32,19 @@ actual_palette=$(
         -Lbuiltin:cms_engine=none! --precision-policy=8bit -Wgamma -Fnone \
         -_none --binning-policy=none -X oklab -m "${mapfile_png}" -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "PNG mapfile export failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - PNG mapfile export failed with -X oklab"
     exit 0
 }
 # Image-map indices/order are solver-owned; compare the occupied color set.
 actual_palette=$(printf "%s\n" "${actual_palette}" | tr -d '\015' | LC_ALL=C sort) || {
-    echo "not ok" 1 - "PNG mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PNG mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PNG mapfile lost occupied colors under -X oklab"
+    printf '\n%s\n' "not ok 1 - PNG mapfile lost occupied colors under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "PNG mapfile retains occupied colors after Oklab clustering"
+printf '\n%s\n' "ok 1 - PNG mapfile retains occupied colors after Oklab clustering"
 exit 0

@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0135_loader_builtin_png_filter_modes_numeric" 1>&2 || {
-    echo "not ok" 1 - "PNG filters 0-4 reconstruct exact RGB"
+    printf '\n%s\n' "not ok 1 - PNG filters 0-4 reconstruct exact RGB"
     exit 0
 }
 
-echo "ok" 1 - "PNG filters 0-4 reconstruct exact RGB"
+printf '\n%s\n' "ok 1 - PNG filters 0-4 reconstruct exact RGB"
 
 exit 0

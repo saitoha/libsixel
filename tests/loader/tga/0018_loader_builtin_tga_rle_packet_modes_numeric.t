@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0085_loader_builtin_tga_rle_packet_modes_numeric" || {
-    echo "not ok 1 - TGA raw and repeated RLE packets"
+    printf '\n%s\n' "not ok 1 - TGA raw and repeated RLE packets"
     exit 0
 }
 
-echo "ok 1 - TGA raw and repeated RLE packets"
+printf '\n%s\n' "ok 1 - TGA raw and repeated RLE packets"
 exit 0

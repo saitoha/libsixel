@@ -25,24 +25,24 @@ input_tga="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type2-rgb.tga"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
     "${input_tga}" >/dev/null || {
-    printf "ok 1 # SKIP builtin loader cannot decode TGA in this runtime\n"
+    printf "\nok 1 # SKIP builtin loader cannot decode TGA in this runtime\n"
     exit 0
 }
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${input_tga}" 2>&1 >/dev/null) && {
-    echo "not ok 1 - gd unexpectedly accepted unsupported TGA"
+    printf '\n%s\n' "not ok 1 - gd unexpectedly accepted unsupported TGA"
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd-only TGA failure missed generic decode error"
+    printf '\n%s\n' "not ok 1 - gd-only TGA failure missed generic decode error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
-    echo "not ok 1 - gd-only TGA failure should not report GD error"
+    printf '\n%s\n' "not ok 1 - gd-only TGA failure should not report GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
@@ -50,19 +50,19 @@ case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
 trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable "${input_tga}" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - gd,builtin fallback failed for unsupported TGA"
+    printf '\n%s\n' "not ok 1 - gd,builtin fallback failed for unsupported TGA"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd loader was not attempted"
+    printf '\n%s\n' "not ok 1 - gd loader was not attempted"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ builtin\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - builtin fallback was not attempted"
+    printf '\n%s\n' "not ok 1 - builtin fallback was not attempted"
     exit 0
 }
 
-echo "ok 1 - unsupported GD TGA path delegates to builtin"
+printf '\n%s\n' "ok 1 - unsupported GD TGA path delegates to builtin"
 exit 0

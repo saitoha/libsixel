@@ -19,21 +19,21 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - option error exit status changed"
+    printf '\n%s\n' "not ok 1 - option error exit status changed"
     exit 0
 }
 
 case "${message}" in *LSX*) false ;; *) true ;; esac || {
-    echo "not ok 1 - option error machine header policy mismatch"
+    printf '\n%s\n' "not ok 1 - option error machine header policy mismatch"
     printf '%s\n' "${message}" >&2
     exit 0
 }
 
 case "${message}" in *usage:*img2sixel*) true ;; *) false ;; esac || {
-    echo "not ok 1 - ordinary option error diagnostic is missing"
+    printf '\n%s\n' "not ok 1 - ordinary option error diagnostic is missing"
     printf '%s\n' "${message}" >&2
     exit 0
 }
 
-echo "ok 1 - missing argument keeps human diagnostics by default"
+printf '\n%s\n' "ok 1 - missing argument keeps human diagnostics by default"
 exit 0

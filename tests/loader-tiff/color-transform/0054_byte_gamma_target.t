@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - byte gamma target"
+    printf '\n%s\n' "not ok 1 - byte gamma target"
     exit 0
 }
 # Walk each line once and require one successful requested apply per load.
@@ -31,7 +31,7 @@ while IFS= read -r line; do
     case "$line" in
     "TBYTE|load-begin|background=0")
         test "$active" -eq 0 || {
-            echo "not ok 1 - overlapping load observations"
+            printf '\n%s\n' "not ok 1 - overlapping load observations"
             exit 0
         }
         active=1
@@ -40,7 +40,7 @@ while IFS= read -r line; do
         ;;
     "TBYTE|load-begin|background=1")
         test "$active" -eq 0 || {
-            echo "not ok 1 - overlapping background observations"
+            printf '\n%s\n' "not ok 1 - overlapping background observations"
             exit 0
         }
         active=1
@@ -49,19 +49,19 @@ while IFS= read -r line; do
         ;;
     *"LSXCMS2|event=apply|engine=builtin|"*"|ok=1")
         test "$active" -eq 1 || {
-            echo "not ok 1 - apply outside the observed load"
+            printf '\n%s\n' "not ok 1 - apply outside the observed load"
             exit 0
         }
         applies=$((applies + 1))
         ;;
     *"LSXCMS2|event=apply|"*)
         echo "$line" >&2
-        echo "not ok 1 - unexpected engine or failed apply"
+        printf '\n%s\n' "not ok 1 - unexpected engine or failed apply"
         exit 0
         ;;
     "TBYTE|load-end|ok=1")
         { test "$active" -eq 1 && test "$applies" -eq 1; } || {
-            echo "not ok 1 - load lacks exactly one requested successful apply"
+            printf '\n%s\n' "not ok 1 - load lacks exactly one requested successful apply"
             exit 0
         }
         active=0
@@ -73,9 +73,9 @@ $trace
 EOF
 { test "$active" -eq 0 && test "$completed" -eq 12 && \
     test "$plain" -eq 9 && test "$background" -eq 3; } || {
-    echo "not ok 1 - incomplete ordinary or background apply observations"
+    printf '\n%s\n' "not ok 1 - incomplete ordinary or background apply observations"
     exit 0
 }
 set -x
-echo "ok 1 - byte gamma target "
+printf '\n%s\n' "ok 1 - byte gamma target "
 exit 0

@@ -20,8 +20,8 @@ set +e
 status=$?
 set -e
 test "$status" = 0 || {
-    echo "not ok 1 - Preview output content matches independent dimensions and colors"
+    printf '\n%s\n' "not ok 1 - Preview output content matches independent dimensions and colors"
     exit 0
 }
-echo "ok 1 - Preview output content matches independent dimensions and colors"
+printf '\n%s\n' "ok 1 - Preview output content matches independent dimensions and colors"
 exit 0

@@ -20,19 +20,19 @@ output_long="${ARTIFACT_LOCAL_DIR}/builtin_cms_long_option.six"
 output_short="${ARTIFACT_LOCAL_DIR}/builtin_cms_short_option.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=auto! "${input_jpeg}" >"${output_long}" || {
-    echo "not ok" 1 - "builtin decode with cms_engine=auto failed"
+    printf '\n%s\n' "not ok 1 - builtin decode with cms_engine=auto failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:Eauto! "${input_jpeg}" >"${output_short}" || {
-    echo "not ok" 1 - "builtin decode with Eauto failed"
+    printf '\n%s\n' "not ok 1 - builtin decode with Eauto failed"
     exit 0
 }
 
 cmp -s "${output_long}" "${output_short}" || {
-    echo "not ok" 1 - "builtin Eauto output differs from cms_engine=auto output"
+    printf '\n%s\n' "not ok 1 - builtin Eauto output differs from cms_engine=auto output"
     exit 0
 }
 
-echo "ok" 1 - "builtin Eauto output matches cms_engine=auto output"
+printf '\n%s\n' "ok 1 - builtin Eauto output matches cms_engine=auto output"
 exit 0

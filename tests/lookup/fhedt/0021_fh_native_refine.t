@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0011_fh_native_refine || {
-    echo "not ok 1 - fhedt native refine"
+    printf '\n%s\n' "not ok 1 - fhedt native refine"
     exit 0
 }
 
-echo "ok 1 - fhedt native refine"
+printf '\n%s\n' "ok 1 - fhedt native refine"
 exit 0

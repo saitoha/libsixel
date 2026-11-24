@@ -11,9 +11,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0006_timeline_encode_frame_session" || {
-    echo "not ok 1 - encode_frame timeline session changed"
+    printf '\n%s\n' "not ok 1 - encode_frame timeline session changed"
     exit 0
 }
 
-echo "ok 1 - encode_frame records a bracketed timeline session"
+printf '\n%s\n' "ok 1 - encode_frame records a bracketed timeline session"
 exit 0

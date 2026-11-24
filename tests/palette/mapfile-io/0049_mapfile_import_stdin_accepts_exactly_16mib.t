@@ -24,10 +24,10 @@ gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-exact-16mib.gpl"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m gpl:- \
     "${snake_png}" -o/dev/null <"${gpl_palette}" || {
-    echo "not ok" 1 - "stdin mapfile at 16 MiB should be accepted"
+    printf '\n%s\n' "not ok 1 - stdin mapfile at 16 MiB should be accepted"
     exit 0
 }
 
-echo "ok" 1 - "stdin mapfile at 16 MiB is accepted"
+printf '\n%s\n' "ok 1 - stdin mapfile at 16 MiB is accepted"
 
 exit 0

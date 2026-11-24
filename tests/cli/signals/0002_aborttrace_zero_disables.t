@@ -24,23 +24,23 @@ abort_output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "aborttrace/0001_img2sixel_aborttrace" install-only 2>&1) || rc=$?
 
 test "${rc:-0}" -eq 77 && {
-    echo "ok" 1 - "abort trace zero # SKIP abort trace disabled"
+    printf '\n%s\n' "ok 1 - abort trace zero # SKIP abort trace disabled"
     exit 0
 }
 
 test "${rc:-0}" -eq 0 || {
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${abort_output}" >&2
-    echo "not ok" 1 - "abort trace zero policy probe failed"
+    printf '\n%s\n' "not ok 1 - abort trace zero policy probe failed"
     exit 0
 }
 
 case "${abort_output}" in *LSXABT1\|enabled=0\|installed=0**) true ;; *) false ;; esac || {
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${abort_output}" >&2
-    echo "not ok" 1 - "abort trace zero did not disable installation"
+    printf '\n%s\n' "not ok 1 - abort trace zero did not disable installation"
     exit 0
 }
 
-echo "ok" 1 - "abort trace zero disables tracing"
+printf '\n%s\n' "ok 1 - abort trace zero disables tracing"
 exit 0

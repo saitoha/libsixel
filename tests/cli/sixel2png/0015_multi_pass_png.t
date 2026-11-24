@@ -22,9 +22,9 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -M 6delta-progressive \
     -i "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192.six" | \
     ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" - >/dev/null || {
-    echo "not ok 1 - final PNG differs from reference"
+    printf '\n%s\n' "not ok 1 - final PNG differs from reference"
     exit 0
 }
 
-echo "ok 1 - multi pass png"
+printf '\n%s\n' "ok 1 - multi pass png"
 exit 0

@@ -15,8 +15,8 @@ echo "1..1"
 set -v
 
 test "$result" -eq 0 || {
-    echo "not ok 1 - native DRCS p3 builtin"
+    printf '\n%s\n' "not ok 1 - native DRCS p3 builtin"
     exit 0
 }
-echo "ok 1 - native DRCS p3 builtin"
+printf '\n%s\n' "ok 1 - native DRCS p3 builtin"
 exit 0

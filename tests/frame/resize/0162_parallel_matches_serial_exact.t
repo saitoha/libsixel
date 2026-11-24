@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     -jscalar:resize_precision=preserve \
     -o "${serial_sixel}" \
     "${fixture_root}/bilinear-thread-input.ppm" || {
-    echo "not ok" 1 - "serial resize failed"
+    printf '\n%s\n' "not ok 1 - serial resize failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
@@ -36,21 +36,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     -w4 -h4 -rbilinear -jscalar:resize_precision=preserve \
     -o "${parallel_sixel}" \
     "${fixture_root}/bilinear-thread-input.ppm" || {
-    echo "not ok" 1 - "parallel resize failed"
+    printf '\n%s\n' "not ok 1 - parallel resize failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_exact decode "${serial_sixel}" \
     "${fixture_root}/bilinear-thread-expected.ppm" || {
-    echo "not ok" 1 - "serial resize diverged from the oracle"
+    printf '\n%s\n' "not ok 1 - serial resize diverged from the oracle"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_exact decode "${parallel_sixel}" \
     "${fixture_root}/bilinear-thread-expected.ppm" || {
-    echo "not ok" 1 - "parallel resize diverged from serial"
+    printf '\n%s\n' "not ok 1 - parallel resize diverged from serial"
     exit 0
 }
 
-echo "ok" 1 - "parallel and serial resize match the safe-tone oracle"
+printf '\n%s\n' "ok 1 - parallel and serial resize match the safe-tone oracle"
 exit 0

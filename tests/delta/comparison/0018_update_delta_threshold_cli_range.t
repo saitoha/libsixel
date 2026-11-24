@@ -23,7 +23,7 @@ status_error_mode=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:threshold=8 \
     -L builtin -b gray1 -o - "${input_image}" >/dev/null || {
-    echo "not ok" 1 - "valid update delta threshold was rejected"
+    printf '\n%s\n' "not ok 1 - valid update delta threshold was rejected"
     exit 0
 }
 
@@ -46,21 +46,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 status_error_mode=$?
 set -e
 test "${status_256}" -ne 0 || {
-    echo "not ok" 1 - "out-of-range update delta threshold was accepted"
+    printf '\n%s\n' "not ok 1 - out-of-range update delta threshold was accepted"
     exit 0
 }
 test "${status_negative}" -ne 0 || {
-    echo "not ok" 1 - "negative update delta threshold was accepted"
+    printf '\n%s\n' "not ok 1 - negative update delta threshold was accepted"
     exit 0
 }
 test "${status_text}" -ne 0 || {
-    echo "not ok" 1 - "non-numeric update delta threshold was accepted"
+    printf '\n%s\n' "not ok 1 - non-numeric update delta threshold was accepted"
     exit 0
 }
 test "${status_error_mode}" -eq 0 || {
-    echo "not ok" 1 - "valid update delta error was rejected"
+    printf '\n%s\n' "not ok 1 - valid update delta error was rejected"
     exit 0
 }
 
-echo "ok" 1 - "update delta threshold validates the byte range"
+printf '\n%s\n' "ok 1 - update delta threshold validates the byte range"
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0008_delta_residual_jajuni || {
-    echo "not ok 1 - delta residual jajuni"
+    printf '\n%s\n' "not ok 1 - delta residual jajuni"
     exit 0
 }
-echo "ok 1 - delta residual jajuni"
+printf '\n%s\n' "ok 1 - delta residual jajuni"
 exit 0

@@ -22,7 +22,7 @@ echo "1..1"
 set -v
 
 mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
+    printf '\n%s\n' "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
     exit 0
 }
 
@@ -33,13 +33,13 @@ icc_log="${ARTIFACT_LOCAL_DIR}/timeline-libpng-post-icc.json"
 
 SIXEL_LOG_PATH="${alpha_log}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L libpng! "${alpha_png}" >/dev/null || {
-    echo "not ok 1 - alpha conversion failed while capturing timeline"
+    printf '\n%s\n' "not ok 1 - alpha conversion failed while capturing timeline"
     exit 0
 }
 
 SIXEL_LOG_PATH="${icc_log}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L libpng! "${icc_png}" >/dev/null || {
-    echo "not ok 1 - ICC conversion failed while capturing timeline"
+    printf '\n%s\n' "not ok 1 - ICC conversion failed while capturing timeline"
     exit 0
 }
 
@@ -60,12 +60,12 @@ while IFS= read -r line; do
 done < "${alpha_log}"
 
 test "${bg_ok}" -eq 1 || {
-    echo "not ok 1 - post/background status was not visible"
+    printf '\n%s\n' "not ok 1 - post/background status was not visible"
     exit 0
 }
 
 test "${cs_ok}" -eq 1 || {
-    echo "not ok 1 - post/colorspace status was not visible"
+    printf '\n%s\n' "not ok 1 - post/colorspace status was not visible"
     exit 0
 }
 
@@ -81,9 +81,9 @@ while IFS= read -r line; do
 done < "${icc_log}"
 
 test "${icc_ok}" -eq 1 || {
-    echo "not ok 1 - post/icc status was not visible"
+    printf '\n%s\n' "not ok 1 - post/icc status was not visible"
     exit 0
 }
 
-echo "ok 1 - libpng timeline reports post-process status"
+printf '\n%s\n' "ok 1 - libpng timeline reports post-process status"
 exit 0

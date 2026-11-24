@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-refresh/0019_partial_alpha_rejected || {
-    echo "not ok 1 - partial alpha rejected"
+    printf '\n%s\n' "not ok 1 - partial alpha rejected"
     exit 0
 }
-echo "ok 1 - partial alpha rejected"
+printf '\n%s\n' "ok 1 - partial alpha rejected"
 exit 0

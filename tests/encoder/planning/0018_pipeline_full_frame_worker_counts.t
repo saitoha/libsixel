@@ -23,14 +23,14 @@ plan=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/pipeline.jsonl" \
     -4 full-frame -v -d fs "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - full-frame conversion failed"
+    printf '\n%s\n' "not ok 1 - full-frame conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "planner/pipeline/0018_pipeline_full_frame_worker_counts" \
     "${ARTIFACT_LOCAL_DIR}/pipeline.jsonl" "${plan}" || {
-    echo "not ok 1 - full-frame planned and observed worker counts differ"
+    printf '\n%s\n' "not ok 1 - full-frame planned and observed worker counts differ"
     exit 0
 }
-echo "ok 1 - full-frame planned and observed worker counts agree"
+printf '\n%s\n' "ok 1 - full-frame planned and observed worker counts agree"
 exit 0

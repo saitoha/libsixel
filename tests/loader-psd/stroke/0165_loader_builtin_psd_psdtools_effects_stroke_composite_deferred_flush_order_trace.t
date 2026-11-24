@@ -29,31 +29,31 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 post_commit_tail="${trace_output##*builtin PSD: compositing deferred offscreen clipped group buffer to canvas*}"
 
 case "${trace_output}" in *builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred offscreen group commit trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred offscreen group commit trace"
     exit 0
 }
 
 case "${post_commit_tail}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ solid\ overlay\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite deferred solid overlay appeared after final group commit"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite deferred solid overlay appeared after final group commit"
     exit 0
 }
 
 case "${post_commit_tail}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite deferred gradient overlay appeared after final group commit"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite deferred gradient overlay appeared after final group commit"
     exit 0
 }
 
 case "${post_commit_tail}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ effect\ stroke\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite deferred effect stroke appeared after final group commit"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite deferred effect stroke appeared after final group commit"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred effect order before final group commit"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps deferred effect order before final group commit"
 exit 0

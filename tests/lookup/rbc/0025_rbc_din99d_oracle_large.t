@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup oracle_large 4 4 || {
-    echo "not ok 1 - rbc din99d oracle_large"
+    printf '\n%s\n' "not ok 1 - rbc din99d oracle_large"
     exit 0
 }
 
-echo "ok 1 - rbc din99d oracle_large"
+printf '\n%s\n' "ok 1 - rbc din99d oracle_large"
 exit 0

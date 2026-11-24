@@ -17,14 +17,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --binning-policy=none -Qkmeans \
     -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
-    echo "not ok 1 - compatible quantizer fallback failed"
+    printf '\n%s\n' "not ok 1 - compatible quantizer fallback failed"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=2\|quantizer_effective=1\|quantizer_origin=explicit\|quantizer_phase=executed\|quantizer_reason=fallback\|binning_requested=none\|binning_effective=none\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=**) true ;; *) false ;; esac || {
-    echo "not ok 1 - fallback published the failed quantizer attempt"
+    printf '\n%s\n' "not ok 1 - fallback published the failed quantizer attempt"
     exit 0
 }
 
-echo "ok 1 - quantizer fallback commits only the successful attempt"
+printf '\n%s\n' "ok 1 - quantizer fallback commits only the successful attempt"
 exit 0

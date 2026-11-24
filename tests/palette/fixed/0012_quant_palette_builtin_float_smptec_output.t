@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" quant/palette/builtin_float/0012_smptec_output || {
-    echo "not ok 1 - builtin smptec output"
+    printf '\n%s\n' "not ok 1 - builtin smptec output"
     exit 0
 }
 
-echo "ok 1 - builtin smptec output"
+printf '\n%s\n' "ok 1 - builtin smptec output"
 exit 0

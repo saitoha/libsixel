@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" codec/highcolor/0057_mask_p3_multipass || {
-    echo "not ok 1 - high-color mask p3 multipass"
+    printf '\n%s\n' "not ok 1 - high-color mask p3 multipass"
     exit 0
 }
-echo "ok 1 - high-color mask p3 multipass"
+printf '\n%s\n' "ok 1 - high-color mask p3 multipass"
 exit 0

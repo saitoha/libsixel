@@ -17,13 +17,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -e --snap-policy=reversible -o/dev/null "${input_image}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "monochrome conversion with snap policy failed"
+    printf '\n%s\n' "not ok 1 - monochrome conversion with snap policy failed"
     exit 0
 }
 case "${trace}" in *LSXSNP1\|**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "snap policy unexpectedly reached monochrome palette"
+    printf '\n%s\n' "not ok 1 - snap policy unexpectedly reached monochrome palette"
     exit 0
 }
 
-echo "ok" 1 - "monochrome bypasses snap policy"
+printf '\n%s\n' "ok 1 - monochrome bypasses snap policy"
 exit 0

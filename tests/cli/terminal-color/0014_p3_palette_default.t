@@ -18,12 +18,12 @@ P3
 255 0 0
 PPM
 ) || {
-    echo "not ok 1 - p3 palette default rejected"
+    printf '\n%s\n' "not ok 1 - p3 palette default rejected"
     exit 0
 }
 case "$stream" in
     *'#0;2;92;20;14#0@'*) ;;
-    *) echo "not ok 1 - p3 palette default wire values differ"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - p3 palette default wire values differ"; exit 0 ;;
 esac
-echo "ok 1 - p3 palette default selects RGB output"
+printf '\n%s\n' "ok 1 - p3 palette default selects RGB output"
 exit 0

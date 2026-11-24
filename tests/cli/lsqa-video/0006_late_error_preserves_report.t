@@ -12,14 +12,14 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none -m S-CIELAB
 status=$?
 set -e
 test "${status}" -eq 4 || {
-    echo "not ok 1 - late packet rejection"
+    printf '\n%s\n' "not ok 1 - late packet rejection"
     exit 0
 }
 IFS= read -r value <"${ARTIFACT_LOCAL_DIR}/frames.jsonl"
 test "${value}" = sentinel || {
-    echo "not ok 1 - report preservation"
+    printf '\n%s\n' "not ok 1 - report preservation"
     exit 0
 }
 
-echo "ok 1 - late error preserves report"
+printf '\n%s\n' "ok 1 - late error preserves report"
 exit 0

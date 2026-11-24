@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0026_parallel_converging_bands" || {
-    echo "not ok 1 - 0026_parallel_converging_bands"
+    printf '\n%s\n' "not ok 1 - 0026_parallel_converging_bands"
     exit 0
 }
 
-echo "ok 1 - 0026_parallel_converging_bands"
+printf '\n%s\n' "ok 1 - 0026_parallel_converging_bands"
 exit 0

@@ -15,14 +15,14 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 stage1="${ARTIFACT_LOCAL_DIR}/two-pass-stage1.sixel"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w64 -h64 "${snake_png}" >"${stage1}" || {
-    echo "not ok" 1 - "two-pass Sixel conversion fails"
+    printf '\n%s\n' "not ok 1 - two-pass Sixel conversion fails"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" <"${stage1}" >/dev/null || {
-    echo "not ok" 1 - "two-pass Sixel conversion fails"
+    printf '\n%s\n' "not ok 1 - two-pass Sixel conversion fails"
     exit 0
 }
 
-echo "ok" 1 - "two-pass Sixel conversion succeeds"
+printf '\n%s\n' "ok 1 - two-pass Sixel conversion succeeds"
 exit 0

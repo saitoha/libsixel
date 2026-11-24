@@ -9,12 +9,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0182_gpu_global_strata"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu global strata # SKIP GPU device unavailable"
+    printf '\n%s\n' "ok 1 - gpu global strata # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {
-    echo "not ok 1 - gpu global strata"
+    printf '\n%s\n' "not ok 1 - gpu global strata"
     exit 0
 }
-echo "ok 1 - gpu global strata"
+printf '\n%s\n' "ok 1 - gpu global strata"
 exit 0

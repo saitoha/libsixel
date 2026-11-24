@@ -20,10 +20,10 @@ set -v
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable "${input_gif}" -o/dev/null || {
-    echo "not ok" 1 - "gdk-pixbuf2 GIF decode with loop disable failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 GIF decode with loop disable failed"
     exit 0
 }
 
-echo "ok" 1 - "gdk-pixbuf2 GIF decode respects loop disable"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 GIF decode respects loop disable"
 
 exit 0

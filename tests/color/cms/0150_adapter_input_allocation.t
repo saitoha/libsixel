@@ -5,8 +5,8 @@ set -eux
 echo '1..1'
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cms/0150_adapter_input_allocation || {
-    echo 'not ok 1 - adapter input allocation'
+    printf '\n%s\n' 'not ok 1 - adapter input allocation'
     exit 0
 }
-echo 'ok 1 - adapter input allocation'
+printf '\n%s\n' 'ok 1 - adapter input allocation'
 exit 0

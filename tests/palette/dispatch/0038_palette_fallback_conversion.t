@@ -12,14 +12,14 @@ trace=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/fallback/0006_palette_fallback_conversion" 2>&1) || \
     trace_status=$?
 test "${trace_status:-0}" -eq 0 || {
-    printf 'not ok 1 - fallback expansion failed\n'
+    printf '\nnot ok 1 - fallback expansion failed\n'
     exit 0
 }
 
 case "${trace}" in *LSXPIX1\|palette_expand=fallback\|bpp=1**) true ;; *) false ;; esac || {
-    printf 'not ok 1 - fallback expansion path was not selected\n'
+    printf '\nnot ok 1 - fallback expansion path was not selected\n'
     exit 0
 }
 
-printf 'ok 1 - PAL1 input selects the fallback expansion path\n'
+printf '\nok 1 - PAL1 input selects the fallback expansion path\n'
 exit 0

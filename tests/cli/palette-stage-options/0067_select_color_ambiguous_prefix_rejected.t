@@ -14,10 +14,10 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -sa "${snake_jpg}" >/dev/null && {
-    echo "not ok" 1 - "ambiguous select-color prefix accepted"
+    printf '\n%s\n' "not ok 1 - ambiguous select-color prefix accepted"
     exit 0
 }
 
-echo "ok" 1 - "ambiguous select-color prefix rejected"
+printf '\n%s\n' "ok 1 - ambiguous select-color prefix rejected"
 
 exit 0

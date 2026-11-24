@@ -16,7 +16,7 @@ set -v
 
 counts=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     threadpool/0002_thread_default_counts converter-counts) || {
-    echo "not ok 1 - topology probe failed"
+    printf '\n%s\n' "not ok 1 - topology probe failed"
     exit 0
 }
 read -r expected hardware limited <<EOF_COUNTS
@@ -27,42 +27,42 @@ EOF_COUNTS
 trace=$(set +xv; SIXEL_ENCODER_THREADING_POLICY='' SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
-    echo "not ok 1 - default conversion failed"
+    printf '\n%s\n' "not ok 1 - default conversion failed"
     exit 0
 }
 case "${trace}" in *"threading: mode=balanced budget=${expected} "*) true ;; *) false ;; esac || {
-    echo "not ok 1 - converter default did not resolve all performance CPUs"
+    printf '\n%s\n' "not ok 1 - converter default did not resolve all performance CPUs"
     exit 0
 }
 trace=$(set +xv; SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -=lazy \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
-    echo "not ok 1 - lazy conversion failed"
+    printf '\n%s\n' "not ok 1 - lazy conversion failed"
     exit 0
 }
 case "${trace}" in *"threading: mode=lazy budget=${hardware} "*) true ;; *) false ;; esac || {
-    echo "not ok 1 - lazy converter lost its all budget"
+    printf '\n%s\n' "not ok 1 - lazy converter lost its all budget"
     exit 0
 }
 trace=$(set +xv; SIXEL_ENCODER_THREADING_POLICY='' SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=2 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
-    echo "not ok 1 - environment conversion failed"
+    printf '\n%s\n' "not ok 1 - environment conversion failed"
     exit 0
 }
 case "${trace}" in *"threading: mode=balanced budget=${limited} "*) true ;; *) false ;; esac || {
-    echo "not ok 1 - converter replaced the user environment"
+    printf '\n%s\n' "not ok 1 - converter replaced the user environment"
     exit 0
 }
 trace=$(set +xv; SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=all \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 -=greedy \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
-    echo "not ok 1 - --env conversion failed"
+    printf '\n%s\n' "not ok 1 - --env conversion failed"
     exit 0
 }
 case "${trace}" in *"threading: mode=greedy budget=1 "*) true ;; *) false ;; esac || {
-    echo "not ok 1 - converter replaced --env"
+    printf '\n%s\n' "not ok 1 - converter replaced --env"
     exit 0
 }
 
@@ -73,7 +73,7 @@ timeline="${ARTIFACT_LOCAL_DIR}/0004-default-decode-$$.jsonl"
 SIXEL_DECODER_THREADING_POLICY='' SIXEL_DECODER_THREADING_GLOBAL_BUDGET='' \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -J "${timeline}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" -o /dev/null || {
-    echo "not ok 1 - default decoder failed"
+    printf '\n%s\n' "not ok 1 - default decoder failed"
     exit 0
 }
 parse_starts=0
@@ -82,8 +82,8 @@ while IFS= read -r line; do
 done < "${timeline}"
 test "${expected}" -gt 1 || expected=0
 test "${parse_starts}" -eq "${expected}" || {
-    echo "not ok 1 - decoder default did not use all performance CPUs"
+    printf '\n%s\n' "not ok 1 - decoder default did not use all performance CPUs"
     exit 0
 }
-echo "ok 1 - converter all defaults and user overrides reach consumers"
+printf '\n%s\n' "ok 1 - converter all defaults and user overrides reach consumers"
 exit 0

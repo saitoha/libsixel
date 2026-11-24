@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_sample_range \
     "${TOP_SRCDIR}/tests/data/color-numeric/red.six" 1 || status=$?
 test "${status}" -eq 0 || {
-    echo "not ok 1 - sample range control returned an unexpected status"
+    printf '\n%s\n' "not ok 1 - sample range control returned an unexpected status"
     exit 0
 }
-echo "ok 1 - RGB sample range control"
+printf '\n%s\n' "ok 1 - RGB sample range control"
 exit 0

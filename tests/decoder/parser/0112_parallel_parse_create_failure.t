@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0102_parallel_parse_create_failure" || {
-    echo "not ok 1 - 0102_parallel_parse_create_failure"
+    printf '\n%s\n' "not ok 1 - 0102_parallel_parse_create_failure"
     exit 0
 }
 
-echo "ok 1 - 0102_parallel_parse_create_failure"
+printf '\n%s\n' "ok 1 - 0102_parallel_parse_create_failure"
 exit 0

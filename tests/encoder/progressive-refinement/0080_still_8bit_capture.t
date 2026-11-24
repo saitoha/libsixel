@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0107_still_8bit_capture" || {
-    echo "not ok 1 - still 8bit capture"
+    printf '\n%s\n' "not ok 1 - still 8bit capture"
     exit 0
 }
-echo "ok 1 - still 8bit capture"
+printf '\n%s\n' "ok 1 - still 8bit capture"
 exit 0

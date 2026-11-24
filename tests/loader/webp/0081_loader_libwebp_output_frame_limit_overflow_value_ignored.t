@@ -21,7 +21,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 msg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=18446744073709551616 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "overflow output-frame limit unexpectedly failed decode"
+    printf '\n%s\n' "not ok 1 - overflow output-frame limit unexpectedly failed decode"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -29,10 +29,10 @@ msg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRA
 
 case "${msg}" in
     *"ignore invalid SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=18446744073709551616"*)
-        echo "ok" 1 - "overflow output-frame limit is ignored with trace"
+        printf '\n%s\n' "ok 1 - overflow output-frame limit is ignored with trace"
         ;;
     *)
-        echo "not ok" 1 - "expected overflow ignore trace was missing"
+        printf '\n%s\n' "not ok 1 - expected overflow ignore trace was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0

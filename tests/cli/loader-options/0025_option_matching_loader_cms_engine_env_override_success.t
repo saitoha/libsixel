@@ -22,7 +22,7 @@ cms_auto_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         -Llibwebp:cms_engine=auto! "${input_webp}"
 ) || {
-    echo "not ok" 1 - "libwebp cms=auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - libwebp cms=auto reference decode failed"
     exit 0
 }
 
@@ -30,12 +30,12 @@ cms_none_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         -Llibwebp:cms_engine=none! "${input_webp}"
 ) || {
-    echo "not ok" 1 - "libwebp cms=none reference decode failed"
+    printf '\n%s\n' "not ok 1 - libwebp cms=none reference decode failed"
     exit 0
 }
 
 test "${cms_auto_output}" != "${cms_none_output}" || {
-    echo "not ok" 1 - "libwebp cms references were not distinguishable"
+    printf '\n%s\n' "not ok 1 - libwebp cms references were not distinguishable"
     exit 0
 }
 
@@ -44,7 +44,7 @@ global_auto_output=$(
         --env "SIXEL_LOADER_CMS_ENGINE=auto" \
         -Llibwebp! "${input_webp}"
 ) || {
-    echo "not ok" 1 - "global cms engine env (auto) failed"
+    printf '\n%s\n' "not ok 1 - global cms engine env (auto) failed"
     exit 0
 }
 
@@ -53,7 +53,7 @@ global_none_output=$(
         --env "SIXEL_LOADER_CMS_ENGINE=none" \
         -Llibwebp! "${input_webp}"
 ) || {
-    echo "not ok" 1 - "global cms engine env (none) failed"
+    printf '\n%s\n' "not ok 1 - global cms engine env (none) failed"
     exit 0
 }
 
@@ -63,29 +63,29 @@ override_output=$(
         --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" \
         -Llibwebp! "${input_webp}"
 ) || {
-    echo "not ok" 1 - "per-loader cms engine override failed"
+    printf '\n%s\n' "not ok 1 - per-loader cms engine override failed"
     exit 0
 }
 
 test "${global_auto_output}" = "${cms_auto_output}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=auto did not match reference"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_CMS_ENGINE=auto did not match reference"
     exit 0
 }
 
 test "${global_none_output}" = "${cms_none_output}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_CMS_ENGINE=none did not match reference"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_CMS_ENGINE=none did not match reference"
     exit 0
 }
 
 test "${override_output}" = "${cms_auto_output}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_LIBWEBP_CMS_ENGINE did not override global"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_LIBWEBP_CMS_ENGINE did not override global"
     exit 0
 }
 
 test "${override_output}" != "${global_none_output}" || {
-    echo "not ok" 1 - "override output matched global none baseline"
+    printf '\n%s\n' "not ok 1 - override output matched global none baseline"
     exit 0
 }
 
-echo "ok" 1 - "per-loader cms engine env overrides global cms engine env"
+printf '\n%s\n' "ok 1 - per-loader cms engine env overrides global cms engine env"
 exit 0

@@ -10,9 +10,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" bandit-guided-seed-reproducibility \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids bandit guided seed reproducibility failed"
+    printf '\n%s\n' "not ok 1 - kmedoids bandit guided seed reproducibility failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids bandit guided seed reproducibility passed"
+printf '\n%s\n' "ok 1 - kmedoids bandit guided seed reproducibility passed"
 exit 0

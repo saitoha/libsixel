@@ -14,14 +14,14 @@ printf '1..1\n'
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B '#000' -B '' </dev/null >/dev/null && {
-    echo "not ok" 1 - "empty background accepted unexpectedly"
+    printf '\n%s\n' "not ok 1 - empty background accepted unexpectedly"
     exit 0
 }
 
 test "$?" = 2 || {
-    echo "not ok" 1 - "empty background is not rejected"
+    printf '\n%s\n' "not ok 1 - empty background is not rejected"
     exit 0
 }
 
-echo "ok" 1 - "empty background rejected"
+printf '\n%s\n' "ok 1 - empty background rejected"
 exit 0

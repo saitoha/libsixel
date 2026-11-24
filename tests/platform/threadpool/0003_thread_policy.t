@@ -8,8 +8,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "threadpool/0003_thread_policy" || {
-    echo "not ok 1 - threading policy contract"
+    printf '\n%s\n' "not ok 1 - threading policy contract"
     exit 0
 }
-echo "ok 1 - threading policy contract"
+printf '\n%s\n' "ok 1 - threading policy contract"
 exit 0

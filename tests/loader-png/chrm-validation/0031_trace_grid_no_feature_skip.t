@@ -15,15 +15,15 @@ trace=$(SIXEL_CHRM_TRACE_FAULT=exit77 SIXEL_RUNTIME=sh \
     TEST_RUNNER_PATH="${TOP_SRCDIR}/tests/_support/loader/libpng/chrm_trace_control.sh" \
     sh "${TOP_SRCDIR}/tests/loader-png/chrm-validation/0001_integer_grid_roundtrip.t" 2>/dev/null) || result=$?
 test "$result" -eq 0 || {
-    echo "not ok 1 - source TAP did not exit normally"
+    printf '\n%s\n' "not ok 1 - source TAP did not exit normally"
     exit 0
 }
 # Compare only stdout; shell source tracing on stderr is not TAP evidence.
 test "$trace" = "$plan
 not ok 1 - all usable boundary coordinates recover their PNG integers" || {
-    echo "not ok 1 - trace checker grid no feature skip"
+    printf '\n%s\n' "not ok 1 - trace checker grid no feature skip"
     exit 0
 }
 set -xv
-echo "ok 1 - trace checker grid no feature skip"
+printf '\n%s\n' "ok 1 - trace checker grid no feature skip"
 exit 0

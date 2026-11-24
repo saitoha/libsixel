@@ -30,12 +30,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:Y1!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "pnm_truncated_ascii short conversion failed"
+    printf '\n%s\n' "not ok 1 - pnm_truncated_ascii short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=pnm_truncated_ascii\|stored=1\|binding=builtin_pnm_truncated_ascii\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "pnm_truncated_ascii short value was not stored"
+    printf '\n%s\n' "not ok 1 - pnm_truncated_ascii short value was not stored"
     exit 0
 }
 
@@ -44,24 +44,24 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII=1" \
     "-Lbuiltin!" "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "pnm_truncated_ascii environment conversion failed"
+    printf '\n%s\n' "not ok 1 - pnm_truncated_ascii environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=pnm_truncated_ascii\|stored=1\|binding=builtin_pnm_truncated_ascii\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "pnm_truncated_ascii environment value was not stored"
+    printf '\n%s\n' "not ok 1 - pnm_truncated_ascii environment value was not stored"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:Y0!" "${input_image}" \
     >/dev/null && {
-    echo "not ok" 1 - "pnm_truncated_ascii disabled control unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - pnm_truncated_ascii disabled control unexpectedly succeeded"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "pnm_truncated_ascii short and env output differ"
+    printf '\n%s\n' "not ok 1 - pnm_truncated_ascii short and env output differ"
     exit 0
 }
 
@@ -74,13 +74,13 @@ printf 'P3\n2 1\n255\n255 0 0 0 0 0\n' >"${reference_input}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin:Y0!" \
     "${reference_input}" \
     >"${reference_output}" || {
-    echo "not ok 1 - complete literal PNM reference conversion failed"
+    printf '\n%s\n' "not ok 1 - complete literal PNM reference conversion failed"
     exit 0
 }
 cmp -s "${reference_output}" "${short_output}" || {
-    echo "not ok 1 - truncated PNM differs from its literal pixel reference"
+    printf '\n%s\n' "not ok 1 - truncated PNM differs from its literal pixel reference"
     exit 0
 }
 
-echo "ok" 1 - "pnm_truncated_ascii preserves exact image output"
+printf '\n%s\n' "ok 1 - pnm_truncated_ascii preserves exact image output"
 exit 0

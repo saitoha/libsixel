@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0090_loader_builtin_pic_pure_rle_oversized_clip_numeric" || {
-    echo "not ok 1 - PIC pure-RLE oversized-run clipping"
+    printf '\n%s\n' "not ok 1 - PIC pure-RLE oversized-run clipping"
     exit 0
 }
 
-echo "ok 1 - PIC pure-RLE oversized-run clipping"
+printf '\n%s\n' "ok 1 - PIC pure-RLE oversized-run clipping"
 exit 0

@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check declared-architectures \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Distribution architecture declaration matches the payload manifest."
+    printf '\n%s\n' "not ok 1 - Distribution architecture declaration matches the payload manifest."
     exit 0
 }
 
-echo "ok 1 - Distribution architecture declaration matches the payload manifest."
+printf '\n%s\n' "ok 1 - Distribution architecture declaration matches the payload manifest."
 exit 0

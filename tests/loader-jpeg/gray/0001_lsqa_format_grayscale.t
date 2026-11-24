@@ -25,7 +25,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-192-grayscale.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-192-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" -o "${output_sixel}" || {
-    echo "not ok" 1 - "grayscale quality regressed"
+    printf '\n%s\n' "not ok 1 - grayscale quality regressed"
     exit 0
 }
 
@@ -37,14 +37,14 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 - "grayscale quality regressed"
+    printf '\n%s\n' "not ok 1 - grayscale quality regressed"
     exit 0
 }
 
-echo "ok" 1 - "grayscale quality meets baseline"
+printf '\n%s\n' "ok 1 - grayscale quality meets baseline"
 exit 0

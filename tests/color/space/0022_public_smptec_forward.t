@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "colorspace/public_float" "9" || {
-    echo "not ok 1 - public colorspace smptec forward"
+    printf '\n%s\n' "not ok 1 - public colorspace smptec forward"
     exit 0
 }
-echo "ok 1 - public colorspace smptec forward"
+printf '\n%s\n' "ok 1 - public colorspace smptec forward"
 exit 0

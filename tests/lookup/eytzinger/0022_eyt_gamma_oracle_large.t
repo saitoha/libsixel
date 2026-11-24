@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0021_eyt_gamma_oracle_large || {
-    echo "not ok 1 - eytzinger gamma oracle_large"
+    printf '\n%s\n' "not ok 1 - eytzinger gamma oracle_large"
     exit 0
 }
 
-echo "ok 1 - eytzinger gamma oracle_large"
+printf '\n%s\n' "ok 1 - eytzinger gamma oracle_large"
 exit 0

@@ -16,9 +16,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -I "${input_png}" >/dev/null || {
-    echo "not ok" 1 - "high-color indexed PNG decode failed with builtin loader"
+    printf '\n%s\n' "not ok 1 - high-color indexed PNG decode failed with builtin loader"
     exit 0
 }
 
-echo "ok" 1 - "high-color mode disables builtin palette fast path"
+printf '\n%s\n' "ok 1 - high-color mode disables builtin palette fast path"
 exit 0

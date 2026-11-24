@@ -22,7 +22,7 @@ input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
 error_log="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.err"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! "${input_png}" -o/dev/null 2>"${error_log}" && {
-    echo "not ok" 1 - "forced gdk-pixbuf2 corrupted PNG should fail"
+    printf '\n%s\n' "not ok 1 - forced gdk-pixbuf2 corrupted PNG should fail"
     exit 0
 }
 
@@ -37,10 +37,10 @@ while IFS= read -r line; do
 done < "${error_log}"
 
 test "${error_detail_found}" -eq 1 || {
-    echo "not ok" 1 - "corrupted PNG failure did not include gdk-pixbuf diagnostics"
+    printf '\n%s\n' "not ok 1 - corrupted PNG failure did not include gdk-pixbuf diagnostics"
     exit 0
 }
 
-echo "ok" 1 - "forced gdk-pixbuf2 corrupted PNG is rejected"
+printf '\n%s\n' "ok 1 - forced gdk-pixbuf2 corrupted PNG is rejected"
 
 exit 0

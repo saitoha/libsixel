@@ -16,9 +16,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fctl_after_idat.png" \
     -o/dev/null && {
-    echo "not ok" 1 - "excluded-default frame-count mismatch succeeded"
+    printf '\n%s\n' "not ok 1 - excluded-default frame-count mismatch succeeded"
     exit 0
 }
 
-echo "ok" 1 - "excluded-default frame-count mismatch is rejected"
+printf '\n%s\n' "ok 1 - excluded-default frame-count mismatch is rejected"
 exit 0

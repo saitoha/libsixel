@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0051_selection_farthest_pool" || {
-    echo "not ok 1 - selection farthest pool"
+    printf '\n%s\n' "not ok 1 - selection farthest pool"
     exit 0
 }
-echo "ok 1 - selection farthest pool"
+printf '\n%s\n' "ok 1 - selection farthest pool"
 exit 0

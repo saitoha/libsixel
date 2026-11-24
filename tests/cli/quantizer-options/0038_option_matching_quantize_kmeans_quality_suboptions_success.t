@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=7:restarts=2:iter=8:iter_max=10:miniter=1:polish_iter=2:feedback_slots=2:feedback_interval=2 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "kmeans quality suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - kmeans quality suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "kmeans quality suboptions are accepted"
+printf '\n%s\n' "ok 1 - kmeans quality suboptions are accepted"
 exit 0

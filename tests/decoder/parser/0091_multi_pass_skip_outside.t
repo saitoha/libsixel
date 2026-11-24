@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0081_multi_pass_skip_outside" || {
-    echo "not ok 1 - skip outside"
+    printf '\n%s\n' "not ok 1 - skip outside"
     exit 0
 }
 
-echo "ok 1 - skip outside"
+printf '\n%s\n' "ok 1 - skip outside"
 exit 0

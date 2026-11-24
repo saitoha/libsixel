@@ -9,12 +9,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0109_playback_serial_reservation || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 # SKIP thread support disabled"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - B1 reservations remain bounded without a worker"
+    printf '\n%s\n' "not ok 1 - B1 reservations remain bounded without a worker"
     exit 0
 }
-echo "ok 1 - B1 reservations remain bounded without a worker"
+printf '\n%s\n' "ok 1 - B1 reservations remain bounded without a worker"
 exit 0

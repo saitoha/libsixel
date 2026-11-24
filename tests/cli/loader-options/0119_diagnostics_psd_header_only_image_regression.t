@@ -24,11 +24,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,psd_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PSD_TRACE_HEADER_ONLY=0" "-xhuman:E1" \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "PSD header-only short conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD header-only short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=psd_header_only\|stored=1\|binding=psd_header_only,psd_header_only_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "PSD header-only short value was not stored"
+    printf '\n%s\n' "not ok 1 - PSD header-only short value was not stored"
     exit 0
 }
 
@@ -36,32 +36,32 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,psd_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PSD_TRACE_HEADER_ONLY=1" -xhuman \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "PSD header-only environment conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD header-only environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=psd_header_only\|stored=1\|binding=psd_header_only,psd_header_only_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "PSD header-only environment value was not stored"
+    printf '\n%s\n' "not ok 1 - PSD header-only environment value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXPSD1\|**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "PSD header-only trace omitted its summary"
+    printf '\n%s\n' "not ok 1 - PSD header-only trace omitted its summary"
     exit 0
 }
 case "${short_trace}" in *libsixel?psd_decode?:**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "PSD header-only trace retained verbose messages"
+    printf '\n%s\n' "not ok 1 - PSD header-only trace retained verbose messages"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "PSD header-only outputs differ"
+    printf '\n%s\n' "not ok 1 - PSD header-only outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "PSD header-only tracing preserves decoded image output"
+printf '\n%s\n' "ok 1 - PSD header-only tracing preserves decoded image output"
 exit 0

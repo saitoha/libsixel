@@ -18,12 +18,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0091_palette_auto_store_return 0 0 || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 # SKIP thread support disabled"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - palette store short serial d0"
+    printf '\n%s\n' "not ok 1 - palette store short serial d0"
     exit 0
 }
-echo "ok 1 - palette store short serial d0"
+printf '\n%s\n' "ok 1 - palette store short serial d0"
 exit 0

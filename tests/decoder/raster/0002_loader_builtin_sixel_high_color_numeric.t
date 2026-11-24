@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0119_loader_builtin_sixel_high_color_numeric" || {
-    echo "not ok 1 - SIXEL high-color adapter semantics"
+    printf '\n%s\n' "not ok 1 - SIXEL high-color adapter semantics"
     exit 0
 }
 
-echo "ok 1 - SIXEL high-color adapter semantics"
+printf '\n%s\n' "ok 1 - SIXEL high-color adapter semantics"
 exit 0

@@ -21,7 +21,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_default.six" || {
-    echo "not ok" 1 - "baseline APNG decode failed"
+    printf '\n%s\n' "not ok 1 - baseline APNG decode failed"
     exit 0
 }
 
@@ -29,15 +29,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apn
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" || {
-    echo "not ok" 1 - "APNG decode with positive start frame failed"
+    printf '\n%s\n' "not ok 1 - APNG decode with positive start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_default.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_positive.six" && {
-    echo "not ok" 1 - "positive start frame did not change static APNG output"
+    printf '\n%s\n' "not ok 1 - positive start frame did not change static APNG output"
     exit 0
 }
 
-echo "ok" 1 - "libpng APNG positive start frame is applied"
+printf '\n%s\n' "ok 1 - libpng APNG positive start frame is applied"
 exit 0

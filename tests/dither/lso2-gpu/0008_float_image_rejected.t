@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" lso2_gpu/float_image_rejected || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP Metal device unavailable"
+    printf '\n%s\n' "ok 1 # SKIP Metal device unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - lso2 gpu float image rejected"
+    printf '\n%s\n' "not ok 1 - lso2 gpu float image rejected"
     exit 0
 }
-echo "ok 1 - lso2 gpu float image rejected"
+printf '\n%s\n' "ok 1 - lso2 gpu float image rejected"
 exit 0

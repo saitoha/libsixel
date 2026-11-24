@@ -12,8 +12,8 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none -m MS-S
   "MS-SSIM": null,
   "GMSD": 0.000000
 }'; } || {
-    echo "not ok 1 - Selected JSON uses null for unavailable metrics"
+    printf '\n%s\n' "not ok 1 - Selected JSON uses null for unavailable metrics"
     exit 0
 }
-echo "ok 1 - Selected JSON uses null for unavailable metrics"
+printf '\n%s\n' "ok 1 - Selected JSON uses null for unavailable metrics"
 exit 0

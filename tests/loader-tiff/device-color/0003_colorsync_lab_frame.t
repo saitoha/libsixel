@@ -13,23 +13,23 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - 0173_colorsync_lab_frame public frame values"
+    printf '\n%s\n' "not ok 1 - 0173_colorsync_lab_frame public frame values"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=8|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - expected ColorSync apply did not execute"
+    printf '\n%s\n' "not ok 1 - expected ColorSync apply did not execute"
     exit 0
 }
 case "${trace}" in *"LSXCMS1|intent_order=relative|exclusive=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - relative intent was not selected"
+    printf '\n%s\n' "not ok 1 - relative intent was not selected"
     exit 0
 }
 case "${trace}" in *"CSLABFRAME|values-verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - independent public frame values were not checked"
+    printf '\n%s\n' "not ok 1 - independent public frame values were not checked"
     exit 0
 }
-echo "ok 1 - 0173_colorsync_lab_frame public frame values"
+printf '\n%s\n' "ok 1 - 0173_colorsync_lab_frame public frame values"
 exit 0

@@ -31,14 +31,14 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
-        echo "not ok" 1 - "PSD CMYK8 TySh /Values valid ICC decode failed for ${suffix}: ${trace_log}"
+        printf '\n%s\n' "not ok 1 - PSD CMYK8 TySh /Values valid ICC decode failed for ${suffix}: ${trace_log}"
         status=1
         exit 0
     }
 
     case "${trace_log}" in
         *"embedded ICC conversion failed"*)
-            echo "not ok" 1 - "PSD CMYK8 TySh /Values valid ICC emitted false failure trace for ${suffix}"
+            printf '\n%s\n' "not ok 1 - PSD CMYK8 TySh /Values valid ICC emitted false failure trace for ${suffix}"
             status=1
             exit 0
             ;;
@@ -50,7 +50,7 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
-        echo "not ok" 1 - "PSD CMYK8 TySh /Values bad ICC decode failed for ${suffix}: ${trace_log}"
+        printf '\n%s\n' "not ok 1 - PSD CMYK8 TySh /Values bad ICC decode failed for ${suffix}: ${trace_log}"
         status=1
         exit 0
     }
@@ -59,7 +59,7 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
         *"embedded ICC conversion failed"*)
             ;;
         *)
-            echo "not ok" 1 - "PSD CMYK8 TySh /Values bad ICC failure trace is missing for ${suffix}"
+            printf '\n%s\n' "not ok 1 - PSD CMYK8 TySh /Values bad ICC failure trace is missing for ${suffix}"
             status=1
             exit 0
             ;;
@@ -71,7 +71,7 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
-        echo "not ok" 1 - "PSD CMYK8 TySh /Values malformed ICC decode failed for ${suffix}: ${trace_log}"
+        printf '\n%s\n' "not ok 1 - PSD CMYK8 TySh /Values malformed ICC decode failed for ${suffix}: ${trace_log}"
         status=1
         exit 0
     }
@@ -80,12 +80,12 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
         *"malformed ICC resource section; skipping ICC conversion"*)
             ;;
         *)
-            echo "not ok" 1 - "PSD CMYK8 TySh /Values malformed ICC trace is missing for ${suffix}"
+            printf '\n%s\n' "not ok 1 - PSD CMYK8 TySh /Values malformed ICC trace is missing for ${suffix}"
             status=1
             exit 0
             ;;
     esac
 test "${status}" -eq 0 || exit 0
 
-echo "ok" 1 - "PSD CMYK8 TySh /Values ICC trace contract is preserved"
+printf '\n%s\n' "ok 1 - PSD CMYK8 TySh /Values ICC trace contract is preserved"
 exit 0

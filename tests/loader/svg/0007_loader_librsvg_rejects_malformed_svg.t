@@ -21,9 +21,9 @@ svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-malformed.svg"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" -o/dev/null || status="$?"
 
 test "${status-0}" -ne 0 || {
-    echo "not ok" 1 - "forced librsvg unexpectedly accepted malformed SVG"
+    printf '\n%s\n' "not ok 1 - forced librsvg unexpectedly accepted malformed SVG"
     exit 0
 }
 
-echo "ok" 1 - "forced librsvg rejects malformed SVG"
+printf '\n%s\n' "ok 1 - forced librsvg rejects malformed SVG"
 exit 0

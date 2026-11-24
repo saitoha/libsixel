@@ -22,18 +22,18 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -c 64x64+0+0 -Qheckbert -d none -p 16 "-~none" \
     --cms-engine=none -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "three-thread cropped palette encode failed"
+    printf '\n%s\n' "not ok 1 - three-thread cropped palette encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=3\|heavy=1\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "cropped three-thread sampling plan changed"
+    printf '\n%s\n' "not ok 1 - cropped three-thread sampling plan changed"
     exit 0
 }
 case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "cropped three-thread path skipped adaptive sampling"
+    printf '\n%s\n' "not ok 1 - cropped three-thread path skipped adaptive sampling"
     exit 0
 }
 
-echo "ok" 1 - "three threads admit sampling alongside crop work"
+printf '\n%s\n' "ok 1 - three threads admit sampling alongside crop work"
 exit 0

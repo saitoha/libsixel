@@ -17,14 +17,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     --env SIXEL_SIMD_LEVEL=scalar \
     -w 31 -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png" 2>&1) || {
-    echo "not ok 1 - SIMD level conversion failed"
+    printf '\n%s\n' "not ok 1 - SIMD level conversion failed"
     exit 0
 }
 
 case "${trace}" in *LSXRT1\|simd_cap=0\|*effective=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - SIMD level missed CPU dispatch"
+    printf '\n%s\n' "not ok 1 - SIMD level missed CPU dispatch"
     exit 0
 }
 
-echo "ok 1 - SIMD level reaches CPU dispatch"
+printf '\n%s\n' "ok 1 - SIMD level reaches CPU dispatch"
 exit 0

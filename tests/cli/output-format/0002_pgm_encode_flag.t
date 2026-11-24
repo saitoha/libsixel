@@ -14,10 +14,10 @@ set -v
 snake_pgm="${TOP_SRCDIR}/tests/data/inputs/snake_64.pgm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -8 -qauto -thls -e "${snake_pgm}" -o/dev/null || {
-    echo "not ok" 1 - "PGM encode flag failed"
+    printf '\n%s\n' "not ok 1 - PGM encode flag failed"
     exit 0
 }
 
-echo "ok" 1 - "PGM encode flag cooperates with palette auto-selection"
+printf '\n%s\n' "ok 1 - PGM encode flag cooperates with palette auto-selection"
 
 exit 0

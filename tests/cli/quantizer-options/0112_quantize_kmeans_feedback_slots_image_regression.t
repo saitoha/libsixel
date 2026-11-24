@@ -30,12 +30,12 @@ env_output="${artifact_dir}/0043-quantize-kmeans-feedback_slots-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 "-Qkmeans:F1:K1" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "kmeans:feedback_slots short conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:feedback_slots short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=feedback_slots\|stored=1\|binding=quantize_model_kmeans_feedback_slots,quantize_model_kmeans_feedback_slots_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "feedback_slots short value was not stored"
+    printf '\n%s\n' "not ok 1 - feedback_slots short value was not stored"
     exit 0
 }
 
@@ -43,12 +43,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS=-0" -p 16 "-Qkmeans:F1" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "kmeans:feedback_slots env conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:feedback_slots env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=feedback_slots\|stored=1\|binding=quantize_model_kmeans_feedback_slots,quantize_model_kmeans_feedback_slots_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "feedback_slots environment value was not stored"
+    printf '\n%s\n' "not ok 1 - feedback_slots environment value was not stored"
     exit 0
 }
 
@@ -56,26 +56,26 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_FEEDBACK_SLOTS=-1" \
     -p 16 "-Qkmeans:F1" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "kmeans:feedback_slots upper conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:feedback_slots upper conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=feedback_slots\|stored=1\|binding=quantize_model_kmeans_feedback_slots,quantize_model_kmeans_feedback_slots_override\|value=16**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "feedback_slots upper endpoint was not clamped"
+    printf '\n%s\n' "not ok 1 - feedback_slots upper endpoint was not clamped"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "kmeans:feedback_slots short and env output differ"
+    printf '\n%s\n' "not ok 1 - kmeans:feedback_slots short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "kmeans:feedback_slots preserves image output"
+printf '\n%s\n' "ok 1 - kmeans:feedback_slots preserves image output"
 exit 0

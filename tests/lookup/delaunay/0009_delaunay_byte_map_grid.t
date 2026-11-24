@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/0021_delaunay_byte_exact 64 2 sample map || {
-    echo "not ok 1 - delaunay byte map grid indices"
+    printf '\n%s\n' "not ok 1 - delaunay byte map grid indices"
     exit 0
 }
-echo "ok 1 - delaunay byte map grid indices"
+printf '\n%s\n' "ok 1 - delaunay byte map grid indices"
 exit 0

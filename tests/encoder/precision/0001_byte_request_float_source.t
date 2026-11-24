@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0001_byte_request_float_source 1>&2 || {
-    echo "not ok 1 - byte request float source"
+    printf '\n%s\n' "not ok 1 - byte request float source"
     exit 0
 }
-echo "ok 1 - byte request float source"
+printf '\n%s\n' "ok 1 - byte request float source"
 exit 0

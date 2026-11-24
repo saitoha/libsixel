@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0059_ormode_implicit_raster" || {
-    echo "not ok 1 - ormode_implicit_raster"
+    printf '\n%s\n' "not ok 1 - ormode_implicit_raster"
     exit 0
 }
 
-echo "ok 1 - ormode_implicit_raster"
+printf '\n%s\n' "ok 1 - ormode_implicit_raster"
 exit 0

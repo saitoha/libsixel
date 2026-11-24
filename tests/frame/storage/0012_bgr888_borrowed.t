@@ -5,8 +5,8 @@ echo '1..1'
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" frame/0001_frame_factory bgr888-borrowed || {
-    echo 'not ok 1 - frame preserves borrowed BGR888 across allocation failure and retry'
+    printf '\n%s\n' 'not ok 1 - frame preserves borrowed BGR888 across allocation failure and retry'
     exit 0
 }
-echo 'ok 1 - frame preserves borrowed BGR888 across allocation failure and retry'
+printf '\n%s\n' 'ok 1 - frame preserves borrowed BGR888 across allocation failure and retry'
 exit 0

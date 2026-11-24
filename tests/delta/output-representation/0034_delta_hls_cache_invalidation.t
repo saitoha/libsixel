@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0166_delta_hls_cache_invalidation || {
-    echo "not ok 1 - delta hls cache invalidation"
+    printf '\n%s\n' "not ok 1 - delta hls cache invalidation"
     exit 0
 }
-echo "ok 1 - delta hls cache invalidation"
+printf '\n%s\n' "ok 1 - delta hls cache invalidation"
 exit 0

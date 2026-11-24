@@ -23,31 +23,31 @@ out_limit1="${ARTIFACT_LOCAL_DIR}/webp-static-output-limit-1.six"
 out_limit_invalid="${ARTIFACT_LOCAL_DIR}/webp-static-output-limit-invalid.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline static libwebp decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static libwebp decode failed"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" >"${out_limit1}" || {
-    echo "not ok" 1 - "static decode failed with output-frame-limit env=1"
+    printf '\n%s\n' "not ok 1 - static decode failed with output-frame-limit env=1"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=abc \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" >"${out_limit_invalid}" || {
-    echo "not ok" 1 - "static decode failed with invalid output-frame-limit env"
+    printf '\n%s\n' "not ok 1 - static decode failed with invalid output-frame-limit env"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_limit1}" || {
-    echo "not ok" 1 - "output-frame-limit env=1 unexpectedly changed static output"
+    printf '\n%s\n' "not ok 1 - output-frame-limit env=1 unexpectedly changed static output"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_limit_invalid}" || {
-    echo "not ok" 1 - "invalid output-frame-limit env unexpectedly changed static output"
+    printf '\n%s\n' "not ok 1 - invalid output-frame-limit env unexpectedly changed static output"
     exit 0
 }
 
-echo "ok" 1 - "static libwebp decode ignores output-frame-limit env values"
+printf '\n%s\n' "ok 1 - static libwebp decode ignores output-frame-limit env values"
 exit 0

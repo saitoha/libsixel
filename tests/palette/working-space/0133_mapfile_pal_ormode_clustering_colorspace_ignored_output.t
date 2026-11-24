@@ -29,18 +29,18 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile ormode baseline encode failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile ormode baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "PAL mapfile ormode output is empty"
+    printf '\n%s\n' "not ok 1 - PAL mapfile ormode output is empty"
     exit 0
 }
 
 case "${expected_output}" in
     *"P7;5q"*) ;;
-    *) echo "not ok 1 - baseline did not enter OR mode"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - baseline did not enter OR mode"; exit 0 ;;
 esac
 
 actual_output=$(
@@ -59,14 +59,14 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile ormode encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - PAL mapfile ormode encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "PAL mapfile ormode output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - PAL mapfile ormode output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile ormode output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - PAL mapfile ormode output ignores clustering colorspace"
 exit 0

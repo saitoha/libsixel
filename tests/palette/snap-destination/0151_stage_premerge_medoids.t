@@ -9,12 +9,12 @@ set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0002_pipeline stage premerge 2 2>&1) || {
-    echo "not ok 1 - stage_premerge_medoids: $trace"
+    printf '\n%s\n' "not ok 1 - stage_premerge_medoids: $trace"
     exit 0
 }
 case "$trace" in
     *'|premerge='[1-9]*) ;;
-    *) echo "not ok 1 - requested stage did not execute"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - requested stage did not execute"; exit 0 ;;
 esac
-echo "ok 1 - stage_premerge_medoids"
+printf '\n%s\n' "ok 1 - stage_premerge_medoids"
 exit 0

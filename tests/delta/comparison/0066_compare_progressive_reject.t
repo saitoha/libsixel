@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0066_compare_progressive_reject" >/dev/null || {
-    echo "not ok 1 - compare progressive reject"
+    printf '\n%s\n' "not ok 1 - compare progressive reject"
     exit 0
 }
 
-echo "ok 1 - compare progressive reject"
+printf '\n%s\n' "ok 1 - compare progressive reject"
 exit 0

@@ -27,12 +27,12 @@ env_output="${artifact_dir}/0072-quantize-center-histbits-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 64 "-Qcenter:H4" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "center:histbits short conversion failed"
+    printf '\n%s\n' "not ok 1 - center:histbits short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=histbits\|stored=1\|binding=quantize_model_kcenter_histbits,quantize_model_kcenter_histbits_override\|value=4**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "histbits short value was not stored"
+    printf '\n%s\n' "not ok 1 - histbits short value was not stored"
     exit 0
 }
 
@@ -40,12 +40,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_HISTBITS=4" -p 64 "-Qcenter" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "center:histbits env conversion failed"
+    printf '\n%s\n' "not ok 1 - center:histbits env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=histbits\|stored=1\|binding=quantize_model_kcenter_histbits,quantize_model_kcenter_histbits_override\|value=4**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "histbits environment value was not stored"
+    printf '\n%s\n' "not ok 1 - histbits environment value was not stored"
     exit 0
 }
 
@@ -53,26 +53,26 @@ width_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KCENTER_HISTBITS=4294967296" \
     -p 64 "-Qcenter" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "center:histbits width conversion failed"
+    printf '\n%s\n' "not ok 1 - center:histbits width conversion failed"
     exit 0
 }
 
 case "${width_trace}" in *LSXSUB1\|*key=histbits\|stored=1*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "center histbits accepted an over-width value"
+    printf '\n%s\n' "not ok 1 - center histbits accepted an over-width value"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "center:histbits short and env output differ"
+    printf '\n%s\n' "not ok 1 - center:histbits short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "center:histbits preserves image output"
+printf '\n%s\n' "ok 1 - center:histbits preserves image output"
 exit 0

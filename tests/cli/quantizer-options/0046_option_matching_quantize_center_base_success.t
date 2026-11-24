@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q center base value was rejected"
+    printf '\n%s\n' "not ok 1 - -Q center base value was rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts center base value"
+printf '\n%s\n' "ok 1 - -Q accepts center base value"
 exit 0

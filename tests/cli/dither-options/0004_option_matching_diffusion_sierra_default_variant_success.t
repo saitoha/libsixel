@@ -17,9 +17,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d sierra \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "sierra default variant was rejected"
+    printf '\n%s\n' "not ok 1 - sierra default variant was rejected"
     exit 0
 }
 
-echo "ok" 1 - "sierra default variant is accepted"
+printf '\n%s\n' "ok 1 - sierra default variant is accepted"
 exit 0

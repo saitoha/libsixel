@@ -24,7 +24,7 @@ SIXEL_LOADER_BUILTIN_ORIENTATION=1
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o "${output_on}" "${input_jpeg}" >/dev/null || {
-    echo "not ok" 1 - "builtin JPEG orientation on decode failed"
+    printf '\n%s\n' "not ok 1 - builtin JPEG orientation on decode failed"
     exit 0
 }
 
@@ -32,7 +32,7 @@ SIXEL_LOADER_BUILTIN_ORIENTATION=0
 export SIXEL_LOADER_BUILTIN_ORIENTATION
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o "${output_off}" "${input_jpeg}" >/dev/null || {
-    echo "not ok" 1 - "builtin JPEG orientation off decode failed"
+    printf '\n%s\n' "not ok 1 - builtin JPEG orientation off decode failed"
     exit 0
 }
 
@@ -40,7 +40,7 @@ dims_on=''
 # shellcheck disable=SC2046 # Split the eight hexadecimal byte fields.
 set -- $(od -An -tx1 -j16 -N8 "${output_on}")
 test "$#" -eq 8 || {
-    echo "not ok" 1 - "builtin JPEG orientation on PNG header is truncated"
+    printf '\n%s\n' "not ok 1 - builtin JPEG orientation on PNG header is truncated"
     exit 0
 }
 dims_on="$1$2$3$4$5$6$7$8"
@@ -48,19 +48,19 @@ dims_off=''
 # shellcheck disable=SC2046 # Split the eight hexadecimal byte fields.
 set -- $(od -An -tx1 -j16 -N8 "${output_off}")
 test "$#" -eq 8 || {
-    echo "not ok" 1 - "builtin JPEG orientation off PNG header is truncated"
+    printf '\n%s\n' "not ok 1 - builtin JPEG orientation off PNG header is truncated"
     exit 0
 }
 dims_off="$1$2$3$4$5$6$7$8"
 
 test "${dims_on}" = "000000080000000c" || {
-    echo "not ok" 1 - "builtin JPEG orientation on expected 8x12 PNG IHDR"
+    printf '\n%s\n' "not ok 1 - builtin JPEG orientation on expected 8x12 PNG IHDR"
     exit 0
 }
 test "${dims_off}" = "0000000c00000008" || {
-    echo "not ok" 1 - "builtin JPEG orientation off expected 12x8 PNG IHDR"
+    printf '\n%s\n' "not ok 1 - builtin JPEG orientation off expected 12x8 PNG IHDR"
     exit 0
 }
 
-echo "ok" 1 - "builtin JPEG orientation toggle changes output geometry"
+printf '\n%s\n' "ok 1 - builtin JPEG orientation toggle changes output geometry"
 exit 0

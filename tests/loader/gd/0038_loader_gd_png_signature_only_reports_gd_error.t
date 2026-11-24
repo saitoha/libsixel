@@ -19,21 +19,21 @@ set -v
 msg=$(set +xv; printf '\211PNG\r\n\032\n' | \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced gd loader unexpectedly accepted PNG signature"
+    printf '\n%s\n' "not ok 1 - forced gd loader unexpectedly accepted PNG signature"
     exit 0
 }
 
 case "${msg}" in *GD\ error**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced gd PNG signature-only missed GD error"
+    printf '\n%s\n' "not ok 1 - forced gd PNG signature-only missed GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "forced gd PNG signature-only degraded to generic error"
+    printf '\n%s\n' "not ok 1 - forced gd PNG signature-only degraded to generic error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced gd PNG signature-only reports GD-specific failure"
+printf '\n%s\n' "ok 1 - forced gd PNG signature-only reports GD-specific failure"
 exit 0

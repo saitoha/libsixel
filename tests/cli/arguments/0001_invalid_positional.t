@@ -30,15 +30,15 @@ missing_stdout=''
 
 missing_stdout=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${missing_path}" 2>/dev/null) && {
-    echo "not ok" 1 - "img2sixel accepted missing input"
+    printf '\n%s\n' "not ok 1 - img2sixel accepted missing input"
     exit 0
 }
 : "${missing_stdout}"
 
 test -z "${missing_stdout}" || {
-    echo "not ok" 1 - "img2sixel produced output for missing input"
+    printf '\n%s\n' "not ok 1 - img2sixel produced output for missing input"
     exit 0
 }
 
-echo "ok" 1 - "missing input rejected without output"
+printf '\n%s\n' "ok 1 - missing input rejected without output"
 exit 0

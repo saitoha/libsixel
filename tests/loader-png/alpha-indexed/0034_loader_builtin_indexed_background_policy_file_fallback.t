@@ -19,7 +19,7 @@ file_fallback=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite --background-policy=explicit_first \
     -Lbuiltin:cms_engine=none:trns_keycolor=1! -d fs:scan=raster \
     -o - "${input_png}") || {
-    echo "not ok 1 - indexed PNG bKGD fallback render failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG bKGD fallback render failed"
     exit 0
 }
 
@@ -27,7 +27,7 @@ explicit_yellow=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite --background-policy=explicit_first -B '#ffff00' \
     -Lbuiltin:cms_engine=none:trns_keycolor=1! -d fs:scan=raster \
     -o - "${input_png}") || {
-    echo "not ok 1 - indexed PNG explicit yellow render failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG explicit yellow render failed"
     exit 0
 }
 
@@ -35,19 +35,19 @@ explicit_black=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite --background-policy=explicit_first -B '#000000' \
     -Lbuiltin:cms_engine=none:trns_keycolor=1! -d fs:scan=raster \
     -o - "${input_png}") || {
-    echo "not ok 1 - indexed PNG explicit black render failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG explicit black render failed"
     exit 0
 }
 
 test "${file_fallback}" = "${explicit_yellow}" || {
-    echo "not ok 1 - indexed PNG bKGD did not select yellow"
+    printf '\n%s\n' "not ok 1 - indexed PNG bKGD did not select yellow"
     exit 0
 }
 
 test "${file_fallback}" != "${explicit_black}" || {
-    echo "not ok 1 - indexed PNG bKGD matched the black control"
+    printf '\n%s\n' "not ok 1 - indexed PNG bKGD matched the black control"
     exit 0
 }
 
-echo "ok 1 - indexed PNG bKGD fallback selects its palette color"
+printf '\n%s\n' "ok 1 - indexed PNG bKGD fallback selects its palette color"
 exit 0

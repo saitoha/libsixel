@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "planner/allocation/0001_allocation_slots" || {
-    echo "not ok 1 - pipeline and staged allocations respect their phase budgets"
+    printf '\n%s\n' "not ok 1 - pipeline and staged allocations respect their phase budgets"
     exit 0
 }
 
-echo "ok 1 - pipeline and staged allocations respect their phase budgets"
+printf '\n%s\n' "ok 1 - pipeline and staged allocations respect their phase budgets"
 exit 0

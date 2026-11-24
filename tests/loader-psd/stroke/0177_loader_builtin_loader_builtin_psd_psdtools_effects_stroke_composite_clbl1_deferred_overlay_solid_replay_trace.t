@@ -37,13 +37,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
 case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
 
@@ -56,11 +56,11 @@ case "${diag_line}" in *FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED**) false ;; *) true 
 
 test $((solid_apply_count + solid_skip_count + solid_unsuppressed_skip_count)) \
     -eq 1 || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite must emit exactly one deferred solid replay/skip decision code"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite must emit exactly one deferred solid replay/skip decision code"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite records deferred solid replay/skip decision"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite records deferred solid replay/skip decision"
 exit 0

@@ -38,8 +38,8 @@ status=0
     'duplicates:preview' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Registration has exactly one instance preview"
+    printf '\n%s\n' "not ok 1 - Registration has exactly one instance preview"
     exit 0
 }
-echo "ok 1 - Registration has exactly one instance preview"
+printf '\n%s\n' "ok 1 - Registration has exactly one instance preview"
 exit 0

@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0130_loader_builtin_hdr_new_rle_zero_count_reject" || {
-    echo "not ok 1 - HDR component RLE rejects a zero count"
+    printf '\n%s\n' "not ok 1 - HDR component RLE rejects a zero count"
     exit 0
 }
 
-echo "ok 1 - HDR component RLE rejects a zero count"
+printf '\n%s\n' "ok 1 - HDR component RLE rejects a zero count"
 exit 0

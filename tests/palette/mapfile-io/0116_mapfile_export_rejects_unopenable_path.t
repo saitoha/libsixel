@@ -20,14 +20,14 @@ output_palette="${ARTIFACT_LOCAL_DIR}/missing/palette.gpl"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
           -M "${output_palette}" -o/dev/null "${input_image}" \
           2>&1 >/dev/null) && {
-    echo "not ok" 1 - "unopenable palette-output path unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unopenable palette-output path unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_encoder_emit_palette_output:\ failed\ to\ open\ file.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing palette-output open-failure diagnostic"
+    printf '\n%s\n' "not ok 1 - missing palette-output open-failure diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "unopenable palette-output path is rejected"
+printf '\n%s\n' "ok 1 - unopenable palette-output path is rejected"
 exit 0

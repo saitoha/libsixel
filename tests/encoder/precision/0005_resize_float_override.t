@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0005_resize_float_override 1>&2 || {
-    echo "not ok 1 - resize float override"
+    printf '\n%s\n' "not ok 1 - resize float override"
     exit 0
 }
-echo "ok 1 - resize float override"
+printf '\n%s\n' "ok 1 - resize float override"
 exit 0

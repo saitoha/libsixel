@@ -17,7 +17,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 stdout_path="${ARTIFACT_LOCAL_DIR}/stdout.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i - <"${TOP_SRCDIR}/images/map8.six" >"${stdout_path}" || {
-    echo "not ok" 1 - "sixel2png without -o failed"
+    printf '\n%s\n' "not ok 1 - sixel2png without -o failed"
     exit 0
 }
 
@@ -27,9 +27,9 @@ expected_header_cksum="3308842558 4"
 actual_header_cksum=$(dd bs=1 count=4 if="${stdout_path}" 2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    echo "not ok" 1 - "stdout png signature is invalid"
+    printf '\n%s\n' "not ok 1 - stdout png signature is invalid"
     exit 0
 }
 
-echo "ok" 1 - "default stdout PNG produced"
+printf '\n%s\n' "ok 1 - default stdout PNG produced"
 exit 0

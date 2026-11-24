@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" quant/palette/fixed_mask/0017_all_hidden || {
-    echo "not ok 1 - fixed palette mask all hidden"
+    printf '\n%s\n' "not ok 1 - fixed palette mask all hidden"
     exit 0
 }
 
-echo "ok 1 - fixed palette mask all hidden"
+printf '\n%s\n' "ok 1 - fixed palette mask all hidden"
 exit 0

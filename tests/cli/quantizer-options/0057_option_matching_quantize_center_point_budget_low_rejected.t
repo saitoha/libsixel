@@ -16,16 +16,16 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:point_budget=63 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid center point_budget unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid center point_budget unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *point_budget\ must\ be\ 0\ or\ in\ range\ 64-16384.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing center point_budget range diagnostic"
+    printf '\n%s\n' "not ok 1 - missing center point_budget range diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "center point_budget lower bound is rejected"
+printf '\n%s\n' "ok 1 - center point_budget lower bound is rejected"
 exit 0

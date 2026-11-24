@@ -22,19 +22,19 @@ out_static_default="${ARTIFACT_LOCAL_DIR}/webp-static-start-frame-default-neg.si
 out_static_start_neg1="${ARTIFACT_LOCAL_DIR}/webp-static-start-frame-neg1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" >"${out_static_default}" || {
-    echo "not ok" 1 - "baseline static libwebp decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static libwebp decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=-1 -L libwebp! -S "${image_webp}" >"${out_static_start_neg1}" || {
-    echo "not ok" 1 - "static libwebp decode with --start-frame=-1 failed"
+    printf '\n%s\n' "not ok 1 - static libwebp decode with --start-frame=-1 failed"
     exit 0
 }
 
 cmp -s "${out_static_default}" "${out_static_start_neg1}" && {
-    echo "not ok" 1 - "static --start-frame=-1 did not change output"
+    printf '\n%s\n' "not ok 1 - static --start-frame=-1 did not change output"
     exit 0
 }
 
-echo "ok" 1 - "static libwebp decode applies negative --start-frame"
+printf '\n%s\n' "ok 1 - static libwebp decode applies negative --start-frame"
 exit 0

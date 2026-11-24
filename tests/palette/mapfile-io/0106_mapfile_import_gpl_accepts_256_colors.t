@@ -21,14 +21,14 @@ actual_palette="${ARTIFACT_LOCAL_DIR}/actual.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m gpl:"${input_palette}" \
     -M pal-jasc:"${actual_palette}" -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - "256-color GPL import failed"
+    printf '\n%s\n' "not ok 1 - 256-color GPL import failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - "GPL did not retain 256 ordered entries"
+    printf '\n%s\n' "not ok 1 - GPL did not retain 256 ordered entries"
     exit 0
 }
 
-echo "ok" 1 - "GPL retains exactly 256 ordered entries"
+printf '\n%s\n' "ok 1 - GPL retains exactly 256 ordered entries"
 exit 0

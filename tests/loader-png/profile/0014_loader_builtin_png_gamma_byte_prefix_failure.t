@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0193_png_metadata_failures 8 || {
-    echo "not ok 1 - PNG gamma byte prefix failure"
+    printf '\n%s\n' "not ok 1 - PNG gamma byte prefix failure"
     exit 0
 }
-echo "ok 1 - PNG gamma byte prefix failure"
+printf '\n%s\n' "ok 1 - PNG gamma byte prefix failure"
 exit 0

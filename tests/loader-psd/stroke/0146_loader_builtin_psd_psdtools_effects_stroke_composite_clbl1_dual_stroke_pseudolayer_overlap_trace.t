@@ -30,27 +30,27 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ overlap\ decomposition\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred overlap decomposition trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred overlap decomposition trace"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group"*builtin\ PSD:\ applying\ deferred\ dual-stroke\ pseudo-layer\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred pseudo-layer overlap trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred pseudo-layer overlap trace"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group"*builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred mode-aware dual-stroke trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred mode-aware dual-stroke trace"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite resolves deferred overlap via pseudo-layer candidate"
+printf '\n%s\n' "ok 1 - effects/stroke-composite resolves deferred overlap via pseudo-layer candidate"
 exit 0

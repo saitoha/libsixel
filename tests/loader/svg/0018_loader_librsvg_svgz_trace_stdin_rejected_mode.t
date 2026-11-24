@@ -27,7 +27,7 @@ trace_log=$(
 ) || status="$?"
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "trace-enabled stdin .svgz reject path unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - trace-enabled stdin .svgz reject path unexpectedly succeeded"
     exit 0
 }
 
@@ -35,10 +35,10 @@ case "${trace_log}" in
     *"librsvg: decode_mode=stdin_svgz_rejected"*)
         ;;
     *)
-        echo "not ok" 1 - "stdin .svgz reject trace mode was not reported"
+        printf '\n%s\n' "not ok 1 - stdin .svgz reject trace mode was not reported"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg stdin .svgz reject trace decode mode is reported"
+printf '\n%s\n' "ok 1 - librsvg stdin .svgz reject trace decode mode is reported"
 exit 0

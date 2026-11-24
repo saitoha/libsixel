@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0072_loader_builtin_gif_interlace_four_pass_numeric" || {
-    echo "not ok 1 - GIF four-pass interlace row order"
+    printf '\n%s\n' "not ok 1 - GIF four-pass interlace row order"
     exit 0
 }
 
-echo "ok 1 - GIF four-pass interlace row order"
+printf '\n%s\n' "ok 1 - GIF four-pass interlace row order"
 exit 0

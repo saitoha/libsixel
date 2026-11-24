@@ -24,23 +24,23 @@ esc="$(printf '\033')"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_LIBRSVG_ALLOW_RELATIVE_RESOURCES=1 \
     -L librsvg! "${svg_path}" >"${optin_sixel}" || {
-    echo "not ok" 1 - "opt-in relative-resource SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - opt-in relative-resource SVG conversion failed"
     exit 0
 }
 
 IFS= read -r sixel_line <"${optin_sixel}" || :
 test -n "${sixel_line-}" || {
-    echo "not ok" 1 - "failed to read opt-in relative-resource SIXEL header"
+    printf '\n%s\n' "not ok 1 - failed to read opt-in relative-resource SIXEL header"
     exit 0
 }
 case "${sixel_line}" in
     "${esc}Pq"*)
         ;;
     *)
-        echo "not ok" 1 - "opt-in path did not resolve relative resource"
+        printf '\n%s\n' "not ok 1 - opt-in path did not resolve relative resource"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "opt-in enables relative resource decode"
+printf '\n%s\n' "ok 1 - opt-in enables relative resource decode"
 exit 0

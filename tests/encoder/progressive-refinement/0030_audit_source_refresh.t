@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0030_audit_source_refresh" || {
-    echo "not ok 1 - audit source refresh"
+    printf '\n%s\n' "not ok 1 - audit source refresh"
     exit 0
 }
-echo "ok 1 - audit source refresh"
+printf '\n%s\n' "ok 1 - audit source refresh"
 exit 0

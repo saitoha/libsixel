@@ -31,19 +31,19 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "blend_and_clipping decode failed"
+    printf '\n%s\n' "not ok 1 - blend_and_clipping decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ solid\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "blend_and_clipping missing deferred solid overlay trace"
+    printf '\n%s\n' "not ok 1 - blend_and_clipping missing deferred solid overlay trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ keeping\ deferred\ solid\ overlay\ alpha\ unchanged\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "blend_and_clipping missing deferred solid alpha-invariant trace"
+    printf '\n%s\n' "not ok 1 - blend_and_clipping missing deferred solid alpha-invariant trace"
     exit 0
 }
 
-echo "ok" 1 - "blend_and_clipping keeps deferred solid overlay traces"
+printf '\n%s\n' "ok 1 - blend_and_clipping keeps deferred solid overlay traces"
 exit 0

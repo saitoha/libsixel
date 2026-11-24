@@ -22,19 +22,19 @@ msg=$(
 ) || result=$?
 
 test "${result}" -eq 2 || {
-    echo "not ok" 1 - "cover snap suboption exit status mismatch"
+    printf '\n%s\n' "not ok 1 - cover snap suboption exit status mismatch"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing removed cover snap diagnostic"
+    printf '\n%s\n' "not ok 1 - missing removed cover snap diagnostic"
     exit 0
 }
 
 case "${msg}" in *snap_target**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "removed cover snap diagnostic lacks key name"
+    printf '\n%s\n' "not ok 1 - removed cover snap diagnostic lacks key name"
     exit 0
 }
 
-echo "ok" 1 - "cover policy rejects removed snap configuration"
+printf '\n%s\n' "ok 1 - cover policy rejects removed snap configuration"
 exit 0

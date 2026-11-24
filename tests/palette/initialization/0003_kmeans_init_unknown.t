@@ -17,10 +17,10 @@ case "${output}" in
 esac
 
 test "${output}" = "none" || {
-    echo "not ok" 1 - "unexpected kmeans init output: ${output}"
+    printf '\n%s\n' "not ok 1 - unexpected kmeans init output: ${output}"
     exit 0
 }
 
-echo "ok" 1 - "kmeans init output matched: none"
+printf '\n%s\n' "ok 1 - kmeans init output matched: none"
 
 exit 0

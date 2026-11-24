@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_
               --precision-policy=8bit \
               -d a_dither:scan=raster \
               "${input_png}" >"${output_six}" || {
-    echo "not ok 1 - a_dither 8bit render failed"
+    printf '\n%s\n' "not ok 1 - a_dither 8bit render failed"
     exit 0
 }
 
@@ -34,10 +34,10 @@ output_six_text=""
 IFS= read -r output_six_text < "${output_six}" || test -n "${output_six_text}"
 case "${output_six_text}" in
     *"$(printf '\033')P0;1q"*)
-        echo "ok 1 - a_dither 8bit keeps keycolor header"
+        printf '\n%s\n' "ok 1 - a_dither 8bit keeps keycolor header"
         ;;
     *)
-        echo "not ok 1 - a_dither 8bit lost keycolor header"
+        printf '\n%s\n' "not ok 1 - a_dither 8bit lost keycolor header"
         ;;
 esac
 

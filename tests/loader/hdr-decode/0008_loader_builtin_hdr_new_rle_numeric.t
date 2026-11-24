@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0105_loader_builtin_hdr_new_rle_numeric" || {
-    echo "not ok 1 - HDR component RLE exact float samples"
+    printf '\n%s\n' "not ok 1 - HDR component RLE exact float samples"
     exit 0
 }
 
-echo "ok 1 - HDR component RLE exact float samples"
+printf '\n%s\n' "ok 1 - HDR component RLE exact float samples"
 exit 0

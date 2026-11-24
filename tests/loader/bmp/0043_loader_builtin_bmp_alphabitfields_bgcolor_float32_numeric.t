@@ -12,9 +12,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_ALPHA_POLICY=composite" \
     --env "SIXEL_TEST_BMP_NUMERIC_ALPHABITFIELDS_BGCOLOR_FLOAT32=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp alphabitfields bgcolor float32 numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp alphabitfields bgcolor float32 numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (bmp alphabitfields bgcolor float32 numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (bmp alphabitfields bgcolor float32 numeric)"
 exit 0

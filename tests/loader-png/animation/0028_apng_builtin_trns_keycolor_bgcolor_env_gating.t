@@ -23,7 +23,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYC
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin! -d fs:scan=raster \
               "${input_png}" >"${out_on}" || {
-    echo "not ok 1 - process SIXEL_BGCOLOR + builtin APNG opt-in render failed"
+    printf '\n%s\n' "not ok 1 - process SIXEL_BGCOLOR + builtin APNG opt-in render failed"
     exit 0
 }
 
@@ -31,15 +31,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYC
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin! -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
-    echo "not ok 1 - process SIXEL_BGCOLOR + builtin APNG opt-out render failed"
+    printf '\n%s\n' "not ok 1 - process SIXEL_BGCOLOR + builtin APNG opt-out render failed"
     exit 0
 }
 
 cmp -s "${out_on}" "${out_off}" || {
-    echo "not ok 1 - process SIXEL_BGCOLOR unexpectedly keeps builtin APNG keycolor path"
+    printf '\n%s\n' "not ok 1 - process SIXEL_BGCOLOR unexpectedly keeps builtin APNG keycolor path"
     exit 0
 }
 
-echo "ok 1 - process SIXEL_BGCOLOR disables builtin APNG keycolor path"
+printf '\n%s\n' "ok 1 - process SIXEL_BGCOLOR disables builtin APNG keycolor path"
 
 exit 0

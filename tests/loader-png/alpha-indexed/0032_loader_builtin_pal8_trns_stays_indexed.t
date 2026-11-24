@@ -20,7 +20,7 @@ base_pal8=0
 base_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     "${input_png}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - baseline pal8 transparent render failed"
+    printf '\n%s\n' "not ok 1 - baseline pal8 transparent render failed"
     exit 0
 }
 
@@ -31,9 +31,9 @@ case "${base_log}" in
 esac
 
 test "${base_pal8}" = 1 || {
-    echo "not ok 1 - baseline path did not stay pal8"
+    printf '\n%s\n' "not ok 1 - baseline path did not stay pal8"
     exit 0
 }
 
-echo "ok 1 - indexed transparent input stays pal8"
+printf '\n%s\n' "ok 1 - indexed transparent input stays pal8"
 exit 0

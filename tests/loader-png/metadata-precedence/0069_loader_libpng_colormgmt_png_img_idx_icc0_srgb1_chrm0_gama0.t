@@ -18,12 +18,12 @@ input_png="${TOP_SRCDIR}/tests/data/colormgmt/input/png/idx/img_idx_icc0_srgb1_c
 reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/idx/img_idx_icc0_srgb1_chrm0_gama0.ppm"
 
 test -f "${input_png}" || {
-    echo "not ok" 1 - "missing test fixture"
+    printf '\n%s\n' "not ok 1 - missing test fixture"
     exit 0
 }
 
 test -f "${reference_image}" || {
-    echo "not ok" 1 - "missing test fixture"
+    printf '\n%s\n' "not ok 1 - missing test fixture"
     exit 0
 }
 
@@ -32,9 +32,9 @@ test -f "${reference_image}" || {
 # permits either byte or float32 decoder storage without a spatial metric.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${reference_image}" "${input_png}" 'libpng:cms_engine=auto!' 0.51 || {
-    echo "not ok 1 - decoded PNG color samples differ from the independent oracle"
+    printf '\n%s\n' "not ok 1 - decoded PNG color samples differ from the independent oracle"
     exit 0
 }
 
-echo "ok" 1 - "libpng colormgmt matches reference: idx/img_idx_icc0_srgb1_chrm0_gama0.png"
+printf '\n%s\n' "ok 1 - libpng colormgmt matches reference: idx/img_idx_icc0_srgb1_chrm0_gama0.png"
 exit 0

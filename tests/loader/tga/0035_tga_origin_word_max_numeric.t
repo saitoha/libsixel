@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0235_tga_origin_word_max_numeric" 1>&2 || {
-    echo "not ok 1 - Resolve source index 65535 without wrapping the colormap range"
+    printf '\n%s\n' "not ok 1 - Resolve source index 65535 without wrapping the colormap range"
     exit 0
 }
-echo "ok 1 - Resolve source index 65535 without wrapping the colormap range"
+printf '\n%s\n' "ok 1 - Resolve source index 65535 without wrapping the colormap range"
 exit 0

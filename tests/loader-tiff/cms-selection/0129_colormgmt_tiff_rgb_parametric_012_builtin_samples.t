@@ -23,8 +23,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_parametric_012_tiff_analytic.ppm" \
     "${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_012.tiff" \
     'libtiff:cms_engine=builtin!' 0.004 || {
-    echo "not ok 1 - TIFF parametric ICC samples differ from independent values"
+    printf '\n%s\n' "not ok 1 - TIFF parametric ICC samples differ from independent values"
     exit 0
 }
-echo "ok 1 - TIFF parametric ICC samples match independent values"
+printf '\n%s\n' "ok 1 - TIFF parametric ICC samples match independent values"
 exit 0

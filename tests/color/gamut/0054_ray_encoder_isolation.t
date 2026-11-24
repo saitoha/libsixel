@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gamut/0054_ray_encoder_isolation || {
-    echo "not ok 1 - encoder isolation"
+    printf '\n%s\n' "not ok 1 - encoder isolation"
     exit 0
 }
-echo "ok 1 - encoder isolation"
+printf '\n%s\n' "ok 1 - encoder isolation"
 exit 0

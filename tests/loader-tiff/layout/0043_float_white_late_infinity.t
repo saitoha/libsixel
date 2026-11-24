@@ -15,8 +15,8 @@ test "$result" -ne 77 || {
 echo "1..1"
 set -v
 test "$result" -eq 0 || {
-    echo "not ok 1 - float white late infinity"
+    printf '\n%s\n' "not ok 1 - float white late infinity"
     exit 0
 }
-echo "ok 1 - float white late infinity"
+printf '\n%s\n' "ok 1 - float white late infinity"
 exit 0

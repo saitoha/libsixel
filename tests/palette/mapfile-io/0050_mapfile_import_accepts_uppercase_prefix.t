@@ -19,10 +19,10 @@ gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-label-suffix.gpl"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m GPL:"${gpl_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "uppercase GPL prefix should be accepted"
+    printf '\n%s\n' "not ok 1 - uppercase GPL prefix should be accepted"
     exit 0
 }
 
-echo "ok" 1 - "uppercase mapfile prefix is accepted"
+printf '\n%s\n' "ok 1 - uppercase mapfile prefix is accepted"
 
 exit 0

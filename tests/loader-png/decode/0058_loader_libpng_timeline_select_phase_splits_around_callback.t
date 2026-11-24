@@ -22,7 +22,7 @@ echo "1..1"
 set -v
 
 mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
+    printf '\n%s\n' "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
     exit 0
 }
 
@@ -31,7 +31,7 @@ log_file="${ARTIFACT_LOCAL_DIR}/timeline-libpng-select-callback-split.json"
 
 SIXEL_LOG_PATH="${log_file}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L libpng! "${input_png}" >/dev/null || {
-    echo "not ok 1 - libpng conversion failed while capturing select phases"
+    printf '\n%s\n' "not ok 1 - libpng conversion failed while capturing select phases"
     exit 0
 }
 
@@ -64,21 +64,21 @@ while IFS= read -r line; do
 done < "${log_file}"
 
 test "${manager_start}" -ge 2 || {
-    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    printf '\n%s\n' "not ok 1 - loader/select phases did not split around callback handoff"
     exit 0
 }
 test "${manager_finish}" -ge 2 || {
-    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    printf '\n%s\n' "not ok 1 - loader/select phases did not split around callback handoff"
     exit 0
 }
 test "${candidate_start}" -ge 2 || {
-    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    printf '\n%s\n' "not ok 1 - loader/select phases did not split around callback handoff"
     exit 0
 }
 test "${candidate_finish}" -ge 2 || {
-    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    printf '\n%s\n' "not ok 1 - loader/select phases did not split around callback handoff"
     exit 0
 }
 
-echo "ok 1 - loader/select phases split around callback handoff"
+printf '\n%s\n' "ok 1 - loader/select phases split around callback handoff"
 exit 0

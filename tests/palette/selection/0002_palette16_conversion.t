@@ -15,10 +15,10 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 map16_palette="${TOP_SRCDIR}/images/map16-palette.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -m "${map16_palette}" -Efast "${snake_jpg}" -o/dev/null || {
-    echo "not ok" 1 - "16-colour palette conversion fails"
+    printf '\n%s\n' "not ok 1 - 16-colour palette conversion fails"
     exit 0
 }
 
-echo "ok" 1 - "16-colour palette conversion succeeds"
+printf '\n%s\n' "ok 1 - 16-colour palette conversion succeeds"
 
 exit 0

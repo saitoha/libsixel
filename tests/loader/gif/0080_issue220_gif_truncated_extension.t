@@ -17,19 +17,19 @@ issue220="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc7_gif_truncated_ex
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${issue220}" -o /dev/null || rc=$?
 
 test "${rc-0}" -ne 0 || {
-    echo "not ok" 1 - "truncated extension GIF unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - truncated extension GIF unexpectedly accepted"
     exit 0
 }
 
 test "${rc-0}" -ne 127 || {
-    echo "not ok" 1 - "img2sixel was not executed as expected"
+    printf '\n%s\n' "not ok 1 - img2sixel was not executed as expected"
     exit 0
 }
 
 test "${rc-0}" -ne 139 || {
-    echo "not ok" 1 - "truncated extension GIF triggered SIGSEGV"
+    printf '\n%s\n' "not ok 1 - truncated extension GIF triggered SIGSEGV"
     exit 0
 }
 
-echo "ok" 1 - "truncated extension GIF rejected without crash"
+printf '\n%s\n' "ok 1 - truncated extension GIF rejected without crash"
 exit 0

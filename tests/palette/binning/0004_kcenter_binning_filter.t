@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0041_kcenter_binning_filter" || {
-    echo "not ok 1 - K-center shared-binning regression"
+    printf '\n%s\n' "not ok 1 - K-center shared-binning regression"
     exit 0
 }
 
-echo "ok 1 - K-center shared-binning regression"
+printf '\n%s\n' "ok 1 - K-center shared-binning regression"
 exit 0

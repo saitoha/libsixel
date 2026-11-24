@@ -35,14 +35,14 @@ case_name=snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_engin
         -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
-        echo "not ok" 1 - "builtin loader failed to decode named HSB valid ICC fixture ${case_name}: ${trace_output}"
+        printf '\n%s\n' "not ok 1 - builtin loader failed to decode named HSB valid ICC fixture ${case_name}: ${trace_output}"
         status=1
         exit 0
     }
 
     case "${trace_output}" in
         *"embedded ICC conversion failed"*|*"malformed ICC resource section"*)
-            echo "not ok" 1 - "unexpected ICC failure trace for ${case_name}: ${trace_output}"
+            printf '\n%s\n' "not ok 1 - unexpected ICC failure trace for ${case_name}: ${trace_output}"
             status=1
             exit 0
             ;;
@@ -55,10 +55,10 @@ case_name=snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_engin
 # floating-point arithmetic in addition to that one-level sample budget.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    printf '\n%s\n' "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 test "${status}" -eq 0 || exit 0
 
-echo "ok" 1 - "PSD named HSB valid ICC matrix keeps deterministic trace matches reference pixel values"
+printf '\n%s\n' "ok 1 - PSD named HSB valid ICC matrix keeps deterministic trace matches reference pixel values"
 exit 0

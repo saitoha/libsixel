@@ -18,7 +18,7 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "baseline without colon was not rejected as expected"
+    printf '\n%s\n' "not ok 1 - baseline without colon was not rejected as expected"
     exit 0
 }
 
@@ -33,10 +33,10 @@ while IFS= read -r line; do
 done < "${err_file}"
 
 test "${err_match}" -eq 1 || {
-    echo "not ok" 1 - "baseline without colon was not rejected as expected"
+    printf '\n%s\n' "not ok 1 - baseline without colon was not rejected as expected"
     exit 0
 }
 
-echo "ok" 1 - "baseline without colon was rejected"
+printf '\n%s\n' "ok 1 - baseline without colon was rejected"
 
 exit 0

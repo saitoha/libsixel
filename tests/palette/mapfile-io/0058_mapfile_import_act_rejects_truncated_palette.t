@@ -19,15 +19,15 @@ act_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/unknown-format-noext"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m act:"${act_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "truncated ACT palette unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - truncated ACT palette unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_act:\ truncated\ ACT\ palette.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing truncated ACT diagnostic"
+    printf '\n%s\n' "not ok 1 - missing truncated ACT diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "truncated ACT palette is rejected"
+printf '\n%s\n' "ok 1 - truncated ACT palette is rejected"
 
 exit 0

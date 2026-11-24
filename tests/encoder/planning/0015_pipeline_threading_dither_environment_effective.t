@@ -18,7 +18,7 @@ set -v
 # Read the compiled dither capability; keep serial option routing covered.
 parallel_dither=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/allocation/0001_allocation_slots parallel-dither) || {
-    echo "not ok 1 - cannot query the compiled dither capability"
+    printf '\n%s\n' "not ok 1 - cannot query the compiled dither capability"
     exit 0
 }
 expected_dither=4
@@ -31,12 +31,12 @@ threads_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_ENCODER_THREADING_DITHER=1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "threading dither environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading dither environment conversion failed"
     exit 0
 }
 
 case "${threads_trace}" in *threads:\ dither=1\ encode=5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading dither did not cap the dither workers"
+    printf '\n%s\n' "not ok 1 - threading dither did not cap the dither workers"
     exit 0
 }
 
@@ -44,14 +44,14 @@ negative_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_ENCODER_THREADING_DITHER=-1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "negative threading dither conversion failed"
+    printf '\n%s\n' "not ok 1 - negative threading dither conversion failed"
     exit 0
 }
 
 case "${negative_trace}" in *threads:\ dither=${expected_dither}\ encode=2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "negative threading dither changed the default"
+    printf '\n%s\n' "not ok 1 - negative threading dither changed the default"
     exit 0
 }
 
-echo "ok" 1 - "threading dither environment controls the worker split"
+printf '\n%s\n' "ok 1 - threading dither environment controls the worker split"
 exit 0

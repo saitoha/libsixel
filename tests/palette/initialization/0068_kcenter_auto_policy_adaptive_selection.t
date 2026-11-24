@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0003_kcenter_constraints" auto-policy-adaptive-selection >/dev/null || {
-    echo "not ok" 1 - "kcenter auto_policy adaptive branch check failed"
+    printf '\n%s\n' "not ok 1 - kcenter auto_policy adaptive branch check failed"
     exit 0
 }
 
-echo "ok" 1 - "kcenter auto_policy adaptive branch check passed"
+printf '\n%s\n' "ok 1 - kcenter auto_policy adaptive branch check passed"
 exit 0

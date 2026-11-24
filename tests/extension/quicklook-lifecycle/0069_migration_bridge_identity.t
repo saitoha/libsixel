@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'normal' 'migration-bridge' || {
-    echo "not ok 1 - Restored legacy Bridge matches its original artifact identity."
+    printf '\n%s\n' "not ok 1 - Restored legacy Bridge matches its original artifact identity."
     exit 0
 }
-echo "ok 1 - Restored legacy Bridge matches its original artifact identity."
+printf '\n%s\n' "ok 1 - Restored legacy Bridge matches its original artifact identity."
 exit 0

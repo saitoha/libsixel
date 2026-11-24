@@ -17,9 +17,9 @@ set -v
 
 cmp "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     "${QUICKLOOK_STAGE_DIR}/sixel-quicklook-package" >/dev/null || {
-    echo "not ok 1 - Staged management executable differs"
+    printf '\n%s\n' "not ok 1 - Staged management executable differs"
     exit 0
 }
 
-echo "ok 1 - staged management tool matches."
+printf '\n%s\n' "ok 1 - staged management tool matches."
 exit 0

@@ -25,10 +25,10 @@ set -e
 
 test "${command_status}" -ge 1 -a \
     "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
-    echo "not ok" 1 - "issue #220 item3 did not return mapped error status"
+    printf '\n%s\n' "not ok 1 - issue #220 item3 did not return mapped error status"
     exit 0
 }
 
-echo "ok" 1 - "issue #220 item3 rejected with mapped error status"
+printf '\n%s\n' "ok 1 - issue #220 item3 rejected with mapped error status"
 
 exit 0

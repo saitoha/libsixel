@@ -12,24 +12,24 @@ input="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_012.png"
 reference="${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_parametric_012_png_builtin.six"
 
 expected=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m DE00_max -L "builtin:cms_engine=builtin!" "$reference" "$input") || {
-    echo "not ok 1 - load expected CMS target"
+    printf '\n%s\n' "not ok 1 - load expected CMS target"
     exit 0
 }
 actual=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m DE00_max -L "builtin!" "$reference" - -# builtin <"$input") || {
-    echo "not ok 1 - CMS target from stdin"
+    printf '\n%s\n' "not ok 1 - CMS target from stdin"
     exit 0
 }
 # Compare finite color-error values to observe CMS routing directly.
 case "${actual}:${expected}" in
     *nan*|*inf*|:*)
-        echo "not ok 1 - CMS comparison must produce finite values"
+        printf '\n%s\n' "not ok 1 - CMS comparison must produce finite values"
         exit 0
         ;;
 esac
 test "$actual" = "$expected" || {
-    echo "not ok 1 - CMS must reach target from stdin"
+    printf '\n%s\n' "not ok 1 - CMS must reach target from stdin"
     exit 0
 }
 
-echo "ok 1 - lsqa cms target stdin"
+printf '\n%s\n' "ok 1 - lsqa cms target stdin"
 exit 0

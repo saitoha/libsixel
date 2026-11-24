@@ -23,14 +23,14 @@ out_cli_with_oob_env="${ARTIFACT_LOCAL_DIR}/webp-static-start-frame-cli-oob-env.
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -S \
     "${image_webp}" >"${out_cli}" || {
-    echo "not ok" 1 - "static libwebp decode with --start-frame=1 failed"
+    printf '\n%s\n' "not ok 1 - static libwebp decode with --start-frame=1 failed"
     exit 0
 }
 
 msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=999999999999999999999999999999 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -S \
     "${image_webp}" 2>&1 >"${out_cli_with_oob_env}") || {
-    echo "not ok" 1 - "out-of-range env unexpectedly overrode static --start-frame"
+    printf '\n%s\n' "not ok 1 - out-of-range env unexpectedly overrode static --start-frame"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -38,7 +38,7 @@ msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=999999999999999999999999999
 
 case "${msg}" in
     *"SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range."*)
-        echo "not ok" 1 - "out-of-range env should be ignored when static --start-frame is set"
+        printf '\n%s\n' "not ok 1 - out-of-range env should be ignored when static --start-frame is set"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -48,9 +48,9 @@ case "${msg}" in
 esac
 
 cmp -s "${out_cli}" "${out_cli_with_oob_env}" || {
-    echo "not ok" 1 - "out-of-range env changed static output despite --start-frame override"
+    printf '\n%s\n' "not ok 1 - out-of-range env changed static output despite --start-frame override"
     exit 0
 }
 
-echo "ok" 1 - "static libwebp --start-frame overrides out-of-range env input"
+printf '\n%s\n' "ok 1 - static libwebp --start-frame overrides out-of-range env input"
 exit 0

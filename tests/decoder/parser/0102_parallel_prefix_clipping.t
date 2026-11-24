@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0092_parallel_prefix_clipping" || {
-    echo "not ok 1 - parallel_prefix_clipping"
+    printf '\n%s\n' "not ok 1 - parallel_prefix_clipping"
     exit 0
 }
 
-echo "ok 1 - parallel_prefix_clipping"
+printf '\n%s\n' "ok 1 - parallel_prefix_clipping"
 exit 0

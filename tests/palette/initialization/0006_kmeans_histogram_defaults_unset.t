@@ -20,9 +20,9 @@ cr=$(printf '\r')
 { test -n "${cr}" && case "${output}" in *"${cr}") true ;; *) false ;; esac; } && output=${output%"${cr}"}
 
 test "${output}" = "binbits=6 mapping=uniform softdist=trilinear feedback=0" || {
-    echo "not ok" 1 - "unexpected kmeans histogram defaults: ${output}"
+    printf '\n%s\n' "not ok 1 - unexpected kmeans histogram defaults: ${output}"
     exit 0
 }
 
-echo "ok" 1 - "kmeans histogram defaults matched"
+printf '\n%s\n' "ok 1 - kmeans histogram defaults matched"
 exit 0

@@ -12,19 +12,19 @@ image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 image_out="${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six"
 value_short=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -B "#112233" \
     "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 - "lsqa -B #rrggbb should be accepted"
+    printf '\n%s\n' "not ok 1 - lsqa -B #rrggbb should be accepted"
     exit 0
 }
 value_long=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" \
     "${image_ref}" "${image_out}" --bgcolor="rgb:11/22/33" -m MS-SSIM) || {
-    echo "not ok" 1 - "lsqa --bgcolor should work after positional args"
+    printf '\n%s\n' "not ok 1 - lsqa --bgcolor should work after positional args"
     exit 0
 }
 
 test "${value_short}" = "${value_long}" || {
-    echo "not ok" 1 - "short and long bgcolor forms changed output"
+    printf '\n%s\n' "not ok 1 - short and long bgcolor forms changed output"
     exit 0
 }
 
-echo "ok" 1 - "lsqa accepts -B and --bgcolor syntax"
+printf '\n%s\n' "ok 1 - lsqa accepts -B and --bgcolor syntax"
 exit 0

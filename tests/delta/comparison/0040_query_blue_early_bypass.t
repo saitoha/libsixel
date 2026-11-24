@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0040_query_blue_early_bypass" >/dev/null || {
-    echo "not ok 1 - query blue early bypass"
+    printf '\n%s\n' "not ok 1 - query blue early bypass"
     exit 0
 }
 
-echo "ok 1 - query blue early bypass"
+printf '\n%s\n' "ok 1 - query blue early bypass"
 exit 0

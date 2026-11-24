@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0015_loader_callback_reentr
 result=$?
 set -e
 test "$result" -ne 77 || {
-    echo "ok 1 - loader callback reentry # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 - loader callback reentry # SKIP thread support disabled"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - loader callback reentry"
+    printf '\n%s\n' "not ok 1 - loader callback reentry"
     exit 0
 }
-echo "ok 1 - loader callback reentry"
+printf '\n%s\n' "ok 1 - loader callback reentry"
 exit 0

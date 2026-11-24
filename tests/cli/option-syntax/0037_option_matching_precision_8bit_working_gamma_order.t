@@ -17,11 +17,11 @@ precision_first=$(set +xv; SIXEL_PRECISION_POLICY=auto \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 \
     --precision-policy=8bit -Wlinear -Wgamma -dnone -p16 \
     -v -o/dev/null "${input_image}" 2>&1) || {
-    echo "not ok 1 - precision-first conversion failed"
+    printf '\n%s\n' "not ok 1 - precision-first conversion failed"
     exit 0
 }
 case "${precision_first}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gamma did not restore precision-first 8-bit work"
+    printf '\n%s\n' "not ok 1 - gamma did not restore precision-first 8-bit work"
     exit 0
 }
 
@@ -29,13 +29,13 @@ colorspace_first=$(set +xv; SIXEL_PRECISION_POLICY=auto \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 \
     -Wlinear --precision-policy=8bit -Wgamma -dnone -p16 \
     -v -o/dev/null "${input_image}" 2>&1) || {
-    echo "not ok 1 - colorspace-first conversion failed"
+    printf '\n%s\n' "not ok 1 - colorspace-first conversion failed"
     exit 0
 }
 case "${colorspace_first}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gamma did not restore colorspace-first 8-bit work"
+    printf '\n%s\n' "not ok 1 - gamma did not restore colorspace-first 8-bit work"
     exit 0
 }
 
-echo "ok 1 - gamma working space preserves 8-bit option order"
+printf '\n%s\n' "ok 1 - gamma working space preserves 8-bit option order"
 exit 0

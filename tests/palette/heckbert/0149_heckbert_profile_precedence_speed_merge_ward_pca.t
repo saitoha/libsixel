@@ -27,7 +27,7 @@ baseline_ward_pca=$(
 set -x
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "baseline merge=ward encode failed"
+    printf '\n%s\n' "not ok 1 - baseline merge=ward encode failed"
     exit 0
 }
 run_status=0
@@ -44,13 +44,13 @@ profile_ward_pca=$(
 set -x
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "profile merge=ward encode failed"
+    printf '\n%s\n' "not ok 1 - profile merge=ward encode failed"
     exit 0
 }
 test "${baseline_ward_pca}" = "${profile_ward_pca}" || {
-    echo "not ok" 1 - "profile=speed overrode explicit merge=ward/-f"
+    printf '\n%s\n' "not ok 1 - profile=speed overrode explicit merge=ward/-f"
     exit 0
 }
-echo "ok" 1 - "explicit merge=ward and -f override profile=speed"
+printf '\n%s\n' "ok 1 - explicit merge=ward and -f override profile=speed"
 
 exit 0

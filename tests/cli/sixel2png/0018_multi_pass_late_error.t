@@ -19,13 +19,13 @@ set -v
 output=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -M 6delta-progressive \
     -i "${TOP_SRCDIR}/tests/data/inputs/multi-pass-incomplete-suffix.six" \
     2>/dev/null) && {
-    echo "not ok 1 - incomplete suffix accepted"
+    printf '\n%s\n' "not ok 1 - incomplete suffix accepted"
     exit 0
 }
 test -z "${output}" || {
-    echo "not ok 1 - prefix PNG published before EOF validation"
+    printf '\n%s\n' "not ok 1 - prefix PNG published before EOF validation"
     exit 0
 }
 
-echo "ok 1 - multi pass late error"
+printf '\n%s\n' "ok 1 - multi pass late error"
 exit 0

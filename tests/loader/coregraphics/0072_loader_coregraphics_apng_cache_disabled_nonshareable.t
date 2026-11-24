@@ -13,9 +13,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES=0" \
     --env "SIXEL_TEST_COREGRAPHICS_APNG_CACHE_DISABLED_NONSHAREABLE=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (apng cache disabled nonshareable)"
+    printf '\n%s\n' "not ok 1 - loader/0008_loader_coregraphics_pixelformat (apng cache disabled nonshareable)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (apng cache disabled nonshareable)"
+printf '\n%s\n' "ok 1 - loader/0008_loader_coregraphics_pixelformat (apng cache disabled nonshareable)"
 exit 0

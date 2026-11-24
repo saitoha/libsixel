@@ -17,9 +17,9 @@ vlight_full=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -dlso_undither:Vlight \
     <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${vlight_short}" = "${vlight_full}" || {
-    echo "not ok" 1 - "compact Vlight alias changed output"
+    printf '\n%s\n' "not ok 1 - compact Vlight alias changed output"
     exit 0
 }
 
-echo "ok" 1 - "compact Vlight alias matches full spelling"
+printf '\n%s\n' "ok 1 - compact Vlight alias matches full spelling"
 exit 0

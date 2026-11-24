@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 
 status=$?
 set -e
 test "${status}" -ne 0 || {
-    echo "not ok 1 - reject incomplete tuple"
+    printf '\n%s\n' "not ok 1 - reject incomplete tuple"
     exit 0
 }
 
-echo "ok 1 - reject incomplete tuple"
+printf '\n%s\n' "ok 1 - reject incomplete tuple"
 exit 0

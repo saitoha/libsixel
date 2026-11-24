@@ -6,10 +6,10 @@ echo "1..1"
 set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    delta/refresh/0125_horizontal_output_failure || status=$?
+    delta/refresh/0125_horizontal_output_failure >&2 || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - horizontal output failure"
+    printf '\n%s\n' "not ok 1 - horizontal output failure"
     exit 0
 }
-echo "ok 1 - horizontal output failure"
+printf '\n%s\n' "ok 1 - horizontal output failure"
 exit 0

@@ -19,21 +19,21 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced gd loader unexpectedly accepted stdin .six"
+    printf '\n%s\n' "not ok 1 - forced gd loader unexpectedly accepted stdin .six"
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced gd stdin .six failure missed generic decode error"
+    printf '\n%s\n' "not ok 1 - forced gd stdin .six failure missed generic decode error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "forced gd stdin .six failure should not report GD error"
+    printf '\n%s\n' "not ok 1 - forced gd stdin .six failure should not report GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced gd stdin .six failure reports delegated generic error"
+printf '\n%s\n' "ok 1 - forced gd stdin .six failure reports delegated generic error"
 exit 0

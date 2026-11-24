@@ -39,15 +39,15 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/8f49cae8-0016_jpeg_cmyk_
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_cmyk_16bit_lossless_nolcms_cms1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
-    echo "not ok" 1 - "libjpeg 16-bit CMYK lossless JPEG decode failed on no-lcms build (cms=1)"
+    printf '\n%s\n' "not ok 1 - libjpeg 16-bit CMYK lossless JPEG decode failed on no-lcms build (cms=1)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "libjpeg 16-bit CMYK lossless JPEG on no-lcms build (cms=1) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - libjpeg 16-bit CMYK lossless JPEG on no-lcms build (cms=1) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libjpeg 16-bit CMYK lossless JPEG on no-lcms build (cms=1) keeps MS-SSIM ${lsqa_floor} against expected PNM"
+printf '\n%s\n' "ok 1 - libjpeg 16-bit CMYK lossless JPEG on no-lcms build (cms=1) keeps MS-SSIM ${lsqa_floor} against expected PNM"
 exit 0

@@ -32,13 +32,13 @@ expected='JASC-PAL
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -Lbuiltin:cms_engine=none! -bxterm16 -Wcielab -dnone -Udisplay-p3 \
     -Mpal:- -o/dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
-    echo "not ok 1 - builtin P3 CIELAB palette export failed"
+    printf '\n%s\n' "not ok 1 - builtin P3 CIELAB palette export failed"
     exit 0
 }
 actual=$(printf '%s' "${actual}" | tr -d '\015')
 test "${actual}" = "${expected}" || {
-    echo "not ok 1 - builtin palette export lost source sRGB8 entries"
+    printf '\n%s\n' "not ok 1 - builtin palette export lost source sRGB8 entries"
     exit 0
 }
-echo "ok 1 - builtin P3 CIELAB export retains sRGB8 values and order"
+printf '\n%s\n' "ok 1 - builtin P3 CIELAB export retains sRGB8 values and order"
 exit 0

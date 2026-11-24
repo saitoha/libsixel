@@ -11,8 +11,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE=1 \
     --env SIXEL_LOADER_HDR_TONEMAP=reinhard \
     loader/hdr/2262_hdr_xyze_reinhard_bounded 1>&2 || {
-    echo "not ok 1 - hdr xyze reinhard bounded"
+    printf '\n%s\n' "not ok 1 - hdr xyze reinhard bounded"
     exit 0
 }
-echo "ok 1 - hdr xyze reinhard bounded"
+printf '\n%s\n' "ok 1 - hdr xyze reinhard bounded"
 exit 0

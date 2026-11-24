@@ -23,21 +23,21 @@ output_valid_icc="${ARTIFACT_LOCAL_DIR}/webp-valid-icc-cms1.sixel"
 output_invalid_icc="${ARTIFACT_LOCAL_DIR}/webp-invalid-icc-cms1-diff.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp_valid_icc}" >"${output_valid_icc}" || {
-    echo "not ok" 1 - "libwebp decode failed for valid ICC input (cms=1)"
+    printf '\n%s\n' "not ok 1 - libwebp decode failed for valid ICC input (cms=1)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp_invalid_icc}" >"${output_invalid_icc}" || {
-    echo "not ok" 1 - "libwebp decode failed for invalid ICC input (cms=1)"
+    printf '\n%s\n' "not ok 1 - libwebp decode failed for invalid ICC input (cms=1)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_valid_icc}" "${output_invalid_icc}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "valid and invalid ICC payloads were not distinguishable: ${lsqa_msg-}"
+    printf '\n%s\n' "not ok 1 - valid and invalid ICC payloads were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "cms=1 distinguishes valid ICC conversion from invalid ICC payload"
+printf '\n%s\n' "ok 1 - cms=1 distinguishes valid ICC conversion from invalid ICC payload"
 exit 0

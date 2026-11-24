@@ -9,8 +9,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/jpeg/0166_sof3_category16_numeric 1>&2 || {
-    echo "not ok 1 - sof3_category16 numeric reconstruction"
+    printf '\n%s\n' "not ok 1 - sof3_category16 numeric reconstruction"
     exit 0
 }
-echo "ok 1 - sof3_category16 numeric reconstruction"
+printf '\n%s\n' "ok 1 - sof3_category16 numeric reconstruction"
 exit 0

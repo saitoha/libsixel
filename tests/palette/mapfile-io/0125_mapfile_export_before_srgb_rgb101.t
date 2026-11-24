@@ -25,7 +25,7 @@ P3
 129 65 33
 PPM
 ) || {
-    echo "not ok 1 - sRGB palette export failed"
+    printf '\n%s\n' "not ok 1 - sRGB palette export failed"
     exit 0
 }
 actual=$(printf '%s' "${actual}" | tr -d '\015')
@@ -33,8 +33,8 @@ test "${actual}" = 'JASC-PAL
 0100
 1
 129 65 33' || {
-    echo "not ok 1 - device values or RGB101 rounding leaked into export"
+    printf '\n%s\n' "not ok 1 - device values or RGB101 rounding leaked into export"
     exit 0
 }
-echo "ok 1 - sRGB exports pre-wire sRGB palette"
+printf '\n%s\n' "ok 1 - sRGB exports pre-wire sRGB palette"
 exit 0

@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'occupied' 'migration-refused' || {
-    echo "not ok 1 - Occupied original path refuses migration restoration."
+    printf '\n%s\n' "not ok 1 - Occupied original path refuses migration restoration."
     exit 0
 }
-echo "ok 1 - Occupied original path refuses migration restoration."
+printf '\n%s\n' "ok 1 - Occupied original path refuses migration restoration."
 exit 0

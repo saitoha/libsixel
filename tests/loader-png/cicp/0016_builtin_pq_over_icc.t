@@ -16,12 +16,12 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - builtin pq over icc"
+    printf '\n%s\n' "not ok 1 - builtin pq over icc"
     exit 0
 }
 case "$trace" in
     *"PNGHDR1|source=display-p3-pq|"*) ;;
-    *) echo "$trace" >&2; echo "not ok 1 - CMS apply missing"; exit 0 ;;
+    *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - CMS apply missing"; exit 0 ;;
 esac
-echo "ok 1 - builtin pq over icc"
+printf '\n%s\n' "ok 1 - builtin pq over icc"
 exit 0

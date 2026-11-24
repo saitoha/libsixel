@@ -17,15 +17,15 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - managed rgb input nan"
+    printf '\n%s\n' "not ok 1 - managed rgb input nan"
     exit 0
 }
 observed=${trace#*"TMFAULT|phase-begin=1"}
 observed=${observed%%"TMFAULT|phase-begin=2"*}
 case "${observed}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - nonfinite input reached CMS"
+    printf '\n%s\n' "not ok 1 - nonfinite input reached CMS"
     exit 0
 }
-echo "ok 1 - managed rgb input nan"
+printf '\n%s\n' "ok 1 - managed rgb input nan"
 exit 0

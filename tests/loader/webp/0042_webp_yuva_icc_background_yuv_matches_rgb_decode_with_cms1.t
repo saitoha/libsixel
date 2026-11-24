@@ -30,47 +30,47 @@ output_rgb="${ARTIFACT_LOCAL_DIR}/webp-alpha-rgb.sixel"
 message=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=float32 --threading-policy=greedy:global_budget=1 --lookup-policy=none \
     -Llibwebp:cms_engine=auto! -B#808080 "${input_webp}" 2>&1 >"${output_yuv}") || {
-    echo "not ok 1 - YUV decode failed: $message"
+    printf '\n%s\n' "not ok 1 - YUV decode failed: $message"
     exit 0
 }
 case "$message" in *"static decode path=lossy_yuva "*) true ;; *) false ;; esac || {
-    echo "not ok 1 - expected lossy_yuva path: $message"
+    printf '\n%s\n' "not ok 1 - expected lossy_yuva path: $message"
     exit 0
 }
 message=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=float32 --threading-policy=greedy:global_budget=1 --lookup-policy=none \
     -Llibwebp:cms_engine=auto! -B#808080 "${input_webp}" 2>&1 >"${output_rgb}") || {
-    echo "not ok 1 - RGB decode failed: $message"
+    printf '\n%s\n' "not ok 1 - RGB decode failed: $message"
     exit 0
 }
 case "$message" in *"static decode path=rgba_u8 "*) true ;; *) false ;; esac || {
-    echo "not ok 1 - expected rgba_u8 path: $message"
+    printf '\n%s\n' "not ok 1 - expected rgba_u8 path: $message"
     exit 0
 }
 
 # The reference-product metric uses the project quality gate. The historical
 # small-image arithmetic-average thresholds did not measure this contract.
 message=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 "$output_yuv" "$reference" 2>&1) || {
-    echo "not ok 1 - YUV quality: $message"
+    printf '\n%s\n' "not ok 1 - YUV quality: $message"
     exit 0
 }
 message=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 "$output_rgb" "$reference" 2>&1) || {
-    echo "not ok 1 - RGB quality: $message"
+    printf '\n%s\n' "not ok 1 - RGB quality: $message"
     exit 0
 }
 message=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 "$output_yuv" "$output_rgb" 2>&1) || {
-    echo "not ok 1 - YUV/RGB agreement: $message"
+    printf '\n%s\n' "not ok 1 - YUV/RGB agreement: $message"
     exit 0
 }
 # Qualify the negative control as a valid finite measurement before requiring
 # its rejection. An unavailable score must not count as defect detection.
 message=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0 "$output_yuv" "$shifted" 2>&1) || {
-    echo "not ok 1 - invalid shifted control: $message"
+    printf '\n%s\n' "not ok 1 - invalid shifted control: $message"
     exit 0
 }
 ! ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 "$output_yuv" "$shifted" >/dev/null 2>&1 || {
-    echo "not ok 1 - shifted control unexpectedly passed"
+    printf '\n%s\n' "not ok 1 - shifted control unexpectedly passed"
     exit 0
 }
-echo "ok 1 - distinct YUV/RGB paths meet independent quality gate"
+printf '\n%s\n' "ok 1 - distinct YUV/RGB paths meet independent quality gate"
 exit 0

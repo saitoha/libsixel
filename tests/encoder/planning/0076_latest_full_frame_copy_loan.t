@@ -20,11 +20,11 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0075_latest_emit_priority_loans available || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - palette scheduler capability query failed"
+    printf '\n%s\n' "not ok 1 - palette scheduler capability query failed"
     exit 0
 }
 
@@ -33,7 +33,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_latest \
     "-=greedy:B4:palette=latest:prepare=ahead" -4 full-frame -p16 \
     -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_motion_64_2frame.gif" 2>&1) || {
-    echo "not ok 1 - latest full-frame conversion failed"
+    printf '\n%s\n' "not ok 1 - latest full-frame conversion failed"
     echo "${trace}"
     exit 0
 }
@@ -41,7 +41,7 @@ case "${trace}" in
     *'LSXLOAN1|event=background|worker=2|begin=1|controller=0|'*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - latest input copy did not borrow an idle slot"
+    printf '\n%s\n' "not ok 1 - latest input copy did not borrow an idle slot"
     echo "${trace}"
     exit 0
 }
@@ -49,9 +49,9 @@ case "${trace}" in
     *'emit=4'*'LSXLATEST1|frame=2|'*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - latest session did not retain full emission allocation"
+    printf '\n%s\n' "not ok 1 - latest session did not retain full emission allocation"
     echo "${trace}"
     exit 0
 }
-echo "ok 1 - latest full-frame input copy uses an idle slot"
+printf '\n%s\n' "ok 1 - latest full-frame input copy uses an idle slot"
 exit 0

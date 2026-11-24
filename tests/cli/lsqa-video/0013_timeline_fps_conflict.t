@@ -9,9 +9,9 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none -f30 -J "${
 status=$?
 set -e
 test "${status}" -eq 2 || {
-    echo "not ok 1 - conflicting time sources"
+    printf '\n%s\n' "not ok 1 - conflicting time sources"
     exit 0
 }
 
-echo "ok 1 - timeline fps conflict"
+printf '\n%s\n' "ok 1 - timeline fps conflict"
 exit 0

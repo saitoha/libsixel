@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0082_multi_pass_hls_color" || {
-    echo "not ok 1 - hls color"
+    printf '\n%s\n' "not ok 1 - hls color"
     exit 0
 }
 
-echo "ok 1 - hls color"
+printf '\n%s\n' "ok 1 - hls color"
 exit 0

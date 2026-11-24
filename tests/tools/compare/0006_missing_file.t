@@ -9,8 +9,8 @@ set -v
 status=0
  "$SIXEL_TEST_COMPARE" -s "$TOP_SRCDIR/tests/tools/compare/data/missing" "$TOP_SRCDIR/tests/tools/compare/data/empty" || status=$?
 test "$status" -eq 2 || {
-    echo 'not ok 1 - a missing input is an error rather than equality'
+    printf '\n%s\n' 'not ok 1 - a missing input is an error rather than equality'
     exit 0
 }
-echo 'ok 1 - a missing input is an error rather than equality'
+printf '\n%s\n' 'ok 1 - a missing input is an error rather than equality'
 exit 0

@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 cmp "${QUICKLOOK_PLIST_DIR}/Host-Info.plist" "${TOP_BUILDDIR}/quicklook-extension/products/SixelQuickLookHost.app/Contents/Info.plist" || {
-    echo "not ok 1 - Host bundle contains its generated plist"
+    printf '\n%s\n' "not ok 1 - Host bundle contains its generated plist"
     exit 0
 }
-echo "ok 1 - Host bundle contains its generated plist"
+printf '\n%s\n' "ok 1 - Host bundle contains its generated plist"
 exit 0

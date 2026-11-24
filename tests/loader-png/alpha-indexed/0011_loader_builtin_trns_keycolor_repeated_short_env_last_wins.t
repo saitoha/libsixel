@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
               -% SIXEL_ALPHA_POLICY=composite \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster -B#fff \
               "${input_bmp}" >"${out_repeated}" || {
-    echo "not ok 1 - builtin repeated short -% alpha-policy render failed"
+    printf '\n%s\n' "not ok 1 - builtin repeated short -% alpha-policy render failed"
     exit 0
 }
 
@@ -32,7 +32,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
               -% SIXEL_ALPHA_POLICY=composite \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster -B#fff \
               "${input_bmp}" >"${out_composite}" || {
-    echo "not ok 1 - builtin explicit composite policy render failed"
+    printf '\n%s\n' "not ok 1 - builtin explicit composite policy render failed"
     exit 0
 }
 
@@ -40,20 +40,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
               -% SIXEL_ALPHA_POLICY=keep \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster -B#fff \
               "${input_bmp}" >"${out_keep}" || {
-    echo "not ok 1 - builtin explicit keep policy render failed"
+    printf '\n%s\n' "not ok 1 - builtin explicit keep policy render failed"
     exit 0
 }
 
 cmp -s "${out_repeated}" "${out_composite}" || {
-    echo "not ok 1 - builtin repeated short -% did not use last policy value"
+    printf '\n%s\n' "not ok 1 - builtin repeated short -% did not use last policy value"
     exit 0
 }
 
 cmp -s "${out_repeated}" "${out_keep}" && {
-    echo "not ok 1 - builtin repeated short -% did not change policy state"
+    printf '\n%s\n' "not ok 1 - builtin repeated short -% did not change policy state"
     exit 0
 }
 
-echo "ok 1 - builtin repeated short -% uses last alpha-policy value"
+printf '\n%s\n' "ok 1 - builtin repeated short -% uses last alpha-policy value"
 
 exit 0

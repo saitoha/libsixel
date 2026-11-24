@@ -6,8 +6,8 @@ set -v
 
 "${SIXEL_TEST_CONFIG_SHELL}" "$TOP_SRCDIR/tests/_support/tools/tap-directive.sh" \
     no skip_end SKIP || {
-    echo 'not ok 1 - AWK skip end classification'
+    printf '\n%s\n' 'not ok 1 - AWK skip end classification'
     exit 0
 }
-echo 'ok 1 - AWK skip end classification'
+printf '\n%s\n' 'ok 1 - AWK skip end classification'
 exit 0

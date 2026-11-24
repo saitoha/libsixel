@@ -15,13 +15,13 @@ value=$("${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     xml-value \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/PackageInfo" \
     '/pkg-info/@overwrite-permissions') || {
-    echo "not ok 1 - Cannot read directory permissions policy"
+    printf '\n%s\n' "not ok 1 - Cannot read directory permissions policy"
     exit 0
 }
 test "$value" = false || {
-    echo "not ok 1 - Existing directory attributes may be overwritten"
+    printf '\n%s\n' "not ok 1 - Existing directory attributes may be overwritten"
     exit 0
 }
 
-echo "ok 1 - Package declares preservation of existing directory attributes."
+printf '\n%s\n' "ok 1 - Package declares preservation of existing directory attributes."
 exit 0

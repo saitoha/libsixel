@@ -18,15 +18,15 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --env SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
     -p 16 -Qkmeans -_nearest -W oklab \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - snap timing conversion failed"
+    printf '\n%s\n' "not ok 1 - snap timing conversion failed"
     exit 0
 }
 
 case "${trace}" in *LSXSNP1\|timing=all**) true ;; *) false ;; esac || {
-    echo "not ok 1 - snap timing missed its consumer"
+    printf '\n%s\n' "not ok 1 - snap timing missed its consumer"
     exit 0
 }
 
 
-echo "ok 1 - snap timing reaches the palette consumer"
+printf '\n%s\n' "ok 1 - snap timing reaches the palette consumer"
 exit 0

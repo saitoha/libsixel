@@ -30,7 +30,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
@@ -47,7 +47,7 @@ while IFS= read -r line; do
         ;;
     *"builtin PSD: applying solid overlay effect in layer fallback"*)
         test "$suppressed" -eq 0 || {
-            echo "not ok 1 - base solid overlay followed suppression"
+            printf '\n%s\n' "not ok 1 - base solid overlay followed suppression"
             exit 0
         }
         ;;
@@ -56,9 +56,9 @@ done <<EOF
 $trace_output
 EOF
 test "$replayed" -eq 1 || {
-    echo "not ok 1 - deferred gradient replay did not follow suppression"
+    printf '\n%s\n' "not ok 1 - deferred gradient replay did not follow suppression"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps suppression tail consistent with deferred gradient overlay"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps suppression tail consistent with deferred gradient overlay"
 exit 0

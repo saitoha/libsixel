@@ -20,48 +20,48 @@ input_plain="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_12x8.png"
 
 static_on=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lcoregraphics:orientation=1! "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics static orientation=1 decode failed"
+    printf '\n%s\n' "not ok 1 - coregraphics static orientation=1 decode failed"
     exit 0
 }
 
 static_off=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lcoregraphics:orientation=0! "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics static orientation=0 decode failed"
+    printf '\n%s\n' "not ok 1 - coregraphics static orientation=0 decode failed"
     exit 0
 }
 
 test "${static_on}" != "${static_off}" || {
-    echo "not ok 1 - coregraphics static EXIF orientation 1/0 were equal"
+    printf '\n%s\n' "not ok 1 - coregraphics static EXIF orientation 1/0 were equal"
     exit 0
 }
 
 static_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lcoregraphics! "${input_exif}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics static default orientation decode failed"
+    printf '\n%s\n' "not ok 1 - coregraphics static default orientation decode failed"
     exit 0
 }
 
 test "${static_default}" = "${static_on}" || {
-    echo "not ok 1 - coregraphics static default output did not match ON"
+    printf '\n%s\n' "not ok 1 - coregraphics static default output did not match ON"
     exit 0
 }
 
 plain_on=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lcoregraphics:orientation=1! "${input_plain}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics plain static orientation=1 decode failed"
+    printf '\n%s\n' "not ok 1 - coregraphics plain static orientation=1 decode failed"
     exit 0
 }
 
 plain_off=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lcoregraphics:orientation=0! "${input_plain}" 2>/dev/null) || {
-    echo "not ok 1 - coregraphics plain static orientation=0 decode failed"
+    printf '\n%s\n' "not ok 1 - coregraphics plain static orientation=0 decode failed"
     exit 0
 }
 
 test "${plain_on}" = "${plain_off}" || {
-    echo "not ok 1 - coregraphics static output changed without EXIF"
+    printf '\n%s\n' "not ok 1 - coregraphics static output changed without EXIF"
     exit 0
 }
 
-echo "ok 1 - coregraphics static EXIF orientation 1/0 works"
+printf '\n%s\n' "ok 1 - coregraphics static EXIF orientation 1/0 works"
 exit 0

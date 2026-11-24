@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0093_parallel_large_clipped_scan" || {
-    echo "not ok 1 - parallel_large_clipped_scan"
+    printf '\n%s\n' "not ok 1 - parallel_large_clipped_scan"
     exit 0
 }
 
-echo "ok 1 - parallel_large_clipped_scan"
+printf '\n%s\n' "ok 1 - parallel_large_clipped_scan"
 exit 0

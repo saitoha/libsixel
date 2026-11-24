@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/cluster_precision/0014_linear_output || {
-    echo "not ok 1 - linear output"
+    printf '\n%s\n' "not ok 1 - linear output"
     exit 0
 }
-echo "ok 1 - linear output"
+printf '\n%s\n' "ok 1 - linear output"
 exit 0

@@ -23,33 +23,33 @@ shadow_log="${ARTIFACT_LOCAL_DIR}/0019-log-path-shadow-$$.jsonl"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOG_PATH=${shadow_log}" -J "${short_log}" \
     "${input_image}" >"${short_output}" || {
-    echo "not ok" 1 - "log path option conversion failed"
+    printf '\n%s\n' "not ok 1 - log path option conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOG_PATH=${env_log}" \
     "${input_image}" >"${env_output}" || {
-    echo "not ok" 1 - "log path environment conversion failed"
+    printf '\n%s\n' "not ok 1 - log path environment conversion failed"
     exit 0
 }
 
 test -s "${short_log}" || {
-    echo "not ok" 1 - "log path option did not reach the timeline writer"
+    printf '\n%s\n' "not ok 1 - log path option did not reach the timeline writer"
     exit 0
 }
 test ! -e "${shadow_log}" || {
-    echo "not ok" 1 - "log path environment overrode the option"
+    printf '\n%s\n' "not ok 1 - log path environment overrode the option"
     exit 0
 }
 test -s "${env_log}" || {
-    echo "not ok" 1 - "log path environment did not reach the timeline writer"
+    printf '\n%s\n' "not ok 1 - log path environment did not reach the timeline writer"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "log path option and environment outputs differ"
+    printf '\n%s\n' "not ok 1 - log path option and environment outputs differ"
     exit 0
 }
 
-echo "ok" 1 - "log path option matches environment output"
+printf '\n%s\n' "ok 1 - log path option matches environment output"
 exit 0

@@ -26,7 +26,7 @@ trace_log=$(
                   -Lbuiltin! -lauto -g \
                   "${image_apng}" -o/dev/null 2>&1
 ) || {
-    echo "not ok" 1 - "builtin APNG trace run failed"
+    printf '\n%s\n' "not ok 1 - builtin APNG trace run failed"
     exit 0
 }
 
@@ -58,9 +58,9 @@ ${loop_no}:${frame_no}"
 done
 
 test "${actual_sequence}" = "${expected_sequence}" || {
-    echo "not ok" 1 - "builtin APNG frame_no sequence mismatch"
+    printf '\n%s\n' "not ok 1 - builtin APNG frame_no sequence mismatch"
     exit 0
 }
 
-echo "ok" 1 - "builtin APNG frame_no sequence stays loop-local"
+printf '\n%s\n' "ok 1 - builtin APNG frame_no sequence stays loop-local"
 exit 0

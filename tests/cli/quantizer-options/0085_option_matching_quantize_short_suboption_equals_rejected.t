@@ -26,18 +26,18 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     2>&1) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "uppercase -Q short syntax with '=' exit status mismatch"
+    printf '\n%s\n' "not ok 1 - uppercase -Q short syntax with '=' exit status mismatch"
     exit 0
 }
 
 diag_line=${msg%%"${nl}"*}
 
 case "${diag_line}" in LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "uppercase -Q short syntax with '=' diagnostic mismatch"
+    printf '\n%s\n' "not ok 1 - uppercase -Q short syntax with '=' diagnostic mismatch"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "uppercase -Q short syntax rejects '=' form"
+printf '\n%s\n' "ok 1 - uppercase -Q short syntax rejects '=' form"
 exit 0

@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" >/dev/null || {
-    echo "not ok" 1 - "quicklook GIF still-frame decode failed"
+    printf '\n%s\n' "not ok 1 - quicklook GIF still-frame decode failed"
     exit 0
 }
 
-echo "ok" 1 - "quicklook reads GIF as still image"
+printf '\n%s\n' "ok 1 - quicklook reads GIF as still image"
 exit 0

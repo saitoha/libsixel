@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0054_float_geometry_state cli 0 || {
-    echo "not ok 1 - float geometry clip_cli_trim"
+    printf '\n%s\n' "not ok 1 - float geometry clip_cli_trim"
     exit 0
 }
-echo "ok 1 - float geometry clip_cli_trim"
+printf '\n%s\n' "ok 1 - float geometry clip_cli_trim"
 exit 0

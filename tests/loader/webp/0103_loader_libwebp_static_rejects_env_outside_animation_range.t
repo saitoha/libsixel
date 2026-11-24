@@ -21,7 +21,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=2 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" \
     2>&1 -o/dev/null) && {
-    echo "not ok" 1 - "out-of-frame-range env was unexpectedly accepted in static mode"
+    printf '\n%s\n' "not ok 1 - out-of-frame-range env was unexpectedly accepted in static mode"
     exit 0
 }
 
@@ -29,12 +29,12 @@ case "${msg}" in
     *"SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside the animation frame range."*)
         ;;
     *)
-        echo "not ok" 1 - "expected outside-frame-range diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected outside-frame-range diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "static libwebp decode rejects env values outside animation frame range"
+printf '\n%s\n' "ok 1 - static libwebp decode rejects env values outside animation frame range"
 exit 0

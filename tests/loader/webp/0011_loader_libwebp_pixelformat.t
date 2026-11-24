@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0017_loader_libwebp_pixelformat" || {
-    echo "not ok 1 - loader/0017_loader_libwebp_pixelformat"
+    printf '\n%s\n' "not ok 1 - loader/0017_loader_libwebp_pixelformat"
     exit 0
 }
 
-echo "ok 1 - loader/0017_loader_libwebp_pixelformat"
+printf '\n%s\n' "ok 1 - loader/0017_loader_libwebp_pixelformat"
 exit 0

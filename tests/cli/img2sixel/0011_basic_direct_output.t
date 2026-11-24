@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D <"${TOP_SRCDIR}/images/map8.six" >/dev/null || {
-    echo "not ok" 1 - "direct RGBA conversion failed"
+    printf '\n%s\n' "not ok 1 - direct RGBA conversion failed"
     exit 0
 }
 
-echo "ok" 1 - "produces direct RGBA output"
+printf '\n%s\n' "ok 1 - produces direct RGBA output"
 exit 0

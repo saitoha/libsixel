@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0068_bucket_start_word
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket start word boundary # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket start word boundary # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket start word boundary"
+    printf '\n%s\n' "not ok 1 - bucket start word boundary"
     exit 0
 }
-echo "ok 1 - bucket start word boundary"
+printf '\n%s\n' "ok 1 - bucket start word boundary"
 exit 0

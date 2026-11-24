@@ -14,13 +14,13 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - mixed second create"
+    printf '\n%s\n' "not ok 1 - mixed second create"
     exit 0
 }
 case "${trace}" in *'MDFAULT|case=3|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - fault qualification is absent"
+    printf '\n%s\n' "not ok 1 - fault qualification is absent"
     exit 0
 }
-echo "ok 1 - mixed second create"
+printf '\n%s\n' "ok 1 - mixed second create"
 exit 0

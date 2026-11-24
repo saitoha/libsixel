@@ -20,7 +20,7 @@ env_first=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ALPHA_POLICY=composite --alpha-policy=clear \
     -B '#ffffff' -L builtin! -d fs:scan=raster -o - \
     "${input_image}") || {
-    echo "not ok" 1 - "alpha-policy environment-first render failed"
+    printf '\n%s\n' "not ok 1 - alpha-policy environment-first render failed"
     exit 0
 }
 
@@ -28,19 +28,19 @@ cli_first=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=clear --env SIXEL_ALPHA_POLICY=composite \
     -B '#ffffff' -L builtin! -d fs:scan=raster -o - \
     "${input_image}") || {
-    echo "not ok" 1 - "alpha-policy CLI-first render failed"
+    printf '\n%s\n' "not ok 1 - alpha-policy CLI-first render failed"
     exit 0
 }
 
 test "${env_first}" = "${cli_first}" || {
-    echo "not ok" 1 - "alpha-policy precedence depends on option order"
+    printf '\n%s\n' "not ok 1 - alpha-policy precedence depends on option order"
     exit 0
 }
 
 case "${env_first}" in "${esc}P0;0q"*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "alpha-policy CLI value did not override environment"
+    printf '\n%s\n' "not ok 1 - alpha-policy CLI value did not override environment"
     exit 0
 }
 
-echo "ok" 1 - "alpha-policy CLI value overrides environment"
+printf '\n%s\n' "ok 1 - alpha-policy CLI value overrides environment"
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader-png/animation/0120_builtin_apng_byte_over_opaque_numeric || {
-    echo "not ok 1 - byte APNG opaque OVER"
+    printf '\n%s\n' "not ok 1 - byte APNG opaque OVER"
     exit 0
 }
-echo "ok 1 - byte APNG opaque OVER"
+printf '\n%s\n' "ok 1 - byte APNG opaque OVER"
 exit 0

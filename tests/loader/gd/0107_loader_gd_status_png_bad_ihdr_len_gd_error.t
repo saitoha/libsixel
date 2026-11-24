@@ -14,9 +14,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" \
     "png_bad_ihdr_len_status_gd_error" || {
-    echo "not ok 1 - gd png_bad_ihdr_len_status_gd_error"
+    printf '\n%s\n' "not ok 1 - gd png_bad_ihdr_len_status_gd_error"
     exit 0
 }
 
-echo "ok 1 - gd png_bad_ihdr_len_status_gd_error"
+printf '\n%s\n' "ok 1 - gd png_bad_ihdr_len_status_gd_error"
 exit 0

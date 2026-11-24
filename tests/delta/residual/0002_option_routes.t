@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-residual/0002_option_routes || {
-    echo "not ok 1 - option routes"
+    printf '\n%s\n' "not ok 1 - option routes"
     exit 0
 }
-echo "ok 1 - option routes"
+printf '\n%s\n' "ok 1 - option routes"
 exit 0

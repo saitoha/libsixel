@@ -32,12 +32,12 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile WebP baseline encode failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile WebP baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "PAL mapfile WebP output is empty"
+    printf '\n%s\n' "not ok 1 - PAL mapfile WebP output is empty"
     exit 0
 }
 
@@ -57,14 +57,14 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile WebP encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - PAL mapfile WebP encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "PAL mapfile WebP output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - PAL mapfile WebP output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile WebP output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - PAL mapfile WebP output ignores clustering colorspace"
 exit 0

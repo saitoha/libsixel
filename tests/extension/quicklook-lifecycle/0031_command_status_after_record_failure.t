@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_ORDER}" 'record-error' 'order-record-error' || {
-    echo "not ok 1 - Command status survives record failure."
+    printf '\n%s\n' "not ok 1 - Command status survives record failure."
     exit 0
 }
-echo "ok 1 - Command status survives record failure."
+printf '\n%s\n' "ok 1 - Command status survives record failure."
 exit 0

@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:Afft:S42:iter=8 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q center short suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - -Q center short suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts short center suboptions"
+printf '\n%s\n' "ok 1 - -Q accepts short center suboptions"
 exit 0

@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=g
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
-    echo "not ok" 1 - "libwebp gamma background composition failed"
+    printf '\n%s\n' "not ok 1 - libwebp gamma background composition failed"
     exit 0
 }
 
@@ -33,16 +33,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=l
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_linear}" || {
-    echo "not ok" 1 - "libwebp linear background composition failed"
+    printf '\n%s\n' "not ok 1 - libwebp linear background composition failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_gamma}" "${output_linear}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "gamma and linear composition were not distinguishable: ${lsqa_msg-}"
+    printf '\n%s\n' "not ok 1 - gamma and linear composition were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "linear background interpretation changes libwebp composition"
+printf '\n%s\n' "ok 1 - linear background interpretation changes libwebp composition"
 exit 0

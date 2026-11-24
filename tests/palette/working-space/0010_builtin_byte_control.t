@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/cluster_precision/0010_builtin_byte_control || {
-    echo "not ok 1 - builtin byte control"
+    printf '\n%s\n' "not ok 1 - builtin byte control"
     exit 0
 }
-echo "ok 1 - builtin byte control"
+printf '\n%s\n' "ok 1 - builtin byte control"
 exit 0

@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=none! \
               -B#ffffff \
               -d none -p256 \
               "${input_multi}" >"${out_multi}" || {
-    echo "not ok 1 - multi-zero render failed"
+    printf '\n%s\n' "not ok 1 - multi-zero render failed"
     exit 0
 }
 
@@ -36,17 +36,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=none! \
               -B#ffffff \
               -d none -p256 \
               "${input_single}" >"${out_single}" || {
-    echo "not ok 1 - single-zero render failed"
+    printf '\n%s\n' "not ok 1 - single-zero render failed"
     exit 0
 }
 
 # Palette-index remapping must preserve every decoded display sample.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${out_single}" "${out_multi}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - palette remapping changed decoded display samples"
+    printf '\n%s\n' "not ok 1 - palette remapping changed decoded display samples"
     exit 0
 }
 
-echo "ok 1 - multi-zero remap matches normalized single-zero output"
+printf '\n%s\n' "ok 1 - multi-zero remap matches normalized single-zero output"
 
 exit 0

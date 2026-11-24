@@ -11,9 +11,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_BMP_NUMERIC_INFO40_32BPP_BITFIELDS_NO_ALPHA=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 32bpp bitfields no alpha numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 32bpp bitfields no alpha numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 32bpp bitfields no alpha numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 32bpp bitfields no alpha numeric)"
 exit 0

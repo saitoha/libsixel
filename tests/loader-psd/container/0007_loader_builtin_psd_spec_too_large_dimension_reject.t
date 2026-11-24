@@ -16,9 +16,9 @@ set -v
 input_psd="${TOP_SRCDIR}/tests/data/corrupted/too_large_dimension.psd"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null && {
-    echo "not ok" 1 - "dimension larger than STB max was unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - dimension larger than STB max was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "dimension larger than STB max is rejected"
+printf '\n%s\n' "ok 1 - dimension larger than STB max is rejected"
 exit 0

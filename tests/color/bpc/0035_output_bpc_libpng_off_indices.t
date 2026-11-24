@@ -6,7 +6,7 @@ echo '1..1'
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 -a "${HAVE_LIBPNG-}" = 1 || {
-    echo 'ok 1 # SKIP converter or loader unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP converter or loader unavailable'
     exit 0
 }
 data="${TOP_SRCDIR}/tests/data/color-numeric"
@@ -18,14 +18,14 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -U "icc:P${data}/output-bpc.icc:bpc=0" \
     "${data}/output-bpc-rgba16.png" 2>&1) || {
     printf '%s\n' "$trace" >&2
-    echo 'not ok 1 - libpng output BPC off indices conversion'
+    printf '\n%s\n' 'not ok 1 - libpng output BPC off indices conversion'
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0036_cli_color_wire \
     libpng "$trace" bpc-off-indices || {
     printf '%s\n' "$trace" >&2
-    echo 'not ok 1 - libpng output BPC off indices'
+    printf '\n%s\n' 'not ok 1 - libpng output BPC off indices'
     exit 0
 }
-echo 'ok 1 - libpng output BPC off indices'
+printf '\n%s\n' 'ok 1 - libpng output BPC off indices'
 exit 0

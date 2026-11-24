@@ -19,10 +19,10 @@ gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-exact-16mib.gpl"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m gpl:"${gpl_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "exact 16 MiB palette should be accepted"
+    printf '\n%s\n' "not ok 1 - exact 16 MiB palette should be accepted"
     exit 0
 }
 
-echo "ok" 1 - "exactly 16 MiB palette stream is accepted"
+printf '\n%s\n' "ok 1 - exactly 16 MiB palette stream is accepted"
 
 exit 0

@@ -21,9 +21,9 @@ capture_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 'file:///test')
 set -e
 
 test -z "${capture_output}" || {
-    echo "not ok" 1 - "invalid file URL produced output"
+    printf '\n%s\n' "not ok 1 - invalid file URL produced output"
     exit 0
 }
 
-echo "ok" 1 - "rejects invalid file URL"
+printf '\n%s\n' "ok 1 - rejects invalid file URL"
 exit 0

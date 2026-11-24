@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/ordered/0026_ord_gamma_oracle_mixed || {
-    echo "not ok 1 - ordered gamma oracle mixed"
+    printf '\n%s\n' "not ok 1 - ordered gamma oracle mixed"
     exit 0
 }
-echo "ok 1 - ordered gamma oracle mixed"
+printf '\n%s\n' "ok 1 - ordered gamma oracle mixed"
 exit 0

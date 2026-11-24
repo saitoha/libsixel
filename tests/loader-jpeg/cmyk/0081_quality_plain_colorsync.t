@@ -22,7 +22,7 @@ test "$result" -ne 77 || {
 echo "1..1"
 set -v
 test "$result" -eq 0 || {
-    echo "not ok 1 - numeric route qualification failed"
+    printf '\n%s\n' "not ok 1 - numeric route qualification failed"
     exit 0
 }
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -30,14 +30,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threading-polic
     -L 'libjpeg:cms_engine=colorsync:cms_intent=relative!!' \
     "${TOP_SRCDIR}/tests/data/color-numeric/jpeg-cmyk-affine-plain.jpg" \
     >"${ARTIFACT_LOCAL_DIR}/output.six" || {
-    echo "not ok 1 - JPEG conversion failed"
+    printf '\n%s\n' "not ok 1 - JPEG conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 \
     "${TOP_SRCDIR}/tests/data/loader/quality/f65dba77-jpeg-cmyk-plain-reference.ppm" \
     "${ARTIFACT_LOCAL_DIR}/output.six" 1>&2 || {
-    echo "not ok 1 - independent CMYK MS-SSIM below 0.98"
+    printf '\n%s\n' "not ok 1 - independent CMYK MS-SSIM below 0.98"
     exit 0
 }
-echo "ok 1 - independent CMYK quality plain colorsync"
+printf '\n%s\n' "ok 1 - independent CMYK quality plain colorsync"
 exit 0

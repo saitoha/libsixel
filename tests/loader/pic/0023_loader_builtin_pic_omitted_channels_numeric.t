@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0088_loader_builtin_pic_omitted_channels_numeric" || {
-    echo "not ok 1 - PIC omitted-channel default values"
+    printf '\n%s\n' "not ok 1 - PIC omitted-channel default values"
     exit 0
 }
 
-echo "ok 1 - PIC omitted-channel default values"
+printf '\n%s\n' "ok 1 - PIC omitted-channel default values"
 exit 0

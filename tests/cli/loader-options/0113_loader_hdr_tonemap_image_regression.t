@@ -27,17 +27,17 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     --env "SIXEL_LOADER_HDR_TONEMAP=invalid" \
     "-Lbuiltin:Tlinear:X2:Hreinhard!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "hdr_tonemap short conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=hdr_tonemap\|stored=1\|binding=hdr_tonemap_mode\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_tonemap short value was not stored"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *builtin\ HDR:\ final\ controls*tonemap=reinhard**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_tonemap short value did not reach HDR"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap short value did not reach HDR"
     exit 0
 }
 
@@ -45,43 +45,43 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_TONEMAP=reinhard" \
     "-Lbuiltin:Tlinear:X2!" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "hdr_tonemap environment conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=hdr_tonemap\|stored=1\|binding=hdr_tonemap_mode\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_tonemap environment value was not stored"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *builtin\ HDR:\ final\ controls*tonemap=reinhard**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "hdr_tonemap environment value did not reach HDR"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap environment value did not reach HDR"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "hdr_tonemap short and environment differ"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap short and environment differ"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_TONEMAP=none" \
     "-Lbuiltin:Tlinear:X2!" "${input_image}" >"${control_output}" || {
-    echo "not ok" 1 - "hdr_tonemap control conversion failed"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap control conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${control_output}" && {
-    echo "not ok" 1 - "hdr_tonemap did not alter HDR output"
+    printf '\n%s\n' "not ok 1 - hdr_tonemap did not alter HDR output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "hdr_tonemap preserves HDR image output"
+printf '\n%s\n' "ok 1 - hdr_tonemap preserves HDR image output"
 exit 0

@@ -29,11 +29,11 @@ env_output="${artifact_dir}/0142-parallel-factor-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B2 --lookup-policy=none \
     "-jauto:F3" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "parallel factor short conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel factor short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1\|binding=parallel_factor,parallel_factor_override\|value=3**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "parallel factor short value was not stored"
+    printf '\n%s\n' "not ok 1 - parallel factor short value was not stored"
     exit 0
 }
 
@@ -41,11 +41,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B2 --lookup-policy=none \
     --env "SIXEL_PARALLEL_FACTOR=3" -jauto \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "parallel factor environment conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel factor environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1\|binding=parallel_factor,parallel_factor_override\|value=3**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "parallel factor environment value was not stored"
+    printf '\n%s\n' "not ok 1 - parallel factor environment value was not stored"
     exit 0
 }
 
@@ -53,29 +53,29 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B2 \
     --env "SIXEL_PARALLEL_FACTOR=0" -jauto \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "parallel factor zero conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel factor zero conversion failed"
     exit 0
 }
 case "${range_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "parallel factor accepted zero"
+    printf '\n%s\n' "not ok 1 - parallel factor accepted zero"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "scale/0001_parallel_factor_environment" cli || {
-    echo "not ok" 1 - "parallel factor CLI missed band planning"
+    printf '\n%s\n' "not ok 1 - parallel factor CLI missed band planning"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "parallel factor outputs differ"
+    printf '\n%s\n' "not ok 1 - parallel factor outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "runtime parallel factor preserves image output"
+printf '\n%s\n' "ok 1 - runtime parallel factor preserves image output"
 exit 0

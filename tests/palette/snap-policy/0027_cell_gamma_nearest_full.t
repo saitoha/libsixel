@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/snap_float/0001_snap_contract unit 1 0 1 0 || {
-    echo "not ok 1 - cell gamma nearest full"
+    printf '\n%s\n' "not ok 1 - cell gamma nearest full"
     exit 0
 }
 
-echo "ok 1 - cell gamma nearest full"
+printf '\n%s\n' "ok 1 - cell gamma nearest full"
 exit 0

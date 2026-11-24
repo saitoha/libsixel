@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0085_step_cancel_after_admission" || {
-    echo "not ok 1 - step cancel after admission"
+    printf '\n%s\n' "not ok 1 - step cancel after admission"
     exit 0
 }
-echo "ok 1 - step cancel after admission"
+printf '\n%s\n' "ok 1 - step cancel after admission"
 exit 0

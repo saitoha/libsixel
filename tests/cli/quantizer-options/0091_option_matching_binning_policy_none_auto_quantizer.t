@@ -16,14 +16,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --binning-policy=none \
     -Qauto -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
-    echo "not ok 1 - raw binning with auto quantizer failed"
+    printf '\n%s\n' "not ok 1 - raw binning with auto quantizer failed"
     exit 0
 }
 
 case "${trace}" in *LSXBIN1\|requested=none\|origin=explicit\|quantizer_requested=0\|quantizer_effective=1\|phase=quantizer**) true ;; *) false ;; esac || {
-    echo "not ok 1 - raw binning changed auto quantizer compatibility"
+    printf '\n%s\n' "not ok 1 - raw binning changed auto quantizer compatibility"
     exit 0
 }
 
-echo "ok 1 - raw binning preserves auto quantizer compatibility"
+printf '\n%s\n' "ok 1 - raw binning preserves auto quantizer compatibility"
 exit 0

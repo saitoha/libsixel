@@ -14,12 +14,12 @@ set -v
 msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env IMG2SIXEL_COMPLETION_BASH="${TOP_SRCDIR}/tests/data/completion/sources/bash/img2sixel" \
     -1 bash) || {
-    echo "not ok" 1 - "Bash completion path override failed"
+    printf '\n%s\n' "not ok 1 - Bash completion path override failed"
     exit 0
 }
 case "${msg}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "Bash completion path override was ignored"
+    printf '\n%s\n' "not ok 1 - Bash completion path override was ignored"
     exit 0
 }
-echo "ok" 1 - "Bash completion path override is used"
+printf '\n%s\n' "ok 1 - Bash completion path override is used"
 exit 0

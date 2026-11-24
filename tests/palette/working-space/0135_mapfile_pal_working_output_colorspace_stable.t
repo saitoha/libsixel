@@ -41,18 +41,18 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile export failed with -W/-U linear"
+    printf '\n%s\n' "not ok 1 - PAL mapfile export failed with -W/-U linear"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "PAL mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PAL mapfile changed under -W/-U linear"
+    printf '\n%s\n' "not ok 1 - PAL mapfile changed under -W/-U linear"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile is stable under working/output colorspaces"
+printf '\n%s\n' "ok 1 - PAL mapfile is stable under working/output colorspaces"
 exit 0

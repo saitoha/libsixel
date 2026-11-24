@@ -16,10 +16,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --lookup-policy=6bit:shared_instance=1 \
     -p 16 \
     "${input_image}" >/dev/null || {
-    echo "not ok" 1 - "6bit shared_instance suboption was rejected"
+    printf '\n%s\n' "not ok 1 - 6bit shared_instance suboption was rejected"
     exit 0
 }
 
-echo "ok" 1 - "6bit shared_instance suboption accepted"
+printf '\n%s\n' "ok 1 - 6bit shared_instance suboption accepted"
 
 exit 0

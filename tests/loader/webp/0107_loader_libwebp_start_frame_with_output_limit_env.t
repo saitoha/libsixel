@@ -24,33 +24,33 @@ out_start1_limit_invalid="${ARTIFACT_LOCAL_DIR}/webp-start1-output-limit-invalid
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -ldisable \
     "${image_webp}" >"${out_start1}" || {
-    echo "not ok" 1 - "baseline libwebp decode with --start-frame=1 failed"
+    printf '\n%s\n' "not ok 1 - baseline libwebp decode with --start-frame=1 failed"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -ldisable \
     "${image_webp}" >"${out_start1_limit1}" || {
-    echo "not ok" 1 - "decode with --start-frame=1 and output-frame-limit=1 failed"
+    printf '\n%s\n' "not ok 1 - decode with --start-frame=1 and output-frame-limit=1 failed"
     exit 0
 }
 
 SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=abc \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -ldisable \
     "${image_webp}" >"${out_start1_limit_invalid}" || {
-    echo "not ok" 1 - "decode with --start-frame=1 and invalid output-frame-limit failed"
+    printf '\n%s\n' "not ok 1 - decode with --start-frame=1 and invalid output-frame-limit failed"
     exit 0
 }
 
 cmp -s "${out_start1}" "${out_start1_limit1}" || {
-    echo "not ok" 1 - "output-frame-limit=1 changed --start-frame=1 output unexpectedly"
+    printf '\n%s\n' "not ok 1 - output-frame-limit=1 changed --start-frame=1 output unexpectedly"
     exit 0
 }
 
 cmp -s "${out_start1}" "${out_start1_limit_invalid}" || {
-    echo "not ok" 1 - "invalid output-frame-limit changed --start-frame=1 output unexpectedly"
+    printf '\n%s\n' "not ok 1 - invalid output-frame-limit changed --start-frame=1 output unexpectedly"
     exit 0
 }
 
-echo "ok" 1 - "--start-frame output is stable across output-frame-limit env values"
+printf '\n%s\n' "ok 1 - --start-frame output is stable across output-frame-limit env values"
 exit 0

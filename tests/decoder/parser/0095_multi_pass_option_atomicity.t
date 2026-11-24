@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0085_multi_pass_option_atomicity" || {
-    echo "not ok 1 - option atomicity"
+    printf '\n%s\n' "not ok 1 - option atomicity"
     exit 0
 }
 
-echo "ok 1 - option atomicity"
+printf '\n%s\n' "ok 1 - option atomicity"
 exit 0

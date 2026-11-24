@@ -11,8 +11,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract static_alloc || {
-    echo "not ok 1 - libpng static alloc"
+    printf '\n%s\n' "not ok 1 - libpng static alloc"
     exit 0
 }
-echo "ok 1 - libpng static alloc"
+printf '\n%s\n' "ok 1 - libpng static alloc"
 exit 0

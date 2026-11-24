@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/ordered/0033_ord_instance_isolation || {
-    echo "not ok 1 - ordered instance isolation"
+    printf '\n%s\n' "not ok 1 - ordered instance isolation"
     exit 0
 }
-echo "ok 1 - ordered instance isolation"
+printf '\n%s\n' "ok 1 - ordered instance isolation"
 exit 0

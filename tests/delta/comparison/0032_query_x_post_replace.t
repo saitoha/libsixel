@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0032_query_x_post_replace" >/dev/null || {
-    echo "not ok 1 - query x post replace"
+    printf '\n%s\n' "not ok 1 - query x post replace"
     exit 0
 }
 
-echo "ok 1 - query x post replace"
+printf '\n%s\n' "ok 1 - query x post replace"
 exit 0

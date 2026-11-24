@@ -17,22 +17,22 @@ set -v
 # SIXEL is a text stream without NUL bytes; retain both results in memory.
 default_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qkmeans \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
-    echo "not ok 1 - default Kmeans binning conversion failed"
+    printf '\n%s\n' "not ok 1 - default Kmeans binning conversion failed"
     exit 0
 }
 auto_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --binning-policy=auto -Qauto -p 16 -Qkmeans \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
-    echo "not ok 1 - explicit AUTO Kmeans binning conversion failed"
+    printf '\n%s\n' "not ok 1 - explicit AUTO Kmeans binning conversion failed"
     exit 0
 }
 test "$default_output" = "$auto_output" || {
-    echo "not ok 1 - default and AUTO Kmeans binning output differ"
+    printf '\n%s\n' "not ok 1 - default and AUTO Kmeans binning output differ"
     exit 0
 }
 test -n "$default_output" || {
-    echo "not ok 1 - option-route output is empty"
+    printf '\n%s\n' "not ok 1 - option-route output is empty"
     exit 0
 }
-echo "ok 1 - default Kmeans binning retains explicit AUTO output"
+printf '\n%s\n' "ok 1 - default Kmeans binning retains explicit AUTO output"
 exit 0

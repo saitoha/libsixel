@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0059_compare_target" >/dev/null || {
-    echo "not ok 1 - compare target"
+    printf '\n%s\n' "not ok 1 - compare target"
     exit 0
 }
 
-echo "ok 1 - compare target"
+printf '\n%s\n' "ok 1 - compare target"
 exit 0

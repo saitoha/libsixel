@@ -17,7 +17,7 @@ gamma=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_b
     --diffusion=none --palette-type=rgb -p8 -Xoklab -Wgamma \
     --snap-policy=nearest:rate=0.75 -Mpal:- -o/dev/null -Ugamma \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
-    echo "not ok 1 - gamma output palette export failed"
+    printf '\n%s\n' "not ok 1 - gamma output palette export failed"
     exit 0
 }
 linear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --precision-policy=float32 --quality=full \
@@ -27,12 +27,12 @@ linear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_
     --diffusion=none --palette-type=rgb -p8 -Xoklab -Wgamma \
     --snap-policy=nearest:rate=0.75 -Mpal:- -o/dev/null -Ulinear \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
-    echo "not ok 1 - linear output palette export failed"
+    printf '\n%s\n' "not ok 1 - linear output palette export failed"
     exit 0
 }
 test "${gamma}" = "${linear}" || {
-    echo "not ok 1 - wire conversion changed the exported palette"
+    printf '\n%s\n' "not ok 1 - wire conversion changed the exported palette"
     exit 0
 }
-echo "ok 1 - snap export is independent of wire conversion"
+printf '\n%s\n' "ok 1 - snap export is independent of wire conversion"
 exit 0

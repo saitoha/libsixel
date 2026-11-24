@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable -dnone -u \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" -o/dev/null || {
-    echo "not ok" 1 - "coregraphics disable/update flag combination failed"
+    printf '\n%s\n' "not ok 1 - coregraphics disable/update flag combination failed"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics disable/update flag combination succeeded"
+printf '\n%s\n' "ok 1 - coregraphics disable/update flag combination succeeded"
 exit 0

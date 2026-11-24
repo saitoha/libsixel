@@ -17,7 +17,7 @@ header_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     "${input_psd}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "PSD header-only conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD header-only conversion failed"
     exit 0
 }
 invalid_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -25,22 +25,22 @@ invalid_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=on \
     "${input_psd}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "PSD invalid header-only conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD invalid header-only conversion failed"
     exit 0
 }
 
 case "${header_trace}" in *LSXPSD1\|**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "PSD header-only mode omitted its header"
+    printf '\n%s\n' "not ok 1 - PSD header-only mode omitted its header"
     exit 0
 }
 case "${header_trace}" in *libsixel?psd_decode?:**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "PSD header-only mode retained verbose traces"
+    printf '\n%s\n' "not ok 1 - PSD header-only mode retained verbose traces"
     exit 0
 }
 case "${invalid_trace}" in *libsixel?psd_decode?:**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "PSD header-only accepted a nonnumeric boolean"
+    printf '\n%s\n' "not ok 1 - PSD header-only accepted a nonnumeric boolean"
     exit 0
 }
 
-echo "ok" 1 - "PSD header-only environment matching remains exact"
+printf '\n%s\n' "ok 1 - PSD header-only environment matching remains exact"
 exit 0

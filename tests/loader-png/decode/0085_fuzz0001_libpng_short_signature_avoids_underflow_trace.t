@@ -23,12 +23,12 @@ command_status=$?
 set -e
 
 test "${command_status}" -ge 1 || {
-    echo "not ok 1 - fuzz0001 did not return mapped error status"
+    printf '\n%s\n' "not ok 1 - fuzz0001 did not return mapped error status"
     exit 0
 }
 
 test "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
-    echo "not ok 1 - fuzz0001 did not return mapped error status"
+    printf '\n%s\n' "not ok 1 - fuzz0001 did not return mapped error status"
     exit 0
 }
 
@@ -38,10 +38,10 @@ while IFS= read -r trace_line || test -n "${trace_line}"; do
 done < "${trace_log}"
 case "${trace_text}" in
     *remain=1844674407370955*)
-        echo "not ok 1 - fuzz0001 still triggers APNG size underflow"
+        printf '\n%s\n' "not ok 1 - fuzz0001 still triggers APNG size underflow"
         exit 0
         ;;
 esac
 
-echo "ok 1 - fuzz0001 avoids APNG size underflow trace"
+printf '\n%s\n' "ok 1 - fuzz0001 avoids APNG size underflow trace"
 exit 0

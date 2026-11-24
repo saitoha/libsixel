@@ -17,13 +17,13 @@ planner_log=$(set +xv; SIXEL_PRECISION_POLICY=auto \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --precision-policy=float32 -Wlinear -Wgamma -dnone -p16 \
     -v -o/dev/null "${input_image}" 2>&1) || {
-    echo "not ok 1 - float32 gamma conversion failed"
+    printf '\n%s\n' "not ok 1 - float32 gamma conversion failed"
     exit 0
 }
 case "${planner_log}" in *work=rgb-f32**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gamma discarded explicit float32 precision"
+    printf '\n%s\n' "not ok 1 - gamma discarded explicit float32 precision"
     exit 0
 }
 
-echo "ok 1 - gamma working space preserves float32 precision"
+printf '\n%s\n' "ok 1 - gamma working space preserves float32 precision"
 exit 0

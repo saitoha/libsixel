@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/rgb101_diffusion/0001_spatial_contract \
     residual p3 linear jajuni || {
-    echo "not ok 1 - p3 linear jajuni residual"
+    printf '\n%s\n' "not ok 1 - p3 linear jajuni residual"
     exit 0
 }
-echo "ok 1 - p3 linear jajuni residual"
+printf '\n%s\n' "ok 1 - p3 linear jajuni residual"
 exit 0

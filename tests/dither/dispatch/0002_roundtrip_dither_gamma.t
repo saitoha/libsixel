@@ -17,15 +17,15 @@ snake_stage="${ARTIFACT_LOCAL_DIR}/snake-stage.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${snake_jpg}" -datkinson -flum -save \
     >"${snake_stage}" || {
-    echo "not ok" 1 - "round-trip conversion failed"
+    printf '\n%s\n' "not ok 1 - round-trip conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" <"${snake_stage}" -o/dev/null || {
-    echo "not ok" 1 - "round-trip conversion failed"
+    printf '\n%s\n' "not ok 1 - round-trip conversion failed"
     exit 0
 }
 
-echo "ok" 1 - "round-trip conversion with dithering and gamma succeeded"
+printf '\n%s\n' "ok 1 - round-trip conversion with dithering and gamma succeeded"
 
 exit 0

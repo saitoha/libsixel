@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" clarans-guided-tiebreak >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS guided tie-break check failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS guided tie-break check failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS guided tie-break ordering is deterministic"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS guided tie-break ordering is deterministic"
 exit 0

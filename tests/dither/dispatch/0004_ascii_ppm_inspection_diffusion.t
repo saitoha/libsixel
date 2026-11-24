@@ -14,9 +14,9 @@ set -v
 snake_ascii_ppm="${TOP_SRCDIR}/images/snake-ascii.ppm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -8 -dburkes -B"#ffffffffffff" "${snake_ascii_ppm}" -o/dev/null || {
-    echo "not ok" 1 - "ASCII PPM inspection failed"
+    printf '\n%s\n' "not ok 1 - ASCII PPM inspection failed"
     exit 0
 }
 
-echo "ok" 1 - "ASCII PPM inspection honours diffusion"
+printf '\n%s\n' "ok 1 - ASCII PPM inspection honours diffusion"
 exit 0

@@ -23,23 +23,23 @@ esc="$(printf '\033')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! -B '#ffffff' "${svg_path}" \
     >"${sixel_path}" || {
-    echo "not ok" 1 - "white background conversion failed"
+    printf '\n%s\n' "not ok 1 - white background conversion failed"
     exit 0
 }
 
 IFS= read -r sixel_line <"${sixel_path}" || :
 test -n "${sixel_line-}" || {
-    echo "not ok" 1 - "failed to read sixel output header"
+    printf '\n%s\n' "not ok 1 - failed to read sixel output header"
     exit 0
 }
 case "${sixel_line}" in
     "${esc}Pq"*)
         ;;
     *)
-        echo "not ok" 1 - "background option did not emit opaque SIXEL header"
+        printf '\n%s\n' "not ok 1 - background option did not emit opaque SIXEL header"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "background option composites transparent SVG output"
+printf '\n%s\n' "ok 1 - background option composites transparent SVG output"
 exit 0

@@ -23,11 +23,11 @@ set -v
 # Balanced cannot reach parallel threshold consumers with one eligible CPU.
 counts=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     threadpool/0002_thread_default_counts converter-counts) || {
-    echo "not ok 1 - topology probe failed"
+    printf '\n%s\n' "not ok 1 - topology probe failed"
     exit 0
 }
 test "${counts%% *}" -gt 1 || {
-    echo "ok 1 # SKIP balanced parallel conversion needs two eligible CPUs"
+    printf '\n%s\n' "ok 1 # SKIP balanced parallel conversion needs two eligible CPUs"
     exit 0
 }
 
@@ -36,14 +36,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     --env SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=257 \
     -_nearest:Iall -W oklab -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png" 2>&1) || {
-    echo "not ok 1 - colorspace threshold conversion failed"
+    printf '\n%s\n' "not ok 1 - colorspace threshold conversion failed"
     exit 0
 }
 
 case "${trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac || {
-    echo "not ok 1 - colorspace threshold missed its consumer"
+    printf '\n%s\n' "not ok 1 - colorspace threshold missed its consumer"
     exit 0
 }
 
-echo "ok 1 - colorspace threshold reaches its consumer"
+printf '\n%s\n' "ok 1 - colorspace threshold reaches its consumer"
 exit 0

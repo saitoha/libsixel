@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0178_float_byte_boundary 4 0 1 1>&2 || {
-    echo "not ok 1 - frame byte din99d allocation borrowed atomic"
+    printf '\n%s\n' "not ok 1 - frame byte din99d allocation borrowed atomic"
     exit 0
 }
-echo "ok 1 - frame byte din99d allocation borrowed atomic"
+printf '\n%s\n' "ok 1 - frame byte din99d allocation borrowed atomic"
 exit 0

@@ -13,23 +13,23 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - apply failure plain"
+    printf '\n%s\n' "not ok 1 - apply failure plain"
     exit 0
 }
 case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - target observation marker is absent"
+    printf '\n%s\n' "not ok 1 - target observation marker is absent"
     exit 0
 }
 observed=${trace#*"JCMYK|target-begin"}
 control=${trace%%"JCMYK|target-begin"*}
 case "$control" in
     *"LSXCMS2|event=apply|engine=builtin|"*"|ok=1"*) ;;
-    *) echo "$trace" >&2; echo "not ok 1 - successful CMS qualification is absent"; exit 0 ;;
+    *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - successful CMS qualification is absent"; exit 0 ;;
 esac
 case "$observed" in
     *"LSXCMS2|event=apply|engine=builtin|"*"|src=5|dst=4|ok=0"*) ;;
-    *) echo "$trace" >&2; echo "not ok 1 - actual CMS apply outcome is absent"; exit 0 ;;
+    *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - actual CMS apply outcome is absent"; exit 0 ;;
 esac
-echo "ok 1 - apply failure plain"
+printf '\n%s\n' "ok 1 - apply failure plain"
 exit 0

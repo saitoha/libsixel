@@ -20,14 +20,14 @@ esc="$(printf '\033')"
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --update-policy=delta:threshold=0 -B '#ffffff' \
     -L builtin! -d fs:scan=raster -o - "${input_image}") || {
-    echo "not ok" 1 - "default 6delta alpha-policy render failed"
+    printf '\n%s\n' "not ok 1 - default 6delta alpha-policy render failed"
     exit 0
 }
 
 case "${output}" in "${esc}P0;1q"*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "6delta did not resolve auto alpha-policy to keep"
+    printf '\n%s\n' "not ok 1 - 6delta did not resolve auto alpha-policy to keep"
     exit 0
 }
 
-echo "ok" 1 - "6delta resolves default auto alpha-policy to keep"
+printf '\n%s\n' "ok 1 - 6delta resolves default auto alpha-policy to keep"
 exit 0

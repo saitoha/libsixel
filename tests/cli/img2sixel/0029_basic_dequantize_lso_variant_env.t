@@ -19,9 +19,9 @@ from_cli=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     -dlso_undither:Vlight \
     <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${from_env}" = "${from_cli}" || {
-    echo "not ok" 1 - "LSO variant environment value changed output"
+    printf '\n%s\n' "not ok 1 - LSO variant environment value changed output"
     exit 0
 }
 
-echo "ok" 1 - "LSO variant environment value is applied"
+printf '\n%s\n' "ok 1 - LSO variant environment value is applied"
 exit 0

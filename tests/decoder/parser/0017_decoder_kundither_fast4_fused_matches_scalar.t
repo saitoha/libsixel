@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0015_decoder_kundither_fast4_fused_matches_scalar" || {
-    echo "not ok 1 - 0015_decoder_kundither_fast4_fused_matches_scalar"
+    printf '\n%s\n' "not ok 1 - 0015_decoder_kundither_fast4_fused_matches_scalar"
     exit 0
 }
 
-echo "ok 1 - 0015_decoder_kundither_fast4_fused_matches_scalar"
+printf '\n%s\n' "ok 1 - 0015_decoder_kundither_fast4_fused_matches_scalar"
 exit 0

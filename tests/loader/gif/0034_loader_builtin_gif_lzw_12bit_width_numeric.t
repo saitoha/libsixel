@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0079_loader_builtin_gif_lzw_12bit_width_numeric" || {
-    echo "not ok 1 - GIF LZW code-width growth through 12 bits"
+    printf '\n%s\n' "not ok 1 - GIF LZW code-width growth through 12 bits"
     exit 0
 }
 
-echo "ok 1 - GIF LZW code-width growth through 12 bits"
+printf '\n%s\n' "ok 1 - GIF LZW code-width growth through 12 bits"
 exit 0

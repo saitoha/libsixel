@@ -27,24 +27,24 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/shape-fx2 decode failed"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ GrFl\ alignment\ semantics\ in\ layer\ effects**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 missing GrFl alignment semantics"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 missing GrFl alignment semantics"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ GrFl\ offset\ semantics\ in\ layer\ effects**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 missing GrFl offset semantics"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 missing GrFl offset semantics"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ parsed\ GrFl\ effect\ object\ in\ layer\ effects**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 missing GrFl effect object parse"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 missing GrFl effect object parse"
     exit 0
 }
 
-echo "ok" 1 - "effects/shape-fx2 keeps GrFl sampler semantics contract"
+printf '\n%s\n' "ok 1 - effects/shape-fx2 keeps GrFl sampler semantics contract"
 exit 0

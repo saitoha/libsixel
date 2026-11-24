@@ -25,36 +25,36 @@ output_subkey_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_subkey_auto.six"
 output_subkey_none="${ARTIFACT_LOCAL_DIR}/cms_engine_subkey_none.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
-    echo "not ok" 1 - "cms=1 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=1 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
-    echo "not ok" 1 - "cms=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=0 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibwebp:Eauto! "${input_webp}" >"${output_subkey_auto}" || {
-    echo "not ok" 1 - "short syntax :Eauto decode failed"
+    printf '\n%s\n' "not ok 1 - short syntax :Eauto decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibwebp:cms_engine=auto:Enone! "${input_webp}" >"${output_subkey_none}" || {
-    echo "not ok" 1 - "short syntax :Enone decode failed"
+    printf '\n%s\n' "not ok 1 - short syntax :Enone decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_cms1}" "${output_subkey_auto}" || {
-    echo "not ok" 1 - "short syntax :Eauto did not match cms=1 behavior"
+    printf '\n%s\n' "not ok 1 - short syntax :Eauto did not match cms=1 behavior"
     exit 0
 }
 
 cmp -s "${output_ref_cms0}" "${output_subkey_none}" || {
-    echo "not ok" 1 - "short syntax :Enone did not match cms=0 behavior"
+    printf '\n%s\n' "not ok 1 - short syntax :Enone did not match cms=0 behavior"
     exit 0
 }
 
-echo "ok" 1 - "short syntax :E... controls loader cms_engine"
+printf '\n%s\n' "ok 1 - short syntax :E... controls loader cms_engine"
 exit 0

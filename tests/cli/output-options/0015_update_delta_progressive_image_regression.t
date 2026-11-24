@@ -23,32 +23,32 @@ env_output="${artifact_dir}/0171_progressive_env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Z delta:P1 \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok 1 - short progressive conversion failed"
+    printf '\n%s\n' "not ok 1 - short progressive conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=progressive\|stored=1\|binding=progressive_enabled,progressive_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - short progressive assignment missing"
+    printf '\n%s\n' "not ok 1 - short progressive assignment missing"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_UPDATE_DELTA_PROGRESSIVE=1" -Z delta \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - environment progressive conversion failed"
+    printf '\n%s\n' "not ok 1 - environment progressive conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=progressive\|stored=1\|binding=progressive_enabled,progressive_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - environment progressive assignment missing"
+    printf '\n%s\n' "not ok 1 - environment progressive assignment missing"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - progressive output differs"
+    printf '\n%s\n' "not ok 1 - progressive output differs"
     exit 0
 }
 # This test owns exact option-route equivalence and consumer selection.
 test -s "${short_output}" || {
-    echo "not ok 1 - option-route output is empty"
+    printf '\n%s\n' "not ok 1 - option-route output is empty"
     exit 0
 }
-echo "ok 1 - progressive image output and option routes agree"
+printf '\n%s\n' "ok 1 - progressive image output and option routes agree"
 exit 0

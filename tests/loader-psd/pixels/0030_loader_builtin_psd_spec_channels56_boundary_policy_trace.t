@@ -19,10 +19,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: Multichannel needs explicit colorant definitions (56 channels)"*)
-        echo "ok" 1 - "channel=56 passes boundary and hits multichannel channel-count policy"
+        printf '\n%s\n' "ok 1 - channel=56 passes boundary and hits multichannel channel-count policy"
         ;;
     *)
-        echo "not ok" 1 - "channel=56 did not reach multichannel policy check"
+        printf '\n%s\n' "not ok 1 - channel=56 did not reach multichannel policy check"
         exit 0
         ;;
 esac

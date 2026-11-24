@@ -27,14 +27,14 @@ Columns: 16
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     -M "${actual_palette}" -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - ".gpl extension palette export failed"
+    printf '\n%s\n' "not ok 1 - .gpl extension palette export failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - ".gpl extension did not select exact GPL output"
+    printf '\n%s\n' "not ok 1 - .gpl extension did not select exact GPL output"
     exit 0
 }
 
-echo "ok" 1 - ".gpl extension selects exact GPL output"
+printf '\n%s\n' "ok 1 - .gpl extension selects exact GPL output"
 exit 0

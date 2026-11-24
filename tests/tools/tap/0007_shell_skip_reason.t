@@ -6,8 +6,8 @@ set -v
 
 "${SIXEL_TEST_CONFIG_SHELL}" "$TOP_SRCDIR/tests/_support/tools/tap-directive.sh" \
     yes skip_reason SKIP || {
-    echo 'not ok 1 - shell skip reason classification'
+    printf '\n%s\n' 'not ok 1 - shell skip reason classification'
     exit 0
 }
-echo 'ok 1 - shell skip reason classification'
+printf '\n%s\n' 'ok 1 - shell skip reason classification'
 exit 0

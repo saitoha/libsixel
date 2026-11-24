@@ -20,31 +20,31 @@ out_on_payload="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -I \
     --threading-policy=greedy:global_budget=1 --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     -Llibpng:cms_engine=none! \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png")" || {
-    echo "not ok 1 - highcolor opt-in render failed"
+    printf '\n%s\n' "not ok 1 - highcolor opt-in render failed"
     exit 0
 }
 out_off_payload="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -I \
     --threading-policy=greedy:global_budget=1 --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     -Llibpng:cms_engine=none! \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png")" || {
-    echo "not ok 1 - highcolor opt-out render failed"
+    printf '\n%s\n' "not ok 1 - highcolor opt-out render failed"
     exit 0
 }
 
 case "${out_on_payload}" in
     "${keycolor_header}"*) ;;
     *)
-        echo "not ok 1 - highcolor opt-in lost the keep header"
+        printf '\n%s\n' "not ok 1 - highcolor opt-in lost the keep header"
         exit 0
         ;;
 esac
 case "${out_off_payload}" in
     "${keycolor_header}"*) ;;
     *)
-        echo "not ok 1 - highcolor opt-out lost the keep header"
+        printf '\n%s\n' "not ok 1 - highcolor opt-out lost the keep header"
         exit 0
         ;;
 esac
 
-echo "ok 1 - highcolor preserves tRNS masks through both loader routes"
+printf '\n%s\n' "ok 1 - highcolor preserves tRNS masks through both loader routes"
 exit 0

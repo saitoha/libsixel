@@ -21,7 +21,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 msg=$(set +xv; SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=3 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -lauto "${image_webp}" \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted emitted-frame overflow case"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted emitted-frame overflow case"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -31,13 +31,13 @@ case "${msg}" in
     *"load_with_libwebp: emitted frame count exceeds safety limit."*)
         ;;
     *)
-        echo "not ok" 1 - "expected emitted-frame limit diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected emitted-frame limit diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects emitted-frame overflow case"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects emitted-frame overflow case"
 
 exit 0

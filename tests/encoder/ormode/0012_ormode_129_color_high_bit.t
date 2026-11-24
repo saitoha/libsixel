@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder-core/0013_ormode_129_color_high_bit" || {
-    echo "not ok 1 - ormode_129_color_high_bit"
+    printf '\n%s\n' "not ok 1 - ormode_129_color_high_bit"
     exit 0
 }
 
-echo "ok 1 - ormode_129_color_high_bit"
+printf '\n%s\n' "ok 1 - ormode_129_color_high_bit"
 exit 0

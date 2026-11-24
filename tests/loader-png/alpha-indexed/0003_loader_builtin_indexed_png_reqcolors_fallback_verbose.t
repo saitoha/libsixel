@@ -24,7 +24,7 @@ planner_log=$(
                   -Lbuiltin! -p"${reqcolors}" \
                   "${image_path}" 2>&1 >/dev/null
 ) || {
-    echo "not ok" 1 - "builtin indexed png reqcolors fallback failed"
+    printf '\n%s\n' "not ok 1 - builtin indexed png reqcolors fallback failed"
     exit 0
 }
 
@@ -32,10 +32,10 @@ case "${planner_log}" in
     *"formats: source=rgb888 work=rgb888"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin indexed png did not take rgb fallback path"
+        printf '\n%s\n' "not ok 1 - builtin indexed png did not take rgb fallback path"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin indexed png reqcolors uses rgb fallback path"
+printf '\n%s\n' "ok 1 - builtin indexed png reqcolors uses rgb fallback path"
 exit 0

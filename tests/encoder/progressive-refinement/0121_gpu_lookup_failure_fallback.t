@@ -9,12 +9,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0171_gpu_lookup_failure_fal
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu lookup failure fallback # SKIP Metal device unavailable"
+    printf '\n%s\n' "ok 1 - gpu lookup failure fallback # SKIP Metal device unavailable"
     exit 0
 }
 test "$result" = 0 || {
-    echo "not ok 1 - gpu lookup failure fallback"
+    printf '\n%s\n' "not ok 1 - gpu lookup failure fallback"
     exit 0
 }
-echo "ok 1 - gpu lookup failure fallback"
+printf '\n%s\n' "ok 1 - gpu lookup failure fallback"
 exit 0

@@ -20,9 +20,9 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libtiff! "${input_png}" >/dev/null && {
-    echo "not ok" 1 - "non-TIFF data unexpectedly accepted by libtiff"
+    printf '\n%s\n' "not ok 1 - non-TIFF data unexpectedly accepted by libtiff"
     exit 0
 }
 
-echo "ok" 1 - "non-TIFF data is rejected by libtiff"
+printf '\n%s\n' "ok 1 - non-TIFF data is rejected by libtiff"
 exit 0

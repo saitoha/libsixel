@@ -16,18 +16,18 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite -L builtin -e -o - "${input_image}") || {
-    echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
+    printf '\n%s\n' "not ok 1 - monochrome SIXEL mode emitted palette slots"
     exit 0
 }
 
 case "${sixel_output}" in *P0\;1q*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
+    printf '\n%s\n' "not ok 1 - monochrome SIXEL mode emitted palette slots"
     exit 0
 }
 case "${sixel_output}" in *#*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
+    printf '\n%s\n' "not ok 1 - monochrome SIXEL mode emitted palette slots"
     exit 0
 }
 
-echo "ok" 1 - "monochrome SIXEL mode omits palette slots"
+printf '\n%s\n' "ok 1 - monochrome SIXEL mode omits palette slots"
 exit 0

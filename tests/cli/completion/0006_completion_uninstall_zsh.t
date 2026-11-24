@@ -18,14 +18,14 @@ target_path="${completion_home}/.zfunc/_img2sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               -3 zsh >/dev/null || {
-    echo "not ok" 1 - "zsh completion removal failed"
+    printf '\n%s\n' "not ok 1 - zsh completion removal failed"
     exit 0
 }
 
 test ! -e "${target_path}" || {
-    echo "not ok" 1 - "zsh completion not removed"
+    printf '\n%s\n' "not ok 1 - zsh completion not removed"
     exit 0
 }
 
-echo "ok" 1 - "zsh completion removed"
+printf '\n%s\n' "ok 1 - zsh completion removed"
 exit 0

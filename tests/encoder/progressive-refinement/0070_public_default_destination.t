@@ -11,8 +11,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0096_public_default_destination" || {
-    echo "not ok 1 - public default destination"
+    printf '\n%s\n' "not ok 1 - public default destination"
     exit 0
 }
-echo "ok 1 - public default destination"
+printf '\n%s\n' "ok 1 - public default destination"
 exit 0

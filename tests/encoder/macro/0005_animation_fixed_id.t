@@ -15,7 +15,7 @@ set -v
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -7 -bgray2 -dnone -Efast -g -n7 -lauto \
     "${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop2.gif") || {
-    echo "not ok 1 - animation fixed-ID definitions without invocation: conversion failed"
+    printf '\n%s\n' "not ok 1 - animation fixed-ID definitions without invocation: conversion failed"
     exit 0
 }
 
@@ -27,9 +27,9 @@ expected="${escape}[H${escape}P7;0;1!z${first}${escape}\\"
 expected="${expected}${escape}[H${escape}P7;0;1!z${second}${escape}\\"
 expected="${expected}${escape}[H${escape}[H"
 test "$output" = "$expected" || {
-    echo "not ok 1 - animation fixed-ID definitions without invocation: unexpected control stream"
+    printf '\n%s\n' "not ok 1 - animation fixed-ID definitions without invocation: unexpected control stream"
     exit 0
 }
 
-echo "ok 1 - animation fixed-ID definitions without invocation"
+printf '\n%s\n' "ok 1 - animation fixed-ID definitions without invocation"
 exit 0

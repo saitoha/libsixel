@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0120_loader_builtin_pic_zero_dimension_reject" || {
-    echo "not ok 1 - PIC zero dimensions are rejected"
+    printf '\n%s\n' "not ok 1 - PIC zero dimensions are rejected"
     exit 0
 }
 
-echo "ok 1 - PIC zero dimensions are rejected"
+printf '\n%s\n' "ok 1 - PIC zero dimensions are rejected"
 exit 0

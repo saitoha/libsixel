@@ -23,14 +23,14 @@ error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc" \
     -L gd! -ldisable \
     "${input_png}" 2>&1 >/dev/null)" || {
-    echo "not ok 1 - gd static decode failed with invalid start-frame env"
+    printf '\n%s\n' "not ok 1 - gd static decode failed with invalid start-frame env"
     exit 0
 }
 
 case "${error_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO**) false ;; *) true ;; esac || {
-    echo "not ok 1 - gd static decode emitted start-frame env error text"
+    printf '\n%s\n' "not ok 1 - gd static decode emitted start-frame env error text"
     exit 0
 }
 
-echo "ok 1 - gd static decode ignores invalid start-frame env values"
+printf '\n%s\n' "ok 1 - gd static decode ignores invalid start-frame env values"
 exit 0

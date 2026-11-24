@@ -19,15 +19,15 @@ riff_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/riff-data-too-small.pal"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m pal-riff:"${riff_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "RIFF undersized-data payload unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - RIFF undersized-data payload unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_pal_riff:\ data\ chunk\ too\ small.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing RIFF data-chunk-too-small diagnostic"
+    printf '\n%s\n' "not ok 1 - missing RIFF data-chunk-too-small diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "RIFF undersized-data payload is rejected"
+printf '\n%s\n' "ok 1 - RIFF undersized-data payload is rejected"
 
 exit 0

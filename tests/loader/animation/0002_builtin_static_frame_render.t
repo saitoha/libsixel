@@ -16,9 +16,9 @@ set -v
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -dnone -g "${image_gif}" >/dev/null || {
-    echo "not ok" 1 - "static frame rendering fails"
+    printf '\n%s\n' "not ok 1 - static frame rendering fails"
     exit 0
 }
 
-echo "ok" 1 - "static frame rendering succeeds"
+printf '\n%s\n' "ok 1 - static frame rendering succeeds"
 exit 0

@@ -22,23 +22,23 @@ default_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-default-header.six"
 esc="$(printf '\033')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${default_sixel}" || {
-    echo "not ok" 1 - "default transparent SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - default transparent SVG conversion failed"
     exit 0
 }
 
 IFS= read -r sixel_line <"${default_sixel}" || :
 test -n "${sixel_line-}" || {
-    echo "not ok" 1 - "failed to read transparent SVG SIXEL header"
+    printf '\n%s\n' "not ok 1 - failed to read transparent SVG SIXEL header"
     exit 0
 }
 case "${sixel_line}" in
     "${esc}P0;0q"*)
         ;;
     *)
-        echo "not ok" 1 - "transparent SVG did not emit ESC P0;0q header"
+        printf '\n%s\n' "not ok 1 - transparent SVG did not emit ESC P0;0q header"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "default transparent SVG emits P2=1 SIXEL header"
+printf '\n%s\n' "ok 1 - default transparent SVG emits P2=1 SIXEL header"
 exit 0

@@ -13,7 +13,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto -Qkmeans:backend=gpu:prune=yinyang:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - yinyang auto status"
+    printf '\n%s\n' "not ok 1 - yinyang auto status"
     printf '# %s\n' "$trace"
     exit 0
 }
@@ -21,9 +21,9 @@ case "$trace" in
     *effective=cpu*reason=explicit-prune*prune=yinyang*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - yinyang auto contract"
+    printf '\n%s\n' "not ok 1 - yinyang auto contract"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - yinyang auto"
+printf '\n%s\n' "ok 1 - yinyang auto"
 exit 0

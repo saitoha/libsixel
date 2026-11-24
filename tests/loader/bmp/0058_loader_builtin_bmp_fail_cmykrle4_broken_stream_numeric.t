@@ -11,9 +11,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYKRLE4_BROKEN_STREAM=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail cmykrle4 broken stream numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail cmykrle4 broken stream numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail cmykrle4 broken stream numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail cmykrle4 broken stream numeric)"
 exit 0

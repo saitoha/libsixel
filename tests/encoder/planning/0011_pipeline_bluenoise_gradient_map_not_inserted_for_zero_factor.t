@@ -19,20 +19,20 @@ pipeline_log=$(
         -o /dev/null \
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1
 ) || {
-    echo "not ok" 1 - "planner run failed for zero gradient factor"
+    printf '\n%s\n' "not ok 1 - planner run failed for zero gradient factor"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
 
 case "${pipeline_log}" in *gradient-map**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "planner unexpectedly inserted gradient-map"
+    printf '\n%s\n' "not ok 1 - planner unexpectedly inserted gradient-map"
     exit 0
 }
 
 case "${pipeline_log}" in *load\ -\>\ dither**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "planner missed direct load -> dither edge"
+    printf '\n%s\n' "not ok 1 - planner missed direct load -> dither edge"
     exit 0
 }
 
-echo "ok" 1 - "planner skips gradient-map when factor is zero"
+printf '\n%s\n' "ok 1 - planner skips gradient-map when factor is zero"
 exit 0

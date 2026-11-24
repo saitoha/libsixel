@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - layout alpha allocation"
+    printf '\n%s\n' "not ok 1 - layout alpha allocation"
     exit 0
 }
 active=0
@@ -31,7 +31,7 @@ while IFS= read -r line; do
     case "$line" in
     "TIL|begin|"*)
         test "$active" -eq 0 || {
-            echo "not ok 1 - overlapping loader phases"
+            printf '\n%s\n' "not ok 1 - overlapping loader phases"
             exit 0
         }
         active=1
@@ -49,7 +49,7 @@ while IFS= read -r line; do
             case "${line}" in *"|src=$source|dst=4|"*) true ;; *) false ;; esac &&
             test "${line##*\|ok=}" -eq 1; } || {
             echo "$trace" >&2
-            echo "not ok 1 - wrong actual CMS backend, format or result"
+            printf '\n%s\n' "not ok 1 - wrong actual CMS backend, format or result"
             exit 0
         }
         applies=$((applies + 1))
@@ -57,7 +57,7 @@ while IFS= read -r line; do
     "TIL|end|ok=1")
         { test "$active" -eq 1 && test "$applies" -eq "$wanted"; } || {
             echo "$trace" >&2
-            echo "not ok 1 - unexpected actual CMS apply count"
+            printf '\n%s\n' "not ok 1 - unexpected actual CMS apply count"
             exit 0
         }
         active=0
@@ -69,8 +69,8 @@ $trace
 EOF
 { test "$active" -eq 0 && test "$completed" -eq 3; } || {
     echo "$trace" >&2
-    echo "not ok 1 - incomplete loader phases"
+    printf '\n%s\n' "not ok 1 - incomplete loader phases"
     exit 0
 }
-echo "ok 1 - layout alpha allocation"
+printf '\n%s\n' "ok 1 - layout alpha allocation"
 exit 0

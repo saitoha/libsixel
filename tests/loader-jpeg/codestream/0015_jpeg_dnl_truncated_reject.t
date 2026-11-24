@@ -9,8 +9,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0214_jpeg_dnl_truncated_reject" 1>&2 || {
-    echo "not ok 1 - Reject every truncated DNL marker field"
+    printf '\n%s\n' "not ok 1 - Reject every truncated DNL marker field"
     exit 0
 }
-echo "ok 1 - Reject every truncated DNL marker field"
+printf '\n%s\n' "ok 1 - Reject every truncated DNL marker field"
 exit 0

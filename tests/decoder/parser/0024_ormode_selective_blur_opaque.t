@@ -8,9 +8,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0022_ormode_selective_blur_opaque" || {
-    echo "not ok 1 - ormode_selective_blur_opaque"
+    printf '\n%s\n' "not ok 1 - ormode_selective_blur_opaque"
     exit 0
 }
 
-echo "ok 1 - ormode_selective_blur_opaque"
+printf '\n%s\n' "ok 1 - ormode_selective_blur_opaque"
 exit 0

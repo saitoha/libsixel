@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/merge_float/0002_scan_contract 0 || {
-    echo "not ok 1 - Ward scan fallback inactive slots"
+    printf '\n%s\n' "not ok 1 - Ward scan fallback inactive slots"
     exit 0
 }
 
-echo "ok 1 - Ward scan fallback inactive slots"
+printf '\n%s\n' "ok 1 - Ward scan fallback inactive slots"
 exit 0

@@ -21,30 +21,30 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=yes! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid orientation suboption value succeeded"
+    printf '\n%s\n' "not ok 1 - invalid orientation suboption value succeeded"
     exit 0
 }
 
 case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing shared boolean diagnostic"
+    printf '\n%s\n' "not ok 1 - missing shared boolean diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *libpng:orientation=yes!**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "unknown orientation value token not reported"
+    printf '\n%s\n' "not ok 1 - unknown orientation value token not reported"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *:orientation=0\|1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "orientation key token not reported"
+    printf '\n%s\n' "not ok 1 - orientation key token not reported"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "orientation uses the shared boolean validator"
+printf '\n%s\n' "ok 1 - orientation uses the shared boolean validator"
 exit 0

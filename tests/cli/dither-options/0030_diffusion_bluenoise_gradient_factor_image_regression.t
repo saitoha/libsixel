@@ -24,12 +24,12 @@ env_output="${artifact_dir}/0016-diffusion-bluenoise-gradient_factor-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d "bluenoise:G1.0" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "bluenoise:gradient_factor short conversion failed"
+    printf '\n%s\n' "not ok 1 - bluenoise:gradient_factor short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=gradient_factor\|stored=1\|binding=bluenoise_gradient_factor,bluenoise_gradient_factor_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "gradient_factor short value was not stored"
+    printf '\n%s\n' "not ok 1 - gradient_factor short value was not stored"
     exit 0
 }
 
@@ -37,26 +37,26 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=1.0" -d "bluenoise" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "bluenoise:gradient_factor env conversion failed"
+    printf '\n%s\n' "not ok 1 - bluenoise:gradient_factor env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=gradient_factor\|stored=1\|binding=bluenoise_gradient_factor,bluenoise_gradient_factor_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "gradient_factor environment value was not stored"
+    printf '\n%s\n' "not ok 1 - gradient_factor environment value was not stored"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "bluenoise:gradient_factor short and env output differ"
+    printf '\n%s\n' "not ok 1 - bluenoise:gradient_factor short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "bluenoise:gradient_factor preserves image output"
+printf '\n%s\n' "ok 1 - bluenoise:gradient_factor preserves image output"
 exit 0

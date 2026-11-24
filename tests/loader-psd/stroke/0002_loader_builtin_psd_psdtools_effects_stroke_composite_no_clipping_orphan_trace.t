@@ -28,14 +28,14 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *clipping\ layer\ without\ base\;\ skipping\ layer**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite emitted clipping orphan trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite emitted clipping orphan trace"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps clipping base pairing"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps clipping base pairing"
 exit 0

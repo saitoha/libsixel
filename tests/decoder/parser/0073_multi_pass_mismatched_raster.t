@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0063_multi_pass_mismatched_raster" || {
-    echo "not ok 1 - mismatched raster"
+    printf '\n%s\n' "not ok 1 - mismatched raster"
     exit 0
 }
 
-echo "ok 1 - mismatched raster"
+printf '\n%s\n' "ok 1 - mismatched raster"
 exit 0

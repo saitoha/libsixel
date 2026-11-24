@@ -17,10 +17,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: malformed channel count (3) for CMYK (requires >=4)"*)
-        echo "ok" 1 - "CMYK channel_count<4 is reported as malformed"
+        printf '\n%s\n' "ok 1 - CMYK channel_count<4 is reported as malformed"
         ;;
     *)
-        echo "not ok" 1 - "CMYK malformed channel count trace is missing"
+        printf '\n%s\n' "not ok 1 - CMYK malformed channel count trace is missing"
         exit 0
         ;;
 esac

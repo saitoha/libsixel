@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" positional_gpu_x_isolation || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - GPU x isolation"
+    printf '\n%s\n' "not ok 1 - GPU x isolation"
     exit 0
 }
-echo "ok 1 - GPU x isolation"
+printf '\n%s\n' "ok 1 - GPU x isolation"
 exit 0

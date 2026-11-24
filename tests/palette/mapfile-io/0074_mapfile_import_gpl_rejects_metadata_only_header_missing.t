@@ -19,15 +19,15 @@ gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-metadata-only-invalid.g
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m gpl:"${gpl_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "GPL metadata-only payload unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - GPL metadata-only payload unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_gpl:\ header\ missing.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing GPL header-missing diagnostic"
+    printf '\n%s\n' "not ok 1 - missing GPL header-missing diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "GPL metadata-only payload is rejected"
+printf '\n%s\n' "ok 1 - GPL metadata-only payload is rejected"
 
 exit 0

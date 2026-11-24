@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/auto_cover_float/0006_linear_noop || {
-    echo "not ok 1 - AUTO preserves typed linear coordinates without a round trip"
+    printf '\n%s\n' "not ok 1 - AUTO preserves typed linear coordinates without a round trip"
     exit 0
 }
-echo "ok 1 - AUTO preserves typed linear coordinates without a round trip"
+printf '\n%s\n' "ok 1 - AUTO preserves typed linear coordinates without a round trip"
 exit 0

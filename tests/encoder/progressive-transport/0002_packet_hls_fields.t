@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0070_packet_hls_fields" || {
-    echo "not ok 1 - packet hls fields"
+    printf '\n%s\n' "not ok 1 - packet hls fields"
     exit 0
 }
-echo "ok 1 - packet hls fields"
+printf '\n%s\n' "ok 1 - packet hls fields"
 exit 0

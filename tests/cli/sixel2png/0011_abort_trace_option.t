@@ -17,18 +17,18 @@ trace_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env SIXEL_ABORT_TRACE=1 -xhuman:A0 \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o - 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "sixel2png abort trace conversion failed"
+    printf '\n%s\n' "not ok 1 - sixel2png abort trace conversion failed"
     exit 0
 }
 
 case "${trace_message}" in *LSXSUB1\|*key=abort_trace\|stored=1\|binding=abort_trace,abort_trace_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "sixel2png abort trace value was not stored"
+    printf '\n%s\n' "not ok 1 - sixel2png abort trace value was not stored"
     exit 0
 }
 case "${trace_message}" in *LSXABT1\|*enabled=0\|installed=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "sixel2png abort trace value missed its consumer"
+    printf '\n%s\n' "not ok 1 - sixel2png abort trace value missed its consumer"
     exit 0
 }
 
-echo "ok" 1 - "sixel2png applies abort trace after option parsing"
+printf '\n%s\n' "ok 1 - sixel2png applies abort trace after option parsing"
 exit 0

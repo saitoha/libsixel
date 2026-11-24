@@ -15,12 +15,12 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env IMG2SIXEL_COMPLETION_BASH=/missing/completion/bash \
     --env IMG2SIXEL_COMPLETION_DIR=/missing/completion/directory \
     -1 bash) || {
-    echo "not ok" 1 - "missing completion source fallback failed"
+    printf '\n%s\n' "not ok 1 - missing completion source fallback failed"
     exit 0
 }
 case "${msg}" in *#\ bash\ completion\ for\ img2sixel**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing completion source did not fall back"
+    printf '\n%s\n' "not ok 1 - missing completion source did not fall back"
     exit 0
 }
-echo "ok" 1 - "missing completion source falls back to packaged data"
+printf '\n%s\n' "ok 1 - missing completion source falls back to packaged data"
 exit 0

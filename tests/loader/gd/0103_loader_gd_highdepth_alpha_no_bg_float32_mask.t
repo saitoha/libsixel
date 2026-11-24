@@ -14,9 +14,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0011_loader_gd_pixelformat" \
     "highdepth_alpha_no_bg_float32_mask" || {
-    echo "not ok 1 - gd highdepth_alpha_no_bg_float32_mask"
+    printf '\n%s\n' "not ok 1 - gd highdepth_alpha_no_bg_float32_mask"
     exit 0
 }
 
-echo "ok 1 - gd highdepth_alpha_no_bg_float32_mask"
+printf '\n%s\n' "ok 1 - gd highdepth_alpha_no_bg_float32_mask"
 exit 0

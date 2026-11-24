@@ -11,9 +11,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_PNM_NUMERIC_PAM_UNKNOWN_TUPLTYPE_FALLBACK_BOUNDARY=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (pnm pam unknown-tuple fallback boundary numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (pnm pam unknown-tuple fallback boundary numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (pnm pam unknown-tuple fallback boundary numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (pnm pam unknown-tuple fallback boundary numeric)"
 exit 0

@@ -19,14 +19,14 @@ input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-utf32be-bom-invalid.g
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
           -m gpl:"${input_palette}" -o/dev/null \
           "${input_image}" 2>&1 >/dev/null) && {
-    echo "not ok" 1 - "GPL UTF-32BE BOM unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - GPL UTF-32BE BOM unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_gpl:\ unsupported\ text\ encoding.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing GPL UTF-32BE diagnostic"
+    printf '\n%s\n' "not ok 1 - missing GPL UTF-32BE diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "GPL UTF-32BE BOM is rejected"
+printf '\n%s\n' "ok 1 - GPL UTF-32BE BOM is rejected"
 exit 0

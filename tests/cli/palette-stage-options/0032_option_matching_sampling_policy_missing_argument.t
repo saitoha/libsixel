@@ -16,14 +16,14 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --sampling-policy --threading-policy=greedy:global_budget=1 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - missing sampling-policy argument exit status mismatch"
+    printf '\n%s\n' "not ok 1 - missing sampling-policy argument exit status mismatch"
     exit 0
 }
 
 case "${message}" in *--sampling-policy**) true ;; *) false ;; esac || {
-    echo "not ok 1 - missing sampling-policy diagnostic is missing"
+    printf '\n%s\n' "not ok 1 - missing sampling-policy diagnostic is missing"
     exit 0
 }
 
-echo "ok 1 - sampling-policy requires an argument"
+printf '\n%s\n' "ok 1 - sampling-policy requires an argument"
 exit 0

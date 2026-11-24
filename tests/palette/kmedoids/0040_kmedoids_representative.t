@@ -9,9 +9,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     representative 1 0 0 none || {
-    echo "not ok 1 - kmedoids representative"
+    printf '\n%s\n' "not ok 1 - kmedoids representative"
     exit 0
 }
 
-echo "ok 1 - kmedoids representative"
+printf '\n%s\n' "ok 1 - kmedoids representative"
 exit 0

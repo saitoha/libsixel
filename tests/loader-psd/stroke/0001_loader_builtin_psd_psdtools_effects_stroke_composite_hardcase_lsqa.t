@@ -32,18 +32,18 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "effects/stroke-composite decode fell below MS-SSIM ${lsqa_floor}"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode fell below MS-SSIM ${lsqa_floor}"
     exit 0
 }
 
 : "${lsqa_msg}"
 
-echo "ok" 1 - "effects/stroke-composite decode keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - effects/stroke-composite decode keeps MS-SSIM ${lsqa_floor}"
 exit 0

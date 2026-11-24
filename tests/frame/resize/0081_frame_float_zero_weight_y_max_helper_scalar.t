@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=scalar \
     frame/0098_float_dynamic_range 1 0 1 || {
-    echo "not ok 1 - float zero_weight_y_max_helper_scalar"
+    printf '\n%s\n' "not ok 1 - float zero_weight_y_max_helper_scalar"
     exit 0
 }
-echo "ok 1 - float zero_weight_y_max_helper_scalar"
+printf '\n%s\n' "ok 1 - float zero_weight_y_max_helper_scalar"
 exit 0

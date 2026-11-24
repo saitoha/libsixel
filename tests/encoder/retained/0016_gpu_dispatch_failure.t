@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/retained/0016_gpu_dispatch_failure" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - A pre-dispatch failure preserves committed RGB'
+    printf '\n%s\n' 'not ok 1 - A pre-dispatch failure preserves committed RGB'
     exit 0
 }
-echo 'ok 1 - A pre-dispatch failure preserves committed RGB'
+printf '\n%s\n' 'ok 1 - A pre-dispatch failure preserves committed RGB'
 exit 0

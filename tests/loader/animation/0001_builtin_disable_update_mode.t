@@ -17,9 +17,9 @@ set -v
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! -ldisable -dnone -u -lauto "${image_gif}" -o/dev/null || {
-    echo "not ok" 1 - "animation disable with update failed"
+    printf '\n%s\n' "not ok 1 - animation disable with update failed"
     exit 0
 }
 
-echo "ok" 1 - "animation disabled with update mode"
+printf '\n%s\n' "ok 1 - animation disabled with update mode"
 exit 0

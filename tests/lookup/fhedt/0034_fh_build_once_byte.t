@@ -14,8 +14,8 @@ SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/fhedt.jsonl"
 export SIXEL_LOG_PATH
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0024_fh_build_once_byte "${SIXEL_LOG_PATH}" || {
-    echo "not ok 1 - build once byte"
+    printf '\n%s\n' "not ok 1 - build once byte"
     exit 0
 }
-echo "ok 1 - build once byte"
+printf '\n%s\n' "ok 1 - build once byte"
 exit 0

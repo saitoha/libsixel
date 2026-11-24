@@ -25,7 +25,7 @@ trace_log=$(
         -L librsvg! - -o/dev/null 2>&1 \
         <"${svgz_path}"
 ) || {
-    echo "not ok" 1 - "trace-enabled stdin .svgz opt-in conversion failed"
+    printf '\n%s\n' "not ok 1 - trace-enabled stdin .svgz opt-in conversion failed"
     exit 0
 }
 
@@ -33,10 +33,10 @@ case "${trace_log}" in
     *"librsvg: decode_mode=stdin_svgz_tempfile"*)
         ;;
     *)
-        echo "not ok" 1 - "stdin .svgz opt-in trace mode was not reported"
+        printf '\n%s\n' "not ok 1 - stdin .svgz opt-in trace mode was not reported"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg stdin .svgz opt-in trace decode mode is reported"
+printf '\n%s\n' "ok 1 - librsvg stdin .svgz opt-in trace decode mode is reported"
 exit 0

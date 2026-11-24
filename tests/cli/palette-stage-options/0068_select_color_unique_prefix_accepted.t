@@ -14,10 +14,10 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -shist "${snake_jpg}" >/dev/null || {
-    echo "not ok" 1 - "unique select-color prefix failed"
+    printf '\n%s\n' "not ok 1 - unique select-color prefix failed"
     exit 0
 }
 
-echo "ok" 1 - "unique select-color prefix accepted"
+printf '\n%s\n' "ok 1 - unique select-color prefix accepted"
 
 exit 0

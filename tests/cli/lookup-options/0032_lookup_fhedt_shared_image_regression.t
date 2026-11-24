@@ -24,15 +24,15 @@ env_output="${artifact_dir}/0131-fhedt-shared-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     "-~fhedt:S0" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "fhedt:shared short conversion failed"
+    printf '\n%s\n' "not ok 1 - fhedt:shared short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=shared\|stored=1\|binding=lut_policy_fhedt_shared,lut_policy_fhedt_shared_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt shared short value was not stored"
+    printf '\n%s\n' "not ok 1 - fhedt shared short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*shared=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt shared did not reach the policy"
+    printf '\n%s\n' "not ok 1 - fhedt shared did not reach the policy"
     exit 0
 }
 
@@ -40,40 +40,40 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --env "SIXEL_LOOKUP_FHEDT_SHARED=0" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "fhedt:shared environment conversion failed"
+    printf '\n%s\n' "not ok 1 - fhedt:shared environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=shared\|stored=1\|binding=lut_policy_fhedt_shared,lut_policy_fhedt_shared_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt shared environment value was not stored"
+    printf '\n%s\n' "not ok 1 - fhedt shared environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*shared=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "environment shared missed the policy"
+    printf '\n%s\n' "not ok 1 - environment shared missed the policy"
     exit 0
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --precision-policy=float32 "-~fhedt:S0" "${input_image}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "fhedt shared float32 conversion failed"
+    printf '\n%s\n' "not ok 1 - fhedt shared float32 conversion failed"
     exit 0
 }
 case "${float_trace}" in *LSXLUT1\|*policy=fhedt\|precision=float32\|*shared=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt shared missed the float32 backend"
+    printf '\n%s\n' "not ok 1 - fhedt shared missed the float32 backend"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "fhedt shared outputs differ"
+    printf '\n%s\n' "not ok 1 - fhedt shared outputs differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "fhedt:shared preserves effective image output"
+printf '\n%s\n' "ok 1 - fhedt:shared preserves effective image output"
 exit 0

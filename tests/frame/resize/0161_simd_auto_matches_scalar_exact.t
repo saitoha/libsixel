@@ -27,28 +27,28 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     -w3 -h1 -rbilinear -jscalar:resize_precision=preserve \
     -o "${scalar_sixel}" \
     "${fixture_root}/bilinear-precision-input.ppm" || {
-    echo "not ok" 1 - "scalar resize failed"
+    printf '\n%s\n' "not ok 1 - scalar resize failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     -w3 -h1 -rbilinear -jauto:resize_precision=preserve \
     -o "${auto_sixel}" \
     "${fixture_root}/bilinear-precision-input.ppm" || {
-    echo "not ok" 1 - "automatic SIMD resize failed"
+    printf '\n%s\n' "not ok 1 - automatic SIMD resize failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_exact decode "${scalar_sixel}" \
     "${fixture_root}/bilinear-precision-preserve-expected.ppm" || {
-    echo "not ok" 1 - "scalar resize diverged from the oracle"
+    printf '\n%s\n' "not ok 1 - scalar resize diverged from the oracle"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_exact decode "${auto_sixel}" \
     "${fixture_root}/bilinear-precision-preserve-expected.ppm" || {
-    echo "not ok" 1 - "automatic SIMD resize diverged from scalar"
+    printf '\n%s\n' "not ok 1 - automatic SIMD resize diverged from scalar"
     exit 0
 }
 
-echo "ok" 1 - "automatic SIMD and scalar match the safe-tone oracle"
+printf '\n%s\n' "ok 1 - automatic SIMD and scalar match the safe-tone oracle"
 exit 0

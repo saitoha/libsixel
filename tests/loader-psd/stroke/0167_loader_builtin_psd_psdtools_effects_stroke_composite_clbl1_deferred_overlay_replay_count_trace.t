@@ -30,7 +30,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
@@ -49,16 +49,16 @@ ${trace_output}
 EOF
 
 test "${suppression_count}" -gt 0 || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 suppression trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing clbl=1 suppression trace"
     exit 0
 }
 
 test "${suppression_count}" -eq "${replay_count}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite deferred replay count does not match suppression count"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite deferred replay count does not match suppression count"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps clbl=1 deferred overlay replay count aligned"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps clbl=1 deferred overlay replay count aligned"
 exit 0

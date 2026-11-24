@@ -28,7 +28,7 @@ serial_fallback_seen=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     -L builtin -d none -p 16 -+ 3,3 -o "${serial_output}" "${input_image}" || {
-    echo "not ok 1 - transparent-offset serial encode failed"
+    printf '\n%s\n' "not ok 1 - transparent-offset serial encode failed"
     exit 0
 }
 
@@ -39,12 +39,12 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=6 \
     --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=0 \
     -L builtin -d none -p 16 -+ 3,3 -o "${parallel_output}" "${input_image}" || {
-    echo "not ok 1 - transparent-offset parallel encode failed"
+    printf '\n%s\n' "not ok 1 - transparent-offset parallel encode failed"
     exit 0
 }
 
 cmp -s "${serial_output}" "${parallel_output}" || {
-    echo "not ok 1 - transparent-offset parallel output differs"
+    printf '\n%s\n' "not ok 1 - transparent-offset parallel output differs"
     exit 0
 }
 
@@ -62,14 +62,14 @@ while IFS= read -r line; do
 done < "${log_file}"
 
 test "${dispatch_seen}" -eq 1 || {
-    echo "not ok 1 - transparent-offset did not dispatch encode jobs"
+    printf '\n%s\n' "not ok 1 - transparent-offset did not dispatch encode jobs"
     exit 0
 }
 
 test "${serial_fallback_seen}" -eq 0 || {
-    echo "not ok 1 - transparent-offset used the serial fallback"
+    printf '\n%s\n' "not ok 1 - transparent-offset used the serial fallback"
     exit 0
 }
 
-echo "ok 1 - transparent-offset uses parallel encode dispatch"
+printf '\n%s\n' "ok 1 - transparent-offset uses parallel encode dispatch"
 exit 0

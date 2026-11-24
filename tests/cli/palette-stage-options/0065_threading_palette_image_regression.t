@@ -24,11 +24,11 @@ env_output="${artifact_dir}/0182-threading-palette-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs --lookup-policy=none \
     "-=greedy:B6:Clatest" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "threading palette short conversion failed"
+    printf '\n%s\n' "not ok 1 - threading palette short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=palette\|stored=1\|binding=palette,palette_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading palette short value was not stored"
+    printf '\n%s\n' "not ok 1 - threading palette short value was not stored"
     exit 0
 }
 
@@ -36,30 +36,30 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs --lookup-policy=none \
     --env "SIXEL_ENCODER_THREADING_PALETTE=latest" \
     "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "threading palette environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading palette environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=palette\|stored=1\|binding=palette,palette_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading palette environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threading palette environment value was not stored"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "threading palette short and environment output differ"
+    printf '\n%s\n' "not ok 1 - threading palette short and environment output differ"
     exit 0
 }
 case "${env_trace}" in *"palette=latest palette_effective=frame"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - latest did not reach the effective frame path"
+    printf '\n%s\n' "not ok 1 - latest did not reach the effective frame path"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --lookup-policy=none \
     --threading-policy=greedy:B6:palette=latest "${input_image}" \
     >"${env_output}" || {
-    echo "not ok 1 - long latest conversion failed"
+    printf '\n%s\n' "not ok 1 - long latest conversion failed"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - compact and long latest outputs differ"
+    printf '\n%s\n' "not ok 1 - compact and long latest outputs differ"
     exit 0
 }
 env_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -67,23 +67,23 @@ env_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_ENCODER_THREADING_PALETTE=latest" \
     "-=greedy:B6:palette=frame" "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok 1 - explicit frame override conversion failed"
+    printf '\n%s\n' "not ok 1 - explicit frame override conversion failed"
     exit 0
 }
 case "${env_trace}" in *"palette=frame palette_effective=frame"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit frame did not override latest environment"
+    printf '\n%s\n' "not ok 1 - explicit frame did not override latest environment"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - latest fallback and explicit frame outputs differ"
+    printf '\n%s\n' "not ok 1 - latest fallback and explicit frame outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "threading palette preserves effective image output"
+printf '\n%s\n' "ok 1 - threading palette preserves effective image output"
 exit 0

@@ -14,10 +14,10 @@ set -v
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -C10 -djajuni "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "PNG inspection colour space failed"
+    printf '\n%s\n' "not ok 1 - PNG inspection colour space failed"
     exit 0
 }
 
-echo "ok" 1 - "PNG inspection sets colour space"
+printf '\n%s\n' "ok 1 - PNG inspection sets colour space"
 
 exit 0

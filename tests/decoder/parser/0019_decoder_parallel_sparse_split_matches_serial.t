@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0017_decoder_parallel_sparse_split_matches_serial" || {
-    echo "not ok 1 - 0017_decoder_parallel_sparse_split_matches_serial"
+    printf '\n%s\n' "not ok 1 - 0017_decoder_parallel_sparse_split_matches_serial"
     exit 0
 }
 
-echo "ok 1 - 0017_decoder_parallel_sparse_split_matches_serial"
+printf '\n%s\n' "ok 1 - 0017_decoder_parallel_sparse_split_matches_serial"
 exit 0

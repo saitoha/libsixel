@@ -9,9 +9,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     pruned 0 3 1 none || {
-    echo "not ok 1 - cielab extended hybrid pruning"
+    printf '\n%s\n' "not ok 1 - cielab extended hybrid pruning"
     exit 0
 }
 
-echo "ok 1 - cielab extended hybrid pruning"
+printf '\n%s\n' "ok 1 - cielab extended hybrid pruning"
 exit 0

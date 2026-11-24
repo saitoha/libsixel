@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/burkes-gpu/0007_reject_low_clamp" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - reject low clamp"
+    printf '\n%s\n' "not ok 1 - reject low clamp"
     exit 0
 }
-echo "ok 1 - reject low clamp"
+printf '\n%s\n' "ok 1 - reject low clamp"
 exit 0

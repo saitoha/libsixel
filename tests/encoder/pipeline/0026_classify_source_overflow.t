@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0054_classify_source_overflow" || {
-    echo "not ok 1 - classify source overflow"
+    printf '\n%s\n' "not ok 1 - classify source overflow"
     exit 0
 }
 
-echo "ok 1 - classify source overflow"
+printf '\n%s\n' "ok 1 - classify source overflow"
 exit 0

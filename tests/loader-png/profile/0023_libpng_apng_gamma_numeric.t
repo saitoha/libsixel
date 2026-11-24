@@ -11,8 +11,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract apng_gamma || {
-    echo "not ok 1 - libpng apng gamma numeric"
+    printf '\n%s\n' "not ok 1 - libpng apng gamma numeric"
     exit 0
 }
-echo "ok 1 - libpng apng gamma numeric"
+printf '\n%s\n' "ok 1 - libpng apng gamma numeric"
 exit 0

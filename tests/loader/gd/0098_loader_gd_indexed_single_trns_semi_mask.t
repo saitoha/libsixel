@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0011_loader_gd_pixelformat" "indexed_single_trns_semi_mask" || {
-    echo "not ok 1 - gd indexed_single_trns_semi_mask"
+    printf '\n%s\n' "not ok 1 - gd indexed_single_trns_semi_mask"
     exit 0
 }
 
-echo "ok 1 - gd indexed_single_trns_semi_mask"
+printf '\n%s\n' "ok 1 - gd indexed_single_trns_semi_mask"
 exit 0

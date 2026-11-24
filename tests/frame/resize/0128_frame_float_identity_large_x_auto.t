@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=auto \
     frame/0018_float_resampling identity_large_x 1 || {
-    echo "not ok 1 - float identity_large_x_auto"
+    printf '\n%s\n' "not ok 1 - float identity_large_x_auto"
     exit 0
 }
-echo "ok 1 - float identity_large_x_auto"
+printf '\n%s\n' "ok 1 - float identity_large_x_auto"
 exit 0

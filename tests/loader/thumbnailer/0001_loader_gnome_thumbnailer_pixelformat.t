@@ -22,14 +22,14 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
                 "loader/0016_loader_gnome_thumbnailer_pixelformat" || rc="$?"
 
 test "${rc-}" = 77 && {
-    echo "ok 1 - loader/0016_loader_gnome_thumbnailer_pixelformat # SKIP unavailable"
+    printf '\n%s\n' "ok 1 - loader/0016_loader_gnome_thumbnailer_pixelformat # SKIP unavailable"
     exit 0
 }
 
 test -n "${rc-}" && {
-    echo "not ok 1 - loader/0016_loader_gnome_thumbnailer_pixelformat"
+    printf '\n%s\n' "not ok 1 - loader/0016_loader_gnome_thumbnailer_pixelformat"
     exit 0
 }
 
-echo "ok 1 - loader/0016_loader_gnome_thumbnailer_pixelformat"
+printf '\n%s\n' "ok 1 - loader/0016_loader_gnome_thumbnailer_pixelformat"
 exit 0

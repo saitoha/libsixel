@@ -34,15 +34,15 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/snake-jpeg-16bit-lossless.six"
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg! "${input_jpeg}" -o "${output_sixel}" || {
-    echo "not ok" 1 - "forced libjpeg 16-bit JPEG decode failed"
+    printf '\n%s\n' "not ok 1 - forced libjpeg 16-bit JPEG decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "forced libjpeg 16-bit JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - forced libjpeg 16-bit JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "forced libjpeg 16-bit JPEG keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - forced libjpeg 16-bit JPEG keeps MS-SSIM ${lsqa_floor}"
 exit 0

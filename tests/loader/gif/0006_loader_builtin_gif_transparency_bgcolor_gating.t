@@ -27,7 +27,7 @@ default_output=$(
               -ldisable -S -T 1 -d fs:scan=raster \
               "${input_gif}"
 ) || {
-    echo "not ok" 1 - "builtin transparent GIF default decode failed"
+    printf '\n%s\n' "not ok 1 - builtin transparent GIF default decode failed"
     exit 0
 }
 
@@ -38,7 +38,7 @@ bgcolor_output=$(
               -ldisable -S -T 1 -d fs:scan=raster \
               "${input_gif}"
 ) || {
-    echo "not ok" 1 - "builtin transparent GIF with bgcolor decode failed"
+    printf '\n%s\n' "not ok 1 - builtin transparent GIF with bgcolor decode failed"
     exit 0
 }
 
@@ -48,18 +48,18 @@ bgcolor_line=${bgcolor_output%%"${nl}"*}
 case "${default_line}" in
     *"${keycolor_header}"*) ;;
     *)
-        echo "not ok" 1 - "builtin GIF default output is missing keycolor"
+        printf '\n%s\n' "not ok 1 - builtin GIF default output is missing keycolor"
         exit 0
         ;;
 esac
 
 case "${bgcolor_line}" in
     *"${keycolor_header}"*)
-        echo "not ok" 1 - "builtin GIF bgcolor output unexpectedly kept keycolor"
+        printf '\n%s\n' "not ok 1 - builtin GIF bgcolor output unexpectedly kept keycolor"
         exit 0
         ;;
     *) ;;
 esac
 
-echo "ok" 1 - "builtin GIF transparency keycolor is gated by bgcolor"
+printf '\n%s\n' "ok 1 - builtin GIF transparency keycolor is gated by bgcolor"
 exit 0

@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0119_run_repeat_packet" || {
-    echo "not ok 1 - run repeat packet"
+    printf '\n%s\n' "not ok 1 - run repeat packet"
     exit 0
 }
-echo "ok 1 - run repeat packet"
+printf '\n%s\n' "ok 1 - run repeat packet"
 exit 0

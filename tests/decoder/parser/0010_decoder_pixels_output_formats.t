@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0008_decoder_pixels_output_formats" || {
-    echo "not ok 1 - 0008_decoder_pixels_output_formats"
+    printf '\n%s\n' "not ok 1 - 0008_decoder_pixels_output_formats"
     exit 0
 }
 
-echo "ok 1 - 0008_decoder_pixels_output_formats"
+printf '\n%s\n' "ok 1 - 0008_decoder_pixels_output_formats"
 exit 0

@@ -14,12 +14,12 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0044_palette_launch_sync_sample || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - palette launch sync sample"
+    printf '\n%s\n' "not ok 1 - palette launch sync sample"
     exit 0
 }
-echo "ok 1 - palette launch sync sample"
+printf '\n%s\n' "ok 1 - palette launch sync sample"
 exit 0

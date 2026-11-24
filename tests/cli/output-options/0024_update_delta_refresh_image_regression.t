@@ -28,32 +28,32 @@ env_output="${artifact_dir}/0024_update_delta_refresh_image_regression-env-$$.si
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
     -dnone "-Zdelta:T8:J5" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok 1 - delta:refresh short conversion failed"
+    printf '\n%s\n' "not ok 1 - delta:refresh short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=refresh\|stored=1\|binding=refresh_frames,refresh_frames_override\|value=5**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:refresh short value was not stored"
+    printf '\n%s\n' "not ok 1 - delta:refresh short value was not stored"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
     --env "SIXEL_UPDATE_DELTA_REFRESH=5" -dnone -Z delta:T8 \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - delta:refresh environment conversion failed"
+    printf '\n%s\n' "not ok 1 - delta:refresh environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=refresh\|stored=1\|binding=refresh_frames,refresh_frames_override\|value=5**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:refresh environment value was not stored"
+    printf '\n%s\n' "not ok 1 - delta:refresh environment value was not stored"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - delta:refresh output differs"
+    printf '\n%s\n' "not ok 1 - delta:refresh output differs"
     exit 0
 }
 # This test owns exact option-route equivalence and consumer selection.
 test -s "${short_output}" || {
-    echo "not ok 1 - option-route output is empty"
+    printf '\n%s\n' "not ok 1 - option-route output is empty"
     exit 0
 }
-echo "ok 1 - delta:refresh preserves image output"
+printf '\n%s\n' "ok 1 - delta:refresh preserves image output"
 exit 0

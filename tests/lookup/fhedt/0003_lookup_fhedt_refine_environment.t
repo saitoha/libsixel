@@ -15,13 +15,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --env "SIXEL_LOOKUP_FHEDT_REFINE=0" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "FHEDT refine environment conversion failed"
+    printf '\n%s\n' "not ok 1 - FHEDT refine environment conversion failed"
     exit 0
 }
 case "${trace}" in *LSXLUT1\|policy=fhedt\|*refine=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "FHEDT refine environment was not consumed"
+    printf '\n%s\n' "not ok 1 - FHEDT refine environment was not consumed"
     exit 0
 }
 
-echo "ok" 1 - "FHEDT refine environment remains effective"
+printf '\n%s\n' "ok 1 - FHEDT refine environment remains effective"
 exit 0

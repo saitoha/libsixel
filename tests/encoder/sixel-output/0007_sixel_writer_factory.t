@@ -8,9 +8,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "sixel-writer/0001_sixel_writer_factory" || {
-    echo "not ok 1 - 0001_sixel_writer_factory"
+    printf '\n%s\n' "not ok 1 - 0001_sixel_writer_factory"
     exit 0
 }
 
-echo "ok 1 - 0001_sixel_writer_factory"
+printf '\n%s\n' "ok 1 - 0001_sixel_writer_factory"
 exit 0

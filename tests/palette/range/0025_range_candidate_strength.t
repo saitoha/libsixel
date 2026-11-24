@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/adaptive_range/0025_range_candidate_strength" || {
-    echo "not ok 1 - range candidate strength"
+    printf '\n%s\n' "not ok 1 - range candidate strength"
     exit 0
 }
-echo "ok 1 - range candidate strength"
+printf '\n%s\n' "ok 1 - range candidate strength"
 exit 0

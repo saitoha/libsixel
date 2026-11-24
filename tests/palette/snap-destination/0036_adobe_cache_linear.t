@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/destination_snap/0001_destination grid 0 3 1 || {
-    echo "not ok 1 - adobe cache grid in linear: independent nearest/reversible values"
+    printf '\n%s\n' "not ok 1 - adobe cache grid in linear: independent nearest/reversible values"
     exit 0
 }
 
-echo "ok 1 - adobe cache grid in linear: independent nearest/reversible values"
+printf '\n%s\n' "ok 1 - adobe cache grid in linear: independent nearest/reversible values"
 exit 0

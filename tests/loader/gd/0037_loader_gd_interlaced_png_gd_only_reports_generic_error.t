@@ -19,21 +19,21 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-adam7-rgb.png" \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced gd loader unexpectedly accepted interlaced PNG"
+    printf '\n%s\n' "not ok 1 - forced gd loader unexpectedly accepted interlaced PNG"
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced gd interlaced PNG missed generic decode error"
+    printf '\n%s\n' "not ok 1 - forced gd interlaced PNG missed generic decode error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "forced gd interlaced PNG should not report GD error"
+    printf '\n%s\n' "not ok 1 - forced gd interlaced PNG should not report GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced gd interlaced PNG failure reports delegated error"
+printf '\n%s\n' "ok 1 - forced gd interlaced PNG failure reports delegated error"
 exit 0

@@ -20,7 +20,7 @@ P3
 180 180 180
 PPM
 ) || {
-    echo "not ok 1 - linear working mapfile encode failed"
+    printf '\n%s\n' "not ok 1 - linear working mapfile encode failed"
     exit 0
 }
 # In linear light, gray 180 is closer to palette entry one (squared
@@ -28,7 +28,7 @@ PPM
 # incorrectly chooses entry zero. Wire definitions remain sRGB percentages.
 case "${stream}" in
     *'#0;2;5;13;22#1;2;78;82;86#1@'*) ;;
-    *) echo "not ok 1 - mapfile was reinterpreted as linear RGB"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - mapfile was reinterpreted as linear RGB"; exit 0 ;;
 esac
-echo "ok 1 - sRGB mapfile applies the expected pixel in linear workspace"
+printf '\n%s\n' "ok 1 - sRGB mapfile applies the expected pixel in linear workspace"
 exit 0

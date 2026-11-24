@@ -16,8 +16,8 @@ export SIXEL_ENCODER_THREADING_POLICY
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=1
 export SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "colorspace/parallel/0013_worker_memo_lifetime" || {
-    echo "not ok 1 - worker memo lifetime"
+    printf '\n%s\n' "not ok 1 - worker memo lifetime"
     exit 0
 }
-echo "ok 1 - worker memo lifetime"
+printf '\n%s\n' "ok 1 - worker memo lifetime"
 exit 0

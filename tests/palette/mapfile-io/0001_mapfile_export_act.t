@@ -18,7 +18,7 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six" "${snake_png}" || {
-    echo "not ok" 1 - "ACT palette export failed"
+    printf '\n%s\n' "not ok 1 - ACT palette export failed"
     exit 0
 }
 
@@ -27,10 +27,10 @@ test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
     act_size=$(stat -c %s "${act_palette}")
 }
 test "${act_size}" -eq 772 || {
-    echo "not ok" 1 - "ACT palette length mismatch (${act_size})"
+    printf '\n%s\n' "not ok 1 - ACT palette length mismatch (${act_size})"
     exit 0
 }
 
-echo "ok" 1 - "ACT palette exported with correct length"
+printf '\n%s\n' "ok 1 - ACT palette exported with correct length"
 
 exit 0

@@ -26,8 +26,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${TOP_SRCDIR}/tests/data/colormgmt/reference/tiff/palette/colormap-unmanaged.ppm" \
     "${TOP_SRCDIR}/tests/data/colormgmt/input/tiff/palette/img_tiff_palette_icc0_wp0_pc1_trc1.tiff" 'libtiff:cms_engine=auto!' 0.004 || {
-    echo "not ok 1 - TIFF color metadata samples differ from independent values"
+    printf '\n%s\n' "not ok 1 - TIFF color metadata samples differ from independent values"
     exit 0
 }
-echo "ok 1 - TIFF color metadata samples match independent values"
+printf '\n%s\n' "ok 1 - TIFF color metadata samples match independent values"
 exit 0

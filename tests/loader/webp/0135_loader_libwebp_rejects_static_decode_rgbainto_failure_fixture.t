@@ -19,19 +19,19 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_static_decode_rgbainto_failure.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted static RGBA decode-failure fixture"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted static RGBA decode-failure fixture"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *load_webp:\ WebPDecodeRGBAInto\ failed.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected WebPDecodeRGBAInto failure diagnostic was missing"
+    printf '\n%s\n' "not ok 1 - expected WebPDecodeRGBAInto failure diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced libwebp loader reports WebPDecodeRGBAInto failure for static alpha decode corruption"
+printf '\n%s\n' "ok 1 - forced libwebp loader reports WebPDecodeRGBAInto failure for static alpha decode corruption"
 
 exit 0

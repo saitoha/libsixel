@@ -12,9 +12,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_COREGRAPHICS_HUGE_DIMENSION_REJECT=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (huge dimension metadata reject)"
+    printf '\n%s\n' "not ok 1 - loader/0008_loader_coregraphics_pixelformat (huge dimension metadata reject)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (huge dimension metadata reject)"
+printf '\n%s\n' "ok 1 - loader/0008_loader_coregraphics_pixelformat (huge dimension metadata reject)"
 exit 0

@@ -27,7 +27,7 @@ suffix=fill_ptfl_descriptor
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
-        echo "not ok" 1 - "PSB mode7 CMYK32 non-pixel malformed ICC decode failed for ${suffix}: ${trace_log}"
+        printf '\n%s\n' "not ok 1 - PSB mode7 CMYK32 non-pixel malformed ICC decode failed for ${suffix}: ${trace_log}"
         status=1
         exit 0
     }
@@ -36,12 +36,12 @@ suffix=fill_ptfl_descriptor
         *"malformed ICC resource section; skipping ICC conversion"*)
             ;;
         *)
-            echo "not ok" 1 - "PSB mode7 CMYK32 non-pixel malformed ICC trace is missing for ${suffix}"
+            printf '\n%s\n' "not ok 1 - PSB mode7 CMYK32 non-pixel malformed ICC trace is missing for ${suffix}"
             status=1
             exit 0
             ;;
     esac
 test "${status}" -eq 0 || exit 0
 
-echo "ok" 1 - "PSB mode7 CMYK32 non-pixel bad/malformed ICC rotation contract is preserved"
+printf '\n%s\n' "ok 1 - PSB mode7 CMYK32 non-pixel bad/malformed ICC rotation contract is preserved"
 exit 0

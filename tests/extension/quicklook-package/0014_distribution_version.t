@@ -13,13 +13,13 @@ set -v
 
 version=$(/usr/bin/plutil -extract packageVersion raw -o - \
     "${TOP_BUILDDIR}/quicklook-extension/package/payload-manifest.json") || {
-    echo "not ok 1 - Cannot read distribution version"
+    printf '\n%s\n' "not ok 1 - Cannot read distribution version"
     exit 0
 }
 test "$version" = "${QUICKLOOK_PACKAGE_VERSION:?}" || {
-    echo "not ok 1 - Configured distribution version mismatch"
+    printf '\n%s\n' "not ok 1 - Configured distribution version mismatch"
     exit 0
 }
 
-echo "ok 1 - Distribution version equals the configured build number."
+printf '\n%s\n' "ok 1 - Distribution version equals the configured build number."
 exit 0

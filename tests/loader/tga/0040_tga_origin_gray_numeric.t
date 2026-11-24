@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0240_tga_origin_gray_numeric" 1>&2 || {
-    echo "not ok 1 - Read grayscale palette entries directly after the image ID"
+    printf '\n%s\n' "not ok 1 - Read grayscale palette entries directly after the image ID"
     exit 0
 }
-echo "ok 1 - Read grayscale palette entries directly after the image ID"
+printf '\n%s\n' "ok 1 - Read grayscale palette entries directly after the image ID"
 exit 0

@@ -12,8 +12,8 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none -m PSNR
   "GMSD": 0.000000,
   "PSNR_Y": 99.000000
 }'; } || {
-    echo "not ok 1 - Repeated metrics produce named JSON"
+    printf '\n%s\n' "not ok 1 - Repeated metrics produce named JSON"
     exit 0
 }
-echo "ok 1 - Repeated metrics produce named JSON"
+printf '\n%s\n' "ok 1 - Repeated metrics produce named JSON"
 exit 0

@@ -23,7 +23,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_file}" \
               --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
               --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
               -v -o "${out_file}" "${ppm_tall}" || {
-    echo "not ok" 1 - "row_ready span conversion failed"
+    printf '\n%s\n' "not ok 1 - row_ready span conversion failed"
     exit 0
 }
 
@@ -59,14 +59,14 @@ while IFS= read -r line; do
 done < "${log_file}"
 
 test "${row_ready_seen}" -eq 1 || {
-    echo "ok" 1 - "row_ready span unavailable in serial environment"
+    printf '\n%s\n' "ok 1 - row_ready span unavailable in serial environment"
     exit 0
 }
 
 test "${dither_threads}" -ge 1 || {
-    echo "not ok" 1 - "row_ready spans multiple bands"
+    printf '\n%s\n' "not ok 1 - row_ready spans multiple bands"
     exit 0
 }
 
-echo "ok" 1 - "row_ready spans multiple bands"
+printf '\n%s\n' "ok 1 - row_ready spans multiple bands"
 exit 0

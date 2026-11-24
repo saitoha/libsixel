@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     -y'file:DC:/clipboard-test' -H >/dev/null || {
-    echo "not ok" 1 - "clipboard directory short syntax split its drive"
+    printf '\n%s\n' "not ok 1 - clipboard directory short syntax split its drive"
     exit 0
 }
 
-echo "ok" 1 - "clipboard directory short syntax preserves Windows paths"
+printf '\n%s\n' "ok 1 - clipboard directory short syntax preserves Windows paths"
 exit 0

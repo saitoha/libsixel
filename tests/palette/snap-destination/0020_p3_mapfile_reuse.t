@@ -10,8 +10,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0055_p3_mapfile reuse \
     "${TOP_SRCDIR}/tests/data/inputs/mapfile/p3-fixed.pal" || {
-    echo "not ok 1 - P3 mapfile reuse"
+    printf '\n%s\n' "not ok 1 - P3 mapfile reuse"
     exit 0
 }
-echo "ok 1 - P3 mapfile reuse"
+printf '\n%s\n' "ok 1 - P3 mapfile reuse"
 exit 0

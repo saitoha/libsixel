@@ -17,15 +17,15 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -L 'builtin:cms_engine=builtin!' --precision-policy=auto \
     -o/dev/null "${input_image}" 2>&1) || {
-    echo "not ok 1 - automatic CMS conversion failed"
+    printf '\n%s\n' "not ok 1 - automatic CMS conversion failed"
     printf '# %s\n' "${trace}"
     exit 0
 }
 case "${trace}" in *'selected=lookup/vptree.float32'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - automatic precision narrowed CMS output"
+    printf '\n%s\n' "not ok 1 - automatic precision narrowed CMS output"
     printf '# %s\n' "${trace}"
     exit 0
 }
 
-echo "ok 1 - automatic precision keeps float application after CMS"
+printf '\n%s\n' "ok 1 - automatic precision keeps float application after CMS"
 exit 0

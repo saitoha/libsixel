@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/mahalanobis/0002_mah_linear_range || {
-    echo "not ok 1 - mahalanobis linear range"
+    printf '\n%s\n' "not ok 1 - mahalanobis linear range"
     exit 0
 }
 
-echo "ok 1 - mahalanobis linear range"
+printf '\n%s\n' "ok 1 - mahalanobis linear range"
 exit 0

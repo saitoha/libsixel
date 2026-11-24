@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0033_quantizer_capabilities" || {
-    echo "not ok 1 - quantizer capabilities"
+    printf '\n%s\n' "not ok 1 - quantizer capabilities"
     exit 0
 }
 
-echo "ok 1 - quantizer capabilities"
+printf '\n%s\n' "ok 1 - quantizer capabilities"
 exit 0

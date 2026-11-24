@@ -22,15 +22,15 @@ P3
 0 0 255   255 255 255
 PPM
 ) || {
-    echo "not ok 1 - OR offset encode failed"
+    printf '\n%s\n' "not ok 1 - OR offset encode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/or_offset_cli" "${output}" || {
-    echo "not ok 1 - OR offset pixels or geometry differ"
+    printf '\n%s\n' "not ok 1 - OR offset pixels or geometry differ"
     exit 0
 }
 
-echo "ok 1 - OR offset preserves every source and margin pixel"
+printf '\n%s\n' "ok 1 - OR offset preserves every source and margin pixel"
 exit 0

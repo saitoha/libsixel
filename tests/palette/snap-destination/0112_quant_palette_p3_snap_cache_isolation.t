@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0001_grid isolation || {
-    echo "not ok 1 - P3 grid cache isolation"
+    printf '\n%s\n' "not ok 1 - P3 grid cache isolation"
     exit 0
 }
 
-echo "ok 1 - P3 grid cache isolation"
+printf '\n%s\n' "ok 1 - P3 grid cache isolation"
 exit 0

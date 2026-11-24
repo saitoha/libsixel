@@ -7,7 +7,7 @@ echo "1..1"
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "ok 1 # SKIP img2sixel disabled"
+    printf '\n%s\n' "ok 1 # SKIP img2sixel disabled"
     exit 0
 }
 set +e
@@ -22,9 +22,9 @@ P3
 255 0 0  0 255 0  0 0 255
 PPM
 test "$?" = 0 || {
-    echo "not ok 1 - PNG snapshot pixels and profile"
+    printf '\n%s\n' "not ok 1 - PNG snapshot pixels and profile"
     exit 0
 }
 set -e
-echo "ok 1 - PNG snapshot p3 rgb pixels"
+printf '\n%s\n' "ok 1 - PNG snapshot p3 rgb pixels"
 exit 0

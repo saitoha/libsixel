@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0001_grid seed 0 || {
-    echo "not ok 1 - seed legacy values"
+    printf '\n%s\n' "not ok 1 - seed legacy values"
     exit 0
 }
-echo "ok 1 - seed legacy values"
+printf '\n%s\n' "ok 1 - seed legacy values"
 exit 0

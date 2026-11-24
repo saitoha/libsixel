@@ -6,8 +6,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0040_cli_color_job library-auto || {
-    echo "not ok 1 - color controller library-auto"
+    printf '\n%s\n' "not ok 1 - color controller library-auto"
     exit 0
 }
-echo "ok 1 - color controller library-auto"
+printf '\n%s\n' "ok 1 - color controller library-auto"
 exit 0

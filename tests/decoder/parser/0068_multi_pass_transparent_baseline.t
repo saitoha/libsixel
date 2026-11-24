@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0060_multi_pass_transparent_baseline" || {
-    echo "not ok 1 - transparent baseline"
+    printf '\n%s\n' "not ok 1 - transparent baseline"
     exit 0
 }
 
-echo "ok 1 - transparent baseline"
+printf '\n%s\n' "ok 1 - transparent baseline"
 exit 0

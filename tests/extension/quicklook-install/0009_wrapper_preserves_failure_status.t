@@ -17,9 +17,9 @@ set +e
 status=$?
 set -e
 test "$status" = 1 || {
-    echo "not ok 1 - Wrapper lost the failing command status"
+    printf '\n%s\n' "not ok 1 - Wrapper lost the failing command status"
     exit 0
 }
 
-echo "ok 1 - Wrapper preserves the native-tool failure status."
+printf '\n%s\n' "ok 1 - Wrapper preserves the native-tool failure status."
 exit 0

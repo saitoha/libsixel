@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0044_query_blue_float_post" >/dev/null || {
-    echo "not ok 1 - query blue float post"
+    printf '\n%s\n' "not ok 1 - query blue float post"
     exit 0
 }
 
-echo "ok 1 - query blue float post"
+printf '\n%s\n' "ok 1 - query blue float post"
 exit 0

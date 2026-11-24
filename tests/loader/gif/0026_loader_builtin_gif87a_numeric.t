@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0071_loader_builtin_gif87a_numeric" || {
-    echo "not ok 1 - GIF87a signature and pixels"
+    printf '\n%s\n' "not ok 1 - GIF87a signature and pixels"
     exit 0
 }
 
-echo "ok 1 - GIF87a signature and pixels"
+printf '\n%s\n' "ok 1 - GIF87a signature and pixels"
 exit 0

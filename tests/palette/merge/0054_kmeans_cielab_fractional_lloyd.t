@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/merge_float/0001_merge_contract fractional 0 3 3 || {
-    echo "not ok 1 - K-means cielab fractional population with Lloyd"
+    printf '\n%s\n' "not ok 1 - K-means cielab fractional population with Lloyd"
     exit 0
 }
 
-echo "ok 1 - K-means cielab fractional population with Lloyd"
+printf '\n%s\n' "ok 1 - K-means cielab fractional population with Lloyd"
 exit 0

@@ -7,12 +7,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/indexed/0184_core_gpu_body" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP thread support unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP thread support unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - core gpu body'
+    printf '\n%s\n' 'not ok 1 - core gpu body'
     exit 0
 }
-echo 'ok 1 - core gpu body'
+printf '\n%s\n' 'ok 1 - core gpu body'
 exit 0

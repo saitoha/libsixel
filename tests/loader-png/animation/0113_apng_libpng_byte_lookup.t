@@ -23,7 +23,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - libpng APNG conversion failed"
+    printf '\n%s\n' "not ok 1 - libpng APNG conversion failed"
     exit 0
 }
 case "${trace}" in
@@ -31,9 +31,9 @@ case "${trace}" in
     *selected=lookup/*.8bit*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - libpng APNG frames select byte lookup"
+    printf '\n%s\n' "not ok 1 - libpng APNG frames select byte lookup"
     exit 0
 }
 
-echo "ok 1 - libpng APNG frames select byte lookup"
+printf '\n%s\n' "ok 1 - libpng APNG frames select byte lookup"
 exit 0

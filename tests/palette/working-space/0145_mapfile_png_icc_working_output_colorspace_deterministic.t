@@ -39,18 +39,18 @@ actual_palette=$(
         -L builtin! --working-colorspace=linear --output-colorspace=linear \
         -m "${mapfile_png}" -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "ICC PNG mapfile export failed with -W/-U linear"
+    printf '\n%s\n' "not ok 1 - ICC PNG mapfile export failed with -W/-U linear"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "ICC PNG mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - ICC PNG mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "ICC PNG mapfile converted palette changed under -W/-U linear"
+    printf '\n%s\n' "not ok 1 - ICC PNG mapfile converted palette changed under -W/-U linear"
     exit 0
 }
 
-echo "ok" 1 - "ICC PNG mapfile colorspace conversion is deterministic"
+printf '\n%s\n' "ok 1 - ICC PNG mapfile colorspace conversion is deterministic"
 exit 0

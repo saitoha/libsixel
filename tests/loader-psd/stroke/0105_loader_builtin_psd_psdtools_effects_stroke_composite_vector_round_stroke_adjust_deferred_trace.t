@@ -30,20 +30,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite round strokeAdjust on decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite round strokeAdjust on decode failed"
     exit 0
 }
 
 diag_line_on=${trace_output}
 test -n "${diag_line_on}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing on diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing on diagnostic header"
     exit 0
 }
 
 case "${diag_line_on}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite on diagnostic header is malformed"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite on diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -51,8 +51,8 @@ esac
 case "${diag_line_on}" in
     *FX_STROKE_ADJUST_BASE*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite did not enable base strokeAdjust code for round join"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite did not enable base strokeAdjust code for round join"
         exit 0
         ;;
 esac
@@ -60,12 +60,12 @@ esac
 case "${diag_line_on}" in
     *FX_STROKE_ADJUST_DEFER*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite did not enable deferred strokeAdjust code for round join"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite did not enable deferred strokeAdjust code for round join"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite enables deferred round-join strokeAdjust code"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite enables deferred round-join strokeAdjust code"
 exit 0

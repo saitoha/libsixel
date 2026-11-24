@@ -32,20 +32,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -53,7 +53,7 @@ esac
 case "${diag_line}" in
     *FX_DRSH_OFFSET_SEM*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_DRSH_OFFSET_SEM"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_DRSH_OFFSET_SEM"
         exit 0
         ;;
 esac
@@ -61,19 +61,19 @@ esac
 case "${diag_line}" in
     *FX_DRSH_INACTIVE_PARSE*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_DRSH_INACTIVE_PARSE"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_DRSH_INACTIVE_PARSE"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_DEFERRED_OUTER_CLIP*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted FX_DEFERRED_OUTER_CLIP"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted FX_DEFERRED_OUTER_CLIP"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps DrSh shadow-offset inactive code contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps DrSh shadow-offset inactive code contract"
 exit 0

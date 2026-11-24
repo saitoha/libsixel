@@ -21,9 +21,9 @@ set -v
 # This test intentionally accepts both outcomes and only checks robustness.
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/truncated.heic" >/dev/null && {
-    echo "ok" 1 - "coregraphics truncated HEIC decode completed without crash"
+    printf '\n%s\n' "ok 1 - coregraphics truncated HEIC decode completed without crash"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics truncated HEIC decode rejected without crash"
+printf '\n%s\n' "ok 1 - coregraphics truncated HEIC decode rejected without crash"
 exit 0

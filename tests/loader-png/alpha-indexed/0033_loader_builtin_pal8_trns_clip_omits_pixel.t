@@ -20,7 +20,7 @@ omitted_then_painted=0
 clip_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -c2x1+0+0 "${input_png}") || {
-    echo "not ok 1 - clipped pal8 transparent output failed"
+    printf '\n%s\n' "not ok 1 - clipped pal8 transparent output failed"
     exit 0
 }
 
@@ -33,9 +33,9 @@ case "${clip_out}" in
 esac
 
 test "${omitted_then_painted}" = 1 || {
-    echo "not ok 1 - clipped output did not omit transparent first pixel"
+    printf '\n%s\n' "not ok 1 - clipped output did not omit transparent first pixel"
     exit 0
 }
 
-echo "ok 1 - clipped promoted input retains omitted transparent coverage"
+printf '\n%s\n' "ok 1 - clipped promoted input retains omitted transparent coverage"
 exit 0

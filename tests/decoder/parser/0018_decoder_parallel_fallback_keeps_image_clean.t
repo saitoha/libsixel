@@ -15,9 +15,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0016_decoder_parallel_fallback_keeps_image_clean" || {
-    echo "not ok 1 - 0016_decoder_parallel_fallback_keeps_image_clean"
+    printf '\n%s\n' "not ok 1 - 0016_decoder_parallel_fallback_keeps_image_clean"
     exit 0
 }
 
-echo "ok 1 - 0016_decoder_parallel_fallback_keeps_image_clean"
+printf '\n%s\n' "ok 1 - 0016_decoder_parallel_fallback_keeps_image_clean"
 exit 0

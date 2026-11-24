@@ -24,9 +24,9 @@ bin_dir="${template_root}/bin"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 - "evince stdout workaround path failed"
+    printf '\n%s\n' "not ok 1 - evince stdout workaround path failed"
     exit 0
 }
 
-echo "ok" 1 - "evince stdout workaround path succeeds"
+printf '\n%s\n' "ok 1 - evince stdout workaround path succeeds"
 exit 0

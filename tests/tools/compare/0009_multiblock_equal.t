@@ -5,8 +5,8 @@ set -eux
 echo '1..1'
 set -v
 "$SIXEL_TEST_COMPARE" -s "$TOP_SRCDIR/images/snake.png" "$TOP_SRCDIR/images/snake.png" || {
-    echo 'not ok 1 - files larger than the comparison buffer compare equal'
+    printf '\n%s\n' 'not ok 1 - files larger than the comparison buffer compare equal'
     exit 0
 }
-echo 'ok 1 - files larger than the comparison buffer compare equal'
+printf '\n%s\n' 'ok 1 - files larger than the comparison buffer compare equal'
 exit 0

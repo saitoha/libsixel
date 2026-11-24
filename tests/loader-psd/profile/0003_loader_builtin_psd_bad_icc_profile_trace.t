@@ -22,7 +22,7 @@ case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader was not attempted"
+        printf '\n%s\n' "not ok 1 - builtin loader was not attempted"
         exit 0
         ;;
 esac
@@ -31,7 +31,7 @@ case "${trace_log}" in
     *"libsixel: builtin PSD: embedded ICC conversion failed"*)
         ;;
     *)
-        echo "not ok" 1 - "missing PSD embedded-ICC conversion failure trace"
+        printf '\n%s\n' "not ok 1 - missing PSD embedded-ICC conversion failure trace"
         exit 0
         ;;
 esac
@@ -40,10 +40,10 @@ case "${trace_log}" in
     *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader did not finish successfully"
+        printf '\n%s\n' "not ok 1 - builtin loader did not finish successfully"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin PSD logs ICC conversion failure for invalid profile bytes"
+printf '\n%s\n' "ok 1 - builtin PSD logs ICC conversion failure for invalid profile bytes"
 exit 0

@@ -25,12 +25,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:N1!" -w16 -h16 "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "pnm_trailing_data short conversion failed"
+    printf '\n%s\n' "not ok 1 - pnm_trailing_data short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=pnm_trailing_data\|stored=1\|binding=builtin_pnm_trailing_data\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "pnm_trailing_data short value was not stored"
+    printf '\n%s\n' "not ok 1 - pnm_trailing_data short value was not stored"
     exit 0
 }
 
@@ -39,33 +39,33 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_PNM_ALLOW_TRAILING_DATA=1" \
     "-Lbuiltin!" -w16 -h16 "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "pnm_trailing_data environment conversion failed"
+    printf '\n%s\n' "not ok 1 - pnm_trailing_data environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=pnm_trailing_data\|stored=1\|binding=builtin_pnm_trailing_data\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "pnm_trailing_data environment value was not stored"
+    printf '\n%s\n' "not ok 1 - pnm_trailing_data environment value was not stored"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:N0!" -w16 -h16 "${input_image}" \
     >/dev/null && {
-    echo "not ok" 1 - "pnm_trailing_data disabled control unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - pnm_trailing_data disabled control unexpectedly succeeded"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "pnm_trailing_data short and env output differ"
+    printf '\n%s\n' "not ok 1 - pnm_trailing_data short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "pnm_trailing_data preserves image output"
+printf '\n%s\n' "ok 1 - pnm_trailing_data preserves image output"
 exit 0

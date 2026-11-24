@@ -23,7 +23,7 @@ output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_per_loader_alias_ref_cms0.six"
 output_override_off="${ARTIFACT_LOCAL_DIR}/cms_per_loader_alias_override_off.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
-    echo "not ok" 1 - "cms=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=0 reference decode failed"
     exit 0
 }
 
@@ -31,14 +31,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=off" \
     -Llibwebp! "${input_webp}" >"${output_override_off}" || {
-    echo "not ok" 1 - "per-loader off alias decode failed"
+    printf '\n%s\n' "not ok 1 - per-loader off alias decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_cms0}" "${output_override_off}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=off did not override global auto"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_LIBWEBP_CMS_ENGINE=off did not override global auto"
     exit 0
 }
-echo "ok" 1 - "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=off overrides global auto"
+printf '\n%s\n' "ok 1 - SIXEL_LOADER_LIBWEBP_CMS_ENGINE=off overrides global auto"
 
 exit 0

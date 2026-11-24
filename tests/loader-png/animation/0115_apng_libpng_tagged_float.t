@@ -24,7 +24,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     --cms-engine=none \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2_gama.png" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - tagged libpng APNG conversion failed"
+    printf '\n%s\n' "not ok 1 - tagged libpng APNG conversion failed"
     exit 0
 }
 case "${trace}" in
@@ -32,9 +32,9 @@ case "${trace}" in
     *selected=lookup/*.float32*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - color-tagged APNG keeps float lookup without CMS"
+    printf '\n%s\n' "not ok 1 - color-tagged APNG keeps float lookup without CMS"
     exit 0
 }
 
-echo "ok 1 - color-tagged APNG keeps float lookup without CMS"
+printf '\n%s\n' "ok 1 - color-tagged APNG keeps float lookup without CMS"
 exit 0

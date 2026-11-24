@@ -28,26 +28,26 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 suppression trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing clbl=1 suppression trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ replaying\ deferred\ clbl=1\ overlay\ entry\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred overlay replay trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred overlay replay trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ replacing\ deferred\ clbl=1\ overlay\ replay\ entry\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite emitted deferred overlay replay replacement trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite emitted deferred overlay replay replacement trace"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps clbl=1 deferred overlay replay replacement disabled"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps clbl=1 deferred overlay replay replacement disabled"
 exit 0

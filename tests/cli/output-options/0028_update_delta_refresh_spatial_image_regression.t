@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
-    echo "ok 1 # SKIP threading is disabled"
+    printf '\n%s\n' "ok 1 # SKIP threading is disabled"
     exit 0
 }
 
@@ -32,32 +32,32 @@ env_output="${artifact_dir}/0028_update_delta_refresh_spatial_image_regression-e
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
     -dnone "-Zdelta:T48:J5:L4:A1:G1" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok 1 - delta:refresh_spatial short conversion failed"
+    printf '\n%s\n' "not ok 1 - delta:refresh_spatial short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=refresh_spatial\|stored=1\|binding=refresh_spatial,refresh_spatial_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:refresh_spatial short value was not stored"
+    printf '\n%s\n' "not ok 1 - delta:refresh_spatial short value was not stored"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! \
     --env "SIXEL_UPDATE_DELTA_REFRESH_SPATIAL=1" -dnone -Z delta:T48:J5:L4:A1 \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - delta:refresh_spatial environment conversion failed"
+    printf '\n%s\n' "not ok 1 - delta:refresh_spatial environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=refresh_spatial\|stored=1\|binding=refresh_spatial,refresh_spatial_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:refresh_spatial environment value was not stored"
+    printf '\n%s\n' "not ok 1 - delta:refresh_spatial environment value was not stored"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - delta:refresh_spatial output differs"
+    printf '\n%s\n' "not ok 1 - delta:refresh_spatial output differs"
     exit 0
 }
 # This test owns exact option-route equivalence and consumer selection.
 test -s "${short_output}" || {
-    echo "not ok 1 - option-route output is empty"
+    printf '\n%s\n' "not ok 1 - option-route output is empty"
     exit 0
 }
-echo "ok 1 - delta:refresh_spatial preserves image output"
+printf '\n%s\n' "ok 1 - delta:refresh_spatial preserves image output"
 exit 0

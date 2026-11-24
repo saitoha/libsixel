@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check component-bundle-version \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Component version guards name all fixed bundles."
+    printf '\n%s\n' "not ok 1 - Component version guards name all fixed bundles."
     exit 0
 }
 
-echo "ok 1 - Component version guards name all fixed bundles."
+printf '\n%s\n' "ok 1 - Component version guards name all fixed bundles."
 exit 0

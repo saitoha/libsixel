@@ -28,15 +28,15 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ using\ post-effect\ offscreen\ group\ backdrop\ for\ deferred\ stroke\ blend**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred post-effect stroke backdrop trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred post-effect stroke backdrop trace"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred stroke post-effect backdrop contract"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps deferred stroke post-effect backdrop contract"
 exit 0

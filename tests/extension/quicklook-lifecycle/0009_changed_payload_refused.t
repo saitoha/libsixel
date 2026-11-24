@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_FIXTURE}" 'changed-payload' 'refused-before-mutation' || {
-    echo "not ok 1 - Changed payload refused."
+    printf '\n%s\n' "not ok 1 - Changed payload refused."
     exit 0
 }
-echo "ok 1 - Changed payload refused."
+printf '\n%s\n' "ok 1 - Changed payload refused."
 exit 0

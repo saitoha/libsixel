@@ -16,22 +16,22 @@ mapfile="${TOP_SRCDIR}/images/map8.six"
 
 sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin -m "${mapfile}" -o - "${input_image}") || {
-    echo "not ok" 1 - "mapfile SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - mapfile SIXEL palette slot range changed"
     exit 0
 }
 
 case "${sixel_output}" in *#0\;2\;60\;0\;0*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "mapfile SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - mapfile SIXEL palette slot range changed"
     exit 0
 }
 case "${sixel_output}" in *#7\;2\;0\;0\;0*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "mapfile SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - mapfile SIXEL palette slot range changed"
     exit 0
 }
 case "${sixel_output}" in *#8\;2\;*) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "mapfile SIXEL palette slot range changed"
+    printf '\n%s\n' "not ok 1 - mapfile SIXEL palette slot range changed"
     exit 0
 }
 
-echo "ok" 1 - "mapfile SIXEL output defines slots 0 through 7"
+printf '\n%s\n' "ok 1 - mapfile SIXEL output defines slots 0 through 7"
 exit 0

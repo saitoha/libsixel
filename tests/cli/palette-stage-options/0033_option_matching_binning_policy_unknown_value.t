@@ -18,14 +18,14 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - unknown binning-policy policy exit status mismatch"
+    printf '\n%s\n' "not ok 1 - unknown binning-policy policy exit status mismatch"
     exit 0
 }
 
 case "${message}" in *--binning-policy**) true ;; *) false ;; esac || {
-    echo "not ok 1 - unknown binning-policy diagnostic is missing"
+    printf '\n%s\n' "not ok 1 - unknown binning-policy diagnostic is missing"
     exit 0
 }
 
-echo "ok 1 - binning-policy rejects an unknown policy"
+printf '\n%s\n' "ok 1 - binning-policy rejects an unknown policy"
 exit 0

@@ -30,25 +30,25 @@ reference_six="${TOP_SRCDIR}/tests/data/loader/quality/19f15fdd-cmyk_mft2_valid_
 output_six="${TMPDIR:-/tmp}/libsixel-cmyk-mft2-valid-$$.six"
 
 test -f "${input_jpeg}" || {
-    echo "not ok" 1 - "missing input fixture: cmyk_mft2_valid.jpg"
+    printf '\n%s\n' "not ok 1 - missing input fixture: cmyk_mft2_valid.jpg"
     exit 0
 }
 
 test -f "${reference_six}" || {
-    echo "not ok" 1 - "missing reference fixture: cmyk_mft2_valid_builtin.six"
+    printf '\n%s\n' "not ok 1 - missing reference fixture: cmyk_mft2_valid_builtin.six"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -r nearest -w 192 -h 192 -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
-    echo "not ok" 1 - "libjpeg builtin cms decode failed: cmyk_mft2_valid"
+    printf '\n%s\n' "not ok 1 - libjpeg builtin cms decode failed: cmyk_mft2_valid"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_six}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "cmyk_mft2_valid builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - cmyk_mft2_valid builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libjpeg builtin cms cmyk_mft2_valid keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - libjpeg builtin cms cmyk_mft2_valid keeps MS-SSIM ${lsqa_floor}"
 exit 0

@@ -19,7 +19,7 @@ riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M pal-riff:"${riff_palette}" \
     -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
-    echo "not ok" 1 - "RIFF palette export failed"
+    printf '\n%s\n' "not ok 1 - RIFF palette export failed"
     exit 0
 }
 
@@ -27,16 +27,16 @@ header=$(dd if="${riff_palette}" bs=1 count=4 2>/dev/null || :)
 case "${header}" in
     RIFF) ;;
     *)
-        echo "not ok" 1 - "RIFF palette export missing RIFF header"
+        printf '\n%s\n' "not ok 1 - RIFF palette export missing RIFF header"
         exit 0
         ;;
 esac
 
 test -n "${header}" || {
-    echo "not ok" 1 - "RIFF palette export missing RIFF header"
+    printf '\n%s\n' "not ok 1 - RIFF palette export missing RIFF header"
     exit 0
 }
 
-echo "ok" 1 - "RIFF palette export has RIFF header"
+printf '\n%s\n' "ok 1 - RIFF palette export has RIFF header"
 
 exit 0

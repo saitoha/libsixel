@@ -21,7 +21,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q heckbert -_nearest -W oklab \
     -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "img2sixel snap heckbert float32 failed"
+    printf '\n%s\n' "not ok 1 - img2sixel snap heckbert float32 failed"
     exit 0
 }
 
@@ -31,15 +31,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "snap heckbert float32 lsqa passed"
+    printf '\n%s\n' "ok 1 - snap heckbert float32 lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "snap heckbert float32 lsqa failed"
+printf '\n%s\n' "not ok 1 - snap heckbert float32 lsqa failed"
 
 exit 0

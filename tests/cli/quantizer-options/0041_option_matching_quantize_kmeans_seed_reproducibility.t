@@ -30,33 +30,33 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || status=$?
 
 test "${seed_123_a}" = "${seed_123_b}" || {
-    echo "not ok" 1 - "same kmeans seed was not reproducible"
+    printf '\n%s\n' "not ok 1 - same kmeans seed was not reproducible"
     exit 0
 }
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "kmeans seed contract run failed"
+    printf '\n%s\n' "not ok 1 - kmeans seed contract run failed"
     exit 0
 }
 
 diag_line="LSXPAL1${msg#*LSXPAL1}"
 diag_line=${diag_line%%"${nl}"*}
 case "${diag_line}" in LSXPAL1*rc=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "kmeans seed diagnostic header is malformed"
+    printf '\n%s\n' "not ok 1 - kmeans seed diagnostic header is malformed"
     exit 0
 }
 case "${diag_line}" in *kseed_set=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "kmeans seed diagnostic header missing seed_set"
+    printf '\n%s\n' "not ok 1 - kmeans seed diagnostic header missing seed_set"
     exit 0
 }
 case "${diag_line}" in *kseed=124**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "kmeans seed diagnostic header missing seed value"
+    printf '\n%s\n' "not ok 1 - kmeans seed diagnostic header missing seed value"
     exit 0
 }
 case "${diag_line}" in *KMEANS_SEED_SET**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "kmeans seed contract code missing"
+    printf '\n%s\n' "not ok 1 - kmeans seed contract code missing"
     exit 0
 }
 
-echo "ok" 1 - "kmeans seed is reproducible and contract-visible"
+printf '\n%s\n' "ok 1 - kmeans seed is reproducible and contract-visible"
 exit 0

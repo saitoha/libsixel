@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=scalar \
     frame/0018_float_resampling mixed 4 || {
-    echo "not ok 1 - float resize mixed scalar"
+    printf '\n%s\n' "not ok 1 - float resize mixed scalar"
     exit 0
 }
-echo "ok 1 - float resize mixed scalar"
+printf '\n%s\n' "ok 1 - float resize mixed scalar"
 exit 0

@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0072_floor_bounds_atomic || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - floor bounds atomic"
+    printf '\n%s\n' "not ok 1 - floor bounds atomic"
     exit 0
 }
-echo "ok 1 - floor bounds atomic"
+printf '\n%s\n' "ok 1 - floor bounds atomic"
 exit 0

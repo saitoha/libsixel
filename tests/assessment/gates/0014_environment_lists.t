@@ -12,8 +12,8 @@ value=$(LSQA_METRICS='PSNR_Y,GMSD' LSQA_BASELINE='GMSD:max=0,PSNR_Y:min=99' ${SI
   "GMSD": 0.000000,
   "PSNR_Y": 99.000000
 }'; } || {
-    echo "not ok 1 - Environment lists select and gate multiple metrics"
+    printf '\n%s\n' "not ok 1 - Environment lists select and gate multiple metrics"
     exit 0
 }
-echo "ok 1 - Environment lists select and gate multiple metrics"
+printf '\n%s\n' "ok 1 - Environment lists select and gate multiple metrics"
 exit 0

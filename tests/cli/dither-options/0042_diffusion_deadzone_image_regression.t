@@ -28,17 +28,17 @@ default_output="${artifact_dir}/0188-deadzone-default-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs:D0" \
     --precision-policy=8bit "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "fs:deadzone short conversion failed"
+    printf '\n%s\n' "not ok 1 - fs:deadzone short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=deadzone\|stored=1\|binding=diffusion_deadzone,diffusion_deadzone_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs deadzone short value was not stored"
+    printf '\n%s\n' "not ok 1 - fs deadzone short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*deadzone=0\|deadzone_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs deadzone did not reach the dither"
+    printf '\n%s\n' "not ok 1 - fs deadzone did not reach the dither"
     exit 0
 }
 
@@ -46,50 +46,50 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_DEADZONE=0" -d "fs" \
     --precision-policy=8bit "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "fs:deadzone environment conversion failed"
+    printf '\n%s\n' "not ok 1 - fs:deadzone environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=deadzone\|stored=1\|binding=diffusion_deadzone,diffusion_deadzone_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs deadzone environment value was not stored"
+    printf '\n%s\n' "not ok 1 - fs deadzone environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXDTH1\|*diffuse=fs\|*deadzone=0\|deadzone_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs environment deadzone did not reach the dither"
+    printf '\n%s\n' "not ok 1 - fs environment deadzone did not reach the dither"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "fs deadzone short and environment output differ"
+    printf '\n%s\n' "not ok 1 - fs deadzone short and environment output differ"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs" \
     --precision-policy=8bit "${input_image}" >"${default_output}" || {
-    echo "not ok" 1 - "fs default 8-bit conversion failed"
+    printf '\n%s\n' "not ok 1 - fs default 8-bit conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${default_output}" && {
-    echo "not ok" 1 - "fs deadzone did not affect 8-bit output"
+    printf '\n%s\n' "not ok 1 - fs deadzone did not affect 8-bit output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit \
     --env "SIXEL_DITHER_DEADZONE=100" -d "fs:deadzone=0" \
     "${input_image}" >"${env_output}" || {
-    echo "not ok 1 - CLI override conversion failed"
+    printf '\n%s\n' "not ok 1 - CLI override conversion failed"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - explicit CLI deadzone must win"
+    printf '\n%s\n' "not ok 1 - explicit CLI deadzone must win"
     exit 0
 }
-echo "ok 1 - deadzone image routing and precedence"
+printf '\n%s\n' "ok 1 - deadzone image routing and precedence"
 exit 0

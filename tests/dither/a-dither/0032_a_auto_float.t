@@ -10,9 +10,9 @@ SIXEL_DITHER_A_DITHER_STRENGTH=invalid \
 SIXEL_DITHER_X_DITHER_STRENGTH=invalid \
 SIXEL_DITHER_BLUENOISE_STRENGTH=invalid \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" dither/positional/precision/0065_a_auto_float || {
-    echo "not ok 1 - a auto float"
+    printf '\n%s\n' "not ok 1 - a auto float"
     exit 0
 }
 
-echo "ok 1 - a auto float"
+printf '\n%s\n' "ok 1 - a auto float"
 exit 0

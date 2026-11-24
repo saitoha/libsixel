@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0025_decoder_paint_create_failure_clean" || {
-    echo "not ok 1 - 0025_decoder_paint_create_failure_clean"
+    printf '\n%s\n' "not ok 1 - 0025_decoder_paint_create_failure_clean"
     exit 0
 }
 
-echo "ok 1 - 0025_decoder_paint_create_failure_clean"
+printf '\n%s\n' "ok 1 - 0025_decoder_paint_create_failure_clean"
 exit 0

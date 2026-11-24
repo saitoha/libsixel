@@ -22,10 +22,10 @@ set -e
 
 # Accept success or mapped error exits without crashing.
 test "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
-    echo "not ok" 1 - "crafted height input failed"
+    printf '\n%s\n' "not ok 1 - crafted height input failed"
     exit 0
 }
 
-echo "ok" 1 - "crafted height input handled"
+printf '\n%s\n' "ok 1 - crafted height input handled"
 
 exit 0

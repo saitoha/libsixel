@@ -25,21 +25,21 @@ default_sixel="${ARTIFACT_LOCAL_DIR}/default.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision-policy=float32 \
         --lookup-policy=none -C 8 -p 16 "${input_image}" >"${output_sixel}" || {
-    echo "not ok 1 - deprecated complexion conversion failed"
+    printf '\n%s\n' "not ok 1 - deprecated complexion conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision-policy=float32 \
         --lookup-policy=none -p 16 "${input_image}" >"${default_sixel}" || {
-    echo "not ok 1 - default complexion conversion failed"
+    printf '\n%s\n' "not ok 1 - default complexion conversion failed"
     exit 0
 }
 test -s "${output_sixel}" || {
-    echo "not ok 1 - encoded output is empty"
+    printf '\n%s\n' "not ok 1 - encoded output is empty"
     exit 0
 }
 cmp -s "${output_sixel}" "${default_sixel}" || {
-    echo "not ok 1 - deprecated complexion option changed encoded bytes"
+    printf '\n%s\n' "not ok 1 - deprecated complexion option changed encoded bytes"
     exit 0
 }
-echo "ok 1 - deprecated complexion option preserves encoded bytes"
+printf '\n%s\n' "ok 1 - deprecated complexion option preserves encoded bytes"
 exit 0

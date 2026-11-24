@@ -19,7 +19,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_vp8x_anim_flag_without_anim_chunks.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted VP8X animation flag without ANIM/ANMF chunks"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted VP8X animation flag without ANIM/ANMF chunks"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -29,13 +29,13 @@ case "${msg}" in
     *"webp decode: VP8X animation flag requires ANIM and ANMF chunks."*)
         ;;
     *)
-        echo "not ok" 1 - "expected VP8X animation-flag consistency diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected VP8X animation-flag consistency diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects VP8X animation flag without ANIM/ANMF chunks"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects VP8X animation flag without ANIM/ANMF chunks"
 
 exit 0

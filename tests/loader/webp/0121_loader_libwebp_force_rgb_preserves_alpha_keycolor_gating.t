@@ -24,19 +24,19 @@ out_forced_bg="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-force-rgb-
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S "${input_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline static lossy-alpha decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static lossy-alpha decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S "${input_webp}" >"${out_forced}" || {
-    echo "not ok" 1 - "forced-rgb static lossy-alpha decode failed"
+    printf '\n%s\n' "not ok 1 - forced-rgb static lossy-alpha decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S -B#000 "${input_webp}" >"${out_forced_bg}" || {
-    echo "not ok" 1 - "forced-rgb static lossy-alpha decode with -B#000 failed"
+    printf '\n%s\n' "not ok 1 - forced-rgb static lossy-alpha decode with -B#000 failed"
     exit 0
 }
 
@@ -75,29 +75,29 @@ case "${out_forced_bg_text}" in
 esac
 
 test "${default_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "default static lossy-alpha output lost keycolor"
+    printf '\n%s\n' "not ok 1 - default static lossy-alpha output lost keycolor"
     exit 0
 }
 
 test "${forced_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "forced-rgb static lossy-alpha output lost keycolor"
+    printf '\n%s\n' "not ok 1 - forced-rgb static lossy-alpha output lost keycolor"
     exit 0
 }
 
 test "${forced_bg_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "forced-rgb static lossy-alpha output kept keycolor with -B"
+    printf '\n%s\n' "not ok 1 - forced-rgb static lossy-alpha output kept keycolor with -B"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_forced}" || {
-    echo "not ok" 1 - "forced-rgb unexpectedly changed static lossy-alpha output without -B"
+    printf '\n%s\n' "not ok 1 - forced-rgb unexpectedly changed static lossy-alpha output without -B"
     exit 0
 }
 
 cmp -s "${out_forced}" "${out_forced_bg}" && {
-    echo "not ok" 1 - "forced-rgb static lossy-alpha output unexpectedly ignored -B composition"
+    printf '\n%s\n' "not ok 1 - forced-rgb static lossy-alpha output unexpectedly ignored -B composition"
     exit 0
 }
 
-echo "ok" 1 - "force-rgb keeps static lossy-alpha keycolor gating and -B composition behavior"
+printf '\n%s\n' "ok 1 - force-rgb keeps static lossy-alpha keycolor gating and -B composition behavior"
 exit 0

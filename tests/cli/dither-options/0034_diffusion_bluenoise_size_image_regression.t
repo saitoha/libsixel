@@ -24,12 +24,12 @@ env_output="${artifact_dir}/0020-diffusion-bluenoise-size-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d "bluenoise:Z64" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "bluenoise:size short conversion failed"
+    printf '\n%s\n' "not ok 1 - bluenoise:size short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=size\|stored=1\|binding=bluenoise_size,bluenoise_size_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "size short value was not stored"
+    printf '\n%s\n' "not ok 1 - size short value was not stored"
     exit 0
 }
 
@@ -37,26 +37,26 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_BLUENOISE_SIZE=64" -d "bluenoise" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "bluenoise:size env conversion failed"
+    printf '\n%s\n' "not ok 1 - bluenoise:size env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=size\|stored=1\|binding=bluenoise_size,bluenoise_size_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "size environment value was not stored"
+    printf '\n%s\n' "not ok 1 - size environment value was not stored"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "bluenoise:size short and env output differ"
+    printf '\n%s\n' "not ok 1 - bluenoise:size short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "bluenoise:size preserves image output"
+printf '\n%s\n' "ok 1 - bluenoise:size preserves image output"
 exit 0

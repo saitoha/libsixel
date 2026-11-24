@@ -16,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ppm_small="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 pipeline_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" 2>&1) || {
-    echo "not ok" 1 - "baseline pipeline run failed"
+    printf '\n%s\n' "not ok 1 - baseline pipeline run failed"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
@@ -24,7 +24,7 @@ printf '%s' "${pipeline_log}" >&2
 case "${pipeline_log}" in
     *"    bands="*) ;;
     *)
-        echo "not ok" 1 - "baseline bands/queue/mode"
+        printf '\n%s\n' "not ok 1 - baseline bands/queue/mode"
         exit 0
         ;;
 esac
@@ -32,16 +32,16 @@ esac
 case "${pipeline_log}" in
     *"bands="*) ;;
     *)
-        echo "not ok" 1 - "baseline bands/queue/mode"
+        printf '\n%s\n' "not ok 1 - baseline bands/queue/mode"
         exit 0
         ;;
 esac
 
 test -n "${pipeline_log}" || {
-    echo "not ok" 1 - "baseline bands/queue/mode"
+    printf '\n%s\n' "not ok 1 - baseline bands/queue/mode"
     exit 0
 }
 
-echo "ok" 1 - "baseline bands/queue/mode"
+printf '\n%s\n' "ok 1 - baseline bands/queue/mode"
 
 exit 0

@@ -14,9 +14,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0011_loader_gd_pixelformat" \
     "indexed_keycolor_gama_iccp_bg_float32_linear" || {
-    echo "not ok 1 - gd indexed_keycolor_gama_iccp_bg_float32_linear"
+    printf '\n%s\n' "not ok 1 - gd indexed_keycolor_gama_iccp_bg_float32_linear"
     exit 0
 }
 
-echo "ok 1 - gd indexed_keycolor_gama_iccp_bg_float32_linear"
+printf '\n%s\n' "ok 1 - gd indexed_keycolor_gama_iccp_bg_float32_linear"
 exit 0

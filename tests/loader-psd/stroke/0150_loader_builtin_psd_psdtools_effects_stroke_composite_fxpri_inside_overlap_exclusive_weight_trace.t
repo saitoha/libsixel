@@ -31,21 +31,21 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 
 case "${diag_line}" in *FX_DUAL_OVERLAP_DEFER**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred overlap code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred overlap code"
     exit 0
 }
 
 case "${diag_line}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing FXPRI overlap code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FXPRI overlap code"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps FXPRI deferred overlap code path"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps FXPRI deferred overlap code path"
 exit 0

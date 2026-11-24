@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lanczos2 \
     "${fixture_root}/lanczos2-upscale-input.ppm" \
     "${fixture_root}/lanczos2-upscale-expected.ppm" || {
-    echo "not ok" 1 - "lanczos2 upscale pixels changed"
+    printf '\n%s\n' "not ok 1 - lanczos2 upscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "lanczos2 upscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - lanczos2 upscale pixels match the oracle"
 exit 0

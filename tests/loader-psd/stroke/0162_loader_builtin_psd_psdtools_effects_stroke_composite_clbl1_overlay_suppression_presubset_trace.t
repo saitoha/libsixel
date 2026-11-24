@@ -30,30 +30,30 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing clbl=1 overlay suppression trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred gradient overlay trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred gradient overlay trace"
     exit 0
 }
 
 
 case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base solid overlay after suppression"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly applied base solid overlay after suppression"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base gradient overlay after suppression"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly applied base gradient overlay after suppression"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite applies clbl=1 overlay suppression before base effect subset"
+printf '\n%s\n' "ok 1 - effects/stroke-composite applies clbl=1 overlay suppression before base effect subset"
 exit 0

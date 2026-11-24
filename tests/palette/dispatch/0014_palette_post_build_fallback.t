@@ -25,7 +25,7 @@ actual="${ARTIFACT_LOCAL_DIR}/palette-post-build-actual-$$.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=8 \
     -4 full-frame -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${expected}" || {
-    echo "not ok 1 - reference full-frame fallback failed"
+    printf '\n%s\n' "not ok 1 - reference full-frame fallback failed"
     exit 0
 }
 
@@ -34,24 +34,24 @@ message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=8 -4 auto \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${actual}") || {
-    echo "not ok 1 - post-build palette failure stopped encoding"
+    printf '\n%s\n' "not ok 1 - post-build palette failure stopped encoding"
     exit 0
 }
 
 cmp -s "${expected}" "${actual}" || {
-    echo "not ok 1 - post-build palette failure did not use full frame"
+    printf '\n%s\n' "not ok 1 - post-build palette failure did not use full frame"
     exit 0
 }
 
 case "${message}" in *LSXPFB1\|stage=worker-post-build\|action=full-frame-sync\|*\|rc=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - post-build palette fallback was not traced"
+    printf '\n%s\n' "not ok 1 - post-build palette fallback was not traced"
     exit 0
 }
 
 case "${message}" in *LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=fallback\|threads=8\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - post-build palette fallback state was not recorded"
+    printf '\n%s\n' "not ok 1 - post-build palette fallback state was not recorded"
     exit 0
 }
 
-echo "ok 1 - post-build palette failure falls back to full frame"
+printf '\n%s\n' "ok 1 - post-build palette failure falls back to full frame"
 exit 0

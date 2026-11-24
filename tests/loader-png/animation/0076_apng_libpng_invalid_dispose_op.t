@@ -18,10 +18,10 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_dispose3.png" -o/dev/null && {
-    echo "not ok" 1 - "APNG invalid dispose_op unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - APNG invalid dispose_op unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "APNG invalid dispose_op is rejected"
+printf '\n%s\n' "ok 1 - APNG invalid dispose_op is rejected"
 exit 0
 

@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0125_loader_manager_closed_plan" || {
-    echo "not ok 1 - loader manager closed plan"
+    printf '\n%s\n' "not ok 1 - loader manager closed plan"
     exit 0
 }
 
-echo "ok 1 - loader manager trailing bang closes the plan"
+printf '\n%s\n' "ok 1 - loader manager trailing bang closes the plan"
 exit 0

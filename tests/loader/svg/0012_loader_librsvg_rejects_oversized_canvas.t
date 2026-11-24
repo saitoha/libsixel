@@ -24,7 +24,7 @@ msg=$(
 ) || status="$?"
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "oversized SVG unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - oversized SVG unexpectedly succeeded"
     exit 0
 }
 
@@ -32,10 +32,10 @@ case "${msg}" in
     *"pixel limit"* | *"dimensions exceed limit"* | *"integer overflow"*)
         ;;
     *)
-        echo "not ok" 1 - "oversized SVG failure did not report a size-limit reason"
+        printf '\n%s\n' "not ok 1 - oversized SVG failure did not report a size-limit reason"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg rejects oversized canvases"
+printf '\n%s\n' "ok 1 - librsvg rejects oversized canvases"
 exit 0

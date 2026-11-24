@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0032_filter_binning_failure_output" || {
-    echo "not ok 1 - binning failure output is atomic"
+    printf '\n%s\n' "not ok 1 - binning failure output is atomic"
     exit 0
 }
 
-echo "ok 1 - binning failure output is atomic"
+printf '\n%s\n' "ok 1 - binning failure output is atomic"
 exit 0

@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/invalid_signature.heif" >/dev/null && {
-    echo "not ok" 1 - "coregraphics invalid-signature HEIF should fail"
+    printf '\n%s\n' "not ok 1 - coregraphics invalid-signature HEIF should fail"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics invalid-signature HEIF is rejected"
+printf '\n%s\n' "ok 1 - coregraphics invalid-signature HEIF is rejected"
 exit 0

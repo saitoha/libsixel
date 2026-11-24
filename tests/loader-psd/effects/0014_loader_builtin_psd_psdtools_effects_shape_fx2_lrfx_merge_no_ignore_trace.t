@@ -28,24 +28,24 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/shape-fx2 decode failed"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ merging\ legacy\ lrFX\ effects\ missing\ from\ lfx2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 did not merge legacy lrFX effects"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 did not merge legacy lrFX effects"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ ignoring\ legacy\ lrFX\ when\ lfx2\ is\ present**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 unexpectedly kept ignoring legacy lrFX"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 unexpectedly kept ignoring legacy lrFX"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ parsed\ IrGl\ effect\ object\ in\ layer\ effects\ \(inactive\)**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 did not keep IrGl inactive trace contract"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 did not keep IrGl inactive trace contract"
     exit 0
 }
 
-echo "ok" 1 - "effects/shape-fx2 merges lrFX completion without ignore-only fallback"
+printf '\n%s\n' "ok 1 - effects/shape-fx2 merges lrFX completion without ignore-only fallback"
 exit 0

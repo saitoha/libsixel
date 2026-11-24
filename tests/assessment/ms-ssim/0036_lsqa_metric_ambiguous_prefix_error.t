@@ -19,19 +19,19 @@ status=$?
 set -e
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "ambiguous -m metric prefix was not rejected as expected"
+    printf '\n%s\n' "not ok 1 - ambiguous -m metric prefix was not rejected as expected"
     exit 0
 }
 
 case "${err_msg}" in *'ambiguous prefix "c"'*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "ambiguous -m metric prefix detail was missing"
+    printf '\n%s\n' "not ok 1 - ambiguous -m metric prefix detail was missing"
     exit 0
 }
 
 case "${err_msg}" in *clip_l_ref*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "ambiguous -m metric prefix candidates were missing"
+    printf '\n%s\n' "not ok 1 - ambiguous -m metric prefix candidates were missing"
     exit 0
 }
 
-echo "ok" 1 - "ambiguous -m metric prefix was rejected"
+printf '\n%s\n' "ok 1 - ambiguous -m metric prefix was rejected"
 exit 0

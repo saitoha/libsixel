@@ -12,9 +12,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_COREGRAPHICS_INDEXED_ALPHA_FLOAT_MASK=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha float mask)"
+    printf '\n%s\n' "not ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha float mask)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha float mask)"
+printf '\n%s\n' "ok 1 - loader/0008_loader_coregraphics_pixelformat (indexed alpha float mask)"
 exit 0

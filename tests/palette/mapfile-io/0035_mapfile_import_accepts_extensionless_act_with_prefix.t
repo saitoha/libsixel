@@ -19,10 +19,10 @@ act_file="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-size-only-noext"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
     -m act:"${act_file}" "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "explicit act: prefix failed for extensionless ACT-sized input"
+    printf '\n%s\n' "not ok 1 - explicit act: prefix failed for extensionless ACT-sized input"
     exit 0
 }
 
-echo "ok" 1 - "explicit act: prefix accepts extensionless ACT-sized input"
+printf '\n%s\n' "ok 1 - explicit act: prefix accepts extensionless ACT-sized input"
 
 exit 0

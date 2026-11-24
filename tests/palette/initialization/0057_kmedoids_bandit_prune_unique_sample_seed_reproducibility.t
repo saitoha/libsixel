@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     bandit-prune-unique-sample-seed-reproducibility \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids bandit unique sample seed failed"
+    printf '\n%s\n' "not ok 1 - kmedoids bandit unique sample seed failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids bandit unique sample seed passed"
+printf '\n%s\n' "ok 1 - kmedoids bandit unique sample seed passed"
 exit 0

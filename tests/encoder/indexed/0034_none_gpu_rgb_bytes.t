@@ -11,8 +11,8 @@ test "$status" -ne 77 || {
 echo '1..1'
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/indexed/0034_none_gpu_rgb_bytes" || {
-    echo 'not ok 1 - 0034_none_gpu_rgb_bytes'
+    printf '\n%s\n' 'not ok 1 - 0034_none_gpu_rgb_bytes'
     exit 0
 }
-echo 'ok 1 - 0034_none_gpu_rgb_bytes'
+printf '\n%s\n' 'ok 1 - 0034_none_gpu_rgb_bytes'
 exit 0

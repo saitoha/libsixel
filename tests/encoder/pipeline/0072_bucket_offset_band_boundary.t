@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0072_bucket_offset_ban
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket offset band boundary # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket offset band boundary # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket offset band boundary"
+    printf '\n%s\n' "not ok 1 - bucket offset band boundary"
     exit 0
 }
-echo "ok 1 - bucket offset band boundary"
+printf '\n%s\n' "ok 1 - bucket offset band boundary"
 exit 0

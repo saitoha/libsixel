@@ -15,12 +15,12 @@ set -v
 fuzz_input="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0005/loader_order_empty.bin"
 
 test -f "${fuzz_input}" || {
-    echo "not ok" 1 - "fuzz0005 input is missing"
+    printf '\n%s\n' "not ok 1 - fuzz0005 input is missing"
     exit 0
 }
 
 test ! -s "${fuzz_input}" || {
-    echo "not ok" 1 - "fuzz0005 input is not minimized"
+    printf '\n%s\n' "not ok 1 - fuzz0005 input is not minimized"
     exit 0
 }
 
@@ -28,21 +28,21 @@ rc=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${fuzz_input}" -o /dev/null || rc=$?
 
 test "${rc-0}" -ne 127 || {
-    echo "not ok" 1 - "fuzz0005 did not execute img2sixel"
+    printf '\n%s\n' "not ok 1 - fuzz0005 did not execute img2sixel"
     exit 0
 }
 
 test "${rc-0}" -ne 134 || {
-    echo "not ok" 1 - "fuzz0005 triggered abort"
+    printf '\n%s\n' "not ok 1 - fuzz0005 triggered abort"
     exit 0
 }
 
 test "${rc-0}" -ne 139 || {
-    echo "not ok" 1 - "fuzz0005 triggered SIGSEGV"
+    printf '\n%s\n' "not ok 1 - fuzz0005 triggered SIGSEGV"
     exit 0
 }
 
-echo "ok" 1 - "fuzz0005 empty input is handled without crash"
+printf '\n%s\n' "ok 1 - fuzz0005 empty input is handled without crash"
 
 
 exit 0

@@ -34,7 +34,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 reference_path="${TOP_SRCDIR}/tests/data/loader/quality/cc877d5c-snake-32.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_multisize.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 - "wic ico multisize conversion failed"
+    printf '\n%s\n' "not ok 1 - wic ico multisize conversion failed"
     exit 0
 }
 
@@ -43,14 +43,14 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "wic ico multisize quality meets baseline"
+    printf '\n%s\n' "ok 1 - wic ico multisize quality meets baseline"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "wic ico multisize quality regressed"
+printf '\n%s\n' "not ok 1 - wic ico multisize quality regressed"
 exit 0

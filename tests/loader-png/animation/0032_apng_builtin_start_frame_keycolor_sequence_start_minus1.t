@@ -26,7 +26,7 @@ trace_log=$(
                   -Lbuiltin! -lauto -g \
                   "${image_apng}" -o/dev/null 2>&1
 ) || {
-    echo "not ok 1 - builtin APNG trace run failed (start=-1)"
+    printf '\n%s\n' "not ok 1 - builtin APNG trace run failed (start=-1)"
     exit 0
 }
 
@@ -62,10 +62,10 @@ ${trace_log}
 __TRACE_EOF__
 
 test "${actual_sequence}" = "${expected_sequence}" || {
-    echo "not ok 1 - builtin APNG start=-1 keycolor sequence mismatch"
+    printf '\n%s\n' "not ok 1 - builtin APNG start=-1 keycolor sequence mismatch"
     exit 0
 }
 
-echo "ok 1 - builtin APNG start=-1 keycolor sequence stays loop-local"
+printf '\n%s\n' "ok 1 - builtin APNG start=-1 keycolor sequence stays loop-local"
 
 exit 0

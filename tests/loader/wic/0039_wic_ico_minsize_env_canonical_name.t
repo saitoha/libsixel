@@ -35,7 +35,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 \
     --env SIXEL_LOADER_WIC_ICO_MINSIZE=30 \
     -Lwic! \
     "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 - "wic ico env canonical-name conversion failed"
+    printf '\n%s\n' "not ok 1 - wic ico env canonical-name conversion failed"
     exit 0
 }
 
@@ -44,14 +44,14 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "wic ico canonical env name quality meets baseline"
+    printf '\n%s\n' "ok 1 - wic ico canonical env name quality meets baseline"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "wic ico canonical env name quality regressed"
+printf '\n%s\n' "not ok 1 - wic ico canonical env name quality regressed"
 exit 0

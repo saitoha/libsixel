@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     clarans-candidate-epoch-reset-equivalence \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS candidate epoch reset failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS candidate epoch reset failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS candidate epoch reset passed"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS candidate epoch reset passed"
 exit 0

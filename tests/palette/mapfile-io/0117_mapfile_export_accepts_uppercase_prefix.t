@@ -25,18 +25,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
         -M GPL:- -o/dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "uppercase palette-output prefix failed"
+    printf '\n%s\n' "not ok 1 - uppercase palette-output prefix failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "GPL output normalization failed"
+    printf '\n%s\n' "not ok 1 - GPL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "uppercase prefix did not select GPL output"
+    printf '\n%s\n' "not ok 1 - uppercase prefix did not select GPL output"
     exit 0
 }
 
-echo "ok" 1 - "palette-output type prefixes are case-insensitive"
+printf '\n%s\n' "ok 1 - palette-output type prefixes are case-insensitive"
 exit 0

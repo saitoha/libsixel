@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0062_curve1_error32_period || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - curve1 error32 period"
+    printf '\n%s\n' "not ok 1 - curve1 error32 period"
     exit 0
 }
-echo "ok 1 - curve1 error32 period"
+printf '\n%s\n' "ok 1 - curve1 error32 period"
 exit 0

@@ -17,9 +17,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_LOADER_ANIMATION_START_FRAME_
     -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >/dev/null && {
-    echo "not ok" 1 - "out-of-range negative start frame unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - out-of-range negative start frame unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "builtin GIF negative out-of-range start frame is rejected"
+printf '\n%s\n' "ok 1 - builtin GIF negative out-of-range start frame is rejected"
 exit 0

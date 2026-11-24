@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" signature \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Payload/Applications/SixelQuickLookHost.app/Contents/PlugIns/SixelThumbnail.appex" || {
-    echo "not ok 1 - Invalid thumbnail signature"
+    printf '\n%s\n' "not ok 1 - Invalid thumbnail signature"
     exit 0
 }
 
-echo "ok 1 - Packaged thumbnail code signature is valid."
+printf '\n%s\n' "ok 1 - Packaged thumbnail code signature is valid."
 exit 0

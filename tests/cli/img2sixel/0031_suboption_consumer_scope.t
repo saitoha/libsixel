@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "cli/0033_cli_suboption_consumer_scope" || {
-    echo "not ok 1 - suboptions honor consumer scope"
+    printf '\n%s\n' "not ok 1 - suboptions honor consumer scope"
     exit 0
 }
 
-echo "ok 1 - suboptions honor consumer scope"
+printf '\n%s\n' "ok 1 - suboptions honor consumer scope"
 exit 0

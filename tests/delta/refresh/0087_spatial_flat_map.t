@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0087_spatial_flat_map || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - spatial flat map"
+    printf '\n%s\n' "not ok 1 - spatial flat map"
     exit 0
 }
-echo "ok 1 - spatial flat map"
+printf '\n%s\n' "ok 1 - spatial flat map"
 exit 0

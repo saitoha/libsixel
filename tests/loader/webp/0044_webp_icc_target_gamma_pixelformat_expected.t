@@ -13,9 +13,9 @@ set -v
 
 SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/0017_loader_libwebp_pixelformat" >/dev/null || {
-    echo "not ok" 1 - "loader/0017_loader_libwebp_pixelformat under cms target gamma"
+    printf '\n%s\n' "not ok 1 - loader/0017_loader_libwebp_pixelformat under cms target gamma"
     exit 0
 }
 
-echo "ok" 1 - "libwebp ICC loader pixelformat honors cms target gamma"
+printf '\n%s\n' "ok 1 - libwebp ICC loader pixelformat honors cms target gamma"
 exit 0

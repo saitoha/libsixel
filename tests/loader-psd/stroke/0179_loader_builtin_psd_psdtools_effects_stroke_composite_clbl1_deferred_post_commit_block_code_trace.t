@@ -31,13 +31,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output#*LSXPSD1\|}
 case "${trace_output}" in *LSXPSD1\|*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
 
@@ -45,28 +45,28 @@ diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 case "${diag_line}" in *FX_CLBL1_BASE_OVERLAY_SUPPRESS**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred overlay suppression contract code"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred overlay suppression contract code"
     exit 0
 }
 
 case "${diag_line}" in *FX_CLBL1_DEFERRED_OVERLAY_REPLAY_ENTRY**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred overlay replay contract code"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred overlay replay contract code"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing deferred group commit trace"
     exit 0
 }
 
 case "${diag_line}" in *FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite emitted post-commit replay blocked code in normal flow"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite emitted post-commit replay blocked code in normal flow"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps post-commit replay blocked code out of normal decode"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps post-commit replay blocked code out of normal decode"
 exit 0

@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_FIXTURE}" 'default-readback' 'error-1' || {
-    echo "not ok 1 - Default readback refused."
+    printf '\n%s\n' "not ok 1 - Default readback refused."
     exit 0
 }
-echo "ok 1 - Default readback refused."
+printf '\n%s\n' "ok 1 - Default readback refused."
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0202_delta_delta_then_mono || {
-    echo "not ok 1 - delta then mono"
+    printf '\n%s\n' "not ok 1 - delta then mono"
     exit 0
 }
-echo "ok 1 - delta then mono"
+printf '\n%s\n' "ok 1 - delta then mono"
 exit 0

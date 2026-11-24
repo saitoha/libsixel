@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0018_heckbert_infinity >/dev/null || {
-    echo "not ok 1 - native Heckbert infinity"
+    printf '\n%s\n' "not ok 1 - native Heckbert infinity"
     exit 0
 }
 
-echo "ok 1 - native Heckbert infinity"
+printf '\n%s\n' "ok 1 - native Heckbert infinity"
 exit 0

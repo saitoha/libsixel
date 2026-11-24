@@ -23,9 +23,9 @@ set -v
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic,builtin "${input_gif}" >/dev/null || {
-    echo "not ok" 1 - "wic,builtin fallback GIF decoding failed"
+    printf '\n%s\n' "not ok 1 - wic,builtin fallback GIF decoding failed"
     exit 0
 }
 
-echo "ok" 1 - "wic,builtin fallback GIF decoding succeeds"
+printf '\n%s\n' "ok 1 - wic,builtin fallback GIF decoding succeeds"
 exit 0

@@ -13,7 +13,7 @@ test "$probe_status" -ne 77 || {
 echo '1..1'
 set -v
 test "$probe_status" -eq 0 || {
-    echo 'not ok 1 - GPU availability probe failed'
+    printf '\n%s\n' 'not ok 1 - GPU availability probe failed'
     exit 0
 }
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
@@ -22,7 +22,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     -Qkmeans:backend=gpu:inittype=pca:binbits=5:iter=6 -_reversible \
     -aedges:cover_mode=hard:cover_grow=1 -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1) || {
-    echo 'not ok 1 - GPU palette and indexed encoding failed'
+    printf '\n%s\n' 'not ok 1 - GPU palette and indexed encoding failed'
     printf '# %s\n' "$trace"
     exit 0
 }
@@ -30,9 +30,9 @@ case "$trace" in
     *LSXKMRESIDENT1*backend=metal*colors=*snap=1*cover=3*soft=0*) true ;;
     *) false ;;
 esac || {
-    echo 'not ok 1 - snap and hard cover did not use resident Metal'
+    printf '\n%s\n' 'not ok 1 - snap and hard cover did not use resident Metal'
     printf '# %s\n' "$trace"
     exit 0
 }
-echo 'ok 1 - Metal snap and hard cover complete before indexed publication'
+printf '\n%s\n' 'ok 1 - Metal snap and hard cover complete before indexed publication'
 exit 0

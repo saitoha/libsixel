@@ -16,14 +16,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --binning-policy=auto -Qkmeans -dnone -p16 "-~none" \
     -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
-    echo "not ok 1 - automatic K-means binning failed"
+    printf '\n%s\n' "not ok 1 - automatic K-means binning failed"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=2\|quantizer_effective=2\|quantizer_origin=explicit\|quantizer_phase=executed\|quantizer_reason=explicit\|binning_requested=auto\|binning_effective=hard\|binning_origin=explicit\|binning_phase=executed\|binning_reason=resource-profile\|points=**) true ;; *) false ;; esac || {
-    echo "not ok 1 - automatic K-means binning did not select hard"
+    printf '\n%s\n' "not ok 1 - automatic K-means binning did not select hard"
     exit 0
 }
 
-echo "ok 1 - automatic K-means binning selects hard"
+printf '\n%s\n' "ok 1 - automatic K-means binning selects hard"
 exit 0

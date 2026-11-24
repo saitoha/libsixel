@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --env SIXEL_LOADER_LIBPNG_USE
               -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {
-    echo "not ok 1 - builtin APNG render failed with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
+    printf '\n%s\n' "not ok 1 - builtin APNG render failed with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
     exit 0
 }
 
@@ -38,9 +38,9 @@ case "${out_payload}" in
 esac
 
 test "${has_header}" = 1 && {
-    echo "not ok 1 - builtin APNG kept keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
+    printf '\n%s\n' "not ok 1 - builtin APNG kept keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
     exit 0
 }
 
-echo "ok 1 - builtin APNG drops keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
+printf '\n%s\n' "ok 1 - builtin APNG drops keycolor DCS header with SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
 exit 0

@@ -19,14 +19,14 @@ error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=999 \
     -L builtin! -ldisable \
     "${input_png}" 2>&1 >/dev/null)" || {
-    echo "not ok 1 - builtin static decode failed with --start-frame=999"
+    printf '\n%s\n' "not ok 1 - builtin static decode failed with --start-frame=999"
     exit 0
 }
 
 case "${error_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO**) false ;; *) true ;; esac || {
-    echo "not ok 1 - builtin static decode emitted --start-frame error text"
+    printf '\n%s\n' "not ok 1 - builtin static decode emitted --start-frame error text"
     exit 0
 }
 
-echo "ok 1 - builtin static decode ignores --start-frame overrides"
+printf '\n%s\n' "ok 1 - builtin static decode ignores --start-frame overrides"
 exit 0

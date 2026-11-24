@@ -28,16 +28,16 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L quicklook:thumbnail_size=64! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.webp" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_webp_still.six" || {
-    echo "not ok" 1 - "quicklook WebP decode failed"
+    printf '\n%s\n' "not ok 1 - quicklook WebP decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/loader/quality/webp-independent-samples-192.ppm" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_webp_still.six" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "quicklook WebP decode preserves quality"
+printf '\n%s\n' "ok 1 - quicklook WebP decode preserves quality"
 exit 0

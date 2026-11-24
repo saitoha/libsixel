@@ -18,14 +18,14 @@ msg=$(
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
         -o /dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "invalid scan suboption unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid scan suboption unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing unknown-value diagnostic for scan suboption"
+    printf '\n%s\n' "not ok 1 - missing unknown-value diagnostic for scan suboption"
     exit 0
 }
 
-echo "ok" 1 - "invalid scan suboption value is rejected"
+printf '\n%s\n' "ok 1 - invalid scan suboption value is rejected"
 exit 0

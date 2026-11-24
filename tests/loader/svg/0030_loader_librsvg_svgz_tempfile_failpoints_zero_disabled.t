@@ -30,7 +30,7 @@ sixel_output=$(
     export _SIXEL_TEST_LIBRSVG_FAIL_TEMP_SVGZ_CLOSE
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! - <"${svgz_path}"
 ) || {
-    echo "not ok" 1 - "value 0 tempfile failpoints blocked decode"
+    printf '\n%s\n' "not ok 1 - value 0 tempfile failpoints blocked decode"
     exit 0
 }
 
@@ -38,10 +38,10 @@ case "${sixel_output}" in
     "${esc}P0;0q"*)
         ;;
     *)
-        echo "not ok" 1 - "stdin .svgz decode output header mismatch"
+        printf '\n%s\n' "not ok 1 - stdin .svgz decode output header mismatch"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "value 0 keeps tempfile failpoints disabled"
+printf '\n%s\n' "ok 1 - value 0 keeps tempfile failpoints disabled"
 exit 0

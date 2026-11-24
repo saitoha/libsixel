@@ -15,10 +15,10 @@ egret_jpg="${TOP_SRCDIR}/images/egret.jpg"
 map8_png="${TOP_SRCDIR}/images/map8.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map8_png}" -w200 -fau -rwelsh "${egret_jpg}" -o/dev/null || {
-    echo "not ok" 1 - "JPEG palette Welsh conversion fails"
+    printf '\n%s\n' "not ok 1 - JPEG palette Welsh conversion fails"
     exit 0
 }
 
-echo "ok" 1 - "JPEG conversion using palette and Welsh filter"
+printf '\n%s\n' "ok 1 - JPEG conversion using palette and Welsh filter"
 
 exit 0

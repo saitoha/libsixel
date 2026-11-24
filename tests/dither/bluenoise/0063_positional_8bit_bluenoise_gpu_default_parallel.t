@@ -30,16 +30,16 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract \
 test "$conversion_status" -eq 0 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --gpu-lookup-available none || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU direct lookup is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU direct lookup is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - GPU direct lookup probe failed"
+    printf '\n%s\n' "not ok 1 - GPU direct lookup probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {
     printf '%s\n' "$trace" >&2
-    echo "not ok" 1 - "parallel forced GPU bluenoise default lookup failed"
+    printf '\n%s\n' "not ok 1 - parallel forced GPU bluenoise default lookup failed"
     exit 0
 }
 
@@ -51,9 +51,9 @@ case "$trace" in
     *) false ;;
 esac || {
     printf '%s\n' "$trace" >&2
-    echo 'not ok 1 - default bluenoise lookup did not use GPU palette application'
+    printf '\n%s\n' 'not ok 1 - default bluenoise lookup did not use GPU palette application'
     exit 0
 }
 
-echo "ok 1 - parallel forced GPU bluenoise accepts default lookup"
+printf '\n%s\n' "ok 1 - parallel forced GPU bluenoise accepts default lookup"
 exit 0

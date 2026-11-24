@@ -11,8 +11,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_dual_scope_precedence.psd" \
     'builtin!' 1.01 || status=$?
 test "${status}" -eq 0 || {
-    echo "not ok 1 - Accept independently generated PSD RGB sample values"
+    printf '\n%s\n' "not ok 1 - Accept independently generated PSD RGB sample values"
     exit 0
 }
-echo "ok 1 - Accept independently generated PSD RGB sample values"
+printf '\n%s\n' "ok 1 - Accept independently generated PSD RGB sample values"
 exit 0

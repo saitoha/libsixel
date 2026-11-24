@@ -23,21 +23,21 @@ out_forced="${ARTIFACT_LOCAL_DIR}/webp-static-lossless-icc-force-rgb-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! \
     "${image_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline libwebp static lossless+icc decode failed"
+    printf '\n%s\n' "not ok 1 - baseline libwebp static lossless+icc decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! \
     "${image_webp}" >"${out_forced}" || {
-    echo "not ok" 1 - "libwebp static lossless+icc decode failed with force-rgb env"
+    printf '\n%s\n' "not ok 1 - libwebp static lossless+icc decode failed with force-rgb env"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_forced}" || {
-    echo "not ok" 1 - "force-rgb env unexpectedly changed static lossless+icc output"
+    printf '\n%s\n' "not ok 1 - force-rgb env unexpectedly changed static lossless+icc output"
     exit 0
 }
 
-echo "ok" 1 - "libwebp static lossless+icc decode ignores force-rgb static env toggle"
+printf '\n%s\n' "ok 1 - libwebp static lossless+icc decode ignores force-rgb static env toggle"
 exit 0

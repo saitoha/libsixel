@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_refine/0005_float_reference_r128 || {
-    echo "not ok 1 - float refinement reference at R=128"
+    printf '\n%s\n' "not ok 1 - float refinement reference at R=128"
     exit 0
 }
 
-echo "ok 1 - float refinement reference at R=128"
+printf '\n%s\n' "ok 1 - float refinement reference at R=128"
 exit 0

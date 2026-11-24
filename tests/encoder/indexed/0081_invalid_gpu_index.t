@@ -7,12 +7,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" component/invalid_gpu_index || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - invalid GPU index prevents output publication"
+    printf '\n%s\n' "not ok 1 - invalid GPU index prevents output publication"
     exit 0
 }
-echo "ok 1 - invalid GPU index prevents output publication"
+printf '\n%s\n' "ok 1 - invalid GPU index prevents output publication"
 exit 0

@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - mixed rgb native strict"
+    printf '\n%s\n' "not ok 1 - mixed rgb native strict"
     exit 0
 }
 actual=${trace#*'MDPHASE|begin
@@ -25,7 +25,7 @@ expected=${trace#*'MDEXPECT1|begin
 expected=${expected%%'MDEXPECT1|end'*}
 { test -n "$expected" && case "${actual}" in *"$expected"*) true ;; *) false ;; esac; } || {
     echo "$trace" >&2
-    echo "not ok 1 - first native group payload differs"
+    printf '\n%s\n' "not ok 1 - first native group payload differs"
     exit 0
 }
 expected=${trace#*'MDEXPECT2|begin
@@ -33,27 +33,27 @@ expected=${trace#*'MDEXPECT2|begin
 expected=${expected%%'MDEXPECT2|end'*}
 { test -n "$expected" && case "${actual}" in *"$expected"*) true ;; *) false ;; esac; } || {
     echo "$trace" >&2
-    echo "not ok 1 - second native group payload differs"
+    printf '\n%s\n' "not ok 1 - second native group payload differs"
     exit 0
 }
 remaining=${actual#*'LSXCMS2|event=apply|engine=colorsync|'}
 case "${actual}" in *'LSXCMS2|event=apply|engine=colorsync|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - expected native apply is absent"
+    printf '\n%s\n' "not ok 1 - expected native apply is absent"
     exit 0
 }
 actual=$remaining
 remaining=${actual#*'LSXCMS2|event=apply|engine=colorsync|'}
 case "${actual}" in *'LSXCMS2|event=apply|engine=colorsync|'*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - expected native apply is absent"
+    printf '\n%s\n' "not ok 1 - expected native apply is absent"
     exit 0
 }
 actual=$remaining
 case "${actual}" in *'LSXCMS2|event=apply|'*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unexpected additional CMS apply"
+    printf '\n%s\n' "not ok 1 - unexpected additional CMS apply"
     exit 0
 }
-echo "ok 1 - mixed rgb native strict"
+printf '\n%s\n' "ok 1 - mixed rgb native strict"
 exit 0

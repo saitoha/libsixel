@@ -14,18 +14,18 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - independent correct-ICC and original-input CMYK32 fallback"
+    printf '\n%s\n' "not ok 1 - independent correct-ICC and original-input CMYK32 fallback"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=7|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - expected actual ColorSync apply outcome"
+    printf '\n%s\n' "not ok 1 - expected actual ColorSync apply outcome"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=7|dst=4|ok=0"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - expected actual ColorSync apply outcome"
+    printf '\n%s\n' "not ok 1 - expected actual ColorSync apply outcome"
     exit 0
 }
-echo "ok 1 - 0201_colorsync_cmyk32_profile_missing independent correct-ICC and original-input CMYK32 fallback"
+printf '\n%s\n' "ok 1 - 0201_colorsync_cmyk32_profile_missing independent correct-ICC and original-input CMYK32 fallback"
 exit 0

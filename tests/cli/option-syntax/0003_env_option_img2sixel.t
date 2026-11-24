@@ -18,25 +18,25 @@ out_opt="${ARTIFACT_LOCAL_DIR}/img2sixel_env_opt.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_COLORS=16 --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     "${input_image}" >"${out_env}" || {
-    echo "not ok" 1 - "reference environment conversion failed"
+    printf '\n%s\n' "not ok 1 - reference environment conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% SIXEL_COLORS=16 -% SIXEL_ENCODER_THREADING_POLICY=greedy -% SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     "${input_image}" >"${out_opt}" || {
-    echo "not ok" 1 - "-% conversion failed"
+    printf '\n%s\n' "not ok 1 - -% conversion failed"
     exit 0
 }
 
 cmp -s "${out_env}" "${out_opt}" || {
-    echo "not ok" 1 - "-% output differs from process environment"
+    printf '\n%s\n' "not ok 1 - -% output differs from process environment"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -% INVALID "${input_image}" > /dev/null && {
-    echo "not ok" 1 - "invalid -% argument should fail"
+    printf '\n%s\n' "not ok 1 - invalid -% argument should fail"
     exit 0
 }
 
-echo "ok" 1 - "invalid -% argument rejected"
+printf '\n%s\n' "ok 1 - invalid -% argument rejected"
 exit 0

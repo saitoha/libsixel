@@ -16,9 +16,9 @@ set -v
 oversized="${TOP_SRCDIR}/tests/data/inputs/snake_64-oversized.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${oversized}" >/dev/null || {
-    echo "not ok" 1 - "oversized DCS geometry rejected"
+    printf '\n%s\n' "not ok 1 - oversized DCS geometry rejected"
     exit 0
 }
 
-echo "ok" 1 - "oversized DCS geometry tolerated"
+printf '\n%s\n' "ok 1 - oversized DCS geometry tolerated"
 exit 0

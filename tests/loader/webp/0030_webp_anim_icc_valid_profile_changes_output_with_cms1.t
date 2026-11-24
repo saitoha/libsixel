@@ -23,21 +23,21 @@ output_noicc="${ARTIFACT_LOCAL_DIR}/webp-anim-noicc-cms1.sixel"
 output_valid_icc="${ARTIFACT_LOCAL_DIR}/webp-anim-valid-icc-cms1.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! -S "${input_webp_noicc}" >"${output_noicc}" || {
-    echo "not ok" 1 - "libwebp animation decode failed for non-ICC input (cms=1)"
+    printf '\n%s\n' "not ok 1 - libwebp animation decode failed for non-ICC input (cms=1)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! -S "${input_webp_valid_icc}" >"${output_valid_icc}" || {
-    echo "not ok" 1 - "libwebp animation decode failed for valid ICC input (cms=1)"
+    printf '\n%s\n' "not ok 1 - libwebp animation decode failed for valid ICC input (cms=1)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_noicc}" "${output_valid_icc}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "animation cms=1 output was not changed by valid ICC: ${lsqa_msg-}"
+    printf '\n%s\n' "not ok 1 - animation cms=1 output was not changed by valid ICC: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "animation cms=1 changes output when valid ICC chunk is present"
+printf '\n%s\n' "ok 1 - animation cms=1 changes output when valid ICC chunk is present"
 exit 0

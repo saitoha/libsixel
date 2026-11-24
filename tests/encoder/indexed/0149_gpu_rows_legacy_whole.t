@@ -7,12 +7,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" component/gpu_rows_legacy_whole || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - The legacy adapter retains whole-image dispatch."
+    printf '\n%s\n' "not ok 1 - The legacy adapter retains whole-image dispatch."
     exit 0
 }
-echo "ok 1 - The legacy adapter retains whole-image dispatch."
+printf '\n%s\n' "ok 1 - The legacy adapter retains whole-image dispatch."
 exit 0

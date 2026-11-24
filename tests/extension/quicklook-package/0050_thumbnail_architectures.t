@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check architectures \
     "${TOP_BUILDDIR}/quicklook-extension/package" thumbnail || {
-    echo "not ok 1 - Thumbnail has the required actual Mach-O architecture set matching the manifest."
+    printf '\n%s\n' "not ok 1 - Thumbnail has the required actual Mach-O architecture set matching the manifest."
     exit 0
 }
 
-echo "ok 1 - Thumbnail has the required actual Mach-O architecture set matching the manifest."
+printf '\n%s\n' "ok 1 - Thumbnail has the required actual Mach-O architecture set matching the manifest."
 exit 0

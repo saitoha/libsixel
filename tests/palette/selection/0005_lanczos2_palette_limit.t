@@ -15,10 +15,10 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -C3 -h100 -fnorm -rlanczos2 "${snake_jpg}" \
         -o/dev/null || {
-    echo "not ok" 1 - "Lanczos2 scaling with palette limit fails"
+    printf '\n%s\n' "not ok 1 - Lanczos2 scaling with palette limit fails"
     exit 0
 }
 
-echo "ok" 1 - "Lanczos2 scaling with palette limit succeeds"
+printf '\n%s\n' "ok 1 - Lanczos2 scaling with palette limit succeeds"
 
 exit 0

@@ -9,9 +9,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/cover_mask/0001_cover_mask wire 0 || {
-    echo "not ok 1 - soft mask grow"
+    printf '\n%s\n' "not ok 1 - soft mask grow"
     exit 0
 }
 
-echo "ok 1 - soft mask grow"
+printf '\n%s\n' "ok 1 - soft mask grow"
 exit 0

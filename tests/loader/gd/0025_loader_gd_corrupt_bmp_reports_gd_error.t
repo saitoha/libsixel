@@ -20,25 +20,25 @@ msg=$(set +xv; head -c 64 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-bmp3-rgb.bmp" | \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced gd loader accepted malformed BMP stream"
+    printf '\n%s\n' "not ok 1 - forced gd loader accepted malformed BMP stream"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected GD error diagnostic was missing"
+    printf '\n%s\n' "not ok 1 - expected GD error diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "forced gd malformed BMP fell back to generic error"
+    printf '\n%s\n' "not ok 1 - forced gd malformed BMP fell back to generic error"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced gd malformed BMP reports GD-specific failure"
+printf '\n%s\n' "ok 1 - forced gd malformed BMP reports GD-specific failure"
 exit 0

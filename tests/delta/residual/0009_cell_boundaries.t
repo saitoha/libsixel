@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-residual/0009_cell_boundaries || {
-    echo "not ok 1 - cell boundaries"
+    printf '\n%s\n' "not ok 1 - cell boundaries"
     exit 0
 }
-echo "ok 1 - cell boundaries"
+printf '\n%s\n' "ok 1 - cell boundaries"
 exit 0

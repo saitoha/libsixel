@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin:cms_engine=none! \
               "${input_png}" >"${out_on}" || {
-    echo "not ok" 1 - "process SIXEL_BGCOLOR + builtin opt-in grayscale16+tRNS decode failed"
+    printf '\n%s\n' "not ok 1 - process SIXEL_BGCOLOR + builtin opt-in grayscale16+tRNS decode failed"
     exit 0
 }
 
@@ -30,15 +30,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin:cms_engine=none! \
               "${input_png}" >"${out_off}" || {
-    echo "not ok" 1 - "process SIXEL_BGCOLOR + builtin opt-out grayscale16+tRNS decode failed"
+    printf '\n%s\n' "not ok 1 - process SIXEL_BGCOLOR + builtin opt-out grayscale16+tRNS decode failed"
     exit 0
 }
 
 cmp -s "${out_on}" "${out_off}" || {
-    echo "not ok" 1 - "process SIXEL_BGCOLOR unexpectedly keeps builtin PNG keycolor path"
+    printf '\n%s\n' "not ok 1 - process SIXEL_BGCOLOR unexpectedly keeps builtin PNG keycolor path"
     exit 0
 }
 
-echo "ok" 1 - "process SIXEL_BGCOLOR disables builtin PNG keycolor path"
+printf '\n%s\n' "ok 1 - process SIXEL_BGCOLOR disables builtin PNG keycolor path"
 
 exit 0

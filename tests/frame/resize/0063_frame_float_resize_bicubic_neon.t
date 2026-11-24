@@ -10,12 +10,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=neon \
     frame/0018_float_resampling bicubic 6 neon || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 - # SKIP neon float scaler is not available"
+    printf '\n%s\n' "ok 1 - # SKIP neon float scaler is not available"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - float bicubic neon"
+    printf '\n%s\n' "not ok 1 - float bicubic neon"
     exit 0
 }
-echo "ok 1 - float bicubic neon"
+printf '\n%s\n' "ok 1 - float bicubic neon"
 exit 0

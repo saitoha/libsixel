@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/kmeans/0107_rare_cpu_mse_k16_i4_s1" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - rare cpu mse k16 i4 s1"
+    printf '\n%s\n' "not ok 1 - rare cpu mse k16 i4 s1"
     exit 0
 }
-echo "ok 1 - rare cpu mse k16 i4 s1"
+printf '\n%s\n' "ok 1 - rare cpu mse k16 i4 s1"
 exit 0

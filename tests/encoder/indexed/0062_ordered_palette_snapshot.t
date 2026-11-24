@@ -5,8 +5,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" component/ordered_palette_snapshot || {
-    echo "not ok 1 - ordered palette snapshot"
+    printf '\n%s\n' "not ok 1 - ordered palette snapshot"
     exit 0
 }
-echo "ok 1 - ordered palette snapshot"
+printf '\n%s\n' "ok 1 - ordered palette snapshot"
 exit 0

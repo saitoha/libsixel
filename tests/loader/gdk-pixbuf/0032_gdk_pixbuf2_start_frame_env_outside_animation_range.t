@@ -23,14 +23,14 @@ error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=999" \
     -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}" 2>&1 >/dev/null)" && {
-    echo "not ok 1 - gdk-pixbuf2 accepted start-frame env outside animation"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 accepted start-frame env outside animation"
     exit 0
 }
 
 case "${error_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ is\ outside\ the\ animation\ frame\ range.*) true ;; *) false ;; esac || {
-    echo "not ok 1 - gdk-pixbuf2 outside-range env error message mismatch"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 outside-range env error message mismatch"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 rejects start-frame env outside animation"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 rejects start-frame env outside animation"
 exit 0

@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp" \
     >/dev/null && {
-    echo "ok" 1 - "gd decodes WBMP input"
+    printf '\n%s\n' "ok 1 - gd decodes WBMP input"
     exit 0
 }
 
-printf "ok 1 # SKIP gd backend does not decode WBMP in this runtime\n"
+printf "\nok 1 # SKIP gd backend does not decode WBMP in this runtime\n"
 exit 0

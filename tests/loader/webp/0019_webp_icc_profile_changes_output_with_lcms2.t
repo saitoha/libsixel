@@ -23,21 +23,21 @@ output_noicc="${ARTIFACT_LOCAL_DIR}/webp-noicc.sixel"
 output_icc="${ARTIFACT_LOCAL_DIR}/webp-icc.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp_noicc}" >"${output_noicc}" || {
-    echo "not ok" 1 - "libwebp decode failed for non-ICC input"
+    printf '\n%s\n' "not ok 1 - libwebp decode failed for non-ICC input"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp_icc}" >"${output_icc}" || {
-    echo "not ok" 1 - "libwebp decode failed for ICC input"
+    printf '\n%s\n' "not ok 1 - libwebp decode failed for ICC input"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:0.999" "${output_noicc}" "${output_icc}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "cms=1 changes libwebp output when ICC chunk is present"
+printf '\n%s\n' "ok 1 - cms=1 changes libwebp output when ICC chunk is present"
 exit 0

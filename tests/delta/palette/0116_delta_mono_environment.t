@@ -8,8 +8,8 @@ set -v
 
 SIXEL_UPDATE_POLICY="delta" ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0203_delta_mono_environment || {
-    echo "not ok 1 - mono environment"
+    printf '\n%s\n' "not ok 1 - mono environment"
     exit 0
 }
-echo "ok 1 - mono environment"
+printf '\n%s\n' "ok 1 - mono environment"
 exit 0

@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B "" </dev/null >/dev/null  && {
-    echo "not ok" 1 - "unexpected success: invalid background colour"
+    printf '\n%s\n' "not ok 1 - unexpected success: invalid background colour"
     exit 0
 }
 
-echo "ok" 1 - "invalid option rejected"
+printf '\n%s\n' "ok 1 - invalid option rejected"
 exit 0

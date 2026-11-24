@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0067_delta_byte_sierra3_keep || {
-    echo "not ok 1 - delta byte sierra3 keep"
+    printf '\n%s\n' "not ok 1 - delta byte sierra3 keep"
     exit 0
 }
-echo "ok 1 - delta byte sierra3 keep"
+printf '\n%s\n' "ok 1 - delta byte sierra3 keep"
 exit 0

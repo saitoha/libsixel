@@ -20,14 +20,14 @@ output_palette="${ARTIFACT_LOCAL_DIR}/palette.unknown"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
           -M "${output_palette}" -o/dev/null "${input_image}" \
           2>&1 >/dev/null) && {
-    echo "not ok" 1 - "unknown palette-output extension unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown palette-output extension unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_encoder_emit_palette_output:\ unknown\ palette\ file\ extension.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing unknown palette-output extension diagnostic"
+    printf '\n%s\n' "not ok 1 - missing unknown palette-output extension diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "unknown palette-output extension is rejected"
+printf '\n%s\n' "ok 1 - unknown palette-output extension is rejected"
 exit 0

@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0057_loader_gd_can_try_policy" "unknown_false" || {
-    echo "not ok 1 - gd can_try unknown_false"
+    printf '\n%s\n' "not ok 1 - gd can_try unknown_false"
     exit 0
 }
 
-echo "ok 1 - gd can_try unknown_false"
+printf '\n%s\n' "ok 1 - gd can_try unknown_false"
 exit 0

@@ -24,32 +24,32 @@ out_cli_one_with_env_zero="${ARTIFACT_LOCAL_DIR}/webp-static-start-frame-cli-one
 
 SIXEL_LOADER_ANIMATION_START_FRAME_NO=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" >"${out_env_zero}" || {
-    echo "not ok" 1 - "static libwebp decode with start-frame env=0 failed"
+    printf '\n%s\n' "not ok 1 - static libwebp decode with start-frame env=0 failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -S \
     "${image_webp}" >"${out_cli_one}" || {
-    echo "not ok" 1 - "static libwebp decode with --start-frame=1 failed"
+    printf '\n%s\n' "not ok 1 - static libwebp decode with --start-frame=1 failed"
     exit 0
 }
 
 SIXEL_LOADER_ANIMATION_START_FRAME_NO=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -S \
     "${image_webp}" >"${out_cli_one_with_env_zero}" || {
-    echo "not ok" 1 - "valid env unexpectedly overrode static --start-frame=1"
+    printf '\n%s\n' "not ok 1 - valid env unexpectedly overrode static --start-frame=1"
     exit 0
 }
 
 cmp -s "${out_env_zero}" "${out_cli_one}" && {
-    echo "not ok" 1 - "test setup did not produce conflicting static start-frame outputs"
+    printf '\n%s\n' "not ok 1 - test setup did not produce conflicting static start-frame outputs"
     exit 0
 }
 
 cmp -s "${out_cli_one}" "${out_cli_one_with_env_zero}" || {
-    echo "not ok" 1 - "valid env changed static output despite --start-frame override"
+    printf '\n%s\n' "not ok 1 - valid env changed static output despite --start-frame override"
     exit 0
 }
 
-echo "ok" 1 - "static libwebp --start-frame overrides conflicting valid env input"
+printf '\n%s\n' "ok 1 - static libwebp --start-frame overrides conflicting valid env input"
 exit 0

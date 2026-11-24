@@ -25,17 +25,17 @@ env_output="${artifact_dir}/0003-diffusion-fs-scan-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d "fs:Nserpentine" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "fs:scan short conversion failed"
+    printf '\n%s\n' "not ok 1 - fs:scan short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=scan\|stored=1\|binding=method_for_scan**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "scan short value was not stored"
+    printf '\n%s\n' "not ok 1 - scan short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|scan=serpentine**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs scan did not reach the dither"
+    printf '\n%s\n' "not ok 1 - fs scan did not reach the dither"
     exit 0
 }
 
@@ -43,31 +43,31 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_SCAN=serpentine" -d "fs" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "fs:scan env conversion failed"
+    printf '\n%s\n' "not ok 1 - fs:scan env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=scan\|stored=1\|binding=method_for_scan**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "scan environment value was not stored"
+    printf '\n%s\n' "not ok 1 - scan environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXDTH1\|*diffuse=fs\|scan=serpentine**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs environment scan did not reach the dither"
+    printf '\n%s\n' "not ok 1 - fs environment scan did not reach the dither"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "fs:scan short and env output differ"
+    printf '\n%s\n' "not ok 1 - fs:scan short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "fs:scan preserves image output"
+printf '\n%s\n' "ok 1 - fs:scan preserves image output"
 exit 0

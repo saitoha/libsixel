@@ -15,14 +15,14 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0026_loader_librsvg_setopt_compat" || rc="$?"
 
 test "${rc-}" = 77 && {
-    echo "ok 1 - loader/0026_loader_librsvg_setopt_compat # SKIP unavailable"
+    printf '\n%s\n' "ok 1 - loader/0026_loader_librsvg_setopt_compat # SKIP unavailable"
     exit 0
 }
 
 test -n "${rc-}" && {
-    echo "not ok 1 - loader/0026_loader_librsvg_setopt_compat"
+    printf '\n%s\n' "not ok 1 - loader/0026_loader_librsvg_setopt_compat"
     exit 0
 }
 
-echo "ok 1 - loader/0026_loader_librsvg_setopt_compat"
+printf '\n%s\n' "ok 1 - loader/0026_loader_librsvg_setopt_compat"
 exit 0

@@ -6,8 +6,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/jpeg/0159_jp_hier_quant_redefinition || {
-    echo "not ok 1 - hier quant redefinition"
+    printf '\n%s\n' "not ok 1 - hier quant redefinition"
     exit 0
 }
-echo "ok 1 - hier quant redefinition"
+printf '\n%s\n' "ok 1 - hier quant redefinition"
 exit 0

@@ -18,23 +18,23 @@ echo "1..1"
 set -v
 
 test "$probe_status" -eq 77 || {
-    echo "not ok 1 - GPU device probe failed"
+    printf '\n%s\n' "not ok 1 - GPU device probe failed"
     exit 0
 }
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto -Qkmeans:backend=gpu:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || {
-    echo "not ok 1 - platform fallback conversion"
+    printf '\n%s\n' "not ok 1 - platform fallback conversion"
     exit 0
 }
 case "$trace" in
     *LSXKMEANS1\|requested=gpu\|effective=cpu\|*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - platform fallback backend selection"
+    printf '\n%s\n' "not ok 1 - platform fallback backend selection"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - platform fallback"
+printf '\n%s\n' "ok 1 - platform fallback"
 exit 0

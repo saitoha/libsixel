@@ -9,7 +9,7 @@ echo "1..1"
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "ok 1 # SKIP converter disabled"
+    printf '\n%s\n' "ok 1 # SKIP converter disabled"
     exit 0
 }
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -22,33 +22,33 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:seed=1 -dnone -aoff \
     -U gamma:Glocal-minde <"${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok 1 - gamut compact mapping conversion"
+    printf '\n%s\n' "not ok 1 - gamut compact mapping conversion"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=gamut\|stored=1\|binding=gamut\|value=2*) true ;; *) false ;; esac || {
-    echo "not ok 1 - gamut compact mapping binding"
+    printf '\n%s\n' "not ok 1 - gamut compact mapping binding"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:seed=1 -dnone -aoff \
     --env "SIXEL_OUTPUT_COLORSPACE_GAMUT=local-minde" -U gamma \
     <"${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - gamut environment mapping conversion"
+    printf '\n%s\n' "not ok 1 - gamut environment mapping conversion"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=gamut\|stored=1\|binding=gamut\|value=2*) true ;; *) false ;; esac || {
-    echo "not ok 1 - gamut environment mapping binding"
+    printf '\n%s\n' "not ok 1 - gamut environment mapping binding"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - gamut short and environment image agreement"
+    printf '\n%s\n' "not ok 1 - gamut short and environment image agreement"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
-echo "ok 1 - gamut mapping suboption image"
+printf '\n%s\n' "ok 1 - gamut mapping suboption image"
 exit 0

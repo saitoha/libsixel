@@ -12,9 +12,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_BMP_NUMERIC_FAIL_INVALID_COLOR_MASKS=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail invalid color masks numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail invalid color masks numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail invalid color masks numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (bmp fail invalid color masks numeric)"
 exit 0

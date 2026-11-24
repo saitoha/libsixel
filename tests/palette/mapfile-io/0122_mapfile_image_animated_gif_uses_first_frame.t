@@ -25,18 +25,18 @@ actual_palette=$(
         --gpu-policy=off -Wgamma -Ugamma -m "${mapfile_image}" \
         -M pal-jasc:- -o/dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "animated GIF image mapfile conversion failed"
+    printf '\n%s\n' "not ok 1 - animated GIF image mapfile conversion failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "animated GIF mapfile output normalization failed"
+    printf '\n%s\n' "not ok 1 - animated GIF mapfile output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "animated GIF mapfile consumed more than its first frame"
+    printf '\n%s\n' "not ok 1 - animated GIF mapfile consumed more than its first frame"
     exit 0
 }
 
-echo "ok" 1 - "animated GIF mapfile uses one static first-frame source"
+printf '\n%s\n' "ok 1 - animated GIF mapfile uses one static first-frame source"
 exit 0

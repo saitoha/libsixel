@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0003_kcenter_constraints" init-seeds-nonworsening >/dev/null || {
-    echo "not ok" 1 - "kcenter init_seeds non-worsening check failed"
+    printf '\n%s\n' "not ok 1 - kcenter init_seeds non-worsening check failed"
     exit 0
 }
 
-echo "ok" 1 - "kcenter init_seeds non-worsening check passed"
+printf '\n%s\n' "ok 1 - kcenter init_seeds non-worsening check passed"
 exit 0

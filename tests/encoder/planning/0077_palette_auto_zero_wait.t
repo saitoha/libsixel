@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0077_palette_auto_zero_wait || {
-    echo "not ok 1 - palette auto zero wait"
+    printf '\n%s\n' "not ok 1 - palette auto zero wait"
     exit 0
 }
-echo "ok 1 - palette auto zero wait"
+printf '\n%s\n' "ok 1 - palette auto zero wait"
 exit 0

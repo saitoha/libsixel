@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0066_multi_pass_paint_height" || {
-    echo "not ok 1 - paint height"
+    printf '\n%s\n' "not ok 1 - paint height"
     exit 0
 }
 
-echo "ok 1 - paint height"
+printf '\n%s\n' "ok 1 - paint height"
 exit 0

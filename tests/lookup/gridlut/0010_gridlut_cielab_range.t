@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/gridlut/0004_gridlut_cielab_range || {
-    echo "not ok 1 - gridlut cielab range"
+    printf '\n%s\n' "not ok 1 - gridlut cielab range"
     exit 0
 }
-echo "ok 1 - gridlut cielab range"
+printf '\n%s\n' "ok 1 - gridlut cielab range"
 exit 0

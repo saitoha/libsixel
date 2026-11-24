@@ -9,12 +9,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/kmeans/0099_gradient_gpu_mse_k64_i24_s42" || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP required GPU capability is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP required GPU capability is unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - gradient gpu mse k64 i24 s42"
+    printf '\n%s\n' "not ok 1 - gradient gpu mse k64 i24 s42"
     exit 0
 }
-echo "ok 1 - gradient gpu mse k64 i24 s42"
+printf '\n%s\n' "ok 1 - gradient gpu mse k64 i24 s42"
 exit 0

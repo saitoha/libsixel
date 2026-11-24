@@ -32,20 +32,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -53,7 +53,7 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_STROKE_CLIPPED*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_DEFERRED_STROKE_CLIPPED"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_DEFERRED_STROKE_CLIPPED"
         exit 0
         ;;
 esac
@@ -61,25 +61,25 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_GRADIENT_CLIP*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_DEFERRED_INTERIOR_CLIP*)
-        echo "not ok" 1 - "effects/stroke-composite unexpectedly emitted FX_DEFERRED_INTERIOR_CLIP"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly emitted FX_DEFERRED_INTERIOR_CLIP"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_VECTOR_STROKE_BASE_SUPPRESS*)
-        echo "not ok" 1 - "effects/stroke-composite unexpectedly emitted FX_VECTOR_STROKE_BASE_SUPPRESS"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly emitted FX_VECTOR_STROKE_BASE_SUPPRESS"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred stroke non-regression diagnostic contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps deferred stroke non-regression diagnostic contract"
 exit 0

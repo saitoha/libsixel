@@ -24,12 +24,12 @@ env_output="${artifact_dir}/0028-quantize-kmeans-inittype-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 "-Qkmeans:Ipca" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "kmeans:inittype short conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:inittype short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=inittype\|stored=1\|binding=quantize_model_kmeans_init_type,quantize_model_kmeans_init_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "inittype short value was not stored"
+    printf '\n%s\n' "not ok 1 - inittype short value was not stored"
     exit 0
 }
 
@@ -37,26 +37,26 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_INITTYPE=pca" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "kmeans:inittype env conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:inittype env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=inittype\|stored=1\|binding=quantize_model_kmeans_init_type,quantize_model_kmeans_init_override**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "inittype environment value was not stored"
+    printf '\n%s\n' "not ok 1 - inittype environment value was not stored"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "kmeans:inittype short and env output differ"
+    printf '\n%s\n' "not ok 1 - kmeans:inittype short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "kmeans:inittype preserves image output"
+printf '\n%s\n' "ok 1 - kmeans:inittype preserves image output"
 exit 0

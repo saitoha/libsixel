@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --binning-policy=hard \
     -p 64 \
     -o "${output_sixel}" \
     "${input_image}" || {
-    echo "not ok" 1 - "img2sixel kmeans hard binning failed"
+    printf '\n%s\n' "not ok 1 - img2sixel kmeans hard binning failed"
     exit 0
 }
 
@@ -36,14 +36,14 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 0 || {
-    echo "not ok" 1 - "kmeans hard binning lsqa failed (${lsqa_run_status})"
+    printf '\n%s\n' "not ok 1 - kmeans hard binning lsqa failed (${lsqa_run_status})"
     exit 0
 }
 
-echo "ok" 1 - "kmeans hard binning lsqa passed"
+printf '\n%s\n' "ok 1 - kmeans hard binning lsqa passed"
 exit 0

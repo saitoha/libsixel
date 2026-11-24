@@ -15,12 +15,12 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0070_latest_gpu_serial_fallback || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - latest gpu serial fallback"
+    printf '\n%s\n' "not ok 1 - latest gpu serial fallback"
     exit 0
 }
-echo "ok 1 - latest gpu serial fallback"
+printf '\n%s\n' "ok 1 - latest gpu serial fallback"
 exit 0

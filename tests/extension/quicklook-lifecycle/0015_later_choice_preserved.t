@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_FIXTURE}" 'later-choice' 'later-choice' || {
-    echo "not ok 1 - Later choice preserved."
+    printf '\n%s\n' "not ok 1 - Later choice preserved."
     exit 0
 }
-echo "ok 1 - Later choice preserved."
+printf '\n%s\n' "ok 1 - Later choice preserved."
 exit 0

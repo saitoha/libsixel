@@ -24,8 +24,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-pal8-samples.ppm" \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-pal8.ico" 'coregraphics!' 0 || {
-    echo "not ok 1 - ICO palette samples differ from the independent reference"
+    printf '\n%s\n' "not ok 1 - ICO palette samples differ from the independent reference"
     exit 0
 }
-echo "ok 1 - ICO palette samples match exactly"
+printf '\n%s\n' "ok 1 - ICO palette samples match exactly"
 exit 0

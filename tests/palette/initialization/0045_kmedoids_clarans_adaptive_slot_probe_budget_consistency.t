@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     clarans-adaptive-slot-probe-budget-consistency \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS adaptive slot probe budget failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS adaptive slot probe budget failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS adaptive slot probe budget passed"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS adaptive slot probe budget passed"
 exit 0

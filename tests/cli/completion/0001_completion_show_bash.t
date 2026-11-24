@@ -14,7 +14,7 @@ set -v
 
 msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
                     -1 bash) || {
-    echo "not ok" 1 - "bash completion output failed"
+    printf '\n%s\n' "not ok 1 - bash completion output failed"
     exit 0
 }
 
@@ -22,10 +22,10 @@ case "${msg}" in
     *'# bash completion for img2sixel'*)
         ;;
     *)
-        echo "not ok" 1 - "missing bash completion header"
+        printf '\n%s\n' "not ok 1 - missing bash completion header"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "bash completion output available"
+printf '\n%s\n' "ok 1 - bash completion output available"
 exit 0

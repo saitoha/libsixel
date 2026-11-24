@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" "decode_bmp_ok" || {
-    echo "not ok 1 - gd status decode_bmp_ok"
+    printf '\n%s\n' "not ok 1 - gd status decode_bmp_ok"
     exit 0
 }
 
-echo "ok 1 - gd status decode_bmp_ok"
+printf '\n%s\n' "ok 1 - gd status decode_bmp_ok"
 exit 0

@@ -23,21 +23,21 @@ output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_flag_override_ref_cms0.six"
 output_with_global_auto_cms0="${ARTIFACT_LOCAL_DIR}/cms_flag_override_global_auto_cms0.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
-    echo "not ok" 1 - "cms=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=0 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=none! "${input_webp}" >"${output_with_global_auto_cms0}" || {
-    echo "not ok" 1 - "decode failed for --cms-engine=auto + cms=0"
+    printf '\n%s\n' "not ok 1 - decode failed for --cms-engine=auto + cms=0"
     exit 0
 }
 
 cmp -s "${output_ref_cms0}" "${output_with_global_auto_cms0}" || {
-    echo "not ok" 1 - "cms=0 did not override global --cms-engine=auto"
+    printf '\n%s\n' "not ok 1 - cms=0 did not override global --cms-engine=auto"
     exit 0
 }
-echo "ok" 1 - "cms=0 overrides global --cms-engine=auto"
+printf '\n%s\n' "ok 1 - cms=0 overrides global --cms-engine=auto"
 
 exit 0

@@ -23,20 +23,20 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs:scan=ser \
 set -x
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "unique prefix was rejected"
+    printf '\n%s\n' "not ok 1 - unique prefix was rejected"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 test -z "${msg}" && {
-    echo "ok" 1 - "unique prefix is accepted"
+    printf '\n%s\n' "ok 1 - unique prefix is accepted"
     exit 0
 }
 
 case "${msg}" in
     *"error"*|*"warning"*|*"failed"*)
-        echo "not ok" 1 - "unique prefix emitted diagnostics"
+        printf '\n%s\n' "not ok 1 - unique prefix emitted diagnostics"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -45,5 +45,5 @@ case "${msg}" in
         ;;
 esac
 
-echo "ok" 1 - "unique prefix is accepted"
+printf '\n%s\n' "ok 1 - unique prefix is accepted"
 exit 0

@@ -26,14 +26,14 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/shape-fx2 decode failed"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ parsed\ ebbl\ bevel\ object\ in\ layer\ effects**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 did not parse ebbl bevel object"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 did not parse ebbl bevel object"
     exit 0
 }
 
-echo "ok" 1 - "effects/shape-fx2 keeps ebbl bevel parse contract"
+printf '\n%s\n' "ok 1 - effects/shape-fx2 keeps ebbl bevel parse contract"
 exit 0

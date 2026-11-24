@@ -25,26 +25,26 @@ snapshot_png="${ARTIFACT_LOCAL_DIR}/snapshot.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs -o "${sixel_path}" \
         "${source_image}" || {
-    echo "not ok" 1 - "dithered SIXEL generation failed"
+    printf '\n%s\n' "not ok 1 - dithered SIXEL generation failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${sixel_path}" \
         -o "${decoded_png}" || {
-    echo "not ok" 1 - "generated SIXEL decode failed"
+    printf '\n%s\n' "not ok 1 - generated SIXEL decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs -o "png:${snapshot_png}" \
         "${source_image}" || {
-    echo "not ok" 1 - "post-SIXEL PNG snapshot failed"
+    printf '\n%s\n' "not ok 1 - post-SIXEL PNG snapshot failed"
     exit 0
 }
 
 cmp -s "${decoded_png}" "${snapshot_png}" || {
-    echo "not ok" 1 - "PNG snapshot differs from generated SIXEL decode"
+    printf '\n%s\n' "not ok 1 - PNG snapshot differs from generated SIXEL decode"
     exit 0
 }
 
-echo "ok" 1 - "PNG snapshot matches generated dithered SIXEL decode"
+printf '\n%s\n' "ok 1 - PNG snapshot matches generated dithered SIXEL decode"
 exit 0

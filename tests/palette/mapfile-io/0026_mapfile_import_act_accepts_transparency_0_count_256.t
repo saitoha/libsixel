@@ -18,10 +18,10 @@ act_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-transparency-0-count-25
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${act_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "ACT transparency=0,count=256 should be accepted"
+    printf '\n%s\n' "not ok 1 - ACT transparency=0,count=256 should be accepted"
     exit 0
 }
 
-echo "ok" 1 - "ACT transparency=0,count=256 is accepted"
+printf '\n%s\n' "ok 1 - ACT transparency=0,count=256 is accepted"
 
 exit 0

@@ -17,10 +17,10 @@ snake_scaling="${ARTIFACT_LOCAL_DIR}/snake-scaling.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w50% -h150% -dfs -Bblue -thls -shist <"${snake_jpg}" \
     | tee "${snake_scaling}" >/dev/null || {
-    echo "not ok" 1 - "scaling with histogram and background failed"
+    printf '\n%s\n' "not ok 1 - scaling with histogram and background failed"
     exit 0
 }
 
-echo "ok" 1 - "scaling with histogram and background succeeded"
+printf '\n%s\n' "ok 1 - scaling with histogram and background succeeded"
 
 exit 0

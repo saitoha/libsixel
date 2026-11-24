@@ -13,12 +13,12 @@ SIXEL_LOADER_HDR_SOURCE=rec2020-pq \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     png-hdr/0029_libpng_pq_bkgd_manual || result=$?
 test "$result" -ne 77 || {
-    echo 'ok 1 # SKIP loader unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP loader unavailable'
     exit 0
 }
 test "$result" -eq 0 || {
-    echo 'not ok 1 - libpng pq bkgd manual'
+    printf '\n%s\n' 'not ok 1 - libpng pq bkgd manual'
     exit 0
 }
-echo 'ok 1 - libpng pq bkgd manual'
+printf '\n%s\n' 'ok 1 - libpng pq bkgd manual'
 exit 0

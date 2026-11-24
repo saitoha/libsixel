@@ -30,7 +30,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Lbuiltin:cms_engine=none! \
               -d none:scan=raster \
               "${input_png}" >"${out_builtin}" || {
-    echo "not ok" 1 - "builtin palette+tRNS keycolor decode failed"
+    printf '\n%s\n' "not ok 1 - builtin palette+tRNS keycolor decode failed"
     exit 0
 }
 
@@ -38,16 +38,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Llibpng:cms_engine=none! \
               -d none:scan=raster \
               "${input_png}" >"${out_libpng}" || {
-    echo "not ok" 1 - "libpng palette+tRNS keycolor decode failed"
+    printf '\n%s\n' "not ok 1 - libpng palette+tRNS keycolor decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
          "${out_builtin}" "${out_libpng}" 'builtin:Enone!' 0 || {
-    echo "not ok" 1 - "builtin palette+tRNS keycolor tone differs from libpng"
+    printf '\n%s\n' "not ok 1 - builtin palette+tRNS keycolor tone differs from libpng"
     exit 0
 }
 
-echo "ok" 1 - "builtin palette+tRNS keycolor tone matches libpng"
+printf '\n%s\n' "ok 1 - builtin palette+tRNS keycolor tone matches libpng"
 
 exit 0

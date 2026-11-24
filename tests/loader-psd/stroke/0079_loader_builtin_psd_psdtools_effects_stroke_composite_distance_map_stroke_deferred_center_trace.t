@@ -37,20 +37,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite center decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite center decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite center missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite center missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite center malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite center malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -58,8 +58,8 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_DISTANCE_MAP_STROKE*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite center missing FX_DEFERRED_DISTANCE_MAP_STROKE"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite center missing FX_DEFERRED_DISTANCE_MAP_STROKE"
         exit 0
         ;;
 esac
@@ -67,12 +67,12 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_DISTANCE_MAP_CENTER*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite center missing FX_DEFERRED_DISTANCE_MAP_CENTER"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite center missing FX_DEFERRED_DISTANCE_MAP_CENTER"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite center keeps deferred center code contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite center keeps deferred center code contract"
 exit 0

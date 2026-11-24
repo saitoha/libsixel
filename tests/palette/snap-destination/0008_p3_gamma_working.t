@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0054_p3_encoder_contract working || {
-    echo "not ok 1 - p3 gamma working"
+    printf '\n%s\n' "not ok 1 - p3 gamma working"
     exit 0
 }
 
-echo "ok 1 - p3 gamma working"
+printf '\n%s\n' "ok 1 - p3 gamma working"
 exit 0

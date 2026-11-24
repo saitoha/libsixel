@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/clamp/0034_lso2_din99d_lightness" || {
-    echo "not ok 1 - lso2_din99d_lightness"
+    printf '\n%s\n' "not ok 1 - lso2_din99d_lightness"
     exit 0
 }
-echo "ok 1 - lso2_din99d_lightness"
+printf '\n%s\n' "ok 1 - lso2_din99d_lightness"
 exit 0

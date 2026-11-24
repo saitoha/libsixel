@@ -14,10 +14,10 @@ set -v
 snake_ascii_pgm="${TOP_SRCDIR}/images/snake-ascii.pgm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -Eauto "${snake_ascii_pgm}" -o/dev/null || {
-    echo "not ok" 1 - "ASCII PGM auto encoder inspection fails"
+    printf '\n%s\n' "not ok 1 - ASCII PGM auto encoder inspection fails"
     exit 0
 }
 
-echo "ok" 1 - "ASCII PGM auto encoder inspection works"
+printf '\n%s\n' "ok 1 - ASCII PGM auto encoder inspection works"
 
 exit 0

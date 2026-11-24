@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/sampling_threads/0001_palette_invariance" adaptive-grid 1 3 || {
-    echo "not ok" 1 - "adaptive-grid quality up2 palette thread invariance"
+    printf '\n%s\n' "not ok 1 - adaptive-grid quality up2 palette thread invariance"
     exit 0
 }
-echo "ok" 1 - "adaptive-grid quality up2 palette thread invariance"
+printf '\n%s\n' "ok 1 - adaptive-grid quality up2 palette thread invariance"
 exit 0

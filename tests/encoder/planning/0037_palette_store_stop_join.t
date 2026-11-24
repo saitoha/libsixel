@@ -14,12 +14,12 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0037_palette_store_stop_join || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP asynchronous palette scheduling is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - palette store stop join"
+    printf '\n%s\n' "not ok 1 - palette store stop join"
     exit 0
 }
-echo "ok 1 - palette store stop join"
+printf '\n%s\n' "ok 1 - palette store stop join"
 exit 0

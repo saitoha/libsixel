@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0002_pipeline 0 2 0 4 || {
-    echo "not ok 1 - auto policy nearest"
+    printf '\n%s\n' "not ok 1 - auto policy nearest"
     exit 0
 }
-echo "ok 1 - auto policy nearest"
+printf '\n%s\n' "ok 1 - auto policy nearest"
 exit 0

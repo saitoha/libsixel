@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/blockcull/0001_blockcull_gamma_range || {
-    echo "not ok 1 - blockcull gamma range"
+    printf '\n%s\n' "not ok 1 - blockcull gamma range"
     exit 0
 }
-echo "ok 1 - blockcull gamma range"
+printf '\n%s\n' "ok 1 - blockcull gamma range"
 exit 0

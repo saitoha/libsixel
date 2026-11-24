@@ -17,10 +17,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/rbc-8bit.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=rbc -p 16 -d none \
         -o "${output_sixel}" "${snake_png}" || {
-    echo "not ok" 1 - "8-bit RBC lookup policy failed"
+    printf '\n%s\n' "not ok 1 - 8-bit RBC lookup policy failed"
     exit 0
 }
 
-echo "ok" 1 - "8-bit RBC lookup policy completes"
+printf '\n%s\n' "ok 1 - 8-bit RBC lookup policy completes"
 
 exit 0

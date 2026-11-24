@@ -29,15 +29,15 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/ecb29f68-snake-64-refere
 output_sixel="${ARTIFACT_LOCAL_DIR}/coregraphics_tga_gray.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L coregraphics! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 - "coregraphics failed to decode grayscale TGA input"
+    printf '\n%s\n' "not ok 1 - coregraphics failed to decode grayscale TGA input"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics keeps MS-SSIM baseline for grayscale TGA input"
+printf '\n%s\n' "ok 1 - coregraphics keeps MS-SSIM baseline for grayscale TGA input"
 exit 0

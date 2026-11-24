@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d bluenoise:G1.0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "bluenoise GVALUE short form was rejected"
+    printf '\n%s\n' "not ok 1 - bluenoise GVALUE short form was rejected"
     exit 0
 }
 
-echo "ok" 1 - "bluenoise GVALUE short form is accepted"
+printf '\n%s\n' "ok 1 - bluenoise GVALUE short form is accepted"
 exit 0

@@ -29,39 +29,39 @@ reference_png="${TOP_SRCDIR}/tests/data/loader/quality/ab2e92a3-tiff-para34-expe
 output_six="${TMPDIR:-/tmp}/libsixel-rgb-parametric-34-$$.six"
 
 test -f "${input_tiff}" || {
-    echo "not ok" 1 - "missing input fixture: rgb_parametric_34.tiff"
+    printf '\n%s\n' "not ok 1 - missing input fixture: rgb_parametric_34.tiff"
     exit 0
 }
 
 test -f "${reference_png}" || {
-    echo "not ok" 1 - "missing independent reference: tiff-para34-expected.png"
+    printf '\n%s\n' "not ok 1 - missing independent reference: tiff-para34-expected.png"
     exit 0
 }
 
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 192 -h 192 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
     2>&1 >"${output_six}") || {
-    echo "not ok" 1 - "libtiff builtin cms decode failed: rgb_parametric_34"
+    printf '\n%s\n' "not ok 1 - libtiff builtin cms decode failed: rgb_parametric_34"
     exit 0
 }
 
 case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok" 1 - "libtiff did not deliver the quality input"
+    printf '\n%s\n' "not ok 1 - libtiff did not deliver the quality input"
     exit 0
 }
 
 case "${trace}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok" 1 - "builtin CMS did not apply to the quality input"
+    printf '\n%s\n' "not ok 1 - builtin CMS did not apply to the quality input"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_png}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "rgb_parametric_34 builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - rgb_parametric_34 builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libtiff builtin cms rgb_parametric_34 keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - libtiff builtin cms rgb_parametric_34 keeps MS-SSIM ${lsqa_floor}"
 exit 0

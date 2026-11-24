@@ -11,8 +11,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_TEST_BUILTIN_PIXELFORMAT_BASELINE=1 \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat"

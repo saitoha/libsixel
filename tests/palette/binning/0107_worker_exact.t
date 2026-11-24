@@ -16,16 +16,16 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/sampling_float/0001_sampling_contract \
     worker 0 1 auto exact 2>&1) || {
-    echo "not ok 1 - worker exact"
+    printf '\n%s\n' "not ok 1 - worker exact"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"job_ready=1"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - worker exact worker dispatch"
+    printf '\n%s\n' "not ok 1 - worker exact worker dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - worker exact"
+printf '\n%s\n' "ok 1 - worker exact"
 exit 0

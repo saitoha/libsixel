@@ -14,9 +14,9 @@ set -v
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" bom \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Bom" \
     "${TOP_BUILDDIR}/quicklook-extension/package/payload-manifest.json" || {
-    echo "not ok 1 - Bom payload attributes differ from the contract"
+    printf '\n%s\n' "not ok 1 - Bom payload attributes differ from the contract"
     exit 0
 }
 
-echo "ok 1 - Package Bom declares the owned payload attributes."
+printf '\n%s\n' "ok 1 - Package Bom declares the owned payload attributes."
 exit 0

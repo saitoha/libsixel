@@ -22,7 +22,7 @@ echo "1..1"
 set -v
 
 mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
+    printf '\n%s\n' "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
     exit 0
 }
 
@@ -31,7 +31,7 @@ log_file="${ARTIFACT_LOCAL_DIR}/timeline-libpng-manager-candidate.json"
 
 SIXEL_LOG_PATH="${log_file}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L libpng! "${input_png}" >/dev/null || {
-    echo "not ok 1 - libpng conversion failed while capturing manager labels"
+    printf '\n%s\n' "not ok 1 - libpng conversion failed while capturing manager labels"
     exit 0
 }
 
@@ -68,9 +68,9 @@ while IFS= read -r line; do
 done < "${log_file}"
 
 test "${mcs}${mcf}${mss}${msf}${css}${csf}" = "111111" || {
-    echo "not ok 1 - manager/candidate labels were not fully visible"
+    printf '\n%s\n' "not ok 1 - manager/candidate labels were not fully visible"
     exit 0
 }
 
-echo "ok 1 - manager and candidate labels are visible in timeline log"
+printf '\n%s\n' "ok 1 - manager and candidate labels are visible in timeline log"
 exit 0

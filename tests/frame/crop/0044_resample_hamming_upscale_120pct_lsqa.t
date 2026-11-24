@@ -30,7 +30,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/hamming-upscale_120pct.six"
 
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r hamming -w 120% -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "hamming upscale 120pct scaling failed"
+    printf '\n%s\n' "not ok 1 - hamming upscale 120pct scaling failed"
     exit 0
 }
 
@@ -40,14 +40,14 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status-}" = 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_run_status:-}" = "" || {
-    echo "not ok" 1 - "hamming upscale 120pct lsqa failed"
+    printf '\n%s\n' "not ok 1 - hamming upscale 120pct lsqa failed"
     exit 0
 }
 
-echo "ok" 1 - "hamming upscale 120pct lsqa passed"
+printf '\n%s\n' "ok 1 - hamming upscale 120pct lsqa passed"
 exit 0

@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0054_float_geometry_state resize 9 owned || {
-    echo "not ok 1 - float resize with mask"
+    printf '\n%s\n' "not ok 1 - float resize with mask"
     exit 0
 }
-echo "ok 1 - float resize with mask"
+printf '\n%s\n' "ok 1 - float resize with mask"
 exit 0

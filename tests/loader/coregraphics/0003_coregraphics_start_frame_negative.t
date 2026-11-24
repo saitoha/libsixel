@@ -22,7 +22,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=-1 \
     -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_start_negative.six" || {
-    echo "not ok" 1 - "coregraphics decode with negative start frame failed"
+    printf '\n%s\n' "not ok 1 - coregraphics decode with negative start frame failed"
     exit 0
 }
 
@@ -30,15 +30,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=4 \
     -L coregraphics! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_start_positive_equivalent.six" || {
-    echo "not ok" 1 - "coregraphics decode with equivalent positive frame failed"
+    printf '\n%s\n' "not ok 1 - coregraphics decode with equivalent positive frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/coregraphics_start_negative.six" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_start_positive_equivalent.six" || {
-    echo "not ok" 1 - "negative start frame did not map to last coregraphics frame"
+    printf '\n%s\n' "not ok 1 - negative start frame did not map to last coregraphics frame"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics negative start frame resolves from tail"
+printf '\n%s\n' "ok 1 - coregraphics negative start frame resolves from tail"
 exit 0

@@ -15,7 +15,7 @@ set -v
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -7 -bgray2 -dnone -Efast -g -n7 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png") || {
-    echo "not ok 1 - static PNG macro definition: conversion failed"
+    printf '\n%s\n' "not ok 1 - static PNG macro definition: conversion failed"
     exit 0
 }
 
@@ -23,9 +23,9 @@ output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 escape=$(printf '\033')
 expected="${escape}P7;0;1!z1b507122313b313b313b3123303b323b303b303b3023313b323b33333b33333b333323323b323b36373b36373b363723333b323b3130303b3130303b3130302330401b5c${escape}\\"
 test "$output" = "$expected" || {
-    echo "not ok 1 - static PNG macro definition: unexpected control stream"
+    printf '\n%s\n' "not ok 1 - static PNG macro definition: unexpected control stream"
     exit 0
 }
 
-echo "ok 1 - static PNG macro definition"
+printf '\n%s\n' "ok 1 - static PNG macro definition"
 exit 0

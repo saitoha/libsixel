@@ -20,11 +20,11 @@ expected_palette=$(
         -L builtin -m "${last_mapfile}" -M pal:- -o /dev/null \
         "${input_image}"
 ) || {
-    echo "not ok" 1 - "last mapfile reference palette export failed"
+    printf '\n%s\n' "not ok 1 - last mapfile reference palette export failed"
     exit 0
 }
 expected_palette=$(printf "%s" "${expected_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "last mapfile reference normalization failed"
+    printf '\n%s\n' "not ok 1 - last mapfile reference normalization failed"
     exit 0
 }
 
@@ -33,23 +33,23 @@ actual_palette=$(
         -L builtin -m "${first_mapfile}" -m "${last_mapfile}" \
         -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "repeated mapfile palette export failed"
+    printf '\n%s\n' "not ok 1 - repeated mapfile palette export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "repeated mapfile palette normalization failed"
+    printf '\n%s\n' "not ok 1 - repeated mapfile palette normalization failed"
     exit 0
 }
 
 test -n "${actual_palette}" || {
-    echo "not ok" 1 - "repeated mapfile palette output is empty"
+    printf '\n%s\n' "not ok 1 - repeated mapfile palette output is empty"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "last mapfile did not take effect"
+    printf '\n%s\n' "not ok 1 - last mapfile did not take effect"
     exit 0
 }
 
-echo "ok" 1 - "repeated mapfile follows last occurrence"
+printf '\n%s\n' "ok 1 - repeated mapfile follows last occurrence"
 exit 0

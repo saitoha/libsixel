@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0003_eyt_oklab_range || {
-    echo "not ok 1 - eytzinger oklab range"
+    printf '\n%s\n' "not ok 1 - eytzinger oklab range"
     exit 0
 }
 
-echo "ok 1 - eytzinger oklab range"
+printf '\n%s\n' "ok 1 - eytzinger oklab range"
 exit 0

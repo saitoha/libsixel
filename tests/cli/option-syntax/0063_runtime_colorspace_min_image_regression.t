@@ -25,11 +25,11 @@ set -v
 # Balanced cannot reach parallel threshold consumers with one eligible CPU.
 counts=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     threadpool/0002_thread_default_counts converter-counts) || {
-    echo "not ok 1 - topology probe failed"
+    printf '\n%s\n' "not ok 1 - topology probe failed"
     exit 0
 }
 test "${counts%% *}" -gt 1 || {
-    echo "ok 1 # SKIP balanced parallel conversion needs two eligible CPUs"
+    printf '\n%s\n' "ok 1 # SKIP balanced parallel conversion needs two eligible CPUs"
     exit 0
 }
 
@@ -42,15 +42,15 @@ env_output="${artifact_dir}/0141-colorspace-min-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=2 -_nearest:Iall -Woklab \
     "-jauto:C257" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "colorspace threshold short conversion failed"
+    printf '\n%s\n' "not ok 1 - colorspace threshold short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=colorspace_min\|stored=1\|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override\|value=257**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "colorspace threshold short value was not stored"
+    printf '\n%s\n' "not ok 1 - colorspace threshold short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "colorspace threshold missed its consumer"
+    printf '\n%s\n' "not ok 1 - colorspace threshold missed its consumer"
     exit 0
 }
 
@@ -58,15 +58,15 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,runtime_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=2 -_nearest:Iall -Woklab \
     --env "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=257" -jauto \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "colorspace threshold environment conversion failed"
+    printf '\n%s\n' "not ok 1 - colorspace threshold environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=colorspace_min\|stored=1\|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override\|value=257**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "colorspace threshold environment value was not stored"
+    printf '\n%s\n' "not ok 1 - colorspace threshold environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXRT1\|colorspace_min=257**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "environment threshold missed its consumer"
+    printf '\n%s\n' "not ok 1 - environment threshold missed its consumer"
     exit 0
 }
 
@@ -74,24 +74,24 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=2 -_nearest:Iall -Woklab \
     --env "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=-1" -jauto \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "colorspace threshold signed conversion failed"
+    printf '\n%s\n' "not ok 1 - colorspace threshold signed conversion failed"
     exit 0
 }
 case "${range_trace}" in *LSXSUB1\|*key=colorspace_min\|stored=1\|binding=colorspace_parallel_min_pixels,colorspace_parallel_min_pixels_override\|value=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "colorspace threshold did not preserve size clamping"
+    printf '\n%s\n' "not ok 1 - colorspace threshold did not preserve size clamping"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "colorspace threshold outputs differ"
+    printf '\n%s\n' "not ok 1 - colorspace threshold outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "runtime colorspace threshold preserves image output"
+printf '\n%s\n' "ok 1 - runtime colorspace threshold preserves image output"
 exit 0

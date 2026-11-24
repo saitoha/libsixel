@@ -24,32 +24,32 @@ env_output="${artifact_dir}/0165_update_delta_error_image_regression-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Zdelta:Eskip" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok 1 - delta:error short conversion failed"
+    printf '\n%s\n' "not ok 1 - delta:error short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=error\|stored=1\|binding=sixdelta_error_mode,sixdelta_error_mode_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:error short value was not stored"
+    printf '\n%s\n' "not ok 1 - delta:error short value was not stored"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_UPDATE_DELTA_ERROR=skip" -Z delta \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - delta:error environment conversion failed"
+    printf '\n%s\n' "not ok 1 - delta:error environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=error\|stored=1\|binding=sixdelta_error_mode,sixdelta_error_mode_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - delta:error environment value was not stored"
+    printf '\n%s\n' "not ok 1 - delta:error environment value was not stored"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - delta:error output differs"
+    printf '\n%s\n' "not ok 1 - delta:error output differs"
     exit 0
 }
 # This test owns exact option-route equivalence and consumer selection.
 test -s "${short_output}" || {
-    echo "not ok 1 - option-route output is empty"
+    printf '\n%s\n' "not ok 1 - option-route output is empty"
     exit 0
 }
-echo "ok 1 - delta:error preserves image output"
+printf '\n%s\n' "ok 1 - delta:error preserves image output"
 exit 0

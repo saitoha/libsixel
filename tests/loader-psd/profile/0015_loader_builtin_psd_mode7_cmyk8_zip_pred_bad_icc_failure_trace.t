@@ -22,10 +22,10 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PAT
 
 case "${trace_log}" in
     *"builtin PSD: embedded ICC conversion failed"*)
-        echo "ok" 1 - "Mode7(4ch->CMYK) ZIP+Prediction bad ICC failure trace is preserved"
+        printf '\n%s\n' "ok 1 - Mode7(4ch->CMYK) ZIP+Prediction bad ICC failure trace is preserved"
         ;;
     *)
-        echo "not ok" 1 - "Mode7(4ch->CMYK) ZIP+Prediction bad ICC failure trace is missing"
+        printf '\n%s\n' "not ok 1 - Mode7(4ch->CMYK) ZIP+Prediction bad ICC failure trace is missing"
         exit 0
         ;;
 esac

@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/rgb101_diffusion/0001_spatial_contract \
     residual srgb cielab stucki || {
-    echo "not ok 1 - srgb cielab stucki residual"
+    printf '\n%s\n' "not ok 1 - srgb cielab stucki residual"
     exit 0
 }
-echo "ok 1 - srgb cielab stucki residual"
+printf '\n%s\n' "ok 1 - srgb cielab stucki residual"
 exit 0

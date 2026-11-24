@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0003_encoder_core_ormode_body_tail_band" || {
-    echo "not ok 1 - 0003_encoder_core_ormode_body_tail_band"
+    printf '\n%s\n' "not ok 1 - 0003_encoder_core_ormode_body_tail_band"
     exit 0
 }
 
-echo "ok 1 - 0003_encoder_core_ormode_body_tail_band"
+printf '\n%s\n' "ok 1 - 0003_encoder_core_ormode_body_tail_band"
 exit 0

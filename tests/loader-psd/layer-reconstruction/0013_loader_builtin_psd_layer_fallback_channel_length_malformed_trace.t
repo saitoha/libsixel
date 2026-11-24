@@ -17,10 +17,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: malformed layer channel length"*)
-        echo "ok" 1 - "layer fallback channel-length<2 is malformed"
+        printf '\n%s\n' "ok 1 - layer fallback channel-length<2 is malformed"
         ;;
     *)
-        echo "not ok" 1 - "malformed layer channel-length trace is missing"
+        printf '\n%s\n' "not ok 1 - malformed layer channel-length trace is missing"
         exit 0
         ;;
 esac

@@ -34,7 +34,7 @@ SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 ${
         -D -dl:Vl \
         -i "${TOP_SRCDIR}/tests/data/inputs/snake_256.six" \
         -o "${thread1_png}" || {
-    echo "not ok" 1 - "single-thread fast4 decode failed"
+    printf '\n%s\n' "not ok 1 - single-thread fast4 decode failed"
     exit 0
 }
 
@@ -42,15 +42,15 @@ SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=4 ${
         -D -dl:Vl \
         -i "${TOP_SRCDIR}/tests/data/inputs/snake_256.six" \
         -o "${thread4_png}" || {
-    echo "not ok" 1 - "four-thread fast4 decode failed"
+    printf '\n%s\n' "not ok 1 - four-thread fast4 decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
         "${thread1_png}" "${thread4_png}" >/dev/null || {
-    echo "not ok" 1 - "Vlight thread-count output fell below MS-SSIM 0.999"
+    printf '\n%s\n' "not ok 1 - Vlight thread-count output fell below MS-SSIM 0.999"
     exit 0
 }
 
-echo "ok" 1 - "Vlight thread-count output stays above MS-SSIM 0.999"
+printf '\n%s\n' "ok 1 - Vlight thread-count output stays above MS-SSIM 0.999"
 exit 0

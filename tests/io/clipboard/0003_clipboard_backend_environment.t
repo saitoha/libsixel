@@ -22,11 +22,11 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${file_dir}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o png:clipboard: || {
-    echo "not ok" 1 - "mixed-case file backend was not selected"
+    printf '\n%s\n' "not ok 1 - mixed-case file backend was not selected"
     exit 0
 }
 test -s "${file_dir}/image.bin" || {
-    echo "not ok" 1 - "file backend did not write its image slot"
+    printf '\n%s\n' "not ok 1 - file backend did not write its image slot"
     exit 0
 }
 
@@ -35,13 +35,13 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${fake_dir}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o png:clipboard: || {
-    echo "not ok" 1 - "legacy fake backend was not selected"
+    printf '\n%s\n' "not ok 1 - legacy fake backend was not selected"
     exit 0
 }
 test -s "${fake_dir}/image.bin" || {
-    echo "not ok" 1 - "legacy fake backend did not write its image slot"
+    printf '\n%s\n' "not ok 1 - legacy fake backend did not write its image slot"
     exit 0
 }
 
-echo "ok" 1 - "clipboard backend accepts file and legacy fake case-insensitively"
+printf '\n%s\n' "ok 1 - clipboard backend accepts file and legacy fake case-insensitively"
 exit 0

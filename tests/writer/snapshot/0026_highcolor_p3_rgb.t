@@ -11,8 +11,8 @@ SIXEL_DECODER_INPUT_COLORSPACE=srgb \
     SIXEL_TRACE_TOPIC=dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/png_snapshot/0026_highcolor_p3_rgb "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok 1 - highcolor p3 rgb snapshot"
+    printf '\n%s\n' "not ok 1 - highcolor p3 rgb snapshot"
     exit 0
 }
-echo "ok 1 - highcolor p3 rgb snapshot"
+printf '\n%s\n' "ok 1 - highcolor p3 rgb snapshot"
 exit 0

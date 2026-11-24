@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0058_parallel_node_dra
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - parallel node drain release # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - parallel node drain release # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - parallel node drain release"
+    printf '\n%s\n' "not ok 1 - parallel node drain release"
     exit 0
 }
-echo "ok 1 - parallel node drain release"
+printf '\n%s\n' "ok 1 - parallel node drain release"
 exit 0

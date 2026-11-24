@@ -19,7 +19,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_duplicate_vp8x_chunk.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted duplicate VP8X chunks"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted duplicate VP8X chunks"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -29,13 +29,13 @@ case "${msg}" in
     *"webp decode: duplicate VP8X chunk is invalid."*)
         ;;
     *)
-        echo "not ok" 1 - "expected duplicate VP8X diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected duplicate VP8X diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects duplicate VP8X chunks"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects duplicate VP8X chunks"
 
 exit 0

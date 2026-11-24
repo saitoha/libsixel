@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0003_kcenter_constraints" profile-legacy-compatibility >/dev/null || {
-    echo "not ok" 1 - "kcenter profile=legacy compatibility check failed"
+    printf '\n%s\n' "not ok 1 - kcenter profile=legacy compatibility check failed"
     exit 0
 }
 
-echo "ok" 1 - "kcenter profile=legacy compatibility check passed"
+printf '\n%s\n' "ok 1 - kcenter profile=legacy compatibility check passed"
 exit 0

@@ -14,10 +14,10 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -e -i -P "${snake_jpg}" -o/dev/null || {
-    echo "not ok" 1 - "interlaced encode palette dump fails"
+    printf '\n%s\n' "not ok 1 - interlaced encode palette dump fails"
     exit 0
 }
 
-echo "ok" 1 - "interlaced encode emits palette dump"
+printf '\n%s\n' "ok 1 - interlaced encode emits palette dump"
 
 exit 0

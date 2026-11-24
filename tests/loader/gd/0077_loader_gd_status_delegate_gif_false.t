@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" "delegate_gif_false" || {
-    echo "not ok 1 - gd status delegate_gif_false"
+    printf '\n%s\n' "not ok 1 - gd status delegate_gif_false"
     exit 0
 }
 
-echo "ok 1 - gd status delegate_gif_false"
+printf '\n%s\n' "ok 1 - gd status delegate_gif_false"
 exit 0

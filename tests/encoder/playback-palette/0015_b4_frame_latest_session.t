@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder/playback-palette/0015_b4_frame_latest_session" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - b4 frame latest session"
+    printf '\n%s\n' "not ok 1 - b4 frame latest session"
     exit 0
 }
-echo "ok 1 - b4 frame latest session"
+printf '\n%s\n' "ok 1 - b4 frame latest session"
 exit 0

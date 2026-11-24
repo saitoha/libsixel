@@ -7,8 +7,8 @@ set -v
 status=0
  "$SIXEL_TEST_COMPARE" -s "$TOP_SRCDIR/tests/tools/compare/data/newline.txt" "$TOP_SRCDIR/tests/tools/compare/data/no-newline.txt" || status=$?
 test "$status" -eq 1 || {
-    echo 'not ok 1 - a missing final newline is detected'
+    printf '\n%s\n' 'not ok 1 - a missing final newline is detected'
     exit 0
 }
-echo 'ok 1 - a missing final newline is detected'
+printf '\n%s\n' 'ok 1 - a missing final newline is detected'
 exit 0

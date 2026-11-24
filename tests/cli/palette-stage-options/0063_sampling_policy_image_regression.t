@@ -28,28 +28,28 @@ env_output="${artifact_dir}/0162-sampling-policy-env-$$.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -4adaptive-grid \
     -p 16 -Qkmeans "${input_image}" >"${short_output}" || {
-    echo "not ok" 1 - "short adaptive-grid conversion failed"
+    printf '\n%s\n' "not ok 1 - short adaptive-grid conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_SAMPLING_POLICY=adaptive-grid" -p 16 -Qkmeans \
     "${input_image}" >"${env_output}" || {
-    echo "not ok" 1 - "environment adaptive-grid conversion failed"
+    printf '\n%s\n' "not ok 1 - environment adaptive-grid conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "short and environment sampling output differ"
+    printf '\n%s\n' "not ok 1 - short and environment sampling output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "short top-level sampling preserves image output"
+printf '\n%s\n' "ok 1 - short top-level sampling preserves image output"
 exit 0

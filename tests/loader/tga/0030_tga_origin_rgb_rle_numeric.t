@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0230_tga_origin_rgb_rle_numeric" 1>&2 || {
-    echo "not ok 1 - Expand raw and run RLE packets relative to the colormap origin"
+    printf '\n%s\n' "not ok 1 - Expand raw and run RLE packets relative to the colormap origin"
     exit 0
 }
-echo "ok 1 - Expand raw and run RLE packets relative to the colormap origin"
+printf '\n%s\n' "ok 1 - Expand raw and run RLE packets relative to the colormap origin"
 exit 0

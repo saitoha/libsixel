@@ -22,7 +22,7 @@ case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader was not attempted"
+        printf '\n%s\n' "not ok 1 - builtin loader was not attempted"
         exit 0
         ;;
 esac
@@ -31,10 +31,10 @@ case "${trace_log}" in
     *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader failed to decode 16-bit CMYK lossless JPEG"
+        printf '\n%s\n' "not ok 1 - builtin loader failed to decode 16-bit CMYK lossless JPEG"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin decodes 16-bit CMYK lossless JPEG"
+printf '\n%s\n' "ok 1 - builtin decodes 16-bit CMYK lossless JPEG"
 exit 0

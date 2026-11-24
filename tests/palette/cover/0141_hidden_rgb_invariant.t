@@ -9,9 +9,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/cover_mask/0001_cover_mask wire 10 || {
-    echo "not ok 1 - hidden rgb invariant"
+    printf '\n%s\n' "not ok 1 - hidden rgb invariant"
     exit 0
 }
 
-echo "ok 1 - hidden rgb invariant"
+printf '\n%s\n' "ok 1 - hidden rgb invariant"
 exit 0

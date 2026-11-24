@@ -28,7 +28,7 @@ msg=$(
 ) || status="$?"
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "stdin .svgz tempfile open failpoint unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - stdin .svgz tempfile open failpoint unexpectedly succeeded"
     exit 0
 }
 
@@ -36,10 +36,10 @@ case "${msg}" in
     *"g_file_open_tmp failed."*)
         ;;
     *)
-        echo "not ok" 1 - "stdin .svgz tempfile open failure diagnostics missing"
+        printf '\n%s\n' "not ok 1 - stdin .svgz tempfile open failure diagnostics missing"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "stdin .svgz tempfile open failure diagnostics are reported"
+printf '\n%s\n' "ok 1 - stdin .svgz tempfile open failure diagnostics are reported"
 exit 0

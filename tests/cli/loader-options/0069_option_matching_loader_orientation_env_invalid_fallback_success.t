@@ -21,25 +21,25 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png"
 
 ref_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=1! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "orientation=1 reference decode failed"
+    printf '\n%s\n' "not ok 1 - orientation=1 reference decode failed"
     exit 0
 }
 
 ref_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=0! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "orientation=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - orientation=0 reference decode failed"
     exit 0
 }
 
 out_invalid_global=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_ORIENTATION=invalid-token" \
     -Llibpng! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "invalid global orientation env decode failed"
+    printf '\n%s\n' "not ok 1 - invalid global orientation env decode failed"
     exit 0
 }
 
 test "${out_invalid_global}" = "${ref_on}" || {
-    echo "not ok" 1 - "invalid global orientation env did not fallback to default ON"
+    printf '\n%s\n' "not ok 1 - invalid global orientation env did not fallback to default ON"
     exit 0
 }
 
@@ -47,14 +47,14 @@ out_invalid_per_loader=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_ORIENTATION=0" \
     --env "SIXEL_LOADER_LIBPNG_ORIENTATION=invalid-token" \
     -Llibpng! "${input_png}" 2>/dev/null) || {
-    echo "not ok" 1 - "invalid per-loader orientation env decode failed"
+    printf '\n%s\n' "not ok 1 - invalid per-loader orientation env decode failed"
     exit 0
 }
 
 test "${out_invalid_per_loader}" = "${ref_off}" || {
-    echo "not ok" 1 - "invalid per-loader env did not fallback to global OFF"
+    printf '\n%s\n' "not ok 1 - invalid per-loader env did not fallback to global OFF"
     exit 0
 }
 
-echo "ok" 1 - "invalid orientation env values fallback to lower-priority source"
+printf '\n%s\n' "ok 1 - invalid orientation env values fallback to lower-priority source"
 exit 0

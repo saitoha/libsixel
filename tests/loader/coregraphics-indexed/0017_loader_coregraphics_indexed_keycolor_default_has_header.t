@@ -24,14 +24,14 @@ output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
     -L coregraphics! \
     -d fs:scan=raster \
     "${input_png}")" || {
-    echo "not ok 1 - coregraphics indexed+tRNS render failed"
+    printf '\n%s\n' "not ok 1 - coregraphics indexed+tRNS render failed"
     exit 0
 }
 
 { test -n "${keycolor_header}" && case "${output_text}" in *"${keycolor_header}"*) true ;; *) false ;; esac; } || {
-    echo "not ok 1 - coregraphics indexed+tRNS output lost keycolor DCS header"
+    printf '\n%s\n' "not ok 1 - coregraphics indexed+tRNS output lost keycolor DCS header"
     exit 0
 }
 
-echo "ok 1 - coregraphics indexed+tRNS output keeps keycolor DCS header"
+printf '\n%s\n' "ok 1 - coregraphics indexed+tRNS output keeps keycolor DCS header"
 exit 0

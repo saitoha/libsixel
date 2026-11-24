@@ -49,12 +49,12 @@ while IFS= read -r bash_line || test -n "${bash_line}"; do
             ;;
     esac
 done < "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" || {
-    echo "not ok" 1 - "failed to parse bash completion"
+    printf '\n%s\n' "not ok 1 - failed to parse bash completion"
     exit 0
 }
 
 LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
-    echo "not ok" 1 - "failed to sort bash completion"
+    printf '\n%s\n' "not ok 1 - failed to sort bash completion"
     exit 0
 }
 
@@ -74,19 +74,19 @@ while IFS= read -r zsh_line || test -n "${zsh_line}"; do
             ;;
     esac
 done < "${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel" || {
-    echo "not ok" 1 - "failed to parse zsh completion"
+    printf '\n%s\n' "not ok 1 - failed to parse zsh completion"
     exit 0
 }
 
 LC_ALL=C sort "${zsh_opts}" >"${zsh_sorted}" || {
-    echo "not ok" 1 - "failed to sort zsh completion"
+    printf '\n%s\n' "not ok 1 - failed to sort zsh completion"
     exit 0
 }
 
 cmp -s "${bash_sorted}" "${zsh_sorted}" || {
-    echo "not ok" 1 - "bash completion diverges from zsh completion"
+    printf '\n%s\n' "not ok 1 - bash completion diverges from zsh completion"
     exit 0
 }
 
-echo "ok" 1 - "bash completion matches zsh completion"
+printf '\n%s\n' "ok 1 - bash completion matches zsh completion"
 exit 0

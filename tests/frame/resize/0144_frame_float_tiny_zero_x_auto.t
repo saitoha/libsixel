@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=auto \
     frame/0018_float_resampling tiny_zero_x 4 || {
-    echo "not ok 1 - float tiny_zero_x_auto"
+    printf '\n%s\n' "not ok 1 - float tiny_zero_x_auto"
     exit 0
 }
-echo "ok 1 - float tiny_zero_x_auto"
+printf '\n%s\n' "ok 1 - float tiny_zero_x_auto"
 exit 0

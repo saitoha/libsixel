@@ -15,12 +15,12 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - external libpng withholds intmin cHRM"
+    printf '\n%s\n' "not ok 1 - external libpng withholds intmin cHRM"
     exit 0
 }
 case "${trace}" in *"PNG_CHRM_GETTER|fixture=120|rejected=1"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - numeric observation did not complete"
+    printf '\n%s\n' "not ok 1 - numeric observation did not complete"
     exit 0
 }
-echo "ok 1 - external libpng withholds intmin cHRM"
+printf '\n%s\n' "ok 1 - external libpng withholds intmin cHRM"
 exit 0

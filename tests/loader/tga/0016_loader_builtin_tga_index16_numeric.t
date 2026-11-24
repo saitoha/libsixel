@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0083_loader_builtin_tga_index16_numeric" || {
-    echo "not ok 1 - TGA 16-bit palette index"
+    printf '\n%s\n' "not ok 1 - TGA 16-bit palette index"
     exit 0
 }
 
-echo "ok 1 - TGA 16-bit palette index"
+printf '\n%s\n' "ok 1 - TGA 16-bit palette index"
 exit 0

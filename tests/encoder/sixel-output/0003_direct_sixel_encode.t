@@ -14,9 +14,9 @@ set -v
 snake_six="${TOP_SRCDIR}/images/map8.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -e "${snake_six}" -o/dev/null || {
-    echo "not ok" 1 - "direct Sixel encode failed"
+    printf '\n%s\n' "not ok 1 - direct Sixel encode failed"
     exit 0
 }
 
-echo "ok" 1 - "direct Sixel encode emits data"
+printf '\n%s\n' "ok 1 - direct Sixel encode emits data"
 exit 0

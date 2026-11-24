@@ -23,21 +23,21 @@ output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_invalid_ref_cms0.six"
 output_invalid_global="${ARTIFACT_LOCAL_DIR}/cms_engine_env_invalid_global.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${output_ref_cms0}" || {
-    echo "not ok" 1 - "cms=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=0 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=invalid-token" \
     -Llibwebp! "${input_webp}" >"${output_invalid_global}" || {
-    echo "not ok" 1 - "invalid global cms engine env decode failed"
+    printf '\n%s\n' "not ok 1 - invalid global cms engine env decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_cms0}" "${output_invalid_global}" || {
-    echo "not ok" 1 - "invalid SIXEL_LOADER_CMS_ENGINE did not fallback to default none"
+    printf '\n%s\n' "not ok 1 - invalid SIXEL_LOADER_CMS_ENGINE did not fallback to default none"
     exit 0
 }
-echo "ok" 1 - "invalid global cms engine env falls back to default"
+printf '\n%s\n' "ok 1 - invalid global cms engine env falls back to default"
 
 exit 0

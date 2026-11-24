@@ -18,21 +18,21 @@ out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
 cd "${ARTIFACT_LOCAL_DIR}" && {
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o -p "${image_path}" >/dev/null || {
-        echo "not ok" 1 - "outfile named like option rejected"
+        printf '\n%s\n' "not ok 1 - outfile named like option rejected"
         printf '%s\n' '--- stderr ---' >&2
         exit 0
     }
 }
 
 cd "${TOP_SRCDIR}" || {
-    echo "not ok" 1 - "failed to return to source directory"
+    printf '\n%s\n' "not ok 1 - failed to return to source directory"
     exit 0
 }
 
 test -s "${out_file}" || {
-    echo "not ok" 1 - "outfile named like option missing"
+    printf '\n%s\n' "not ok 1 - outfile named like option missing"
     exit 0
 }
 
-echo "ok" 1 - "outfile named like option is supported"
+printf '\n%s\n' "ok 1 - outfile named like option is supported"
 exit 0

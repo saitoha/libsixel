@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0100_custom_band_periods || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - custom refresh band periods"
+    printf '\n%s\n' "not ok 1 - custom refresh band periods"
     exit 0
 }
-echo "ok 1 - custom refresh band periods"
+printf '\n%s\n' "ok 1 - custom refresh band periods"
 exit 0

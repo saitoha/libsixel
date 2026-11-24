@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/blockcull/0003_blockcull_oklab_range || {
-    echo "not ok 1 - blockcull oklab range"
+    printf '\n%s\n' "not ok 1 - blockcull oklab range"
     exit 0
 }
-echo "ok 1 - blockcull oklab range"
+printf '\n%s\n' "ok 1 - blockcull oklab range"
 exit 0

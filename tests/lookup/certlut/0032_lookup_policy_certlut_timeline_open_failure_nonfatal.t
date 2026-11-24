@@ -18,14 +18,14 @@ invalid_log_path="${ARTIFACT_LOCAL_DIR}/missing-log-dir/timeline.json"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${invalid_log_path}" \
     --lookup-policy=certlut -p 4 -o "${output_sixel}" "${small_ppm}" || {
-    echo "not ok" 1 - "conversion failed when logger open returned runtime error"
+    printf '\n%s\n' "not ok 1 - conversion failed when logger open returned runtime error"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "conversion succeeded but output file is empty"
+    printf '\n%s\n' "not ok 1 - conversion succeeded but output file is empty"
     exit 0
 }
 
-echo "ok" 1 - "conversion succeeds when logger path is not writable"
+printf '\n%s\n' "ok 1 - conversion succeeds when logger path is not writable"
 exit 0

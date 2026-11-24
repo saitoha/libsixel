@@ -28,7 +28,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${input_ppm}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "late ward merge encode failed"
+    printf '\n%s\n' "not ok 1 - late ward merge encode failed"
     exit 0
 }
 
@@ -37,17 +37,17 @@ diag_line=${diag_line%%"${nl}"*}
 case "${diag_line}" in
     LSXPAL1*rc=0*codes=*) ;;
     *)
-        echo "not ok" 1 - "late ward merge diagnostic header is malformed"
+        printf '\n%s\n' "not ok 1 - late ward merge diagnostic header is malformed"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in *MODEL_KMEANS*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "late ward merge did not use kmeans contract"
+    printf '\n%s\n' "not ok 1 - late ward merge did not use kmeans contract"
     exit 0
 }
 case "${diag_line}" in *MERGE_WARD*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "late ward merge did not override early auto merge"
+    printf '\n%s\n' "not ok 1 - late ward merge did not override early auto merge"
     exit 0
 }
 
@@ -60,7 +60,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${input_ppm}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "late auto merge encode failed"
+    printf '\n%s\n' "not ok 1 - late auto merge encode failed"
     exit 0
 }
 
@@ -69,19 +69,19 @@ diag_line=${diag_line%%"${nl}"*}
 case "${diag_line}" in
     LSXPAL1*rc=0*codes=*) ;;
     *)
-        echo "not ok" 1 - "late auto merge diagnostic header is malformed"
+        printf '\n%s\n' "not ok 1 - late auto merge diagnostic header is malformed"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in *MODEL_KMEANS*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "late auto merge did not use kmeans contract"
+    printf '\n%s\n' "not ok 1 - late auto merge did not use kmeans contract"
     exit 0
 }
 case "${diag_line}" in *MERGE_AUTO*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "late auto merge did not override early ward merge"
+    printf '\n%s\n' "not ok 1 - late auto merge did not override early ward merge"
     exit 0
 }
 
-echo "ok" 1 - "-F merge policy uses argument-order last-wins"
+printf '\n%s\n' "ok 1 - -F merge policy uses argument-order last-wins"
 exit 0

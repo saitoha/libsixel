@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0204_delta_mono_full_override || {
-    echo "not ok 1 - mono full override"
+    printf '\n%s\n' "not ok 1 - mono full override"
     exit 0
 }
-echo "ok 1 - mono full override"
+printf '\n%s\n' "ok 1 - mono full override"
 exit 0

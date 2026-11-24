@@ -17,14 +17,14 @@ esc="$(printf '\033')"
 
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin -E size -p 2 -+ 3,3 -o - "${input_image}") || {
-    echo "not ok 1 - encode-policy=size rejected transparent-offset"
+    printf '\n%s\n' "not ok 1 - encode-policy=size rejected transparent-offset"
     exit 0
 }
 
 case "${output}" in
     "${esc}P0;1q\"1;1;9;15"*) ;;
     *)
-        echo "not ok 1 - transparent-offset size header geometry mismatch"
+        printf '\n%s\n' "not ok 1 - transparent-offset size header geometry mismatch"
         exit 0
         ;;
 esac
@@ -32,7 +32,7 @@ esac
 case "${output}" in
     *"???"*) ;;
     *)
-        echo "not ok 1 - transparent-offset size did not keep left padding"
+        printf '\n%s\n' "not ok 1 - transparent-offset size did not keep left padding"
         exit 0
         ;;
 esac
@@ -40,7 +40,7 @@ esac
 case "${output}" in
     *"!6w"*) ;;
     *)
-        echo "not ok 1 - transparent-offset size did not clip top band fill"
+        printf '\n%s\n' "not ok 1 - transparent-offset size did not clip top band fill"
         exit 0
         ;;
 esac
@@ -48,10 +48,10 @@ esac
 case "${output}" in
     *"!6~"*) ;;
     *)
-        echo "not ok 1 - transparent-offset size lost full lower band fill"
+        printf '\n%s\n' "not ok 1 - transparent-offset size lost full lower band fill"
         exit 0
         ;;
 esac
 
-echo "ok 1 - encode-policy=size clips transparent-offset partial-band fill"
+printf '\n%s\n' "ok 1 - encode-policy=size clips transparent-offset partial-band fill"
 exit 0

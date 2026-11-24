@@ -19,10 +19,10 @@ riff_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/riff-valid-with-gpl-extens
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m pal-riff:"${riff_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "pal-riff prefix should override extension"
+    printf '\n%s\n' "not ok 1 - pal-riff prefix should override extension"
     exit 0
 }
 
-echo "ok" 1 - "pal-riff prefix overrides .gpl extension"
+printf '\n%s\n' "ok 1 - pal-riff prefix overrides .gpl extension"
 
 exit 0

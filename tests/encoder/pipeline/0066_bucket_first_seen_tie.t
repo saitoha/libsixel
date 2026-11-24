@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0066_bucket_first_seen
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket first seen tie # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket first seen tie # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket first seen tie"
+    printf '\n%s\n' "not ok 1 - bucket first seen tie"
     exit 0
 }
-echo "ok 1 - bucket first seen tie"
+printf '\n%s\n' "ok 1 - bucket first seen tie"
 exit 0

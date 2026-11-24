@@ -22,13 +22,13 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "unexpected success: cover policy conflicts with mapfile"
+    printf '\n%s\n' "not ok 1 - unexpected success: cover policy conflicts with mapfile"
     exit 0
 }
 case "${msg}" in *option\ -m,\ --mapfile\ conflicts\ with\ -a,\ --cover-policy.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing cover policy and mapfile conflict diagnostic"
+    printf '\n%s\n' "not ok 1 - missing cover policy and mapfile conflict diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "cover policy then mapfile is rejected"
+printf '\n%s\n' "ok 1 - cover policy then mapfile is rejected"
 exit 0

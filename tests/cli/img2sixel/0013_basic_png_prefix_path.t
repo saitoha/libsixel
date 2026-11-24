@@ -16,14 +16,14 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 out_path="${ARTIFACT_LOCAL_DIR}/out.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -o "png:${out_path}" <"${TOP_SRCDIR}/images/map8.six" || {
-    echo "not ok" 1 - "prefixed output command failed"
+    printf '\n%s\n' "not ok 1 - prefixed output command failed"
     exit 0
 }
 
 test -s "${out_path}" || {
-    echo "not ok" 1 - "prefixed output missing"
+    printf '\n%s\n' "not ok 1 - prefixed output missing"
     exit 0
 }
 
-echo "ok" 1 - "prefixed output trims scheme"
+printf '\n%s\n' "ok 1 - prefixed output trims scheme"
 exit 0

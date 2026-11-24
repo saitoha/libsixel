@@ -20,9 +20,9 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L libjpeg! -p 16 -+ 3,3 "${input_jpeg}" >/dev/null || {
-    echo "not ok 1 - libjpeg transparent-offset encode failed"
+    printf '\n%s\n' "not ok 1 - libjpeg transparent-offset encode failed"
     exit 0
 }
 
-echo "ok 1 - libjpeg transparent-offset accumulation accepts frame pixels"
+printf '\n%s\n' "ok 1 - libjpeg transparent-offset accumulation accepts frame pixels"
 exit 0

@@ -9,9 +9,9 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none -m S-CIELAB
 status=$?
 set -e
 test "${status}" -eq 4 || {
-    echo "not ok 1 - duplicate_timeline_key"
+    printf '\n%s\n' "not ok 1 - duplicate_timeline_key"
     exit 0
 }
 
-echo "ok 1 - duplicate timeline key"
+printf '\n%s\n' "ok 1 - duplicate timeline key"
 exit 0

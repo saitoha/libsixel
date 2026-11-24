@@ -7,12 +7,12 @@ set -v
 run_status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "gpu-kmeans/0062_buffer_auto_recovery" || run_status=$?
 test "$run_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$run_status" -eq 0 || {
-    echo "not ok 1 - buffer auto recovery"
+    printf '\n%s\n' "not ok 1 - buffer auto recovery"
     exit 0
 }
-echo "ok 1 - buffer auto recovery"
+printf '\n%s\n' "ok 1 - buffer auto recovery"
 exit 0

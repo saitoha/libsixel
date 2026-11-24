@@ -9,8 +9,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0227_jpeg_dnl_segment_reject" 1>&2 || {
-    echo "not ok 1 - Reject an oversized segment while searching for DNL"
+    printf '\n%s\n' "not ok 1 - Reject an oversized segment while searching for DNL"
     exit 0
 }
-echo "ok 1 - Reject an oversized segment while searching for DNL"
+printf '\n%s\n' "ok 1 - Reject an oversized segment while searching for DNL"
 exit 0

@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "writer/png/0017_legacy_writer_untagged" | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "writer/png/0017_legacy_writer_untagged" check || {
-    echo "not ok 1 - legacy_writer_untagged"
+    printf '\n%s\n' "not ok 1 - legacy_writer_untagged"
     exit 0
 }
-echo "ok 1 - legacy_writer_untagged"
+printf '\n%s\n' "ok 1 - legacy_writer_untagged"
 exit 0

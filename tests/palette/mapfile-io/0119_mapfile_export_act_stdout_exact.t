@@ -22,9 +22,9 @@ expected_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-black-white-count-
 # terminator or make cmp consider record attributes that are not ACT bytes.
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     -M act:- -o/dev/null "${input_image}" | cmp - "${expected_palette}" || {
-    echo "not ok" 1 - "ACT stdout palette layout changed"
+    printf '\n%s\n' "not ok 1 - ACT stdout palette layout changed"
     exit 0
 }
 
-echo "ok" 1 - "ACT palette export to stdout has exact layout"
+printf '\n%s\n' "ok 1 - ACT palette export to stdout has exact layout"
 exit 0

@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/carry/0018_carry_gray_sierra3" || {
-    echo "not ok 1 - gray_sierra3"
+    printf '\n%s\n' "not ok 1 - gray_sierra3"
     exit 0
 }
-echo "ok 1 - gray_sierra3"
+printf '\n%s\n' "ok 1 - gray_sierra3"
 exit 0

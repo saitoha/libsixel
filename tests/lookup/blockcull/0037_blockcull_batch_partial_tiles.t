@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu/blockcull_batch_partial_tiles || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU blockcull lookup unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU blockcull lookup unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - blockcull batch partial tiles"
+    printf '\n%s\n' "not ok 1 - blockcull batch partial tiles"
     exit 0
 }
-echo "ok 1 - blockcull batch partial tiles"
+printf '\n%s\n' "ok 1 - blockcull batch partial tiles"
 exit 0

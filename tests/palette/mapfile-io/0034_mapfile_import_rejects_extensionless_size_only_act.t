@@ -20,15 +20,15 @@ act_file="${TOP_SRCDIR}/tests/data/inputs/mapfile/act-size-only-noext"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m "${act_file}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "extensionless ACT-sized input unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - extensionless ACT-sized input unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_prepare_specified_palette:\ ambiguous\ ACT\ payload\ without\ extension\;\ use\ act:PATH.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing extensionless ACT ambiguity diagnostic"
+    printf '\n%s\n' "not ok 1 - missing extensionless ACT ambiguity diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "extensionless ACT-sized input is rejected"
+printf '\n%s\n' "ok 1 - extensionless ACT-sized input is rejected"
 
 exit 0

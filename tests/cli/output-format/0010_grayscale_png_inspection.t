@@ -14,10 +14,10 @@ set -v
 snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${snake_gray_png}" -o/dev/null || {
-    echo "not ok" 1 - "grayscale PNG inspection fails"
+    printf '\n%s\n' "not ok 1 - grayscale PNG inspection fails"
     exit 0
 }
 
-echo "ok" 1 - "grayscale PNG inspection succeeds"
+printf '\n%s\n' "ok 1 - grayscale PNG inspection succeeds"
 
 exit 0

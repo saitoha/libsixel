@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0003_decoder_ormode_wide_overlay" || {
-    echo "not ok 1 - 0003_decoder_ormode_wide_overlay"
+    printf '\n%s\n' "not ok 1 - 0003_decoder_ormode_wide_overlay"
     exit 0
 }
 
-echo "ok 1 - 0003_decoder_ormode_wide_overlay"
+printf '\n%s\n' "ok 1 - 0003_decoder_ormode_wide_overlay"
 exit 0

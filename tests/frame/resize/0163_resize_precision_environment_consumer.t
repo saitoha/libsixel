@@ -17,14 +17,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     --env SIXEL_PLANNER_RESIZE_PRECISION_MODE=3 \
     -w 31 -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png" 2>&1) || {
-    echo "not ok 1 - resize precision conversion failed"
+    printf '\n%s\n' "not ok 1 - resize precision conversion failed"
     exit 0
 }
 
 case "${trace}" in *LSXRT1\|resize_precision=3**) true ;; *) false ;; esac || {
-    echo "not ok 1 - resize precision missed the planner"
+    printf '\n%s\n' "not ok 1 - resize precision missed the planner"
     exit 0
 }
 
-echo "ok 1 - resize precision reaches the planner"
+printf '\n%s\n' "ok 1 - resize precision reaches the planner"
 exit 0

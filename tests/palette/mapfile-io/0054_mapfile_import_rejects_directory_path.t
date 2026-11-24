@@ -19,15 +19,15 @@ map_dir="${TOP_SRCDIR}/tests/data/inputs/mapfile"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m "${map_dir}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "directory mapfile path unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - directory mapfile path unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *path\ refers\ to\ a\ directory\;\ expected\ a\ file\ input.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing directory mapfile diagnostic"
+    printf '\n%s\n' "not ok 1 - missing directory mapfile diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "directory mapfile path is rejected"
+printf '\n%s\n' "ok 1 - directory mapfile path is rejected"
 
 exit 0

@@ -22,7 +22,7 @@ SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
                   -A composite -Lbuiltin:cms_engine=none! \
                   -d fs:scan=raster \
                   "${input_png}" >"${out}" || {
-    echo "not ok 1 - builtin process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 + -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
+    printf '\n%s\n' "not ok 1 - builtin process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 + -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 render failed"
     exit 0
 }
 
@@ -31,10 +31,10 @@ out_text=""
 IFS= read -r out_text < "${out}" || test -n "${out_text}"
 case "${out_text}" in
     *"$(printf '\033')P0;1q"*)
-        echo "ok 1 - builtin -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 overrides process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
+        printf '\n%s\n' "ok 1 - builtin -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 overrides process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
         ;;
     *)
-        echo "not ok 1 - builtin -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 did not override process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
+        printf '\n%s\n' "not ok 1 - builtin -% SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 did not override process SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0"
         ;;
 esac
 

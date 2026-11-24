@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 export SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA=''
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cms/0181_gamma_option 0 123 || {
-    echo "not ok 1 - env-only gamma empty"
+    printf '\n%s\n' "not ok 1 - env-only gamma empty"
     exit 0
 }
-echo "ok 1 - env-only gamma empty"
+printf '\n%s\n' "ok 1 - env-only gamma empty"
 exit 0

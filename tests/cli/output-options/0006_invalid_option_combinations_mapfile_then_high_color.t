@@ -22,17 +22,17 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "unexpected success: mapfile conflicts with high-color"
+    printf '\n%s\n' "not ok 1 - unexpected success: mapfile conflicts with high-color"
     exit 0
 }
 
 case "${msg}" in
 *"option -I, --high-color conflicts with -m, --mapfile."*) ;;
 *)
-    echo "not ok" 1 - "missing mapfile and high-color conflict diagnostic"
+    printf '\n%s\n' "not ok 1 - missing mapfile and high-color conflict diagnostic"
     exit 0
     ;;
 esac
 
-echo "ok" 1 - "invalid option combination rejected"
+printf '\n%s\n' "ok 1 - invalid option combination rejected"
 exit 0

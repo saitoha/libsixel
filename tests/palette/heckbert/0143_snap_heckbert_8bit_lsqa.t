@@ -24,22 +24,22 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_SNAP_POLICY=reversible
               --env SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
               --env SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
               -Q heckbert -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "img2sixel snap heckbert 8bit failed"
+    printf '\n%s\n' "not ok 1 - img2sixel snap heckbert 8bit failed"
     exit 0
 }
 
 lsqa_err=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "snap heckbert 8bit lsqa passed"
+    printf '\n%s\n' "ok 1 - snap heckbert 8bit lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "snap heckbert 8bit lsqa failed"
+printf '\n%s\n' "not ok 1 - snap heckbert 8bit lsqa failed"
 
 exit 0

@@ -31,21 +31,21 @@ mkdir -p "${short_dir}" "${env_dir}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -y"file:D${short_dir}" "${input_image}" \
     -o clipboard: || {
-    echo "not ok" 1 - "clipboard directory short write failed"
+    printf '\n%s\n' "not ok 1 - clipboard directory short write failed"
     exit 0
 }
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,clipboard_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -y"file:D${short_dir}" \
     -i clipboard: 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "clipboard directory short read failed"
+    printf '\n%s\n' "not ok 1 - clipboard directory short read failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=directory\|stored=1\|binding=directory,directory_override\|value=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "clipboard directory short value was not stored"
+    printf '\n%s\n' "not ok 1 - clipboard directory short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXCLP1\|*backend=file\|directory=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "clipboard directory short value missed its consumer"
+    printf '\n%s\n' "not ok 1 - clipboard directory short value missed its consumer"
     exit 0
 }
 
@@ -53,35 +53,35 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_CLIPBOARD_BACKEND=file \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${env_dir}" \
     "${input_image}" -o clipboard: || {
-    echo "not ok" 1 - "clipboard directory environment write failed"
+    printf '\n%s\n' "not ok 1 - clipboard directory environment write failed"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,clipboard_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env "SIXEL_CLIPBOARD_FILE_DIR=${env_dir}" -yfile \
     -i clipboard: 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "clipboard directory environment read failed"
+    printf '\n%s\n' "not ok 1 - clipboard directory environment read failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=directory\|stored=1\|binding=directory,directory_override\|value=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "clipboard directory environment value was not stored"
+    printf '\n%s\n' "not ok 1 - clipboard directory environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXCLP1\|*backend=file\|directory=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "clipboard directory environment missed its consumer"
+    printf '\n%s\n' "not ok 1 - clipboard directory environment missed its consumer"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "clipboard directory outputs differ"
+    printf '\n%s\n' "not ok 1 - clipboard directory outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "clipboard directory preserves decoded image output"
+printf '\n%s\n' "ok 1 - clipboard directory preserves decoded image output"
 exit 0

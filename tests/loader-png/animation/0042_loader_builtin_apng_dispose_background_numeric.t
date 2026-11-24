@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0139_loader_builtin_apng_dispose_background_numeric" 1>&2 || {
-    echo "not ok" 1 - "APNG BACKGROUND disposal matches independent linear values"
+    printf '\n%s\n' "not ok 1 - APNG BACKGROUND disposal matches independent linear values"
     exit 0
 }
 
-echo "ok" 1 - "APNG BACKGROUND disposal matches independent linear values"
+printf '\n%s\n' "ok 1 - APNG BACKGROUND disposal matches independent linear values"
 
 exit 0

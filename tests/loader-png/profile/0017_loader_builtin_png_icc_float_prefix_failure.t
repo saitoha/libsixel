@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0193_png_metadata_failures 11 \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-chrm-8-rgb-zero-icc-chrm.png" || {
-    echo "not ok 1 - PNG icc float prefix failure"
+    printf '\n%s\n' "not ok 1 - PNG icc float prefix failure"
     exit 0
 }
-echo "ok 1 - PNG icc float prefix failure"
+printf '\n%s\n' "ok 1 - PNG icc float prefix failure"
 exit 0

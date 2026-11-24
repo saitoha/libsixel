@@ -32,16 +32,16 @@ command_status=$?
 set -e
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin loader failed on hard-case advanced-blending fixture"
+    printf '\n%s\n' "not ok 1 - builtin loader failed on hard-case advanced-blending fixture"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" >/dev/null 2>&1 || {
-    echo "not ok" 1 - "hard-case advanced-blending decode fell below MS-SSIM ${lsqa_floor}"
+    printf '\n%s\n' "not ok 1 - hard-case advanced-blending decode fell below MS-SSIM ${lsqa_floor}"
     exit 0
 }
 
-echo "ok" 1 - "hard-case advanced-blending decode reaches MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - hard-case advanced-blending decode reaches MS-SSIM ${lsqa_floor}"
 exit 0

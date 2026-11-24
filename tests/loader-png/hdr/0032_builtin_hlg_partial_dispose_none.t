@@ -13,12 +13,12 @@ SIXEL_LOADER_HDR_SOURCE=auto \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     png-hdr/0032_builtin_hlg_partial_dispose_none || result=$?
 test "$result" -ne 77 || {
-    echo 'ok 1 # SKIP loader unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP loader unavailable'
     exit 0
 }
 test "$result" -eq 0 || {
-    echo 'not ok 1 - builtin hlg partial dispose none'
+    printf '\n%s\n' 'not ok 1 - builtin hlg partial dispose none'
     exit 0
 }
-echo 'ok 1 - builtin hlg partial dispose none'
+printf '\n%s\n' 'ok 1 - builtin hlg partial dispose none'
 exit 0

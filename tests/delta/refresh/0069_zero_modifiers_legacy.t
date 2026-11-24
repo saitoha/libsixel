@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0069_zero_modifiers_legacy || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - zero modifiers legacy"
+    printf '\n%s\n' "not ok 1 - zero modifiers legacy"
     exit 0
 }
-echo "ok 1 - zero modifiers legacy"
+printf '\n%s\n' "ok 1 - zero modifiers legacy"
 exit 0

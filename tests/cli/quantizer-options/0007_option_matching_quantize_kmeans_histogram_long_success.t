@@ -18,9 +18,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:binbits=6:mapping=srgb:softdist=trilinear:feedback=1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q kmeans long histogram suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - -Q kmeans long histogram suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts long kmeans histogram suboptions"
+printf '\n%s\n' "ok 1 - -Q accepts long kmeans histogram suboptions"
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0072_palette_snapshot_allocation || {
-    echo "not ok 1 - palette snapshot allocation"
+    printf '\n%s\n' "not ok 1 - palette snapshot allocation"
     exit 0
 }
-echo "ok 1 - palette snapshot allocation"
+printf '\n%s\n' "ok 1 - palette snapshot allocation"
 exit 0

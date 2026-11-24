@@ -22,24 +22,24 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --binning-policy=soft -Qauto -dnone -p16 "-~none" \
     --cms-engine=none -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - async binning-policy encode failed"
+    printf '\n%s\n' "not ok 1 - async binning-policy encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=0\|quantizer_effective=2\|quantizer_origin=auto\|quantizer_phase=executed\|quantizer_reason=quantizer-capability\|binning_requested=soft\|binning_effective=soft\|binning_origin=explicit\|binning_phase=executed\|binning_reason=explicit\|points=**) true ;; *) false ;; esac || {
-    echo "not ok 1 - async binning state was not committed"
+    printf '\n%s\n' "not ok 1 - async binning state was not committed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - palette work did not use the asynchronous path"
+    printf '\n%s\n' "not ok 1 - palette work did not use the asynchronous path"
     exit 0
 }
 
 case "${trace}" in *LSXPFB1**) false ;; *) true ;; esac || {
-    echo "not ok 1 - asynchronous palette work used a fallback"
+    printf '\n%s\n' "not ok 1 - asynchronous palette work used a fallback"
     exit 0
 }
 
-echo "ok 1 - async binning result is retained in per-frame state"
+printf '\n%s\n' "ok 1 - async binning result is retained in per-frame state"
 exit 0

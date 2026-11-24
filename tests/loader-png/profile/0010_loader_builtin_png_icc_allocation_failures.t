@@ -11,8 +11,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0169_loader_builtin_png_icc_allocation_failures" 1>&2 || {
-    echo "not ok" 1 - "PNG ICC allocation failure cleanup"
+    printf '\n%s\n' "not ok 1 - PNG ICC allocation failure cleanup"
     exit 0
 }
-echo "ok" 1 - "PNG ICC allocation failure cleanup"
+printf '\n%s\n' "ok 1 - PNG ICC allocation failure cleanup"
 exit 0

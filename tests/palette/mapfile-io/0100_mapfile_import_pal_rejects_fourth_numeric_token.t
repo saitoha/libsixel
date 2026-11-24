@@ -19,14 +19,14 @@ input_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-fourth-component-inva
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
           -m pal-jasc:"${input_palette}" -o/dev/null \
           "${input_image}" 2>&1 >/dev/null) && {
-    echo "not ok" 1 - "JASC PAL fourth numeric token unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - JASC PAL fourth numeric token unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_pal_jasc:\ invalid\ component.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing JASC PAL fourth-token diagnostic"
+    printf '\n%s\n' "not ok 1 - missing JASC PAL fourth-token diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "JASC PAL fourth numeric token is rejected"
+printf '\n%s\n' "ok 1 - JASC PAL fourth numeric token is rejected"
 exit 0

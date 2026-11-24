@@ -30,13 +30,13 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile conversion with snap policy failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile conversion with snap policy failed"
     exit 0
 }
 case "${trace}" in *LSXSNP1\|**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "snap policy unexpectedly reached PAL mapfile palette"
+    printf '\n%s\n' "not ok 1 - snap policy unexpectedly reached PAL mapfile palette"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile bypasses snap policy"
+printf '\n%s\n' "ok 1 - PAL mapfile bypasses snap policy"
 exit 0

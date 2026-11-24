@@ -15,9 +15,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbui! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null || {
-    echo "not ok" 1 - "unique -L loader prefix was rejected"
+    printf '\n%s\n' "not ok 1 - unique -L loader prefix was rejected"
     exit 0
 }
 
-echo "ok" 1 - "unique -L loader prefix is accepted"
+printf '\n%s\n' "ok 1 - unique -L loader prefix is accepted"
 exit 0

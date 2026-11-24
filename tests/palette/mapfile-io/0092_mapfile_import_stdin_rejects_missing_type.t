@@ -23,14 +23,14 @@ JASC-PAL
 12 34 56
 PAL
 ) && {
-    echo "not ok" 1 - "untyped standard-input mapfile unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - untyped standard-input mapfile unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_prepare_specified_palette:\ format\ required\ for*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing untyped standard-input diagnostic"
+    printf '\n%s\n' "not ok 1 - missing untyped standard-input diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "untyped standard-input mapfile is rejected"
+printf '\n%s\n' "ok 1 - untyped standard-input mapfile is rejected"
 exit 0

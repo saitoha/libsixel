@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0210_jpeg_dnl_420_digest" 1>&2 || {
-    echo "not ok 1 - Preserve the fixed progressive 4:2:0 pixel digest with DNL"
+    printf '\n%s\n' "not ok 1 - Preserve the fixed progressive 4:2:0 pixel digest with DNL"
     exit 0
 }
-echo "ok 1 - Preserve the fixed progressive 4:2:0 pixel digest with DNL"
+printf '\n%s\n' "ok 1 - Preserve the fixed progressive 4:2:0 pixel digest with DNL"
 exit 0

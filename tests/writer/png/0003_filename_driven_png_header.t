@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 cd "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok" 1 - "artifact directory is unavailable"
+    printf '\n%s\n' "not ok 1 - artifact directory is unavailable"
     exit 0
 }
 
@@ -21,7 +21,7 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 filename_png="snake-filename.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o "${filename_png}" "${snake_jpg}" || {
-    echo "not ok" 1 - "filename-driven PNG conversion failed"
+    printf '\n%s\n' "not ok 1 - filename-driven PNG conversion failed"
     exit 0
 }
 
@@ -29,10 +29,10 @@ expected_header_cksum="3308842558 4"
 actual_header_cksum=$(dd bs=1 count=4 if="${filename_png}" 2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
-    echo "not ok" 1 - "filename-driven PNG header incorrect"
+    printf '\n%s\n' "not ok 1 - filename-driven PNG header incorrect"
     exit 0
 }
 
-echo "ok" 1 - "filename-driven PNG output uses PNG header"
+printf '\n%s\n' "ok 1 - filename-driven PNG output uses PNG header"
 
 exit 0

@@ -19,31 +19,31 @@ source_sixel="${ARTIFACT_LOCAL_DIR}/dcs-width-input.sixel"
 scaled_sixel="${ARTIFACT_LOCAL_DIR}/dcs-width-output.sixel"
 
 printf '%b' '\033Pq"1;1;1;1!6~\033\057' >"${source_sixel}" || {
-    echo "not ok" 1 - "width scaling preserves DCS coordinates (input write failed)"
+    printf '\n%s\n' "not ok 1 - width scaling preserves DCS coordinates (input write failed)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B1 -rne -w200% \
     <"${source_sixel}" >"${scaled_sixel}" || {
-    echo "not ok" 1 - "width scaling preserves DCS coordinates"
+    printf '\n%s\n' "not ok 1 - width scaling preserves DCS coordinates"
     exit 0
 }
 
 test -s "${scaled_sixel}" || {
-    echo "not ok" 1 - "width scaling preserves DCS coordinates (no payload produced)"
+    printf '\n%s\n' "not ok 1 - width scaling preserves DCS coordinates (no payload produced)"
     exit 0
 }
 
 # GNV exposes an OpenVMS text-record terminator as a trailing newline.
 sum=$(tr -d '\n' <"${scaled_sixel}" | "${CKSUM:-cksum}") || {
-    echo "not ok" 1 - "width scaling preserves DCS coordinates (cksum failed)"
+    printf '\n%s\n' "not ok 1 - width scaling preserves DCS coordinates (cksum failed)"
     exit 0
 }
 
 test "${sum}" = "${expected}" || {
-    echo "not ok" 1 - "width scaling preserves DCS coordinates"
+    printf '\n%s\n' "not ok 1 - width scaling preserves DCS coordinates"
     exit 0
 }
 
-echo "ok" 1 - "width scaling preserves DCS coordinates"
+printf '\n%s\n' "ok 1 - width scaling preserves DCS coordinates"
 exit 0

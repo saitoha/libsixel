@@ -23,21 +23,21 @@ neg_last_text=''
 pos_last_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 positive last-frame decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 positive last-frame decode failed"
     exit 0
 }
 
 neg_last_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=-1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 negative last-frame decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 negative last-frame decode failed"
     exit 0
 }
 
 test "${pos_last_text}" = "${neg_last_text}" || {
-    echo "not ok 1 - gdk-pixbuf2 positive last-frame output mismatched"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 positive last-frame output mismatched"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 positive last-frame index is accepted"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 positive last-frame index is accepted"
 exit 0

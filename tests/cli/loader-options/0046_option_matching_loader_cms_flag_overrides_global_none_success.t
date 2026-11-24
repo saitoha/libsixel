@@ -23,21 +23,21 @@ output_ref_cms1="${ARTIFACT_LOCAL_DIR}/cms_flag_override_ref_cms1.six"
 output_with_global_none_cms1="${ARTIFACT_LOCAL_DIR}/cms_flag_override_global_none_cms1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_cms1}" || {
-    echo "not ok" 1 - "cms=1 reference decode failed"
+    printf '\n%s\n' "not ok 1 - cms=1 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_with_global_none_cms1}" || {
-    echo "not ok" 1 - "decode failed for --cms-engine=none + cms=1"
+    printf '\n%s\n' "not ok 1 - decode failed for --cms-engine=none + cms=1"
     exit 0
 }
 
 cmp -s "${output_ref_cms1}" "${output_with_global_none_cms1}" || {
-    echo "not ok" 1 - "cms=1 did not override global --cms-engine=none"
+    printf '\n%s\n' "not ok 1 - cms=1 did not override global --cms-engine=none"
     exit 0
 }
-echo "ok" 1 - "cms=1 overrides global --cms-engine=none"
+printf '\n%s\n' "ok 1 - cms=1 overrides global --cms-engine=none"
 
 exit 0

@@ -28,14 +28,14 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/ae7f5ddc-0141_libpng_rgb16
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99" "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "libpng rgb16 sRGB-only fixture matches 64x64 reference"
+printf '\n%s\n' "ok 1 - libpng rgb16 sRGB-only fixture matches 64x64 reference"
 exit 0

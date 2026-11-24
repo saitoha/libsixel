@@ -7,8 +7,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/hls/0015_serial_or || {
-    echo "not ok 1 - HLS serial or"
+    printf '\n%s\n' "not ok 1 - HLS serial or"
     exit 0
 }
-echo "ok 1 - HLS serial or"
+printf '\n%s\n' "ok 1 - HLS serial or"
 exit 0

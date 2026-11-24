@@ -20,5 +20,5 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/corrupted/invalid_signature.heif" >/dev/null 2>/dev/null || :
 
-echo "ok" 1 - "quicklook does not hang on invalid-signature HEIF"
+printf '\n%s\n' "ok 1 - quicklook does not hang on invalid-signature HEIF"
 exit 0

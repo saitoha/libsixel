@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0016_worker_callback_reentr
 result=$?
 set -e
 test "$result" -ne 77 || {
-    echo "ok 1 - worker callback reentry # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 - worker callback reentry # SKIP thread support disabled"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - worker callback reentry"
+    printf '\n%s\n' "not ok 1 - worker callback reentry"
     exit 0
 }
-echo "ok 1 - worker callback reentry"
+printf '\n%s\n' "ok 1 - worker callback reentry"
 exit 0

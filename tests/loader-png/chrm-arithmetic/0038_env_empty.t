@@ -17,14 +17,14 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC= "-Llibpng:cms_engine=builtin!" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-arithmetic-1.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - conversion failed"
+    printf '\n%s\n' "not ok 1 - conversion failed"
     printf '# %s\n' "$trace"
     exit 0
 }
 case "${trace}" in *PNGCHRM1\|*requested=auto\|selected=double\|actual=double\|reason=ordinary**) true ;; *) false ;; esac || {
-    echo "not ok 1 - empty environment arithmetic retains auto"
+    printf '\n%s\n' "not ok 1 - empty environment arithmetic retains auto"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - empty environment arithmetic retains auto"
+printf '\n%s\n' "ok 1 - empty environment arithmetic retains auto"
 exit 0

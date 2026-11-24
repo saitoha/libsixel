@@ -13,14 +13,14 @@ set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --colors=257 \
     2>&1) && {
-    echo "not ok 1 - img2sixel accepts more than 256 colors"
+    printf '\n%s\n' "not ok 1 - img2sixel accepts more than 256 colors"
     exit 0
 }
 case "${msg}" in *-p/--colors*parameter*must*be*less*then*or*equal*to*256.*) true ;; *) false ;; esac || {
-    echo "not ok 1 - colors maximum diagnostic changed"
+    printf '\n%s\n' "not ok 1 - colors maximum diagnostic changed"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok 1 - colors maximum diagnostic is preserved"
+printf '\n%s\n' "ok 1 - colors maximum diagnostic is preserved"
 exit 0

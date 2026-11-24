@@ -22,13 +22,13 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-static-cli-default.six"
 out_with_cli="${ARTIFACT_LOCAL_DIR}/webp-static-cli-start-frame.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline static libwebp decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static libwebp decode failed"
     exit 0
 }
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=999 -L libwebp! \
     "${image_webp}" 2>&1 >"${out_with_cli}") || {
-    echo "not ok" 1 - "static decode failed with --start-frame override"
+    printf '\n%s\n' "not ok 1 - static decode failed with --start-frame override"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -36,7 +36,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=999 -L libweb
 
 case "${msg}" in
     *"SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside the animation frame range."*)
-        echo "not ok" 1 - "static decode should ignore --start-frame values"
+        printf '\n%s\n' "not ok 1 - static decode should ignore --start-frame values"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -46,9 +46,9 @@ case "${msg}" in
 esac
 
 cmp -s "${out_default}" "${out_with_cli}" || {
-    echo "not ok" 1 - "--start-frame changed static output unexpectedly"
+    printf '\n%s\n' "not ok 1 - --start-frame changed static output unexpectedly"
     exit 0
 }
 
-echo "ok" 1 - "static libwebp decode ignores --start-frame values"
+printf '\n%s\n' "ok 1 - static libwebp decode ignores --start-frame values"
 exit 0

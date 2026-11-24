@@ -26,24 +26,24 @@ run_status=$?
 set -e
 
 test "${run_status}" -ne 0 || {
-    echo "not ok" 1 - "invalid-marker JPEG unexpectedly decoded"
+    printf '\n%s\n' "not ok 1 - invalid-marker JPEG unexpectedly decoded"
     exit 0
 }
 
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=libjpeg\|code=L_ERR_BAD_INPUT**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "libjpeg failure code was not reported"
+    printf '\n%s\n' "not ok 1 - libjpeg failure code was not reported"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin loader was not attempted after libjpeg"
+    printf '\n%s\n' "not ok 1 - builtin loader was not attempted after libjpeg"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*"LSXLOAD1|event=try|loader=builtin|code=L_TRY"*LSXLOAD1\|event=fail\|loader=builtin\|code=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin failure code was not reported after libjpeg"
+    printf '\n%s\n' "not ok 1 - builtin failure code was not reported after libjpeg"
     exit 0
 }
 
-echo "ok" 1 - "invalid-marker JPEG follows libjpeg-to-builtin fallback order"
+printf '\n%s\n' "ok 1 - invalid-marker JPEG follows libjpeg-to-builtin fallback order"
 exit 0

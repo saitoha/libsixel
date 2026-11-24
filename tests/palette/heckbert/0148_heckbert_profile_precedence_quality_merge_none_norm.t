@@ -27,7 +27,7 @@ baseline_none_norm=$(
 set -x
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "baseline merge=none encode failed"
+    printf '\n%s\n' "not ok 1 - baseline merge=none encode failed"
     exit 0
 }
 run_status=0
@@ -44,13 +44,13 @@ profile_none_norm=$(
 set -x
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "profile merge=none encode failed"
+    printf '\n%s\n' "not ok 1 - profile merge=none encode failed"
     exit 0
 }
 test "${baseline_none_norm}" = "${profile_none_norm}" || {
-    echo "not ok" 1 - "profile=quality overrode explicit merge=none/-f"
+    printf '\n%s\n' "not ok 1 - profile=quality overrode explicit merge=none/-f"
     exit 0
 }
-echo "ok" 1 - "explicit merge=none and -f override profile=quality"
+printf '\n%s\n' "ok 1 - explicit merge=none and -f override profile=quality"
 
 exit 0

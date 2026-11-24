@@ -18,12 +18,12 @@ input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=os2" \
     -Lbuiltin:bmp_info40_mode=windows! "${input_bmp}" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "suboption windows did not override env os2"
+    printf '\n%s\n' "not ok 1 - suboption windows did not override env os2"
     exit 0
 }
 
 case "${msg}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "override check failed at option parsing"
+    printf '\n%s\n' "not ok 1 - override check failed at option parsing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -32,11 +32,11 @@ case "${msg}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) tr
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE=windows" \
     -Lbuiltin:bmp_info40_mode=os2! "${input_bmp}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "suboption os2 did not override env windows"
+    printf '\n%s\n' "not ok 1 - suboption os2 did not override env windows"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "-L builtin:bmp_info40_mode overrides env value"
+printf '\n%s\n' "ok 1 - -L builtin:bmp_info40_mode overrides env value"
 exit 0

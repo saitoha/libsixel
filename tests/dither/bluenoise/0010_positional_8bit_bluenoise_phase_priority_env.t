@@ -23,10 +23,10 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_BLUENOISE_PHASE=10 \
         --env SIXEL_DITHER_BLUENOISE_SEED=123 -d bluenoise:scan=raster \
         --precision-policy=8bit -p 16 -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "positional 8-bit bluenoise phase priority env failed"
+    printf '\n%s\n' "not ok 1 - positional 8-bit bluenoise phase priority env failed"
     exit 0
 }
 
-echo "ok" 1 - "positional 8-bit bluenoise phase priority env passed"
+printf '\n%s\n' "ok 1 - positional 8-bit bluenoise phase priority env passed"
 
 exit 0

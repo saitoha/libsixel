@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0013_eyt_overflow || {
-    echo "not ok 1 - eytzinger overflow"
+    printf '\n%s\n' "not ok 1 - eytzinger overflow"
     exit 0
 }
 
-echo "ok 1 - eytzinger overflow"
+printf '\n%s\n' "ok 1 - eytzinger overflow"
 exit 0

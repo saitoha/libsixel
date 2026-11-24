@@ -8,12 +8,12 @@ set -v
 status=0
 SIXEL_LOADER_CMS_RENDERING_INTENT=relative! ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "cms/0033_integer_cmyk_float" builtin 16 separate || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 - builtin cmyk16 float # SKIP builtin unavailable"
+    printf '\n%s\n' "ok 1 - builtin cmyk16 float # SKIP builtin unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - builtin cmyk16 float"
+    printf '\n%s\n' "not ok 1 - builtin cmyk16 float"
     exit 0
 }
-echo "ok 1 - builtin cmyk16 float"
+printf '\n%s\n' "ok 1 - builtin cmyk16 float"
 exit 0

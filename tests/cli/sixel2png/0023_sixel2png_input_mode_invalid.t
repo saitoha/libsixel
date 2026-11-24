@@ -18,7 +18,7 @@ status=0
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -M "" \
     -i "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-16.six" >/dev/null 2>&1 || status=$?
 test "${status}" -eq 2 || {
-    echo "not ok 1 - invalid input mode was not rejected: "
+    printf '\n%s\n' "not ok 1 - invalid input mode was not rejected: "
     exit 0
 }
 
@@ -26,7 +26,7 @@ status=0
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -M "Single" \
     -i "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-16.six" >/dev/null 2>&1 || status=$?
 test "${status}" -eq 2 || {
-    echo "not ok 1 - invalid input mode was not rejected: Single"
+    printf '\n%s\n' "not ok 1 - invalid input mode was not rejected: Single"
     exit 0
 }
 
@@ -34,9 +34,9 @@ status=0
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -M "6delta-progressive-extra" \
     -i "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-16.six" >/dev/null 2>&1 || status=$?
 test "${status}" -eq 2 || {
-    echo "not ok 1 - invalid input mode was not rejected: 6delta-progressive-extra"
+    printf '\n%s\n' "not ok 1 - invalid input mode was not rejected: 6delta-progressive-extra"
     exit 0
 }
 
-echo "ok 1 - invalid input modes remain usage errors"
+printf '\n%s\n' "ok 1 - invalid input modes remain usage errors"
 exit 0

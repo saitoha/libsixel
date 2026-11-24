@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" codec/highcolor/0069_packed_abgr_oklab || {
-    echo "not ok 1 - high-color packed abgr oklab"
+    printf '\n%s\n' "not ok 1 - high-color packed abgr oklab"
     exit 0
 }
-echo "ok 1 - high-color packed abgr oklab"
+printf '\n%s\n' "ok 1 - high-color packed abgr oklab"
 exit 0

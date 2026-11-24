@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/color_space/0001_space_contract \
     lookup 1 0 1 || {
-    echo "not ok 1 - p3 linear immutable lookup"
+    printf '\n%s\n' "not ok 1 - p3 linear immutable lookup"
     exit 0
 }
-echo "ok 1 - p3 linear immutable lookup"
+printf '\n%s\n' "ok 1 - p3 linear immutable lookup"
 exit 0

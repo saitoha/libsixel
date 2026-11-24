@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0142_loader_builtin_jpeg_gray16_restart_numeric" 1>&2 || {
-    echo "not ok" 1 - "JPEG lossless restart samples stay exact"
+    printf '\n%s\n' "not ok 1 - JPEG lossless restart samples stay exact"
     exit 0
 }
 
-echo "ok" 1 - "JPEG lossless restart samples stay exact"
+printf '\n%s\n' "ok 1 - JPEG lossless restart samples stay exact"
 
 exit 0

@@ -21,7 +21,7 @@ clip_rgb=0
 clip_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     -A composite -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -c2x1+0+0 "${input_png}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - clipped pal8 transparent render failed"
+    printf '\n%s\n' "not ok 1 - clipped pal8 transparent render failed"
     exit 0
 }
 
@@ -32,9 +32,9 @@ case "${clip_log}" in
 esac
 
 test "${clip_rgb}" = 1 || {
-    echo "not ok 1 - clip path did not promote to rgb888 work format"
+    printf '\n%s\n' "not ok 1 - clip path did not promote to rgb888 work format"
     exit 0
 }
 
-echo "ok 1 - clip geometry promotes pal8 transparent input to rgb storage"
+printf '\n%s\n' "ok 1 - clip geometry promotes pal8 transparent input to rgb storage"
 exit 0

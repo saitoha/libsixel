@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:algo=random:seed=42 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q medoids long suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - -Q medoids long suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts long medoids suboptions"
+printf '\n%s\n' "ok 1 - -Q accepts long medoids suboptions"
 exit 0

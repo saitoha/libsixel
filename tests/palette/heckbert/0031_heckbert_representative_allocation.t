@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0031_heckbert_representative_allocation >/dev/null || {
-    echo "not ok 1 - native Heckbert representative allocation"
+    printf '\n%s\n' "not ok 1 - native Heckbert representative allocation"
     exit 0
 }
 
-echo "ok 1 - native Heckbert representative allocation"
+printf '\n%s\n' "ok 1 - native Heckbert representative allocation"
 exit 0

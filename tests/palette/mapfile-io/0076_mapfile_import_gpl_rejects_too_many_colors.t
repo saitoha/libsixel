@@ -19,15 +19,15 @@ gpl_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/gpl-too-many-colors-invalid
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m gpl:"${gpl_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "GPL too-many-colors payload unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - GPL too-many-colors payload unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_gpl:\ too\ many\ colors.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing GPL too-many-colors diagnostic"
+    printf '\n%s\n' "not ok 1 - missing GPL too-many-colors diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "GPL too-many-colors payload is rejected"
+printf '\n%s\n' "ok 1 - GPL too-many-colors payload is rejected"
 
 exit 0

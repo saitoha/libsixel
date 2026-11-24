@@ -27,14 +27,14 @@ output_last_none="${ARTIFACT_LOCAL_DIR}/cms_engine_repeated_last_none.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
-    echo "not ok" 1 - "auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - auto reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
-    echo "not ok" 1 - "none reference decode failed"
+    printf '\n%s\n' "not ok 1 - none reference decode failed"
     exit 0
 }
 
@@ -42,7 +42,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_last_auto}" || {
-    echo "not ok" 1 - "repeated option (last auto) decode failed"
+    printf '\n%s\n' "not ok 1 - repeated option (last auto) decode failed"
     exit 0
 }
 
@@ -50,19 +50,19 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     --cms-engine=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_last_none}" || {
-    echo "not ok" 1 - "repeated option (last none) decode failed"
+    printf '\n%s\n' "not ok 1 - repeated option (last none) decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_auto}" "${output_last_auto}" || {
-    echo "not ok" 1 - "last --cms-engine=auto did not take effect"
+    printf '\n%s\n' "not ok 1 - last --cms-engine=auto did not take effect"
     exit 0
 }
 
 cmp -s "${output_ref_none}" "${output_last_none}" || {
-    echo "not ok" 1 - "last --cms-engine=none did not take effect"
+    printf '\n%s\n' "not ok 1 - last --cms-engine=none did not take effect"
     exit 0
 }
 
-echo "ok" 1 - "repeated --cms-engine follows last occurrence"
+printf '\n%s\n' "ok 1 - repeated --cms-engine follows last occurrence"
 exit 0

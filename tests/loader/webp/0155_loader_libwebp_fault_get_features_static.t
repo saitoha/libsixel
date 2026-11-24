@@ -18,10 +18,10 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0043_loader_libwebp_fault_get_features_static"
+        printf '\n%s\n' "ok 1 - loader/0043_loader_libwebp_fault_get_features_static"
         ;;
     *)
-        echo "not ok" 1 - "loader/0043_loader_libwebp_fault_get_features_static"
+        printf '\n%s\n' "not ok 1 - loader/0043_loader_libwebp_fault_get_features_static"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

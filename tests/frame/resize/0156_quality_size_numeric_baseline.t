@@ -12,9 +12,9 @@ measurement="${TOP_SRCDIR}/docs/encoder/preprocessing/resampling/measurements/re
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_measurement_baseline \
     quality "${baseline}" "${measurement}" || {
-    echo "not ok" 1 - "quality or encoded-size numeric baseline changed"
+    printf '\n%s\n' "not ok 1 - quality or encoded-size numeric baseline changed"
     exit 0
 }
 
-echo "ok" 1 - "quality and encoded-size baselines are within tolerance"
+printf '\n%s\n' "ok 1 - quality and encoded-size baselines are within tolerance"
 exit 0

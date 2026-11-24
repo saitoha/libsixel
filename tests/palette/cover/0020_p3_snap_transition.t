@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/auto_cover_float/0020_p3_snap_transition || {
-    echo "not ok 1 - p3 rejection recovery"
+    printf '\n%s\n' "not ok 1 - p3 rejection recovery"
     exit 0
 }
-echo "ok 1 - p3 rejection recovery"
+printf '\n%s\n' "ok 1 - p3 rejection recovery"
 exit 0

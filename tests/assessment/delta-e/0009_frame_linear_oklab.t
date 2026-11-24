@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "assessment/0009_frame_linear_oklab" || {
-    echo "not ok 1 - frame linear oklab"
+    printf '\n%s\n' "not ok 1 - frame linear oklab"
     exit 0
 }
-echo "ok 1 - frame linear oklab"
+printf '\n%s\n' "ok 1 - frame linear oklab"
 exit 0

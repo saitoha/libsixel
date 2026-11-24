@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_GUARDS}" 'managed' 'guard-1:managed-lock' || {
-    echo "not ok 1 - Guard managed-lock invariant at before receipt."
+    printf '\n%s\n' "not ok 1 - Guard managed-lock invariant at before receipt."
     exit 0
 }
-echo "ok 1 - Guard managed-lock invariant at before receipt."
+printf '\n%s\n' "ok 1 - Guard managed-lock invariant at before receipt."
 exit 0

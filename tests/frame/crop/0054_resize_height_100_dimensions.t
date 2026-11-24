@@ -21,15 +21,15 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/height_100.six"
 
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h 100 -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "height scaling with -h 100 failed"
+    printf '\n%s\n' "not ok 1 - height scaling with -h 100 failed"
     exit 0
 }
 
 # Bare integers and the px suffix both request absolute pixel sizes.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_dimensions \
     "${output_sixel}" 100 100 || {
-    echo "not ok 1 - height option produced incorrect canvas dimensions"
+    printf '\n%s\n' "not ok 1 - height option produced incorrect canvas dimensions"
     exit 0
 }
-echo "ok 1 - height option preserves the requested dimensions"
+printf '\n%s\n' "ok 1 - height option preserves the requested dimensions"
 exit 0

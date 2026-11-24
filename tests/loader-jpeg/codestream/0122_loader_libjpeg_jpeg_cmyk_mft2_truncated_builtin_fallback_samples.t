@@ -23,25 +23,25 @@ output_builtin="${TMPDIR:-/tmp}/libsixel-cmyk-mft2-truncated-builtin-$$.six"
 output_none="${TMPDIR:-/tmp}/libsixel-cmyk-mft2-truncated-none-$$.six"
 
 test -f "${input_jpeg}" || {
-    echo "not ok" 1 - "missing input fixture: cmyk_mft2_truncated.jpg"
+    printf '\n%s\n' "not ok 1 - missing input fixture: cmyk_mft2_truncated.jpg"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_builtin}" || {
-    echo "not ok" 1 - "libjpeg builtin cms decode failed: cmyk_mft2_truncated"
+    printf '\n%s\n' "not ok 1 - libjpeg builtin cms decode failed: cmyk_mft2_truncated"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -Llibjpeg:cms_engine=none! "${input_jpeg}" >"${output_none}" || {
-    echo "not ok" 1 - "libjpeg cms=none decode failed: cmyk_mft2_truncated"
+    printf '\n%s\n' "not ok 1 - libjpeg cms=none decode failed: cmyk_mft2_truncated"
     exit 0
 }
 
 # Rejected profile metadata must preserve the unmanaged sample values.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${output_none}" "${output_builtin}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - rejected ICC fallback changed the unmanaged samples"
+    printf '\n%s\n' "not ok 1 - rejected ICC fallback changed the unmanaged samples"
     exit 0
 }
-echo "ok 1 - rejected ICC fallback preserves unmanaged samples"
+printf '\n%s\n' "ok 1 - rejected ICC fallback preserves unmanaged samples"
 exit 0

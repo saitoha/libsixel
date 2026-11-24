@@ -18,9 +18,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     <"${TOP_SRCDIR}/tests/data/inputs/formats/rgb.png" >/dev/null || {
-    echo "not ok" 1 - "forced gd loader failed to decode PNG from stdin"
+    printf '\n%s\n' "not ok 1 - forced gd loader failed to decode PNG from stdin"
     exit 0
 }
 
-echo "ok" 1 - "forced gd loader decodes PNG from stdin"
+printf '\n%s\n' "ok 1 - forced gd loader decodes PNG from stdin"
 exit 0

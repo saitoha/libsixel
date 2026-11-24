@@ -24,7 +24,7 @@ score=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -M 6delta-progressive \
     "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six" \
     ) || status=$?
 test "${status}" -eq 5 || {
-    echo "not ok 1 - incorrect baseline did not fail quality assessment"
+    printf '\n%s\n' "not ok 1 - incorrect baseline did not fail quality assessment"
     exit 0
 }
 
@@ -32,14 +32,14 @@ test "${status}" -eq 5 || {
 case "${score}" in
     0.[0-9]*) ;;
     *)
-        echo "not ok 1 - baseline comparison must produce a finite score"
+        printf '\n%s\n' "not ok 1 - baseline comparison must produce a finite score"
         exit 0
         ;;
 esac
 test "${score#0.}" -ge 0 2>/dev/null || {
-    echo "not ok 1 - baseline score contains unexpected output"
+    printf '\n%s\n' "not ok 1 - baseline score contains unexpected output"
     exit 0
 }
 
-echo "ok 1 - multi pass baseline control"
+printf '\n%s\n' "ok 1 - multi pass baseline control"
 exit 0

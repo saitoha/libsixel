@@ -8,8 +8,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=scalar \
     frame/0018_float_resampling identity_subnormal_y 1 || {
-    echo "not ok 1 - float identity_subnormal_y_scalar"
+    printf '\n%s\n' "not ok 1 - float identity_subnormal_y_scalar"
     exit 0
 }
-echo "ok 1 - float identity_subnormal_y_scalar"
+printf '\n%s\n' "ok 1 - float identity_subnormal_y_scalar"
 exit 0

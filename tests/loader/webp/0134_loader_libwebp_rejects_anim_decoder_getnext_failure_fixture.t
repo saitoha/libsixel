@@ -19,26 +19,26 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none! -l disable \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_anim_decoder_getnext_failure.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted decoder-getnext failure fixture"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted decoder-getnext failure fixture"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *load_with_libwebp:\ WebPAnimDecoderGetNext\ failed.**) true ;; *) false ;; esac && {
-    echo "ok" 1 - "forced libwebp loader reports WebPAnimDecoderGetNext failure for decoder-stage corruption"
+    printf '\n%s\n' "ok 1 - forced libwebp loader reports WebPAnimDecoderGetNext failure for decoder-stage corruption"
     exit 0
 }
 
 # Some libwebp builds report the fallback decode failure as either
 # "unexpected error" or "libpng error" while still rejecting the fixture.
 case "${msg}" in *unexpected\ error**) true ;; *) false ;; esac ||  case "${msg}" in *libpng\ error**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected fallback error diagnostic was missing"
+    printf '\n%s\n' "not ok 1 - expected fallback error diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced libwebp loader rejects decoder-getnext corruption fixture"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects decoder-getnext corruption fixture"
 
 exit 0

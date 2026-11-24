@@ -18,13 +18,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -bxterm256 --snap-policy=reversible -o/dev/null "${input_image}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "built-in palette conversion with snap policy failed"
+    printf '\n%s\n' "not ok 1 - built-in palette conversion with snap policy failed"
     exit 0
 }
 case "${trace}" in *LSXSNP1\|**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "snap policy unexpectedly reached built-in palette"
+    printf '\n%s\n' "not ok 1 - snap policy unexpectedly reached built-in palette"
     exit 0
 }
 
-echo "ok" 1 - "built-in palette bypasses snap policy"
+printf '\n%s\n' "ok 1 - built-in palette bypasses snap policy"
 exit 0

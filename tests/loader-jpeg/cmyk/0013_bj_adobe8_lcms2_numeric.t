@@ -15,22 +15,22 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - adobe8 lcms2 values"
+    printf '\n%s\n' "not ok 1 - adobe8 lcms2 values"
     exit 0
 }
 case "$trace" in *"event=apply|engine=builtin|"*)
     echo "$trace" >&2
-    echo "not ok 1 - unexpected CMS engine"
+    printf '\n%s\n' "not ok 1 - unexpected CMS engine"
     exit 0 ;;
 esac
 case "$trace" in *"event=apply|engine=colorsync|"*)
     echo "$trace" >&2
-    echo "not ok 1 - unexpected CMS engine"
+    printf '\n%s\n' "not ok 1 - unexpected CMS engine"
     exit 0 ;;
 esac
 case "$trace" in
     *"LSXCMS2|event=apply|engine=lcms2|"*"|src=7|dst=4|ok=1"*) ;;
-    *) echo "$trace" >&2; echo "not ok 1 - source-domain apply missing"; exit 0 ;;
+    *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - source-domain apply missing"; exit 0 ;;
 esac
-echo "ok 1 - adobe8 lcms2"
+printf '\n%s\n' "ok 1 - adobe8 lcms2"
 exit 0

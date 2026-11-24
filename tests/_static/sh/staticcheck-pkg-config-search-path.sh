@@ -30,6 +30,7 @@ for expected_path in . '.:/opt/pkg/lib/pkgconfig' \
         # shellcheck disable=SC1091
         . "$src_root/tests/build/pkgconfig/0001_libsixel_pc_resolves.t")
     test "$result" = '1..1
+
 ok 1 - pkg-config resolves libsixel.pc with its private requirements' || {
         echo 'not ok 1 - metadata search path changed its separator or entries'
         exit 0

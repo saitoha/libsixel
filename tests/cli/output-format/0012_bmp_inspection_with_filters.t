@@ -14,10 +14,10 @@ set -v
 snake_bmp="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone         -rhamming -thls "${snake_bmp}" -o/dev/null || {
-    echo "not ok" 1 - "BMP inspection with filters fails"
+    printf '\n%s\n' "not ok 1 - BMP inspection with filters fails"
     exit 0
 }
 
-echo "ok" 1 - "BMP inspection with filters succeeds"
+printf '\n%s\n' "ok 1 - BMP inspection with filters succeeds"
 
 exit 0

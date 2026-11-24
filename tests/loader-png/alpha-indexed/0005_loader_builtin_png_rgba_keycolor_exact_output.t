@@ -25,11 +25,11 @@ first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -4full -5exact -_none -aoff -Fnone \
     -Qkmeans -Xgamma -Wgamma -Ugamma -dnone \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png") || {
-    echo "not ok 1 - ordinary RGBA render failed"
+    printf '\n%s\n' "not ok 1 - ordinary RGBA render failed"
     exit 0
 }
 test "$first" = "$expected" || test "$first" = "$reordered" || {
-    echo "not ok 1 - ordinary RGBA path changed source-color placement"
+    printf '\n%s\n' "not ok 1 - ordinary RGBA path changed source-color placement"
     exit 0
 }
 second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -38,12 +38,12 @@ second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -4full -5exact -_none -aoff -Fnone \
     -Qkmeans -Xgamma -Wgamma -Ugamma -dnone \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png") || {
-    echo "not ok 1 - keycolor RGBA render failed"
+    printf '\n%s\n' "not ok 1 - keycolor RGBA render failed"
     exit 0
 }
 test "$second" = "$expected" || test "$second" = "$reordered" || {
-    echo "not ok 1 - keycolor RGBA path changed source-color placement"
+    printf '\n%s\n' "not ok 1 - keycolor RGBA path changed source-color placement"
     exit 0
 }
-echo "ok 1 - both RGBA keycolor paths preserve source-color placement"
+printf '\n%s\n' "ok 1 - both RGBA keycolor paths preserve source-color placement"
 exit 0

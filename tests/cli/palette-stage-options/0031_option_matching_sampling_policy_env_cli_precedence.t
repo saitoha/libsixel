@@ -19,14 +19,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --sampling-policy=adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - sampling-policy precedence encode failed"
+    printf '\n%s\n' "not ok 1 - sampling-policy precedence encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=executed\|reason=explicit**) true ;; *) false ;; esac || {
-    echo "not ok 1 - environment overrode command-line sampling-policy"
+    printf '\n%s\n' "not ok 1 - environment overrode command-line sampling-policy"
     exit 0
 }
 
-echo "ok 1 - command-line sampling-policy overrides environment"
+printf '\n%s\n' "ok 1 - command-line sampling-policy overrides environment"
 exit 0

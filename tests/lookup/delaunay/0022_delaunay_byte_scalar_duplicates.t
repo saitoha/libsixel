@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/0021_delaunay_byte_exact 256 1 sample scalar || {
-    echo "not ok 1 - delaunay byte scalar duplicates indices"
+    printf '\n%s\n' "not ok 1 - delaunay byte scalar duplicates indices"
     exit 0
 }
-echo "ok 1 - delaunay byte scalar duplicates indices"
+printf '\n%s\n' "ok 1 - delaunay byte scalar duplicates indices"
 exit 0

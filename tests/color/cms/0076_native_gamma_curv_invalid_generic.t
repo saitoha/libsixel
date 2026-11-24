@@ -14,17 +14,17 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - native gamma curv invalid generic"
+    printf '\n%s\n' "not ok 1 - native gamma curv invalid generic"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - requested engine did not apply"
+    printf '\n%s\n' "not ok 1 - requested engine did not apply"
     exit 0
 }
 case "${trace}" in *"curve=original|order=012"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unexpected original-curve branch"
+    printf '\n%s\n' "not ok 1 - unexpected original-curve branch"
     exit 0
 }
 actual=${trace#*'NGPHASE|begin
@@ -32,8 +32,8 @@ actual=${trace#*'NGPHASE|begin
 actual=${actual%%'NGPHASE|end'*}
 case "${actual}" in *"LSXCMS3|event=gamma-source|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - native TRC XYZ or sample bytes changed"
+    printf '\n%s\n' "not ok 1 - native TRC XYZ or sample bytes changed"
     exit 0
 }
-echo "ok 1 - native gamma curv invalid generic"
+printf '\n%s\n' "ok 1 - native gamma curv invalid generic"
 exit 0

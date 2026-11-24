@@ -22,20 +22,20 @@ output_default="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-default.sixel"
 output_cms1="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms1-default-check.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp! "${input_webp}" >"${output_default}" || {
-    echo "not ok" 1 - "libwebp lossy ICC decode failed with default cms"
+    printf '\n%s\n' "not ok 1 - libwebp lossy ICC decode failed with default cms"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
-    echo "not ok" 1 - "libwebp lossy ICC decode failed with cms=1"
+    printf '\n%s\n' "not ok 1 - libwebp lossy ICC decode failed with cms=1"
     exit 0
 }
 
 # Equivalent input/settings require identical output bytes.
 { test -s "${output_default}" && cmp -s "${output_default}" "${output_cms1}"; } || {
-    echo "not ok 1 - equivalent WebP output differs or is empty"
+    printf '\n%s\n' "not ok 1 - equivalent WebP output differs or is empty"
     exit 0
 }
 
-echo "ok" 1 - "lossy ICC default cms behavior matches explicit cms=1"
+printf '\n%s\n' "ok 1 - lossy ICC default cms behavior matches explicit cms=1"
 exit 0

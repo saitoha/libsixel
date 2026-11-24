@@ -18,7 +18,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qauto \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only merge_oversplit=2.0 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only merge_oversplit=2.0 was rejected"
     exit 0
 }
 
@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Fauto:merge_oversplit=1.2 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only merge_oversplit was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only merge_oversplit was rejected"
     exit 0
 }
 
@@ -35,12 +35,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Fauto:merge_oversplit=3.5 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI merge_oversplit unexpectedly ignored"
+    printf '\n%s\n' "not ok 1 - invalid CLI merge_oversplit unexpectedly ignored"
     exit 0
 }
 
 case "${msg}" in *-F\ merge_oversplit\ must\ be\ in\ range\ 1.0-3.0.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI merge_oversplit diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI merge_oversplit diagnostic"
     exit 0
 }
 
@@ -49,9 +49,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Fauto:merge_oversplit=1.2 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI merge_oversplit did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI merge_oversplit did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "merge_oversplit follows env/CLI precedence"
+printf '\n%s\n' "ok 1 - merge_oversplit follows env/CLI precedence"
 exit 0

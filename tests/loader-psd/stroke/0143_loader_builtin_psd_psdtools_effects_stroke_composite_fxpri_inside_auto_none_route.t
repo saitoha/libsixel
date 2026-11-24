@@ -33,7 +33,7 @@ auto_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     auto_status=$?
 
 test "${auto_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite auto decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite auto decode failed"
     exit 0
 }
 
@@ -44,17 +44,17 @@ none_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     none_status=$?
 
 test "${none_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite none decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite none decode failed"
     exit 0
 }
 
 case "${auto_trace}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite auto decode missed FXPRI overlap trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite auto decode missed FXPRI overlap trace"
     exit 0
 }
 
 case "${none_trace}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite none decode missed FXPRI overlap trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite none decode missed FXPRI overlap trace"
     exit 0
 }
 
@@ -64,14 +64,14 @@ case "${none_trace}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ 
 # That known rendering limitation must not be hidden by a lower threshold.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_dimensions \
     "${auto_output}" 256 256 || {
-    echo "not ok 1 - compositor output dimensions differ"
+    printf '\n%s\n' "not ok 1 - compositor output dimensions differ"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_dimensions \
     "${none_output}" 256 256 || {
-    echo "not ok 1 - compositor output dimensions differ"
+    printf '\n%s\n' "not ok 1 - compositor output dimensions differ"
     exit 0
 }
 
-echo "ok 1 - compositor route and output dimensions match"
+printf '\n%s\n' "ok 1 - compositor route and output dimensions match"
 exit 0

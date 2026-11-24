@@ -9,8 +9,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0226_jpeg_dnl_eoi_reject" 1>&2 || {
-    echo "not ok 1 - Reject a deferred-height frame truncated after DNL"
+    printf '\n%s\n' "not ok 1 - Reject a deferred-height frame truncated after DNL"
     exit 0
 }
-echo "ok 1 - Reject a deferred-height frame truncated after DNL"
+printf '\n%s\n' "ok 1 - Reject a deferred-height frame truncated after DNL"
 exit 0

@@ -18,10 +18,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported layer fallback layout"*)
-        echo "ok" 1 - "Gray32 marker fixture is rejected by layer-fallback layout checks"
+        printf '\n%s\n' "ok 1 - Gray32 marker fixture is rejected by layer-fallback layout checks"
         ;;
     *)
-        echo "not ok" 1 - "gray32 layer-fallback layout unsupported trace is missing"
+        printf '\n%s\n' "not ok 1 - gray32 layer-fallback layout unsupported trace is missing"
         exit 0
         ;;
 esac

@@ -18,18 +18,18 @@ env_output="${ARTIFACT_LOCAL_DIR}/threads-env-$$.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -= greedy:B1 -D <"${input}" \
     >"${cli_output}" || {
-    echo "not ok 1 - threads CLI conversion failed"
+    printf '\n%s\n' "not ok 1 - threads CLI conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 -D \
     <"${input}" >"${env_output}" || {
-    echo "not ok 1 - threads environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threads environment conversion failed"
     exit 0
 }
 cmp -s "${cli_output}" "${env_output}" || {
-    echo "not ok 1 - threads environment and CLI differ"
+    printf '\n%s\n' "not ok 1 - threads environment and CLI differ"
     exit 0
 }
 
-echo "ok 1 - threads environment matches CLI"
+printf '\n%s\n' "ok 1 - threads environment matches CLI"
 exit 0

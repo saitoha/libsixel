@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "icc/0003_icc_builtin_a2b_intent_paths" 1>&2 || {
-    echo "not ok" 1 - "icc builtin A2B intent coverage"
+    printf '\n%s\n' "not ok 1 - icc builtin A2B intent coverage"
     exit 0
 }
 
-echo "ok" 1 - "icc builtin A2B intent coverage"
+printf '\n%s\n' "ok 1 - icc builtin A2B intent coverage"
 
 exit 0

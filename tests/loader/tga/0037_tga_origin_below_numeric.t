@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0237_tga_origin_below_numeric" 1>&2 || {
-    echo "not ok 1 - Map an index below the declared origin to the first stored color"
+    printf '\n%s\n' "not ok 1 - Map an index below the declared origin to the first stored color"
     exit 0
 }
-echo "ok 1 - Map an index below the declared origin to the first stored color"
+printf '\n%s\n' "ok 1 - Map an index below the declared origin to the first stored color"
 exit 0

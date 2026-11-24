@@ -22,13 +22,13 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
     dither/positional/0048_gpu_6delta >/dev/null || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend is unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - GPU 6delta accumulation result mismatch"
+    printf '\n%s\n' "not ok 1 - GPU 6delta accumulation result mismatch"
     exit 0
 }
 
-echo "ok 1 - GPU palette apply records 6delta accumulation"
+printf '\n%s\n' "ok 1 - GPU palette apply records 6delta accumulation"
 exit 0

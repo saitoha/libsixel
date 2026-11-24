@@ -13,9 +13,9 @@ set -v
 
 cmp "${TOP_BUILDDIR}/quicklook-extension/package/payload-manifest.json" \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Payload/Library/Application Support/libsixel/QuickLook/payload-manifest.json" || {
-    echo "not ok 1 - Packaged manifest differs"
+    printf '\n%s\n' "not ok 1 - Packaged manifest differs"
     exit 0
 }
 
-echo "ok 1 - Packaged manifest equals the external distribution manifest."
+printf '\n%s\n' "ok 1 - Packaged manifest equals the external distribution manifest."
 exit 0

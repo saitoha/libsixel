@@ -13,9 +13,9 @@ echo '1..1'
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 fish >/dev/null && {
-    echo "not ok" 1 - "invalid show target unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid show target unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "invalid show target is rejected"
+printf '\n%s\n' "ok 1 - invalid show target is rejected"
 exit 0

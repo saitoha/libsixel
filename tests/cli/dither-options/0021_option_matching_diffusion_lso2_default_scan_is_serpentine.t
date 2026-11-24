@@ -20,33 +20,33 @@ output_raster="${ARTIFACT_LOCAL_DIR}/output_raster.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 \
     -d lso2 \
     -o "${output_default}" "${input_image}" || {
-    echo "not ok" 1 - "lso2 default scan conversion failed"
+    printf '\n%s\n' "not ok 1 - lso2 default scan conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 \
     -d lso2:scan=serpentine \
     -o "${output_serp}" "${input_image}" || {
-    echo "not ok" 1 - "lso2 serpentine conversion failed"
+    printf '\n%s\n' "not ok 1 - lso2 serpentine conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 \
     -d lso2:scan=raster \
     -o "${output_raster}" "${input_image}" || {
-    echo "not ok" 1 - "lso2 raster conversion failed"
+    printf '\n%s\n' "not ok 1 - lso2 raster conversion failed"
     exit 0
 }
 
 cmp -s "${output_default}" "${output_serp}" || {
-    echo "not ok" 1 - "lso2 default scan did not match serpentine"
+    printf '\n%s\n' "not ok 1 - lso2 default scan did not match serpentine"
     exit 0
 }
 
 cmp -s "${output_default}" "${output_raster}" && {
-    echo "not ok" 1 - "lso2 default scan unexpectedly matched raster"
+    printf '\n%s\n' "not ok 1 - lso2 default scan unexpectedly matched raster"
     exit 0
 }
 
-echo "ok" 1 - "lso2 default scan is serpentine"
+printf '\n%s\n' "ok 1 - lso2 default scan is serpentine"
 exit 0

@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0002_eyt_linear_range || {
-    echo "not ok 1 - eytzinger linear range"
+    printf '\n%s\n' "not ok 1 - eytzinger linear range"
     exit 0
 }
 
-echo "ok 1 - eytzinger linear range"
+printf '\n%s\n' "ok 1 - eytzinger linear range"
 exit 0

@@ -33,12 +33,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0" \
     "-Llibpng:K1:cms_engine=none!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "trns_keycolor short conversion failed"
+    printf '\n%s\n' "not ok 1 - trns_keycolor short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_keycolor\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "trns_keycolor short value was not stored"
+    printf '\n%s\n' "not ok 1 - trns_keycolor short value was not stored"
     exit 0
 }
 
@@ -47,12 +47,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1" \
     "-Llibpng:cms_engine=none!" "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "trns_keycolor environment conversion failed"
+    printf '\n%s\n' "not ok 1 - trns_keycolor environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_keycolor\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "trns_keycolor environment value was not stored"
+    printf '\n%s\n' "not ok 1 - trns_keycolor environment value was not stored"
     exit 0
 }
 
@@ -61,31 +61,31 @@ control_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1" \
     "-Llibpng:K0:cms_engine=none!" "${input_image}" \
     2>&1 >"${control_output}") || {
-    echo "not ok" 1 - "trns_keycolor control conversion failed"
+    printf '\n%s\n' "not ok 1 - trns_keycolor control conversion failed"
     exit 0
 }
 
 case "${control_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_keycolor\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit K0 did not override the enabled environment"
+    printf '\n%s\n' "not ok 1 - explicit K0 did not override the enabled environment"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "trns_keycolor short and env output differ"
+    printf '\n%s\n' "not ok 1 - trns_keycolor short and env output differ"
     exit 0
 }
 
 cmp -s "${short_output}" "${control_output}" || {
-    echo "not ok" 1 - "trns_keycolor changed image output"
+    printf '\n%s\n' "not ok 1 - trns_keycolor changed image output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "trns_keycolor preserves image output"
+printf '\n%s\n' "ok 1 - trns_keycolor preserves image output"
 exit 0

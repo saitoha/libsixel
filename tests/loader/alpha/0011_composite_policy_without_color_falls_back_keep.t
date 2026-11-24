@@ -23,13 +23,13 @@ composite_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=n
     --alpha-policy=composite \
     -L builtin:osc11_query=0! -d fs:scan=raster -o - \
     "${input_image}") || {
-    echo "not ok" 1 - "composite alpha-policy render failed"
+    printf '\n%s\n' "not ok 1 - composite alpha-policy render failed"
     exit 0
 }
 test "${composite_output}" = "${expected}" || {
-    echo "not ok" 1 - "composite fallback painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - composite fallback painted the alpha-zero pixel"
     exit 0
 }
 
-echo "ok" 1 - "composite fallback omits alpha zero and emits P2=1"
+printf '\n%s\n' "ok 1 - composite fallback omits alpha zero and emits P2=1"
 exit 0

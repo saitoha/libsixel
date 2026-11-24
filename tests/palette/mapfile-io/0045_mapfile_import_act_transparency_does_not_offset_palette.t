@@ -25,13 +25,13 @@ expected_palette='JASC-PAL
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
     -Goff -dnone --lookup-policy=none -bgray1 -M "${act_palette}" \
     -o /dev/null "${input_image}" || {
-    echo "not ok" 1 - "failed to create ACT regression palette"
+    printf '\n%s\n' "not ok 1 - failed to create ACT regression palette"
     exit 0
 }
 
 printf '\000\377' | dd of="${act_palette}" bs=1 seek=770 conv=notrunc \
     2>/dev/null || {
-    echo "not ok" 1 - "failed to set ACT transparency index"
+    printf '\n%s\n' "not ok 1 - failed to set ACT transparency index"
     exit 0
 }
 
@@ -40,19 +40,19 @@ actual_palette=$(
         -Goff -dnone --lookup-policy=none -m "${act_palette}" \
         -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "ACT palette with transparency index was rejected"
+    printf '\n%s\n' "not ok 1 - ACT palette with transparency index was rejected"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "ACT palette output normalization failed"
+    printf '\n%s\n' "not ok 1 - ACT palette output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "ACT transparency index offset palette entries"
+    printf '\n%s\n' "not ok 1 - ACT transparency index offset palette entries"
     exit 0
 }
 
-echo "ok" 1 - "ACT transparency metadata does not offset palette entries"
+printf '\n%s\n' "ok 1 - ACT transparency metadata does not offset palette entries"
 
 exit 0

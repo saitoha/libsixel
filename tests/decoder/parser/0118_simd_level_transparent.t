@@ -20,17 +20,17 @@ printf '#1!20~#2@A?BC!8?DE$#2!17?NN!5~-#1A!30?~~$#2!40N\033\134' \
     >>"${stream}"
 SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 SIXEL_SIMD_LEVEL=none \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D <"${stream}" >"${scalar_png}" || {
-    echo "not ok 1 - scalar decode failed"
+    printf '\n%s\n' "not ok 1 - scalar decode failed"
     exit 0
 }
 SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D <"${stream}" >"${vector_png}" || {
-    echo "not ok 1 - decode at the detected SIMD level failed"
+    printf '\n%s\n' "not ok 1 - decode at the detected SIMD level failed"
     exit 0
 }
 cmp "${scalar_png}" "${vector_png}" || {
-    echo "not ok 1 - transparent decode differs between SIMD levels"
+    printf '\n%s\n' "not ok 1 - transparent decode differs between SIMD levels"
     exit 0
 }
-echo "ok 1 - transparent decode is identical at every SIMD level"
+printf '\n%s\n' "ok 1 - transparent decode is identical at every SIMD level"
 exit 0

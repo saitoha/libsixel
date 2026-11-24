@@ -15,12 +15,12 @@ value=$("${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     xml-value \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/PackageInfo" \
     '/pkg-info/@install-location') || {
-    echo "not ok 1 - Cannot read package install-location"
+    printf '\n%s\n' "not ok 1 - Cannot read package install-location"
     exit 0
 }
 test "$value" = "/" || {
-    echo "not ok 1 - Unexpected package install-location"
+    printf '\n%s\n' "not ok 1 - Unexpected package install-location"
     exit 0
 }
-echo "ok 1 - Package uses the fixed system install location."
+printf '\n%s\n' "ok 1 - Package uses the fixed system install location."
 exit 0

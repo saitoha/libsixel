@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder-core/0020_ormode_size_sample_last_column" || {
-    echo "not ok 1 - ormode_size_sample_last_column"
+    printf '\n%s\n' "not ok 1 - ormode_size_sample_last_column"
     exit 0
 }
 
-echo "ok 1 - ormode_size_sample_last_column"
+printf '\n%s\n' "ok 1 - ormode_size_sample_last_column"
 exit 0

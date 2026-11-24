@@ -14,8 +14,8 @@ printf '%s\n' "$output" >&2
 echo "1..1"
 set -v
 test "$status" -eq 0 || {
-    echo "not ok 1 - Restore both PNG sources after both transform failures"
+    printf '\n%s\n' "not ok 1 - Restore both PNG sources after both transform failures"
     exit 0
 }
-echo "ok 1 - Restore both PNG sources after both transform failures"
+printf '\n%s\n' "ok 1 - Restore both PNG sources after both transform failures"
 exit 0

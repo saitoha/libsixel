@@ -28,15 +28,15 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Akeep -Bblack -w6 -h4 -rnearest \
     "${TOP_SRCDIR}/tests/data/color-numeric/tiff-legacy-ycbcr8-111.tif" 2>&1) || {
     echo "$trace" >&2
-    echo "not ok 1 - libtiff YCbCr CLI conversion failed"
+    printf '\n%s\n' "not ok 1 - libtiff YCbCr CLI conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0036_cli_color_wire \
     libtiff-ycbcr "$trace" || {
-    echo "not ok 1 - libtiff YCbCr CLI wire values or structure"
+    printf '\n%s\n' "not ok 1 - libtiff YCbCr CLI wire values or structure"
     exit 0
 }
 
-echo "ok 1 - libtiff YCbCr CLI independent RGB101 values and structure"
+printf '\n%s\n' "ok 1 - libtiff YCbCr CLI independent RGB101 values and structure"
 exit 0

@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "gdk-pixbuf-loader/0007_loader_plugin_integration" >/dev/null || {
-    echo "not ok 1 - gdk-pixbuf-loader/0007_loader_plugin_integration"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf-loader/0007_loader_plugin_integration"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf-loader/0007_loader_plugin_integration"
+printf '\n%s\n' "ok 1 - gdk-pixbuf-loader/0007_loader_plugin_integration"
 exit 0

@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibpng:cms_engine=auto! \
               -B#ffffff \
               -d fs:scan=raster \
               "${input_png}" >"${out}" || {
-    echo "not ok 1 - cms=1 background render failed"
+    printf '\n%s\n' "not ok 1 - cms=1 background render failed"
     exit 0
 }
 
@@ -42,11 +42,11 @@ case "${out_payload}" in
 esac
 
 test "${out_has_header}" = 0 || {
-    echo "not ok 1 - libpng palette+tRNS kept keycolor header under cms=1 background"
+    printf '\n%s\n' "not ok 1 - libpng palette+tRNS kept keycolor header under cms=1 background"
     exit 0
 }
 
-    echo "ok 1 - libpng palette+tRNS drops keycolor header under cms=1 background"
+    printf '\n%s\n' "ok 1 - libpng palette+tRNS drops keycolor header under cms=1 background"
 
 
 exit 0

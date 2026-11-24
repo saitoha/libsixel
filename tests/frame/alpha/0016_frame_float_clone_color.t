@@ -6,8 +6,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0054_float_geometry_state color clone || {
-    echo "not ok 1 - float frame clone preserves color and straight alpha"
+    printf '\n%s\n' "not ok 1 - float frame clone preserves color and straight alpha"
     exit 0
 }
-echo "ok 1 - float frame clone preserves color and straight alpha"
+printf '\n%s\n' "ok 1 - float frame clone preserves color and straight alpha"
 exit 0

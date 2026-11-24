@@ -20,7 +20,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_webp_signature.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted invalid WEBP signature"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted invalid WEBP signature"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -30,13 +30,13 @@ case "${msg}" in
     *"webp decode: RIFF/WEBP signature is invalid."*)
         ;;
     *)
-        echo "not ok" 1 - "expected invalid RIFF/WEBP signature diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected invalid RIFF/WEBP signature diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects invalid WEBP signature"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects invalid WEBP signature"
 
 exit 0

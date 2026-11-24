@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0238_gpu_p3_ordinary_boundary" || {
-    echo "not ok 1 - ordinary P3 GPU boundary"
+    printf '\n%s\n' "not ok 1 - ordinary P3 GPU boundary"
     exit 0
 }
-echo "ok 1 - ordinary P3 GPU boundary"
+printf '\n%s\n' "ok 1 - ordinary P3 GPU boundary"
 exit 0

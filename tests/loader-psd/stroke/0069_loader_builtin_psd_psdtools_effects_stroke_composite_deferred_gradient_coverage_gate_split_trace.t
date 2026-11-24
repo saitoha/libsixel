@@ -32,20 +32,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -53,8 +53,8 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_GRADIENT_CLIP*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
         exit 0
         ;;
 esac
@@ -62,12 +62,12 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_GRADIENT_CLIP_SPLIT*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP_SPLIT"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP_SPLIT"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred GrFl coverage/gate split code contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps deferred GrFl coverage/gate split code contract"
 exit 0

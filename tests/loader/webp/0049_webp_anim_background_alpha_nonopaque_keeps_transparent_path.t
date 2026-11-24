@@ -23,12 +23,12 @@ out_bg="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha-nonopaque-bg112233.six"
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "libwebp animation decode without -B failed"
+    printf '\n%s\n' "not ok 1 - libwebp animation decode without -B failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S -B#112233 "${input_webp}" >"${out_bg}" || {
-    echo "not ok" 1 - "libwebp animation decode with -B#112233 failed"
+    printf '\n%s\n' "not ok 1 - libwebp animation decode with -B#112233 failed"
     exit 0
 }
 
@@ -56,19 +56,19 @@ case "${out_bg_text}" in
 esac
 
 test "${default_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "ANIM non-opaque alpha did not keep transparent-path gating"
+    printf '\n%s\n' "not ok 1 - ANIM non-opaque alpha did not keep transparent-path gating"
     exit 0
 }
 
 test "${bg_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "ANIM non-opaque alpha did not keep transparent-path gating"
+    printf '\n%s\n' "not ok 1 - ANIM non-opaque alpha did not keep transparent-path gating"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_bg}" && {
-    echo "not ok" 1 - "ANIM non-opaque alpha output unexpectedly matched -B composition"
+    printf '\n%s\n' "not ok 1 - ANIM non-opaque alpha output unexpectedly matched -B composition"
     exit 0
 }
 
-echo "ok" 1 - "ANIM non-opaque alpha keeps transparent path until explicit -B"
+printf '\n%s\n' "ok 1 - ANIM non-opaque alpha keeps transparent path until explicit -B"
 exit 0

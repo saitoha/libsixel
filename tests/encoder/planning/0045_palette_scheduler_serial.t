@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0045_palette_scheduler_serial || {
-    echo "not ok 1 - palette scheduler serial"
+    printf '\n%s\n' "not ok 1 - palette scheduler serial"
     exit 0
 }
-echo "ok 1 - palette scheduler serial"
+printf '\n%s\n' "ok 1 - palette scheduler serial"
 exit 0

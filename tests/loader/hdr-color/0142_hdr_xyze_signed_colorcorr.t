@@ -11,8 +11,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_LOADER_HDR_USE_HEADER_EXPOSURE=1 \
     --env SIXEL_LOADER_HDR_TONEMAP=none \
     loader/hdr/2261_hdr_xyze_signed_colorcorr 1>&2 || {
-    echo "not ok 1 - hdr xyze signed colorcorr"
+    printf '\n%s\n' "not ok 1 - hdr xyze signed colorcorr"
     exit 0
 }
-echo "ok 1 - hdr xyze signed colorcorr"
+printf '\n%s\n' "ok 1 - hdr xyze signed colorcorr"
 exit 0

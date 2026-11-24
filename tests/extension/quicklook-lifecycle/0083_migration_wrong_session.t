@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'wrong-session' 'migration-refused' || {
-    echo "not ok 1 - Wrong GUI session refuses migration activation."
+    printf '\n%s\n' "not ok 1 - Wrong GUI session refuses migration activation."
     exit 0
 }
-echo "ok 1 - Wrong GUI session refuses migration activation."
+printf '\n%s\n' "ok 1 - Wrong GUI session refuses migration activation."
 exit 0

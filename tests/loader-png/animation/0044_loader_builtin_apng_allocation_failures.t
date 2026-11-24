@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0166_loader_builtin_apng_allocation_failures" 1>&2 || {
-    echo "not ok" 1 - "APNG allocation failures stay failures"
+    printf '\n%s\n' "not ok 1 - APNG allocation failures stay failures"
     exit 0
 }
-echo "ok" 1 - "APNG allocation failures stay failures"
+printf '\n%s\n' "ok 1 - APNG allocation failures stay failures"
 exit 0

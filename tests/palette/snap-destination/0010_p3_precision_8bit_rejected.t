@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0058_p3_precision_contract 8bit || {
-    echo "not ok 1 - 8bit precision policy accepted a P3 destination"
+    printf '\n%s\n' "not ok 1 - 8bit precision policy accepted a P3 destination"
     exit 0
 }
 
-echo "ok 1 - 8bit precision policy rejects a P3 destination"
+printf '\n%s\n' "ok 1 - 8bit precision policy rejects a P3 destination"
 exit 0

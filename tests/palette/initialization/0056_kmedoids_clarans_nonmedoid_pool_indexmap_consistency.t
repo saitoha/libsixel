@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     clarans-nonmedoid-pool-indexmap-consistency \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS non-medoid pool map failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS non-medoid pool map failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS non-medoid pool map passed"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS non-medoid pool map passed"
 exit 0

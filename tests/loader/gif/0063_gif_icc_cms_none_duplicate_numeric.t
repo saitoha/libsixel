@@ -18,11 +18,11 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - GIF ICC cms none duplicate"
+    printf '\n%s\n' "not ok 1 - GIF ICC cms none duplicate"
     exit 0
 }
 case "$trace" in
-    *"LSXCMS2|event=apply|"*) echo "not ok 1 - unexpected CMS apply"; exit 0 ;;
+    *"LSXCMS2|event=apply|"*) printf '\n%s\n' "not ok 1 - unexpected CMS apply"; exit 0 ;;
 esac
-echo "ok 1 - GIF ICC cms none duplicate"
+printf '\n%s\n' "ok 1 - GIF ICC cms none duplicate"
 exit 0

@@ -25,7 +25,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-oklab-work-cielab.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -X oklab -W cielab -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "img2sixel clustering oklab working cielab conversion failed"
+    printf '\n%s\n' "not ok 1 - img2sixel clustering oklab working cielab conversion failed"
     exit 0
 }
 
@@ -35,15 +35,15 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "clustering oklab working cielab lsqa passed"
+    printf '\n%s\n' "ok 1 - clustering oklab working cielab lsqa passed"
     exit 0
 }
 
 test "${lsqa_run_status}" -eq 5 && {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
-echo "not ok" 1 - "clustering oklab working cielab lsqa failed"
+printf '\n%s\n' "not ok 1 - clustering oklab working cielab lsqa failed"
 
 exit 0

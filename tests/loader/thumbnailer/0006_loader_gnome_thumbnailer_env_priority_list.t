@@ -28,17 +28,17 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "PATH=${bin_dir}:${PATH}" \
         --env "SIXEL_LOADER_PRIORITY_LIST=gnome-thumbnailer!" \
         "${input_png}" >"${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "env priority list test failed"
+    printf '\n%s\n' "not ok 1 - env priority list test failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "env priority list test failed"
+    printf '\n%s\n' "not ok 1 - env priority list test failed"
     exit 0
 }
 
-echo "ok" 1 - "env priority list enables gnome-thumbnailer"
+printf '\n%s\n' "ok 1 - env priority list enables gnome-thumbnailer"
 
 exit 0

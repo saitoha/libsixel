@@ -16,16 +16,16 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Gforce -Qkmeans:backend=gpu:seed=1 --snap-policy=nearest:timing=iteration \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -ne 0 || {
-    echo "not ok 1 - forced GPU conversion unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - forced GPU conversion unexpectedly succeeded"
     exit 0
 }
 case "$trace" in
     *gpu\ k-means:\ feedback\ or\ iteration\ snap\ is\ not\ supported.*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - force iteration snap backend selection"
+    printf '\n%s\n' "not ok 1 - force iteration snap backend selection"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - force iteration snap"
+printf '\n%s\n' "ok 1 - force iteration snap"
 exit 0

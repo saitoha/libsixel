@@ -18,7 +18,7 @@ log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:g
     --precision-policy=8bit -Udisplay-p3 -p16 \
     -o/dev/null "${input_image}" 2>&1) || status=$?
 test "${status}" -ne 0 || {
-    echo "not ok 1 - 8bit with a Display P3 destination was accepted"
+    printf '\n%s\n' "not ok 1 - 8bit with a Display P3 destination was accepted"
     exit 0
 }
 case "${log}" in
@@ -26,10 +26,10 @@ case "${log}" in
         true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - rejection did not name the -U destination"
+    printf '\n%s\n' "not ok 1 - rejection did not name the -U destination"
     printf '# %s\n' "${log}"
     exit 0
 }
 
-echo "ok 1 - 8bit rejects a named -U destination"
+printf '\n%s\n' "ok 1 - 8bit rejects a named -U destination"
 exit 0

@@ -28,15 +28,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "PATH=${bin_dir}:${PATH}" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" || {
-    echo "not ok" 1 - "TryExec skip/fallback path failed"
+    printf '\n%s\n' "not ok 1 - TryExec skip/fallback path failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "TryExec skip/fallback path failed"
+    printf '\n%s\n' "not ok 1 - TryExec skip/fallback path failed"
     exit 0
 }
 
-echo "ok" 1 - "TryExec mismatch skips entry and uses fallback"
+printf '\n%s\n' "ok 1 - TryExec mismatch skips entry and uses fallback"
 
 exit 0

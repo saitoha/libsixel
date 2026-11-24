@@ -25,17 +25,17 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_GPU_POLICY=force \
 test "$conversion_status" -eq 0 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --gpu-lookup-available eytzinger || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU Eytzinger lookup is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU Eytzinger lookup is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - GPU Eytzinger lookup probe failed"
+    printf '\n%s\n' "not ok 1 - GPU Eytzinger lookup probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - forced GPU Eytzinger lookup failed"
+    printf '\n%s\n' "not ok 1 - forced GPU Eytzinger lookup failed"
     exit 0
 }
 
-echo "ok 1 - forced GPU Eytzinger lookup completes"
+printf '\n%s\n' "ok 1 - forced GPU Eytzinger lookup completes"
 exit 0

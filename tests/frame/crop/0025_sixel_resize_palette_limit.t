@@ -16,10 +16,10 @@ snake_six="${TOP_SRCDIR}/images/map8.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w200 -p8 "${snake_six}" \
         -o/dev/null || {
-    echo "not ok" 1 - "Sixel resizing with palette limit fails"
+    printf '\n%s\n' "not ok 1 - Sixel resizing with palette limit fails"
     exit 0
 }
 
-echo "ok" 1 - "Sixel resizing with palette limit succeeds"
+printf '\n%s\n' "ok 1 - Sixel resizing with palette limit succeeds"
 
 exit 0

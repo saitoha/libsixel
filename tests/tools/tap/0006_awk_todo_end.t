@@ -6,8 +6,8 @@ set -v
 
 "${SIXEL_TEST_CONFIG_SHELL}" "$TOP_SRCDIR/tests/_support/tools/tap-directive.sh" \
     no todo_end XFAIL || {
-    echo 'not ok 1 - AWK todo end classification'
+    printf '\n%s\n' 'not ok 1 - AWK todo end classification'
     exit 0
 }
-echo 'ok 1 - AWK todo end classification'
+printf '\n%s\n' 'ok 1 - AWK todo end classification'
 exit 0

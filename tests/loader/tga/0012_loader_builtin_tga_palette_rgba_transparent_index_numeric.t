@@ -12,9 +12,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_TGA_NUMERIC_PAL_RGBA_TRANSPARENT_INDEX=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (tga palette rgba transparent index numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (tga palette rgba transparent index numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (tga palette rgba transparent index numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (tga palette rgba transparent index numeric)"
 exit 0

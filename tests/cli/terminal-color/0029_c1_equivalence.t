@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" cli/0037_cli_color_parser \
     c1 || {
-    echo "not ok 1 - terminal color parser c1 equivalence"
+    printf '\n%s\n' "not ok 1 - terminal color parser c1 equivalence"
     exit 0
 }
 
-echo "ok 1 - terminal color parser c1 equivalence"
+printf '\n%s\n' "ok 1 - terminal color parser c1 equivalence"
 exit 0

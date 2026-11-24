@@ -27,14 +27,14 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:Eauto! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ preferring\ layer\ fallback\ over\ merged\ composite**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite did not prefer layer fallback"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite did not prefer layer fallback"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps merged-to-fallback preference"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps merged-to-fallback preference"
 exit 0

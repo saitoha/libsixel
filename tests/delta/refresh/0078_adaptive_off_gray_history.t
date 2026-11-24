@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0078_adaptive_off_gray_history || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - adaptive off gray history"
+    printf '\n%s\n' "not ok 1 - adaptive off gray history"
     exit 0
 }
-echo "ok 1 - adaptive off gray history"
+printf '\n%s\n' "ok 1 - adaptive off gray history"
 exit 0

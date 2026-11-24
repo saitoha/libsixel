@@ -18,20 +18,20 @@ bit5_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma -0hard \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" -p 16 "-~5bit" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "5bit packing environment conversion failed"
+    printf '\n%s\n' "not ok 1 - 5bit packing environment conversion failed"
     exit 0
 }
 case "${bit5_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${bit5_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/5bit.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${bit5_trace}" in *LSXLUT1\|policy=5bit\|packing=morton**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "5bit packing environment was not consumed"
+    printf '\n%s\n' "not ok 1 - 5bit packing environment was not consumed"
     exit 0
 }
 
@@ -39,22 +39,22 @@ bit6_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma -0hard \
     --env "SIXEL_LOOKUP_PACKING=MoRtOn" -p 16 "-~6bit" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "6bit packing environment conversion failed"
+    printf '\n%s\n' "not ok 1 - 6bit packing environment conversion failed"
     exit 0
 }
 case "${bit6_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${bit6_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/6bit.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${bit6_trace}" in *LSXLUT1\|policy=6bit\|packing=morton**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "6bit packing environment was not consumed"
+    printf '\n%s\n' "not ok 1 - 6bit packing environment was not consumed"
     exit 0
 }
 
-echo "ok" 1 - "lookup packing environment remains case insensitive"
+printf '\n%s\n' "ok 1 - lookup packing environment remains case insensitive"
 exit 0

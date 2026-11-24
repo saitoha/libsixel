@@ -16,7 +16,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 version_output="${ARTIFACT_LOCAL_DIR}/version.txt"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -V >"${version_output}" || {
-    echo "not ok" 1 - "-V exited with failure"
+    printf '\n%s\n' "not ok 1 - -V exited with failure"
     exit 0
 }
 
@@ -24,15 +24,15 @@ IFS= read -r version_line < "${version_output}" || version_line=""
 case "${version_line}" in
     sixel2png\ *) ;;
     *)
-        echo "not ok" 1 - "version header missing"
+        printf '\n%s\n' "not ok 1 - version header missing"
         exit 0
         ;;
 esac
 
 test -n "${version_line}" || {
-    echo "not ok" 1 - "version header missing"
+    printf '\n%s\n' "not ok 1 - version header missing"
     exit 0
 }
 
-echo "ok" 1 - "-V prints version"
+printf '\n%s\n' "ok 1 - -V prints version"
 exit 0

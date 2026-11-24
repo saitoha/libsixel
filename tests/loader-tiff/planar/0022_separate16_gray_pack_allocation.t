@@ -18,8 +18,8 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - separate16 gray pack allocation"
+    printf '\n%s\n' "not ok 1 - separate16 gray pack allocation"
     exit 0
 }
-echo "ok 1 - separate16 gray pack allocation"
+printf '\n%s\n' "ok 1 - separate16 gray pack allocation"
 exit 0

@@ -17,7 +17,7 @@ msg=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_PRIORITY_LIST='builtin:z=1' \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "invalid env loader suboption unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid env loader suboption unexpectedly succeeded"
     exit 0
 }
 
@@ -25,7 +25,7 @@ case "${msg}" in
     *"unknown suboption key"*)
         ;;
     *)
-        echo "not ok" 1 - "missing env loader suboption diagnostic"
+        printf '\n%s\n' "not ok 1 - missing env loader suboption diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -36,12 +36,12 @@ case "${msg}" in
     *"\"z\""*"valid keys"*"cms_engine"*)
         ;;
     *)
-        echo "not ok" 1 - "missing token/candidate details for env loader suboption"
+        printf '\n%s\n' "not ok 1 - missing token/candidate details for env loader suboption"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "invalid env loader suboption is rejected"
+printf '\n%s\n' "ok 1 - invalid env loader suboption is rejected"
 exit 0

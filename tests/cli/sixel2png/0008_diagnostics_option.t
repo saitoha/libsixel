@@ -22,34 +22,34 @@ env_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env SIXEL_DIAG_MODE=code -d k_undithr 2>&1) || env_status=$?
 
 test "${human_status}" -eq 2 || {
-    echo "not ok" 1 - "human diagnostics exit status mismatch"
+    printf '\n%s\n' "not ok 1 - human diagnostics exit status mismatch"
     exit 0
 }
 
 test "${code_status}" -eq 2 || {
-    echo "not ok" 1 - "code diagnostics exit status mismatch"
+    printf '\n%s\n' "not ok 1 - code diagnostics exit status mismatch"
     exit 0
 }
 
 test "${env_status}" -eq 2 || {
-    echo "not ok" 1 - "environment diagnostics exit status mismatch"
+    printf '\n%s\n' "not ok 1 - environment diagnostics exit status mismatch"
     exit 0
 }
 
 case "${human_message}" in *valid\ values:**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "human diagnostics omitted valid values"
+    printf '\n%s\n' "not ok 1 - human diagnostics omitted valid values"
     exit 0
 }
 
 case "${code_message}" in *valid\ values:**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "code diagnostics retained valid values"
+    printf '\n%s\n' "not ok 1 - code diagnostics retained valid values"
     exit 0
 }
 
 test "${code_message}" = "${env_message}" || {
-    echo "not ok" 1 - "decoder CLI and environment diagnostics differ"
+    printf '\n%s\n' "not ok 1 - decoder CLI and environment diagnostics differ"
     exit 0
 }
 
-echo "ok" 1 - "sixel2png applies shared diagnostics policy"
+printf '\n%s\n' "ok 1 - sixel2png applies shared diagnostics policy"
 exit 0

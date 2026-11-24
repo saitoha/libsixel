@@ -12,9 +12,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0060_clear_map_sparse_parallel" || {
-    echo "not ok 1 - clear map sparse parallel"
+    printf '\n%s\n' "not ok 1 - clear map sparse parallel"
     exit 0
 }
 
-echo "ok 1 - clear map sparse parallel"
+printf '\n%s\n' "ok 1 - clear map sparse parallel"
 exit 0

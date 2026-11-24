@@ -14,13 +14,13 @@ set -v
 output=$("${TOP_SRCDIR}/tools/quicklook-extension.bash" installcheck \
     --package-dir /nonexistent --tool "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     --destdir ' ' 2>&1) || {
-    echo "not ok 1 - Staging installcheck tried to inspect the system"
+    printf '\n%s\n' "not ok 1 - Staging installcheck tried to inspect the system"
     exit 0
 }
 test "$output" = 'Quick Look installcheck: SKIP STAGING (DESTDIR is set)' || {
-    echo "not ok 1 - Staging was counted as installed"
+    printf '\n%s\n' "not ok 1 - Staging was counted as installed"
     exit 0
 }
 
-echo "ok 1 - staging installcheck skips system."
+printf '\n%s\n' "ok 1 - staging installcheck skips system."
 exit 0

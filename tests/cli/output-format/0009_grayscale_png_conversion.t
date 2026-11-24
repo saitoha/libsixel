@@ -14,10 +14,10 @@ set -v
 snake_gray_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${snake_gray_png}" -o/dev/null || {
-    echo "not ok" 1 - "grayscale PNG conversion fails"
+    printf '\n%s\n' "not ok 1 - grayscale PNG conversion fails"
     exit 0
 }
 
-echo "ok" 1 - "grayscale PNG conversion succeeds"
+printf '\n%s\n' "ok 1 - grayscale PNG conversion succeeds"
 
 exit 0

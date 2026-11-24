@@ -32,20 +32,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite diagnostic header is malformed"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -53,7 +53,7 @@ esac
 case "${diag_line}" in
     *FX_DUAL_SOURCE_BASE*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost base dual-source code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost base dual-source code"
         exit 0
         ;;
 esac
@@ -61,7 +61,7 @@ esac
 case "${diag_line}" in
     *FX_DUAL_SOURCE_DEFER*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost deferred dual-source code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost deferred dual-source code"
         exit 0
         ;;
 esac
@@ -69,7 +69,7 @@ esac
 case "${diag_line}" in
     *FX_DUAL_MODE_BASE*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost base mode-aware code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost base mode-aware code"
         exit 0
         ;;
 esac
@@ -77,7 +77,7 @@ esac
 case "${diag_line}" in
     *FX_DUAL_MODE_DEFER*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost deferred mode-aware code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost deferred mode-aware code"
         exit 0
         ;;
 esac
@@ -85,7 +85,7 @@ esac
 case "${diag_line}" in
     *FX_DUAL_OVERLAP_BASE*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost base overlap code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost base overlap code"
         exit 0
         ;;
 esac
@@ -93,10 +93,10 @@ esac
 case "${diag_line}" in
     *FX_DUAL_OVERLAP_DEFER*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost deferred overlap code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost deferred overlap code"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "effects/stroke-composite keeps dual-source code contract"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps dual-source code contract"
 exit 0

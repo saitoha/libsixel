@@ -10,12 +10,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     builtin none "${TOP_SRCDIR}/tests/data/inputs/formats/palette.png" \
     1302 0 1 || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP builtin unavailable"
+    printf '\n%s\n' "ok 1 # SKIP builtin unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - 0296_builtin_none_alpha_byte_storage"
+    printf '\n%s\n' "not ok 1 - 0296_builtin_none_alpha_byte_storage"
     exit 0
 }
-echo "ok 1 - 0296_builtin_none_alpha_byte_storage"
+printf '\n%s\n' "ok 1 - 0296_builtin_none_alpha_byte_storage"
 exit 0

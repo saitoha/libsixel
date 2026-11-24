@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'normal' 'migration-provider:preview' || {
-    echo "not ok 1 - Migration observes the original preview instance and election."
+    printf '\n%s\n' "not ok 1 - Migration observes the original preview instance and election."
     exit 0
 }
-echo "ok 1 - Migration observes the original preview instance and election."
+printf '\n%s\n' "ok 1 - Migration observes the original preview instance and election."
 exit 0

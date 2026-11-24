@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "platform/path/0001_path_to_libc_runtime" || {
-    echo "not ok 1 - target-runtime path adapters preserve their contract"
+    printf '\n%s\n' "not ok 1 - target-runtime path adapters preserve their contract"
     exit 0
 }
 
-echo "ok 1 - target-runtime path adapters preserve their contract"
+printf '\n%s\n' "ok 1 - target-runtime path adapters preserve their contract"
 exit 0

@@ -21,10 +21,10 @@ input_image="${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png"
 
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${input_image}" -o/dev/null || {
-    echo "not ok" 1 - "inspection with high color and RGBA input failed"
+    printf '\n%s\n' "not ok 1 - inspection with high color and RGBA input failed"
     exit 0
 }
 
-echo "ok" 1 - "inspection with high color and RGBA input exits cleanly"
+printf '\n%s\n' "ok 1 - inspection with high color and RGBA input exits cleanly"
 
 exit 0

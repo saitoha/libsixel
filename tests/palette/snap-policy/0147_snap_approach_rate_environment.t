@@ -18,15 +18,15 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --env SIXEL_PALETTE_SNAP_APPROACH_RATE=0.5 \
     -p 16 -Qkmeans -_nearest -W oklab \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - snap approach rate conversion failed"
+    printf '\n%s\n' "not ok 1 - snap approach rate conversion failed"
     exit 0
 }
 
 case "${trace}" in *LSXSNP1\|approach=0.5**) true ;; *) false ;; esac || {
-    echo "not ok 1 - snap approach rate missed its consumer"
+    printf '\n%s\n' "not ok 1 - snap approach rate missed its consumer"
     exit 0
 }
 
 
-echo "ok 1 - snap approach rate reaches the palette consumer"
+printf '\n%s\n' "ok 1 - snap approach rate reaches the palette consumer"
 exit 0

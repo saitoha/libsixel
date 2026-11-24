@@ -38,8 +38,8 @@ status=0
     'session:identity' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Explicit user and GUI session match"
+    printf '\n%s\n' "not ok 1 - Explicit user and GUI session match"
     exit 0
 }
-echo "ok 1 - Explicit user and GUI session match"
+printf '\n%s\n' "ok 1 - Explicit user and GUI session match"
 exit 0

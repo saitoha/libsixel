@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0108_loader_builtin_jpeg_rgb8_sequential_digest" || {
-    echo "not ok 1 - JPEG sequential RGB8 exact digest"
+    printf '\n%s\n' "not ok 1 - JPEG sequential RGB8 exact digest"
     exit 0
 }
 
-echo "ok 1 - JPEG sequential RGB8 exact digest"
+printf '\n%s\n' "ok 1 - JPEG sequential RGB8 exact digest"
 exit 0

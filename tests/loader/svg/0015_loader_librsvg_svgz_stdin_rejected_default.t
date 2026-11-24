@@ -25,7 +25,7 @@ msg=$(
 ) || status="$?"
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "stdin .svgz conversion unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - stdin .svgz conversion unexpectedly succeeded"
     exit 0
 }
 
@@ -42,9 +42,9 @@ ${msg}
 __MSG__
 
 test "${found}" -eq 1 || {
-    echo "not ok" 1 - "stdin .svgz failure did not report decode policy"
+    printf '\n%s\n' "not ok 1 - stdin .svgz failure did not report decode policy"
     exit 0
 }
 
-echo "ok" 1 - "librsvg stdin .svgz decode is rejected by default"
+printf '\n%s\n' "ok 1 - librsvg stdin .svgz decode is rejected by default"
 exit 0

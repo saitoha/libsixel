@@ -23,20 +23,20 @@ output_noicc="${ARTIFACT_LOCAL_DIR}/webp-noicc-cms0.sixel"
 output_icc="${ARTIFACT_LOCAL_DIR}/webp-icc-cms0.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! "${input_webp_noicc}" >"${output_noicc}" || {
-    echo "not ok" 1 - "libwebp decode failed for non-ICC input (cms=0)"
+    printf '\n%s\n' "not ok 1 - libwebp decode failed for non-ICC input (cms=0)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! "${input_webp_icc}" >"${output_icc}" || {
-    echo "not ok" 1 - "libwebp decode failed for ICC input (cms=0)"
+    printf '\n%s\n' "not ok 1 - libwebp decode failed for ICC input (cms=0)"
     exit 0
 }
 
 # Equivalent input/settings require identical output bytes.
 { test -s "${output_noicc}" && cmp -s "${output_noicc}" "${output_icc}"; } || {
-    echo "not ok 1 - equivalent WebP output differs or is empty"
+    printf '\n%s\n' "not ok 1 - equivalent WebP output differs or is empty"
     exit 0
 }
 
-echo "ok" 1 - "cms=0 keeps libwebp output unchanged for ICC chunk"
+printf '\n%s\n' "ok 1 - cms=0 keeps libwebp output unchanged for ICC chunk"
 exit 0

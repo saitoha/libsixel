@@ -18,9 +18,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --help >/dev/null 2>&1 || status=$?
 set -x
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "failed to load runtime help from img2sixel"
+    printf '\n%s\n' "not ok 1 - failed to load runtime help from img2sixel"
     exit 0
 }
 
-echo "ok" 1 - "img2sixel help command remains callable"
+printf '\n%s\n' "ok 1 - img2sixel help command remains callable"
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/blockcull/0009_blockcull_cielab_fraction || {
-    echo "not ok 1 - blockcull cielab fraction"
+    printf '\n%s\n' "not ok 1 - blockcull cielab fraction"
     exit 0
 }
-echo "ok 1 - blockcull cielab fraction"
+printf '\n%s\n' "ok 1 - blockcull cielab fraction"
 exit 0

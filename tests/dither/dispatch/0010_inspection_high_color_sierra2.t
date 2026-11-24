@@ -20,10 +20,10 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -d sierra:variant=2 "${input_image}" -o/dev/null || {
-    echo "not ok" 1 - "inspection with high color and Sierra-2 failed"
+    printf '\n%s\n' "not ok 1 - inspection with high color and Sierra-2 failed"
     exit 0
 }
 
-echo "ok" 1 - "inspection with high color and Sierra-2 exits cleanly"
+printf '\n%s\n' "ok 1 - inspection with high color and Sierra-2 exits cleanly"
 
 exit 0

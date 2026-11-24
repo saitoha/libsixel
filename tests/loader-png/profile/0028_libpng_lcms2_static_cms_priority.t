@@ -15,12 +15,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract \
     priority libpng lcms2 static || result=$?
 
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP Little CMS is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP Little CMS is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - libpng lcms2 static PNG metadata priority"
+    printf '\n%s\n' "not ok 1 - libpng lcms2 static PNG metadata priority"
     exit 0
 }
-echo "ok 1 - libpng lcms2 static PNG metadata priority"
+printf '\n%s\n' "ok 1 - libpng lcms2 static PNG metadata priority"
 exit 0

@@ -30,18 +30,18 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     echo "# timeline JSONL path: ${log_path}"
     test -f "${log_path}" || {
         echo "# timeline JSONL is missing from TAP shell"
-        echo "not ok 1 - 0003_timeline_clock_origin"
+        printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
         exit 0
     }
     IFS= read -r first_line < "${log_path}" || first_line=
     echo "# timeline JSONL first line: ${first_line}"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
 test -f "${log_path}" || {
     echo "# timeline JSONL is missing from TAP shell"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
@@ -54,21 +54,21 @@ done < "${log_path}"
 test "${line_count}" -ge 2 || {
     echo "# timeline JSONL has fewer than two clock records"
     echo "# timeline JSONL first line: ${first_line}"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
 case "${first_line}" in *\"event\":\"first\"*) true ;; *) false ;; esac || {
     echo "# timeline first clock event is missing"
     echo "# timeline JSONL first line: ${first_line}"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
 case "${second_line}" in *\"event\":\"second\"*) true ;; *) false ;; esac || {
     echo "# timeline second clock event is missing"
     echo "# timeline JSONL second line: ${second_line}"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
@@ -77,7 +77,7 @@ second_ts=${second_ts_tail%%,*}
 test -n "${second_ts}" || {
     echo "# timeline second clock timestamp is missing"
     echo "# timeline JSONL second line: ${second_line}"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
@@ -85,9 +85,9 @@ case "${second_ts}" in 0.00*) false ;; *) true ;; esac || {
     echo "# timeline clock origin regressed: second ts=${second_ts}"
     echo "# timeline JSONL first line: ${first_line}"
     echo "# timeline JSONL second line: ${second_line}"
-    echo "not ok 1 - 0003_timeline_clock_origin"
+    printf '\n%s\n' "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
 
-echo "ok 1 - 0003_timeline_clock_origin"
+printf '\n%s\n' "ok 1 - 0003_timeline_clock_origin"
 exit 0

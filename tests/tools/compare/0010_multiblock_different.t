@@ -8,8 +8,8 @@ status=0
 { cat "$TOP_SRCDIR/images/snake.png"; printf x; } | \
     "$SIXEL_TEST_COMPARE" -s - "$TOP_SRCDIR/images/snake.png" || status=$?
 test "$status" -eq 1 || {
-    echo 'not ok 1 - a difference after several buffers is detected'
+    printf '\n%s\n' 'not ok 1 - a difference after several buffers is detected'
     exit 0
 }
-echo 'ok 1 - a difference after several buffers is detected'
+printf '\n%s\n' 'ok 1 - a difference after several buffers is detected'
 exit 0

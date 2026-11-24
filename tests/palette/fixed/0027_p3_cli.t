@@ -18,12 +18,12 @@ P3
 255 0 0 0 255 0
 PPM
 ) || {
-    echo "not ok 1 - builtin palette P3 CLI failed"
+    printf '\n%s\n' "not ok 1 - builtin palette P3 CLI failed"
     exit 0
 }
 case "${actual}" in *'#9;2;92;20;14'*'#10;2;46;99;30'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - builtin palette P3 primary definitions"
+    printf '\n%s\n' "not ok 1 - builtin palette P3 primary definitions"
     exit 0
 }
-echo "ok 1 - builtin palette P3 CLI defines independent primary values"
+printf '\n%s\n' "ok 1 - builtin palette P3 CLI defines independent primary values"
 exit 0

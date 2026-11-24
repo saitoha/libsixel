@@ -17,7 +17,7 @@ cli_trace_only_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PSD_TRACE_ONLY=0 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     "-xhuman:D1" "${input_psd}" 2>/dev/null) || {
-    echo "not ok" 1 - "PSD CLI trace-only conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD CLI trace-only conversion failed"
     exit 0
 }
 trace_only_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -25,7 +25,7 @@ trace_only_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     "${input_psd}" 2>/dev/null) || {
-    echo "not ok" 1 - "PSD trace-only conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD trace-only conversion failed"
     exit 0
 }
 invalid_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -33,22 +33,22 @@ invalid_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_PSD_TRACE_ONLY=on \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     "${input_psd}" 2>/dev/null) || {
-    echo "not ok" 1 - "PSD invalid trace-only conversion failed"
+    printf '\n%s\n' "not ok 1 - PSD invalid trace-only conversion failed"
     exit 0
 }
 
 test -z "${cli_trace_only_output}" || {
-    echo "not ok" 1 - "PSD CLI trace-only mode emitted image output"
+    printf '\n%s\n' "not ok 1 - PSD CLI trace-only mode emitted image output"
     exit 0
 }
 test -z "${trace_only_output}" || {
-    echo "not ok" 1 - "PSD trace-only mode emitted image output"
+    printf '\n%s\n' "not ok 1 - PSD trace-only mode emitted image output"
     exit 0
 }
 test -n "${invalid_output}" || {
-    echo "not ok" 1 - "PSD trace-only accepted a nonnumeric boolean"
+    printf '\n%s\n' "not ok 1 - PSD trace-only accepted a nonnumeric boolean"
     exit 0
 }
 
-echo "ok" 1 - "PSD trace-only environment matching remains exact"
+printf '\n%s\n' "ok 1 - PSD trace-only environment matching remains exact"
 exit 0

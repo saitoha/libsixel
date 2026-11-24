@@ -28,7 +28,7 @@ msg=$(
 ) || status="$?"
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "value 0 stdin .svgz opt-in unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - value 0 stdin .svgz opt-in unexpectedly succeeded"
     exit 0
 }
 
@@ -36,10 +36,10 @@ case "${msg}" in
     *"requires file-path decode"*)
         ;;
     *)
-        echo "not ok" 1 - "value 0 stdin .svgz opt-in missing diagnostics"
+        printf '\n%s\n' "not ok 1 - value 0 stdin .svgz opt-in missing diagnostics"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "value 0 keeps stdin .svgz decoding disabled"
+printf '\n%s\n' "ok 1 - value 0 keeps stdin .svgz decoding disabled"
 exit 0

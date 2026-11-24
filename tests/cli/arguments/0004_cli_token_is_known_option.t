@@ -14,9 +14,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "cli/0029_cli_token_is_known_option" || 
 set -e
 
 test "${rc}" -eq 0 || {
-    echo "not ok" 1 - "cli_token_is_known_option"
+    printf '\n%s\n' "not ok 1 - cli_token_is_known_option"
     exit 0
 }
 
-echo "ok" 1 - "cli_token_is_known_option"
+printf '\n%s\n' "ok 1 - cli_token_is_known_option"
 exit 0

@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "lookup/0013_parallel_dense_cache" || {
-    echo "not ok 1 - parallel dense lookup cache"
+    printf '\n%s\n' "not ok 1 - parallel dense lookup cache"
     exit 0
 }
 
-echo "ok 1 - parallel dense lookup cache"
+printf '\n%s\n' "ok 1 - parallel dense lookup cache"
 exit 0

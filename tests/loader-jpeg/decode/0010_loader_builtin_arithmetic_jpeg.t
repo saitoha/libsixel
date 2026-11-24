@@ -23,7 +23,7 @@ run_status=$?
 set -e
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin loader failed to decode arithmetic JPEG"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode arithmetic JPEG"
     exit 0
 }
 
@@ -31,7 +31,7 @@ case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader was not attempted"
+        printf '\n%s\n' "not ok 1 - builtin loader was not attempted"
         exit 0
         ;;
 esac
@@ -40,10 +40,10 @@ case "${trace_log}" in
     *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader success was not reported"
+        printf '\n%s\n' "not ok 1 - builtin loader success was not reported"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin loader decodes arithmetic-coded JPEG"
+printf '\n%s\n' "ok 1 - builtin loader decodes arithmetic-coded JPEG"
 exit 0

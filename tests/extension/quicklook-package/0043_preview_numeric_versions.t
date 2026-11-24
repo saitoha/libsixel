@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check versions \
     "${TOP_BUILDDIR}/quicklook-extension/package" preview || {
-    echo "not ok 1 - Preview has the required numeric bundle versions matching the distribution."
+    printf '\n%s\n' "not ok 1 - Preview has the required numeric bundle versions matching the distribution."
     exit 0
 }
 
-echo "ok 1 - Preview has the required numeric bundle versions matching the distribution."
+printf '\n%s\n' "ok 1 - Preview has the required numeric bundle versions matching the distribution."
 exit 0

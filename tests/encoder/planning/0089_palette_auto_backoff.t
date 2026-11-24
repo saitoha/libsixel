@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0089_palette_auto_backoff || {
-    echo "not ok 1 - palette auto backoff"
+    printf '\n%s\n' "not ok 1 - palette auto backoff"
     exit 0
 }
-echo "ok 1 - palette auto backoff"
+printf '\n%s\n' "ok 1 - palette auto backoff"
 exit 0

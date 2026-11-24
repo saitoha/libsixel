@@ -33,7 +33,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${complet
               --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
               --env BASH_VERSION=5.0 \
               -2 bash >&2 || {
-    echo "not ok" 1 - "bash completion install failed"
+    printf '\n%s\n' "not ok 1 - bash completion install failed"
     exit 0
 }
 
@@ -50,7 +50,7 @@ test -f "${target_path}" && {
 }
 
 test "${bash_header_found}" -eq 1 && {
-    echo "ok" 1 - "bash completion installed"
+    printf '\n%s\n' "ok 1 - bash completion installed"
     exit 0
 }
 
@@ -67,10 +67,10 @@ test -f "${legacy_path}" && {
 }
 
 test "${bash_header_found}" -eq 1 && {
-    echo "ok" 1 - "bash completion installed"
+    printf '\n%s\n' "ok 1 - bash completion installed"
     exit 0
 }
 
-echo "not ok" 1 - "bash completion not installed"
+printf '\n%s\n' "not ok 1 - bash completion not installed"
 
 exit 0

@@ -27,7 +27,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin loader failed to decode invalid GdFl descriptor payload fixture: ${trace_output}"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode invalid GdFl descriptor payload fixture: ${trace_output}"
     exit 0
 }
 
@@ -35,7 +35,7 @@ case "${trace_output}" in
     *"builtin PSD: malformed non-pixel fill payload; skipping layer"*)
         ;;
     *)
-        echo "not ok" 1 - "invalid GdFl descriptor payload skip trace is missing"
+        printf '\n%s\n' "not ok 1 - invalid GdFl descriptor payload skip trace is missing"
         exit 0
         ;;
 esac
@@ -45,9 +45,9 @@ esac
 # half a level; allow one RGB byte level plus float conversion roundoff.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    printf '\n%s\n' "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "invalid GdFl descriptor payload is skipped with deterministic trace and decode matches reference pixel values"
+printf '\n%s\n' "ok 1 - invalid GdFl descriptor payload is skipped with deterministic trace and decode matches reference pixel values"
 exit 0

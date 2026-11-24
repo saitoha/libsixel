@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/psd/0166_gray_savedmask_numeric 1>&2 || {
-    echo "not ok 1 - gray savedmask numeric"
+    printf '\n%s\n' "not ok 1 - gray savedmask numeric"
     exit 0
 }
-echo "ok 1 - gray savedmask numeric"
+printf '\n%s\n' "ok 1 - gray savedmask numeric"
 exit 0

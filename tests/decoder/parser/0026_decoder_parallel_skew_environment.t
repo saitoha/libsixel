@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0024_decoder_parallel_skew_environment" || {
-    echo "not ok 1 - decoder parallel skew missed span planning"
+    printf '\n%s\n' "not ok 1 - decoder parallel skew missed span planning"
     exit 0
 }
 
-echo "ok 1 - decoder parallel skew reaches span planning"
+printf '\n%s\n' "ok 1 - decoder parallel skew reaches span planning"
 exit 0

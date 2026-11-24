@@ -9,9 +9,9 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none -m S-CIELAB
 status=$?
 set -e
 test "${status}" -eq 4 || {
-    echo "not ok 1 - frame_count_mismatch"
+    printf '\n%s\n' "not ok 1 - frame_count_mismatch"
     exit 0
 }
 
-echo "ok 1 - frame count mismatch"
+printf '\n%s\n' "ok 1 - frame count mismatch"
 exit 0

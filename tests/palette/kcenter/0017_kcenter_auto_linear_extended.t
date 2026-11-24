@@ -9,9 +9,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     values 0 1 0 none || {
-    echo "not ok 1 - kcenter auto linear extended"
+    printf '\n%s\n' "not ok 1 - kcenter auto linear extended"
     exit 0
 }
 
-echo "ok 1 - kcenter auto linear extended"
+printf '\n%s\n' "ok 1 - kcenter auto linear extended"
 exit 0

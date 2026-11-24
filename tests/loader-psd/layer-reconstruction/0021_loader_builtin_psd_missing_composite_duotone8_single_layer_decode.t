@@ -22,7 +22,7 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_duotone8_missing_comp
 reference_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psd_snake16_gray8_expected.ppm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader failed to decode layer-only PSD Duotone8"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode layer-only PSD Duotone8"
     exit 0
 }
 
@@ -31,9 +31,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null || {
 # half a level; allow one RGB byte level plus float conversion roundoff.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_ppm}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    printf '\n%s\n' "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 
-echo "ok" 1 - "layer-only PSD Duotone8 matches reference pixel values against expected PPM"
+printf '\n%s\n' "ok 1 - layer-only PSD Duotone8 matches reference pixel values against expected PPM"
 exit 0

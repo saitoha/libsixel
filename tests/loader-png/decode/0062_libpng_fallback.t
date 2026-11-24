@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract fallback || {
-    echo "not ok 1 - libpng fallback"
+    printf '\n%s\n' "not ok 1 - libpng fallback"
     exit 0
 }
-echo "ok 1 - libpng fallback"
+printf '\n%s\n' "ok 1 - libpng fallback"
 exit 0

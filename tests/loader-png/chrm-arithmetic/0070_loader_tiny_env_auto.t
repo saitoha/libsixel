@@ -13,17 +13,17 @@ set -v
 result=0
 trace=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env "SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC=auto" loader/0210_png_arith_loader 8 "libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" 1 2>&1) || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP required arithmetic representation is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP required arithmetic representation is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - loader shared resolver env_auto tiny frame bits"
+    printf '\n%s\n' "not ok 1 - loader shared resolver env_auto tiny frame bits"
     exit 0
 }
 case "${trace}" in *PNGCHRM1\|role=image\|requested=auto\|selected=double\|actual=double\|reason=ordinary**) true ;; *) false ;; esac || {
-    echo "not ok 1 - selected arithmetic path differs"
+    printf '\n%s\n' "not ok 1 - selected arithmetic path differs"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - loader shared resolver env_auto tiny frame bits"
+printf '\n%s\n' "ok 1 - loader shared resolver env_auto tiny frame bits"
 exit 0

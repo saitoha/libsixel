@@ -23,7 +23,7 @@ out_empty="${ARTIFACT_LOCAL_DIR}/webp-anim-lossy-empty-force-rgb.six"
 
 msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_default}") || {
-    echo "not ok" 1 - "default libwebp animation decode failed"
+    printf '\n%s\n' "not ok 1 - default libwebp animation decode failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_default}" >&2
     exit 0
@@ -31,7 +31,7 @@ msg_default=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
 
 msg_empty=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" 2>&1 >"${out_empty}") || {
-    echo "not ok" 1 - "empty-force-rgb libwebp animation decode failed"
+    printf '\n%s\n' "not ok 1 - empty-force-rgb libwebp animation decode failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_empty}" >&2
     exit 0
@@ -41,7 +41,7 @@ case "${msg_empty}" in
     *"animation background source=none"*"finalize frame_no=0 "*"finalize frame_no=1 "*)
         ;;
     *)
-        echo "not ok" 1 - "empty-force-rgb trace lacks animation markers"
+        printf '\n%s\n' "not ok 1 - empty-force-rgb trace lacks animation markers"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_empty}" >&2
         exit 0
@@ -50,7 +50,7 @@ esac
 
 case "${msg_empty}" in
     *"static decode path="*)
-        echo "not ok" 1 - "empty-force-rgb trace reported static path"
+        printf '\n%s\n' "not ok 1 - empty-force-rgb trace reported static path"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_empty}" >&2
         exit 0
@@ -61,7 +61,7 @@ esac
 
 case "${msg_default}" in
     *"static decode path="*)
-        echo "not ok" 1 - "default animation trace unexpectedly reported static decode path"
+        printf '\n%s\n' "not ok 1 - default animation trace unexpectedly reported static decode path"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_default}" >&2
         exit 0
@@ -71,9 +71,9 @@ case "${msg_default}" in
 esac
 
 cmp -s "${out_default}" "${out_empty}" || {
-    echo "not ok" 1 - "empty-force-rgb changed libwebp animation output"
+    printf '\n%s\n' "not ok 1 - empty-force-rgb changed libwebp animation output"
     exit 0
 }
 
-echo "ok" 1 - "empty force-rgb value behaves like an unset variable"
+printf '\n%s\n' "ok 1 - empty force-rgb value behaves like an unset variable"
 exit 0

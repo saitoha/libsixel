@@ -8,9 +8,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" icc/0018_mft1_b2a_xyz_matrix || {
-    echo "not ok 1 - mft1 B2A matrix precedes input tables"
+    printf '\n%s\n' "not ok 1 - mft1 B2A matrix precedes input tables"
     exit 0
 }
 
-echo "ok 1 - mft1 B2A matrix precedes input tables"
+printf '\n%s\n' "ok 1 - mft1 B2A matrix precedes input tables"
 exit 0

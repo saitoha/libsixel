@@ -24,6 +24,7 @@ result=$(TOP_BUILDDIR="$tmpdir"
     # shellcheck disable=SC1091
     . "$src_root/tests/build/pkgconfig/0001_libsixel_pc_resolves.t")
 test "$result" = '1..1
+
 ok 1 - pkg-config resolves libsixel.pc with its private requirements' || {
     echo 'not ok 1 - metadata resolution depends on filename support'
     exit 0

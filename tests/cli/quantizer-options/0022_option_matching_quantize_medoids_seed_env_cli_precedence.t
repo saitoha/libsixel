@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only seed=0 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only seed=0 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:seed=4294967295 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only seed upper bound was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only seed upper bound was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:seed=4294967296 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI seed unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI seed unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *-Q\ seed\ must\ be\ in\ range\ 0-4294967295.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI seed diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI seed diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:seed=4294967295 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI seed did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI seed did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "medoids seed follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - medoids seed follows env/CLI acceptance and CLI priority"
 exit 0

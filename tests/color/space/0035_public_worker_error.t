@@ -15,8 +15,8 @@ SIXEL_ENCODER_THREADING_POLICY=greedy
 export SIXEL_ENCODER_THREADING_POLICY
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "colorspace/public_float_fault" "3" || {
-    echo "not ok 1 - float colorspace worker error"
+    printf '\n%s\n' "not ok 1 - float colorspace worker error"
     exit 0
 }
-echo "ok 1 - float colorspace worker error"
+printf '\n%s\n' "ok 1 - float colorspace worker error"
 exit 0

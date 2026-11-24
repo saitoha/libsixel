@@ -10,12 +10,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0008_operation_priority"
 result=$?
 set -e
 test "$result" -ne 77 || {
-    echo "ok 1 - operation priority # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 - operation priority # SKIP thread support disabled"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - operation priority"
+    printf '\n%s\n' "not ok 1 - operation priority"
     exit 0
 }
-echo "ok 1 - operation priority"
+printf '\n%s\n' "ok 1 - operation priority"
 exit 0

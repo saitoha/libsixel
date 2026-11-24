@@ -9,8 +9,8 @@ set -v
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0043_delta_map_animation \
     "pal:${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-256-valid.pal" || {
-    echo "not ok 1 - delta map animation"
+    printf '\n%s\n' "not ok 1 - delta map animation"
     exit 0
 }
-echo "ok 1 - delta map animation"
+printf '\n%s\n' "ok 1 - delta map animation"
 exit 0

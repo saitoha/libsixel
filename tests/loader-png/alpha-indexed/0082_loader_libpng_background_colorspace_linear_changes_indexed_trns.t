@@ -26,22 +26,22 @@ output_linear="${ARTIFACT_LOCAL_DIR}/libpng_bgcs_indexed_linear.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
-    echo "not ok" 1 - "libpng indexed gamma background composition failed"
+    printf '\n%s\n' "not ok 1 - libpng indexed gamma background composition failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
               -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_linear}" || {
-    echo "not ok" 1 - "libpng indexed linear background composition failed"
+    printf '\n%s\n' "not ok 1 - libpng indexed linear background composition failed"
     exit 0
 }
 
 cmp -s "${output_gamma}" "${output_linear}" && {
-    echo "not ok" 1 - "gamma and linear indexed composition produced identical output"
+    printf '\n%s\n' "not ok 1 - gamma and linear indexed composition produced identical output"
     exit 0
 }
 
 
-echo "ok" 1 - "linear background interpretation changes indexed+tRNS composition"
+printf '\n%s\n' "ok 1 - linear background interpretation changes indexed+tRNS composition"
 exit 0

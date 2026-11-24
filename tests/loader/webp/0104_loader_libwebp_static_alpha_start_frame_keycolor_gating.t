@@ -24,24 +24,24 @@ out_start1_bg="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-1-bg.six"
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline static alpha decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static alpha decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --start-frame=1 -Llibwebp:cms_engine=none! -S \
     "${input_webp}" >"${out_start1}" || {
-    echo "not ok" 1 - "static alpha decode with --start-frame=1 failed"
+    printf '\n%s\n' "not ok 1 - static alpha decode with --start-frame=1 failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite --start-frame=1 -Llibwebp:cms_engine=none! -S -B#000 \
     "${input_webp}" >"${out_start1_bg}" || {
-    echo "not ok" 1 - "static alpha decode with --start-frame=1 -B#000 failed"
+    printf '\n%s\n' "not ok 1 - static alpha decode with --start-frame=1 -B#000 failed"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_start1}" && {
-    echo "not ok" 1 - "start-frame=1 did not change static alpha frame selection"
+    printf '\n%s\n' "not ok 1 - start-frame=1 did not change static alpha frame selection"
     exit 0
 }
 
@@ -69,19 +69,19 @@ case "${out_start1_bg_text}" in
 esac
 
 test "${start1_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "start-frame alpha output lost keycolor without -B"
+    printf '\n%s\n' "not ok 1 - start-frame alpha output lost keycolor without -B"
     exit 0
 }
 
 test "${start1_bg_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "start-frame alpha output kept keycolor even with -B"
+    printf '\n%s\n' "not ok 1 - start-frame alpha output kept keycolor even with -B"
     exit 0
 }
 
 cmp -s "${out_start1}" "${out_start1_bg}" && {
-    echo "not ok" 1 - "start-frame alpha output unexpectedly matched -B composition"
+    printf '\n%s\n' "not ok 1 - start-frame alpha output unexpectedly matched -B composition"
     exit 0
 }
 
-echo "ok" 1 - "static alpha start-frame keeps keycolor until explicit -B"
+printf '\n%s\n' "ok 1 - static alpha start-frame keeps keycolor until explicit -B"
 exit 0

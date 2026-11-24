@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/psd/0142_process_alpha_identifier_count_reject 1>&2 || {
-    echo "not ok 1 - process alpha identifier count reject"
+    printf '\n%s\n' "not ok 1 - process alpha identifier count reject"
     exit 0
 }
-echo "ok 1 - process alpha identifier count reject"
+printf '\n%s\n' "ok 1 - process alpha identifier count reject"
 exit 0

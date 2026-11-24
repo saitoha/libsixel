@@ -21,26 +21,26 @@ lazy_output="${ARTIFACT_LOCAL_DIR}/0025-lazy-delta-lazy-$$.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs -g -l disable -Z delta \
     -=balanced:B1 -o "${serial_output}" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_motion_64_2frame.gif" || {
-    echo "not ok 1 - serial reference failed"
+    printf '\n%s\n' "not ok 1 - serial reference failed"
     exit 0
 }
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs -g -l disable -Z delta \
     -=lazy:B8 -o "${lazy_output}" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_motion_64_2frame.gif" 2>&1 >/dev/null) || {
-    echo "not ok 1 - lazy conversion failed"
+    printf '\n%s\n' "not ok 1 - lazy conversion failed"
     exit 0
 }
 case "${trace}" in *threads:\ dither=1\ encode=7*) true ;; *) false ;; esac || {
-    echo "not ok 1 - lazy did not retain parallel encoding with one producer"
+    printf '\n%s\n' "not ok 1 - lazy did not retain parallel encoding with one producer"
     exit 0
 }
 cmp -s "${serial_output}" "${lazy_output}" || {
-    echo "not ok 1 - lazy delta differs from one-thread output"
+    printf '\n%s\n' "not ok 1 - lazy delta differs from one-thread output"
     exit 0
 }
 test -s "${lazy_output}" || {
-    echo "not ok 1 - lazy output is empty"
+    printf '\n%s\n' "not ok 1 - lazy output is empty"
     exit 0
 }
-echo "ok 1 - lazy delta overlaps encoding with serial-equivalent output"
+printf '\n%s\n' "ok 1 - lazy delta overlaps encoding with serial-equivalent output"
 exit 0

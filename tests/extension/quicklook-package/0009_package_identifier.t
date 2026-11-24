@@ -15,12 +15,12 @@ value=$("${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     xml-value \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/PackageInfo" \
     '/pkg-info/@identifier') || {
-    echo "not ok 1 - Cannot read package identifier"
+    printf '\n%s\n' "not ok 1 - Cannot read package identifier"
     exit 0
 }
 test "$value" = "com.saitoha.libsixel.quicklook.pkg" || {
-    echo "not ok 1 - Unexpected package identifier"
+    printf '\n%s\n' "not ok 1 - Unexpected package identifier"
     exit 0
 }
-echo "ok 1 - Package has the fixed receipt identifier."
+printf '\n%s\n' "ok 1 - Package has the fixed receipt identifier."
 exit 0

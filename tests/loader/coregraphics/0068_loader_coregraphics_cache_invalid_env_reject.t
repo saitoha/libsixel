@@ -13,9 +13,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES=invalid" \
     --env "SIXEL_TEST_COREGRAPHICS_CACHE_INVALID_ENV_REJECT=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (cache invalid env reject)"
+    printf '\n%s\n' "not ok 1 - loader/0008_loader_coregraphics_pixelformat (cache invalid env reject)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (cache invalid env reject)"
+printf '\n%s\n' "ok 1 - loader/0008_loader_coregraphics_pixelformat (cache invalid env reject)"
 exit 0

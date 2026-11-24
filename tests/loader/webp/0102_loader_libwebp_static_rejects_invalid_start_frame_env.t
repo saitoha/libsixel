@@ -21,7 +21,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" \
     2>&1 -o/dev/null) && {
-    echo "not ok" 1 - "invalid start-frame env was unexpectedly accepted in static mode"
+    printf '\n%s\n' "not ok 1 - invalid start-frame env was unexpectedly accepted in static mode"
     exit 0
 }
 
@@ -29,12 +29,12 @@ case "${msg}" in
     *"SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer."*)
         ;;
     *)
-        echo "not ok" 1 - "expected non-integer diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected non-integer diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "static libwebp decode rejects non-integer start-frame env"
+printf '\n%s\n' "ok 1 - static libwebp decode rejects non-integer start-frame env"
 exit 0

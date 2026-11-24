@@ -22,7 +22,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     --sampling-policy=full-frame --binning-policy=none \
     -o "${ARTIFACT_LOCAL_DIR}/output.six" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" 2>&1) || {
-    echo "not ok 1 - native bluenoise encoding"
+    printf '\n%s\n' "not ok 1 - native bluenoise encoding"
     printf '# %s\n' "${trace}"
     exit 0
 }
@@ -30,7 +30,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
 case "${trace}" in *"diffuse=bluenoise|"*"rgb101=1|"*)
     true ;; *) false ;;
 esac || {
-    echo "not ok 1 - native bluenoise dispatch"
+    printf '\n%s\n' "not ok 1 - native bluenoise dispatch"
     printf '# %s\n' "${trace}"
     exit 0
 }
@@ -38,9 +38,9 @@ esac || {
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -Tsrgb -Wlinear -Pfloat32 \
     -b MS-SSIM:0.98 "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" \
     "${ARTIFACT_LOCAL_DIR}/output.six" >/dev/null || {
-    echo "not ok 1 - native bluenoise quality"
+    printf '\n%s\n' "not ok 1 - native bluenoise quality"
     exit 0
 }
 
-echo "ok 1 - native bluenoise quality"
+printf '\n%s\n' "ok 1 - native bluenoise quality"
 exit 0

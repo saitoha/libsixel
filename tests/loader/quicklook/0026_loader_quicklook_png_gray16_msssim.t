@@ -26,16 +26,16 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L quicklook:thumbnail_size=64! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-gray16.png" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_png_gray16.six" || {
-    echo "not ok" 1 - "quicklook PNG gray16 decode failed"
+    printf '\n%s\n' "not ok 1 - quicklook PNG gray16 decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/loader/quality/ecb29f68-snake-64-reference-gray.ppm" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_png_gray16.six" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "quicklook PNG gray16 decode preserves quality"
+printf '\n%s\n' "ok 1 - quicklook PNG gray16 decode preserves quality"
 exit 0

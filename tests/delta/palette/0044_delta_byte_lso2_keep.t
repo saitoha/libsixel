@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0061_delta_byte_lso2_keep || {
-    echo "not ok 1 - delta byte lso2 keep"
+    printf '\n%s\n' "not ok 1 - delta byte lso2 keep"
     exit 0
 }
-echo "ok 1 - delta byte lso2 keep"
+printf '\n%s\n' "ok 1 - delta byte lso2 keep"
 exit 0

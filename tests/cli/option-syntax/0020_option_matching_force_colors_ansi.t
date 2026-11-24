@@ -23,7 +23,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_STATUS_FORCE_COLORS=1 \
 set -x
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "force colors diagnostic exit status mismatch"
+    printf '\n%s\n' "not ok 1 - force colors diagnostic exit status mismatch"
     exit 0
 }
 
@@ -31,7 +31,7 @@ case "${msg}" in
     *"${esc_char}[33m"*)
         ;;
     *)
-    echo "not ok" 1 - "force colors did not inject ANSI markers"
+    printf '\n%s\n' "not ok 1 - force colors did not inject ANSI markers"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -42,7 +42,7 @@ case "${msg}" in
     *"${esc_char}[1m"*)
         ;;
     *)
-    echo "not ok" 1 - "force colors did not inject ANSI markers"
+    printf '\n%s\n' "not ok 1 - force colors did not inject ANSI markers"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -53,12 +53,12 @@ case "${msg}" in
     *"${esc_char}[0m"*)
         ;;
     *)
-    echo "not ok" 1 - "force colors did not inject ANSI markers"
+    printf '\n%s\n' "not ok 1 - force colors did not inject ANSI markers"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
     ;;
 esac
 
-echo "ok" 1 - "force colors injects ANSI markers"
+printf '\n%s\n' "ok 1 - force colors injects ANSI markers"
 exit 0

@@ -11,9 +11,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0178_loader_builtin_apng_default_image_excluded_numeric" \
     1>&2 || {
-    echo "not ok" 1 - "APNG excluded default image was counted"
+    printf '\n%s\n' "not ok 1 - APNG excluded default image was counted"
     exit 0
 }
 
-echo "ok" 1 - "APNG excluded default image is not counted"
+printf '\n%s\n' "ok 1 - APNG excluded default image is not counted"
 exit 0

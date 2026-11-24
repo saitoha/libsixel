@@ -22,23 +22,23 @@ default_sixel="${ARTIFACT_LOCAL_DIR}/librsvg-relative-default.six"
 esc="$(printf '\033')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${default_sixel}" || {
-    echo "not ok" 1 - "default relative-resource SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - default relative-resource SVG conversion failed"
     exit 0
 }
 
 IFS= read -r sixel_line <"${default_sixel}" || :
 test -n "${sixel_line-}" || {
-    echo "not ok" 1 - "failed to read default relative-resource SIXEL header"
+    printf '\n%s\n' "not ok 1 - failed to read default relative-resource SIXEL header"
     exit 0
 }
 case "${sixel_line}" in
     "${esc}P0;0q"*)
         ;;
     *)
-        echo "not ok" 1 - "default path unexpectedly resolved relative resource"
+        printf '\n%s\n' "not ok 1 - default path unexpectedly resolved relative resource"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "default librsvg path blocks relative resource decode"
+printf '\n%s\n' "ok 1 - default librsvg path blocks relative resource decode"
 exit 0

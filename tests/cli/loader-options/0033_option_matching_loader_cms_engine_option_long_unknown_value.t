@@ -26,7 +26,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "unknown --cms-engine long value exit status mismatch"
+    printf '\n%s\n' "not ok 1 - unknown --cms-engine long value exit status mismatch"
     exit 0
 }
 
@@ -36,11 +36,11 @@ case "${diag_line}" in
     LSXCLI1\|phase=option_parse\|rc=*\|code=INVALID_CMS_ENGINE*)
         ;;
     *)
-        echo "not ok" 1 - \
-            "unknown long --cms-engine diagnostic header mismatch"
+        printf '\n%s\n' \
+            "not ok 1 - unknown long --cms-engine diagnostic header mismatch"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "unknown long --cms-engine value keeps RC+diagnostic contract"
+printf '\n%s\n' "ok 1 - unknown long --cms-engine value keeps RC+diagnostic contract"
 exit 0

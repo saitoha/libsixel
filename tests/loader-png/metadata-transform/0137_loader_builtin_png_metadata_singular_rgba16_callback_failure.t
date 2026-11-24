@@ -19,8 +19,8 @@ test "$status" -ne 77 || {
 echo "1..1"
 set -v
 test "$status" -eq 0 || {
-    echo "not ok 1 - Release PNG singular_rgba16 ownership after callback failure"
+    printf '\n%s\n' "not ok 1 - Release PNG singular_rgba16 ownership after callback failure"
     exit 0
 }
-echo "ok 1 - Release PNG singular_rgba16 ownership after callback failure"
+printf '\n%s\n' "ok 1 - Release PNG singular_rgba16 ownership after callback failure"
 exit 0

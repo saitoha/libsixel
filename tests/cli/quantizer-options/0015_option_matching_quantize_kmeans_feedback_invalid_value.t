@@ -13,23 +13,23 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:Finvalid "${TOP_SRCDIR}/tests/data/inputs/small.ppm" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid kmeans feedback value succeeded"
+    printf '\n%s\n' "not ok 1 - invalid kmeans feedback value succeeded"
     exit 0
 }
 
 case "${msg}" in *boolean\ suboption\ must\ be\ 0\ or\ 1.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing shared boolean diagnostic"
+    printf '\n%s\n' "not ok 1 - missing shared boolean diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *:feedback=0\|1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing feedback key diagnostic"
+    printf '\n%s\n' "not ok 1 - missing feedback key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "kmeans feedback uses the shared boolean validator"
+printf '\n%s\n' "ok 1 - kmeans feedback uses the shared boolean validator"
 exit 0

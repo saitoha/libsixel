@@ -17,9 +17,9 @@ set -v
 
 cmp "${QUICKLOOK_STAGE_SOURCE}/payload-manifest.json" \
     "${QUICKLOOK_STAGE_DIR}/payload-manifest.json" >/dev/null || {
-    echo "not ok 1 - Staged manifest differs"
+    printf '\n%s\n' "not ok 1 - Staged manifest differs"
     exit 0
 }
 
-echo "ok 1 - staged manifest matches distribution."
+printf '\n%s\n' "ok 1 - staged manifest matches distribution."
 exit 0

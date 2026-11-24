@@ -15,7 +15,7 @@ set -v
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -7 -bgray2 -dnone -Efast -g -u -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop2.gif") || {
-    echo "not ok 1 - animation first-pass macro order: conversion failed"
+    printf '\n%s\n' "not ok 1 - animation first-pass macro order: conversion failed"
     exit 0
 }
 
@@ -26,9 +26,9 @@ second=1b507122313b313b323b3123303b323b303b303b3023313b323b33333b33333b333323323
 expected="${escape}[H${escape}P0;0;1!z${first}${escape}\\${escape}[0*z"
 expected="${expected}${escape}[H${escape}P1;0;1!z${second}${escape}\\${escape}[1*z"
 test "$output" = "$expected" || {
-    echo "not ok 1 - animation first-pass macro order: unexpected control stream"
+    printf '\n%s\n' "not ok 1 - animation first-pass macro order: unexpected control stream"
     exit 0
 }
 
-echo "ok 1 - animation first-pass macro order"
+printf '\n%s\n' "ok 1 - animation first-pass macro order"
 exit 0

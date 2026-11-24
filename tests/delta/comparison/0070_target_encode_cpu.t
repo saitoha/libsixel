@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0070_target_encode_cpu" >/dev/null || {
-    echo "not ok 1 - target encode cpu"
+    printf '\n%s\n' "not ok 1 - target encode cpu"
     exit 0
 }
 
-echo "ok 1 - target encode cpu"
+printf '\n%s\n' "ok 1 - target encode cpu"
 exit 0

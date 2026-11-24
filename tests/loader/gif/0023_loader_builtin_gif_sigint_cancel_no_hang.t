@@ -16,22 +16,22 @@ set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
 test "${HAVE_WINDOWS_H-0}" = 1 && {
-    echo "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP signal forwarding checks are unstable on Windows runtimes"
+    printf '\n%s\n' "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP signal forwarding checks are unstable on Windows runtimes"
     exit 0
 }
 
 test "${HAVE_FORK-}" = 1 && test "${SIXEL_HAVE_ENCODER_SIGINT_SYNC-}" = 1 || {
-    echo "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP target lacks fork or encoder process signal synchronization"
+    printf '\n%s\n' "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP target lacks fork or encoder process signal synchronization"
     exit 0
 }
 
 test -x "${TEST_RUNNER_PATH-}" || {
-    echo "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP test_runner --sigint-run-until is unavailable in this runtime"
+    printf '\n%s\n' "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP test_runner --sigint-run-until is unavailable in this runtime"
     exit 0
 }
 
 test -n "${SIXEL_RUNTIME-}" && {
-    echo "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP wrapped runtime signal forwarding is unavailable"
+    printf '\n%s\n' "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP wrapped runtime signal forwarding is unavailable"
     exit 0
 }
 
@@ -53,9 +53,9 @@ set -xv
 
 test "${sigint_run_status}" = "0" || {
     printf '%s\n' "${trace_summary}"
-    echo "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP runtime signal forwarding is unavailable"
+    printf '\n%s\n' "ok 1 - builtin GIF force-loop SIGINT cancellation # SKIP runtime signal forwarding is unavailable"
     exit 0
 }
 
-echo "ok" 1 - "builtin GIF force-loop stops on SIGINT"
+printf '\n%s\n' "ok 1 - builtin GIF force-loop stops on SIGINT"
 exit 0

@@ -17,14 +17,14 @@ trace_message=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     -xhuman:Tsuboption_contract -d k_undithr 2>&1) || trace_status=$?
 
 test "${trace_status}" -eq 2 || {
-    echo "not ok" 1 - "trace topic diagnostics exit status mismatch"
+    printf '\n%s\n' "not ok 1 - trace topic diagnostics exit status mismatch"
     exit 0
 }
 
 case "${trace_message}" in *LSXSUB1\|*key=trace_topic\|stored=1\|binding=trace_topic,trace_topic_override\|value=suboption_contract**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "trace topic was not applied by sixel2png"
+    printf '\n%s\n' "not ok 1 - trace topic was not applied by sixel2png"
     exit 0
 }
 
-echo "ok" 1 - "sixel2png applies the shared trace topic suboption"
+printf '\n%s\n' "ok 1 - sixel2png applies the shared trace topic suboption"
 exit 0

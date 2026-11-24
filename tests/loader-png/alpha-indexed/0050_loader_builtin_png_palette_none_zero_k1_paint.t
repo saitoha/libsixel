@@ -17,13 +17,13 @@ output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -4full -5exact -_none -aoff -Fnone \
     -Qkmeans -Xgamma -Wgamma -Ugamma -dnone \
     "${TOP_SRCDIR}/tests/data/color-numeric/palette-trns-none.png") || {
-    echo "not ok 1 - indexed PNG encode failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG encode failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0191_png_palette_paint" 2 "$output" || {
-    echo "not ok 1 - PNG none zero-alpha SIXEL paint coverage, keycolor 1"
+    printf '\n%s\n' "not ok 1 - PNG none zero-alpha SIXEL paint coverage, keycolor 1"
     exit 0
 }
-echo "ok 1 - PNG none zero-alpha SIXEL paint coverage, keycolor 1"
+printf '\n%s\n' "ok 1 - PNG none zero-alpha SIXEL paint coverage, keycolor 1"
 exit 0

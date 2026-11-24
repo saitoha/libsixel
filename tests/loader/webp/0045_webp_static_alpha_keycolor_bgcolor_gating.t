@@ -25,22 +25,22 @@ out_white="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-bg-white.six"
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "libwebp static alpha decode without -B failed"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha decode without -B failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=auto! -S "${input_webp}" >"${out_default_cms}" || {
-    echo "not ok" 1 - "libwebp static alpha decode without -B failed (cms=auto)"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha decode without -B failed (cms=auto)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S -B#000 "${input_webp}" >"${out_black}" || {
-    echo "not ok" 1 - "libwebp static alpha decode with -B#000 failed"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha decode with -B#000 failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S -B#fff "${input_webp}" >"${out_white}" || {
-    echo "not ok" 1 - "libwebp static alpha decode with -B#fff failed"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha decode with -B#fff failed"
     exit 0
 }
 
@@ -90,29 +90,29 @@ case "${out_white_text}" in
 esac
 
 test "${default_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha keycolor gating mismatch"
     exit 0
 }
 
 test "${cms_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha keycolor gating mismatch"
     exit 0
 }
 
 test "${black_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha keycolor gating mismatch"
     exit 0
 }
 
 test "${white_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "libwebp static alpha keycolor gating mismatch"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha keycolor gating mismatch"
     exit 0
 }
 
 cmp -s "${out_black}" "${out_white}" && {
-    echo "not ok" 1 - "libwebp static alpha background composition did not change with -B"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha background composition did not change with -B"
     exit 0
 }
 
-echo "ok" 1 - "libwebp static alpha keycolor and -B composition are both active"
+printf '\n%s\n' "ok 1 - libwebp static alpha keycolor and -B composition are both active"
 exit 0

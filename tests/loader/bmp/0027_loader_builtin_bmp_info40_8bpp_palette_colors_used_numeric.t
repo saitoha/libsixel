@@ -11,9 +11,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_BMP_NUMERIC_INFO40_8BPP_COLORS_USED_PALETTE=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 8bpp colors-used palette numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 8bpp colors-used palette numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 8bpp colors-used palette numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (bmp info40 8bpp colors-used palette numeric)"
 exit 0

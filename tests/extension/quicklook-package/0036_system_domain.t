@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check domains \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Distribution permits only the system installation domain."
+    printf '\n%s\n' "not ok 1 - Distribution permits only the system installation domain."
     exit 0
 }
 
-echo "ok 1 - Distribution permits only the system installation domain."
+printf '\n%s\n' "ok 1 - Distribution permits only the system installation domain."
 exit 0

@@ -25,21 +25,21 @@ output_separate="${ARTIFACT_LOCAL_DIR}/cms_engine_long_separate_actual.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_equals}" || {
-    echo "not ok" 1 - "--cms-engine=auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - --cms-engine=auto reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_separate}" || {
-    echo "not ok" 1 - "long separate --cms-engine auto form was rejected"
+    printf '\n%s\n' "not ok 1 - long separate --cms-engine auto form was rejected"
     exit 0
 }
 
 cmp -s "${output_equals}" "${output_separate}" || {
-    echo "not ok" 1 - "long separate --cms-engine auto output diverged from reference"
+    printf '\n%s\n' "not ok 1 - long separate --cms-engine auto output diverged from reference"
     exit 0
 }
 
-echo "ok" 1 - "long separate --cms-engine VALUE form works"
+printf '\n%s\n' "ok 1 - long separate --cms-engine VALUE form works"
 exit 0

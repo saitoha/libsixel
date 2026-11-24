@@ -9,9 +9,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     values 0 3 1 hard || {
-    echo "not ok 1 - kcenter hard cielab extended"
+    printf '\n%s\n' "not ok 1 - kcenter hard cielab extended"
     exit 0
 }
 
-echo "ok 1 - kcenter hard cielab extended"
+printf '\n%s\n' "ok 1 - kcenter hard cielab extended"
 exit 0

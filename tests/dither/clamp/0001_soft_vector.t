@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/clamp/0001_soft_vector" || {
-    echo "not ok 1 - soft_vector"
+    printf '\n%s\n' "not ok 1 - soft_vector"
     exit 0
 }
-echo "ok 1 - soft_vector"
+printf '\n%s\n' "ok 1 - soft_vector"
 exit 0

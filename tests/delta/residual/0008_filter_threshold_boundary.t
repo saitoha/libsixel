@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-residual/0008_filter_threshold_boundary || {
-    echo "not ok 1 - filter threshold boundary"
+    printf '\n%s\n' "not ok 1 - filter threshold boundary"
     exit 0
 }
-echo "ok 1 - filter threshold boundary"
+printf '\n%s\n' "ok 1 - filter threshold boundary"
 exit 0

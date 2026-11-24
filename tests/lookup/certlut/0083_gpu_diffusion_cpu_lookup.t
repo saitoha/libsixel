@@ -5,8 +5,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" certlut/gpu_diffusion_cpu_lookup || {
-    echo "not ok 1 - certlut gpu diffusion cpu lookup"
+    printf '\n%s\n' "not ok 1 - certlut gpu diffusion cpu lookup"
     exit 0
 }
-echo "ok 1 - certlut gpu diffusion cpu lookup"
+printf '\n%s\n' "ok 1 - certlut gpu diffusion cpu lookup"
 exit 0

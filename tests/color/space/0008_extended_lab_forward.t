@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "colorspace/0008_extended_lab_forward" || {
-    echo "not ok 1 - extended lab forward"
+    printf '\n%s\n' "not ok 1 - extended lab forward"
     exit 0
 }
 
-echo "ok 1 - extended lab forward"
+printf '\n%s\n' "ok 1 - extended lab forward"
 exit 0

@@ -11,8 +11,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" png-keycolor/0001_frame_samples \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbrn2c08.png" || {
-    echo "not ok 1 - keycolor frame samples"
+    printf '\n%s\n' "not ok 1 - keycolor frame samples"
     exit 0
 }
-echo "ok 1 - keycolor frame samples"
+printf '\n%s\n' "ok 1 - keycolor frame samples"
 exit 0

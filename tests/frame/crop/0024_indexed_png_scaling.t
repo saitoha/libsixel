@@ -15,10 +15,10 @@ snake_palette_png="${TOP_SRCDIR}/images/snake-palette.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -w300 "${snake_palette_png}" \
         -o/dev/null || {
-    echo "not ok" 1 - "indexed PNG scaling fails"
+    printf '\n%s\n' "not ok 1 - indexed PNG scaling fails"
     exit 0
 }
 
-echo "ok" 1 - "indexed PNG scales to large width"
+printf '\n%s\n' "ok 1 - indexed PNG scales to large width"
 
 exit 0

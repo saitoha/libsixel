@@ -19,19 +19,19 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none! -l disable \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_anim_demux_failure.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted demux-failure animation fixture"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted demux-failure animation fixture"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *load_with_libwebp:\ WebPDemux\ failed.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected WebPDemux failure diagnostic was missing"
+    printf '\n%s\n' "not ok 1 - expected WebPDemux failure diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced libwebp loader reports WebPDemux failure for RIFF-valid corrupted animation"
+printf '\n%s\n' "ok 1 - forced libwebp loader reports WebPDemux failure for RIFF-valid corrupted animation"
 
 exit 0

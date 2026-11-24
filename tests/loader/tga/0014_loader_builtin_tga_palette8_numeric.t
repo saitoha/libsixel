@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0081_loader_builtin_tga_palette8_numeric" || {
-    echo "not ok 1 - TGA 8-bit grayscale palette entry"
+    printf '\n%s\n' "not ok 1 - TGA 8-bit grayscale palette entry"
     exit 0
 }
 
-echo "ok 1 - TGA 8-bit grayscale palette entry"
+printf '\n%s\n' "ok 1 - TGA 8-bit grayscale palette entry"
 exit 0

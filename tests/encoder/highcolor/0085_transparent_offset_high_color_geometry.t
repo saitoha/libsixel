@@ -17,14 +17,14 @@ esc="$(printf '\033')"
 
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin -I -+ 3,5 -o - "${input_image}") || {
-    echo "not ok 1 - transparent-offset high-color render failed"
+    printf '\n%s\n' "not ok 1 - transparent-offset high-color render failed"
     exit 0
 }
 
 case "${output}" in
     "${esc}P0;1q\"1;1;9;17"*) ;;
     *)
-        echo "not ok 1 - high-color transparent-offset header geometry mismatch"
+        printf '\n%s\n' "not ok 1 - high-color transparent-offset header geometry mismatch"
         exit 0
         ;;
 esac
@@ -32,10 +32,10 @@ esac
 case "${output}" in
     *"???"*) ;;
     *)
-        echo "not ok 1 - high-color transparent-offset dropped the left padding"
+        printf '\n%s\n' "not ok 1 - high-color transparent-offset dropped the left padding"
         exit 0
         ;;
 esac
 
-echo "ok 1 - high-color transparent-offset emits the offset geometry"
+printf '\n%s\n' "ok 1 - high-color transparent-offset emits the offset geometry"
 exit 0

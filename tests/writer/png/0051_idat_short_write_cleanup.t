@@ -8,8 +8,8 @@ set -v
 
 SIXEL_LOG_PATH='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     writer/png/0051_idat_short_write_cleanup || {
-    echo "not ok 1 - short PNG IDAT data write returns an error and releases resources"
+    printf '\n%s\n' "not ok 1 - short PNG IDAT data write returns an error and releases resources"
     exit 0
 }
-echo "ok 1 - short PNG IDAT data write returns an error and releases resources"
+printf '\n%s\n' "ok 1 - short PNG IDAT data write returns an error and releases resources"
 exit 0

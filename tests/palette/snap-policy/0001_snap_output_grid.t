@@ -20,13 +20,13 @@ stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_
     -Xdin99d -Wdin99d -Ugamma --snap-policy=nearest:rate=1 \
     -M "act:${ARTIFACT_LOCAL_DIR}/palette.act" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
-    echo "not ok 1 - snap encoding failed"
+    printf '\n%s\n' "not ok 1 - snap encoding failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/0045_snap_output_grid \
     "${ARTIFACT_LOCAL_DIR}/palette.act" "${stream}" || {
-    echo "not ok 1 - ACT fixed points differ from SIXEL output"
+    printf '\n%s\n' "not ok 1 - ACT fixed points differ from SIXEL output"
     exit 0
 }
-echo "ok 1 - exact snap preserves output fixed points"
+printf '\n%s\n' "ok 1 - exact snap preserves output fixed points"
 exit 0

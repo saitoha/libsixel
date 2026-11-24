@@ -23,7 +23,7 @@ cli_outside_env_text=''
 cli_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}" 2>&1)" || {
-    echo "not ok 1 - gdk-pixbuf2 --start-frame=1 baseline failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 --start-frame=1 baseline failed"
     exit 0
 }
 
@@ -31,19 +31,19 @@ cli_outside_env_text="$(SIXEL_LOADER_ANIMATION_START_FRAME_NO=999 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}" 2>&1)" || {
-    echo "not ok 1 - outside-animation env unexpectedly overrode --start-frame"
+    printf '\n%s\n' "not ok 1 - outside-animation env unexpectedly overrode --start-frame"
     exit 0
 }
 
 case "${cli_outside_env_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ is\ outside\ the\ animation\ frame\ range.*) false ;; *) true ;; esac || {
-    echo "not ok 1 - outside-animation env error leaked despite --start-frame"
+    printf '\n%s\n' "not ok 1 - outside-animation env error leaked despite --start-frame"
     exit 0
 }
 
 test "${cli_text}" = "${cli_outside_env_text}" || {
-    echo "not ok 1 - outside-animation env changed output despite --start-frame"
+    printf '\n%s\n' "not ok 1 - outside-animation env changed output despite --start-frame"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 --start-frame overrides outside-animation env"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 --start-frame overrides outside-animation env"
 exit 0

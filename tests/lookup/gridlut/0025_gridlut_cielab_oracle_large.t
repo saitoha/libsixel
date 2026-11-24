@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/gridlut/0019_gridlut_cielab_oracle_large || {
-    echo "not ok 1 - gridlut cielab oracle large"
+    printf '\n%s\n' "not ok 1 - gridlut cielab oracle large"
     exit 0
 }
-echo "ok 1 - gridlut cielab oracle large"
+printf '\n%s\n' "ok 1 - gridlut cielab oracle large"
 exit 0

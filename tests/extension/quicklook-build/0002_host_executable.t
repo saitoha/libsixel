@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 cmp "${TOP_BUILDDIR}/quicklook-extension/SixelQuickLookHost" "${TOP_BUILDDIR}/quicklook-extension/products/SixelQuickLookHost.app/Contents/MacOS/SixelQuickLookHost" || {
-    echo "not ok 1 - Host bundle contains the completed executable"
+    printf '\n%s\n' "not ok 1 - Host bundle contains the completed executable"
     exit 0
 }
-echo "ok 1 - Host bundle contains the completed executable"
+printf '\n%s\n' "ok 1 - Host bundle contains the completed executable"
 exit 0

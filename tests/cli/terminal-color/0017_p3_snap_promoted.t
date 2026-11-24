@@ -16,16 +16,16 @@ trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     -Lbuiltin:cms_engine=none! -.auto -Qk -Xlinear -Wlinear \
     -dnone -aoff -_nearest -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {
-    echo "not ok 1 - P3 snap rejected byte input"
+    printf '\n%s\n' "not ok 1 - P3 snap rejected byte input"
     exit 0
 }
 case "$trace" in
     *'LSXSN2|final='[1-9]*) ;;
-    *) echo "not ok 1 - destination snap did not execute"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - destination snap did not execute"; exit 0 ;;
 esac
 case "$trace" in
     *'work=linear-f32'*) ;;
-    *) echo "not ok 1 - P3 snap lost float precision"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - P3 snap lost float precision"; exit 0 ;;
 esac
-echo "ok 1 - P3 snap promotes byte input and executes"
+printf '\n%s\n' "ok 1 - P3 snap promotes byte input and executes"
 exit 0

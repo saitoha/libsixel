@@ -18,20 +18,20 @@ unset SIXEL_SAMPLING_SOLID
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qheckbert -d none \
     --threading-policy=greedy:global_budget=1 -4auto \
     "${input}" >"${ARTIFACT_LOCAL_DIR}/reference.six" || {
-    echo 'not ok 1 - reference conversion failed'
+    printf '\n%s\n' 'not ok 1 - reference conversion failed'
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qheckbert -d none \
     --threading-policy=greedy:global_budget=1 -4auto:solid=on \
     "${input}" >"${ARTIFACT_LOCAL_DIR}/actual.six" || {
-    echo 'not ok 1 - actual conversion failed'
+    printf '\n%s\n' 'not ok 1 - actual conversion failed'
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/reference.six"     "${ARTIFACT_LOCAL_DIR}/actual.six" || {
-    echo 'not ok 1 - solid=on matches the default'
+    printf '\n%s\n' 'not ok 1 - solid=on matches the default'
     exit 0
 }
-echo 'ok 1 - solid=on matches the default'
+printf '\n%s\n' 'ok 1 - solid=on matches the default'
 exit 0

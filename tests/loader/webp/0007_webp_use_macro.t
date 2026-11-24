@@ -20,9 +20,9 @@ set -v
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -ldisable -u "${image_webp}" >/dev/null || {
-    echo "not ok" 1 - "libwebp use-macro failed"
+    printf '\n%s\n' "not ok 1 - libwebp use-macro failed"
     exit 0
 }
 
-echo "ok" 1 - "libwebp use-macro succeeded"
+printf '\n%s\n' "ok 1 - libwebp use-macro succeeded"
 exit 0

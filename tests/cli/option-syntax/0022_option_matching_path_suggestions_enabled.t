@@ -26,7 +26,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set -x
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "missing mapfile exit status mismatch"
+    printf '\n%s\n' "not ok 1 - missing mapfile exit status mismatch"
     exit 0
 }
 
@@ -34,7 +34,7 @@ case "${msg}" in
     *'path "'*)
         ;;
     *)
-        echo "not ok" 1 - "missing path suggestion diagnostics"
+        printf '\n%s\n' "not ok 1 - missing path suggestion diagnostics"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -45,12 +45,12 @@ case "${msg}" in
     *'Suggestions:'*)
         ;;
     *)
-        echo "not ok" 1 - "missing mapfile reports unsupported suggestion lookup"
+        printf '\n%s\n' "not ok 1 - missing mapfile reports unsupported suggestion lookup"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "missing mapfile prints ranked path suggestions"
+printf '\n%s\n' "ok 1 - missing mapfile prints ranked path suggestions"
 exit 0

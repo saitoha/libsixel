@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0074_multi_pass_prefix_whitespace" || {
-    echo "not ok 1 - prefix whitespace"
+    printf '\n%s\n' "not ok 1 - prefix whitespace"
     exit 0
 }
 
-echo "ok 1 - prefix whitespace"
+printf '\n%s\n' "ok 1 - prefix whitespace"
 exit 0

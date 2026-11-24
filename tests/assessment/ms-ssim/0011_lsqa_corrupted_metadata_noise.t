@@ -14,9 +14,9 @@ lsqa_msg=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status-0}" -ne 0 || {
-    echo "not ok" 1 - "metadata noise unexpectedly accepted, ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - metadata noise unexpectedly accepted, ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "metadata noise rejected or scored low"
+printf '\n%s\n' "ok 1 - metadata noise rejected or scored low"
 exit 0

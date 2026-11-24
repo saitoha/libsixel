@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0009_dither_promotion 3 1>&2 || {
-    echo "not ok 1 - requested promotion hard"
+    printf '\n%s\n' "not ok 1 - requested promotion hard"
     exit 0
 }
-echo "ok 1 - requested promotion hard"
+printf '\n%s\n' "ok 1 - requested promotion hard"
 exit 0

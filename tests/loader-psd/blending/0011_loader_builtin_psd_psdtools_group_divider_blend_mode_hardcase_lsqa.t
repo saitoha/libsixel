@@ -37,13 +37,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 200 
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "group-divider-blend-mode decode failed"
+    printf '\n%s\n' "not ok 1 - group-divider-blend-mode decode failed"
     exit 0
 }
 
 case "${trace_output}" in
     *"unsupported"*)
-        echo "not ok" 1 - "group-divider-blend-mode emitted unsupported trace"
+        printf '\n%s\n' "not ok 1 - group-divider-blend-mode emitted unsupported trace"
         exit 0
         ;;
 esac
@@ -51,11 +51,11 @@ esac
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "group-divider-blend-mode decode fell below MS-SSIM ${lsqa_floor}"
+    printf '\n%s\n' "not ok 1 - group-divider-blend-mode decode fell below MS-SSIM ${lsqa_floor}"
     exit 0
 }
 
 : "${lsqa_msg}"
 
-echo "ok" 1 - "group-divider-blend-mode decode keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - group-divider-blend-mode decode keeps MS-SSIM ${lsqa_floor}"
 exit 0

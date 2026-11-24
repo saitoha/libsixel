@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.pdf" >/dev/null || {
-    echo "not ok" 1 - "quicklook PDF render failed"
+    printf '\n%s\n' "not ok 1 - quicklook PDF render failed"
     exit 0
 }
 
-echo "ok" 1 - "quicklook renders PDF"
+printf '\n%s\n' "ok 1 - quicklook renders PDF"
 exit 0

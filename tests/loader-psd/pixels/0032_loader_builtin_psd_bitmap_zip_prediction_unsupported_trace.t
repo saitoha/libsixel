@@ -19,10 +19,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported compression (3) for Bitmap 1-bit"*)
-        echo "ok" 1 - "Bitmap 1-bit ZIP prediction is explicitly unsupported"
+        printf '\n%s\n' "ok 1 - Bitmap 1-bit ZIP prediction is explicitly unsupported"
         ;;
     *)
-        echo "not ok" 1 - "Bitmap ZIP+Prediction policy trace is missing"
+        printf '\n%s\n' "not ok 1 - Bitmap ZIP+Prediction policy trace is missing"
         exit 0
         ;;
 esac

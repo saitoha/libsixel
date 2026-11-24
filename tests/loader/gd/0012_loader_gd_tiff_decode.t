@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff" \
     >/dev/null && {
-    echo "ok" 1 - "gd decodes TIFF input"
+    printf '\n%s\n' "ok 1 - gd decodes TIFF input"
     exit 0
 }
 
-printf "ok 1 # SKIP gd backend does not decode TIFF in this runtime\n"
+printf "\nok 1 # SKIP gd backend does not decode TIFF in this runtime\n"
 exit 0

@@ -18,9 +18,9 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/positional-float32.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d x_dither:scan=serpentine --precision-policy=float32 -p 16 -o "${output_sixel}" "${snake_png}" || {
-    echo "not ok" 1 - "positional float32 dither failed"
+    printf '\n%s\n' "not ok 1 - positional float32 dither failed"
     exit "${status}"
 }
 
-echo "ok" 1 - "positional float32 dither completes"
+printf '\n%s\n' "ok 1 - positional float32 dither completes"
 exit "${status}"

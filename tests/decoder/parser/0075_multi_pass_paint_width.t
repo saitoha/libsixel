@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0065_multi_pass_paint_width" || {
-    echo "not ok 1 - paint width"
+    printf '\n%s\n' "not ok 1 - paint width"
     exit 0
 }
 
-echo "ok 1 - paint width"
+printf '\n%s\n' "ok 1 - paint width"
 exit 0

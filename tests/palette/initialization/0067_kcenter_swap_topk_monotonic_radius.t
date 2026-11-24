@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0003_kcenter_constraints" swap-topk-monotonic-radius >/dev/null || {
-    echo "not ok" 1 - "kcenter swap_topk monotonic-radius check failed"
+    printf '\n%s\n' "not ok 1 - kcenter swap_topk monotonic-radius check failed"
     exit 0
 }
 
-echo "ok" 1 - "kcenter swap_topk monotonic-radius check passed"
+printf '\n%s\n' "ok 1 - kcenter swap_topk monotonic-radius check passed"
 exit 0

@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0017_fh_nonfinite || {
-    echo "not ok 1 - fhedt nonfinite"
+    printf '\n%s\n' "not ok 1 - fhedt nonfinite"
     exit 0
 }
 
-echo "ok 1 - fhedt nonfinite"
+printf '\n%s\n' "ok 1 - fhedt nonfinite"
 exit 0

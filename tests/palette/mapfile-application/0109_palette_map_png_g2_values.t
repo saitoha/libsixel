@@ -29,19 +29,19 @@ actual_palette=$(
         -~none -dnone -m "${TOP_SRCDIR}/images/pngsuite/basic/basn0g02.png" \
         -M pal-jasc:- -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 ) || {
-    echo "not ok" 1 - "G2 PNG palette export failed"
+    printf '\n%s\n' "not ok 1 - G2 PNG palette export failed"
     exit 0
 }
 actual_palette=$(printf "%s\n" "${actual_palette}" | tr -d '\015' | LC_ALL=C sort) || {
-    echo "not ok" 1 - "G2 PNG palette normalization failed"
+    printf '\n%s\n' "not ok 1 - G2 PNG palette normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "G2 PNG map did not retain its decoded gray values"
+    printf '\n%s\n' "not ok 1 - G2 PNG map did not retain its decoded gray values"
     exit 0
 }
 
-echo "ok" 1 - "G2 PNG map retains its four decoded gray values"
+printf '\n%s\n' "ok 1 - G2 PNG map retains its four decoded gray values"
 
 exit 0

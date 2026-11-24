@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/indexed/0176_reuse_palette_failure" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP thread support unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP thread support unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - reuse palette failure'
+    printf '\n%s\n' 'not ok 1 - reuse palette failure'
     exit 0
 }
-echo 'ok 1 - reuse palette failure'
+printf '\n%s\n' 'ok 1 - reuse palette failure'
 exit 0

@@ -7,9 +7,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0055_classify_plane_overflow" || {
-    echo "not ok 1 - classify plane overflow"
+    printf '\n%s\n' "not ok 1 - classify plane overflow"
     exit 0
 }
 
-echo "ok 1 - classify plane overflow"
+printf '\n%s\n' "ok 1 - classify plane overflow"
 exit 0

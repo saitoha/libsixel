@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "apng/0001_float" 3 || {
-    echo "not ok 1 - builtin APNG linear over"
+    printf '\n%s\n' "not ok 1 - builtin APNG linear over"
     exit 0
 }
-echo "ok 1 - builtin APNG linear over"
+printf '\n%s\n' "ok 1 - builtin APNG linear over"
 exit 0

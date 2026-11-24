@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0156_delta_hls_smptec_din99d_frames || {
-    echo "not ok 1 - delta hls smptec din99d frames"
+    printf '\n%s\n' "not ok 1 - delta hls smptec din99d frames"
     exit 0
 }
-echo "ok 1 - delta hls smptec din99d frames"
+printf '\n%s\n' "ok 1 - delta hls smptec din99d frames"
 exit 0

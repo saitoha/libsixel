@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_libpng_dispose_previous.png" \
     -o/dev/null || {
-    echo "not ok" 1 - "APNG dispose previous input failed"
+    printf '\n%s\n' "not ok 1 - APNG dispose previous input failed"
     exit 0
 }
 
-echo "ok" 1 - "APNG dispose previous input is handled"
+printf '\n%s\n' "ok 1 - APNG dispose previous input is handled"
 exit 0

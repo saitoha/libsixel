@@ -16,12 +16,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:unknown=1 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown center suboption key unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown center suboption key unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing unknown center key diagnostic"
+    printf '\n%s\n' "not ok 1 - missing unknown center key diagnostic"
     exit 0
 }
 
@@ -29,9 +29,9 @@ valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
 case "${valid_keys_line}" in *algo*profile*seed*auto_policy*auto_fft_threshold*space_policy*candidate_policy*restarts*init_seeds*iter*histbits*point_budget*rare_keep*prune_mass*budget_policy*budget_scale*swap_topk*swap_update*swap_patience*swap_min_gain*sample_target**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing center key candidate list"
+    printf '\n%s\n' "not ok 1 - missing center key candidate list"
     exit 0
 }
 
-echo "ok" 1 - "unknown center suboption key is rejected with candidates"
+printf '\n%s\n' "ok 1 - unknown center suboption key is rejected with candidates"
 exit 0

@@ -44,19 +44,19 @@ P3
 0 0 0 255 255 255
 PPM
 ) || {
-    echo "not ok" 1 - "CIELAB working palette export failed"
+    printf '\n%s\n' "not ok 1 - CIELAB working palette export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "CIELAB palette output normalization failed"
+    printf '\n%s\n' "not ok 1 - CIELAB palette output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || \
 test "${actual_palette}" = "${reversed_palette}" || {
-    echo "not ok" 1 - "CIELAB working values leaked into GPL output"
+    printf '\n%s\n' "not ok 1 - CIELAB working values leaked into GPL output"
     exit 0
 }
 
-echo "ok" 1 - "GPL output contains gamma RGB instead of CIELAB values"
+printf '\n%s\n' "ok 1 - GPL output contains gamma RGB instead of CIELAB values"
 exit 0

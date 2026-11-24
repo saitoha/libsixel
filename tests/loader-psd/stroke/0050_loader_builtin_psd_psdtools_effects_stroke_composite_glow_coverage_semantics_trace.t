@@ -33,20 +33,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -54,7 +54,7 @@ esac
 case "${diag_line}" in
     *FX_ORGL_SEM*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_ORGL_SEM"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_ORGL_SEM"
         exit 0
         ;;
 esac
@@ -62,7 +62,7 @@ esac
 case "${diag_line}" in
     *FX_IRGL_SEM*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_IRGL_SEM"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_IRGL_SEM"
         exit 0
         ;;
 esac
@@ -70,7 +70,7 @@ esac
 case "${diag_line}" in
     *FX_CLBL1_DEFER_INTERIOR*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_CLBL1_DEFER_INTERIOR"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_CLBL1_DEFER_INTERIOR"
         exit 0
         ;;
 esac
@@ -78,7 +78,7 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_GRADIENT_CLIP*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
         exit 0
         ;;
 esac
@@ -86,27 +86,27 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_EFFECT_STROKE_CLIP*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite missing FX_DEFERRED_EFFECT_STROKE_CLIP"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite missing FX_DEFERRED_EFFECT_STROKE_CLIP"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_CLBL1_BASE_INTERIOR_SUPPRESS*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted interior suppression code"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted interior suppression code"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_DEFERRED_INTERIOR_CLIP*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted deferred interior code"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted deferred interior code"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps glow semantics in diagnostic code contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps glow semantics in diagnostic code contract"
 exit 0

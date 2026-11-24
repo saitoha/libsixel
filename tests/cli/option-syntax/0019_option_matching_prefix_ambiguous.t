@@ -25,7 +25,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set -x
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "ambiguous prefix exit status mismatch"
+    printf '\n%s\n' "not ok 1 - ambiguous prefix exit status mismatch"
     exit 0
 }
 
@@ -33,12 +33,12 @@ case "${msg}" in
     *'ambiguous prefix "s"'*)
         ;;
     *)
-        echo "not ok" 1 - "missing diagnostic for ambiguous prefix"
+        printf '\n%s\n' "not ok 1 - missing diagnostic for ambiguous prefix"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "ambiguous prefix reports diagnostic"
+printf '\n%s\n' "ok 1 - ambiguous prefix reports diagnostic"
 exit 0

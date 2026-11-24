@@ -19,24 +19,24 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "code diagnostic exit status mismatch"
+    printf '\n%s\n' "not ok 1 - code diagnostic exit status mismatch"
     exit 0
 }
 
 case "${message}" in *LSXCLI1\|phase=option_parse\|*code=AMBIGUOUS_PREFIX**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "code diagnostic header is missing"
+    printf '\n%s\n' "not ok 1 - code diagnostic header is missing"
     exit 0
 }
 
 case "${message}" in *ambiguous\ prefix\ \"s\".**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "code diagnostic detail is missing"
+    printf '\n%s\n' "not ok 1 - code diagnostic detail is missing"
     exit 0
 }
 
 case "${message}" in *\(matches:**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "code diagnostic includes candidate list"
+    printf '\n%s\n' "not ok 1 - code diagnostic includes candidate list"
     exit 0
 }
 
-echo "ok" 1 - "code diagnostic suppresses candidate list"
+printf '\n%s\n' "ok 1 - code diagnostic suppresses candidate list"
 exit 0

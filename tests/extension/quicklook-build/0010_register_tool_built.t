@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 test -x "${TOP_BUILDDIR}/quicklook-extension/register_sixel_preview" || {
-    echo "not ok 1 - Registration helper is built without executing it"
+    printf '\n%s\n' "not ok 1 - Registration helper is built without executing it"
     exit 0
 }
-echo "ok 1 - Registration helper is built without executing it"
+printf '\n%s\n' "ok 1 - Registration helper is built without executing it"
 exit 0

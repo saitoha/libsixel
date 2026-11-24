@@ -37,18 +37,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -bxterm16 -M gpl:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "builtin palette GPL export failed"
+    printf '\n%s\n' "not ok 1 - builtin palette GPL export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "builtin GPL output normalization failed"
+    printf '\n%s\n' "not ok 1 - builtin GPL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "builtin palette GPL output changed"
+    printf '\n%s\n' "not ok 1 - builtin palette GPL output changed"
     exit 0
 }
 
-echo "ok" 1 - "built-in palette GPL output is stable"
+printf '\n%s\n' "ok 1 - built-in palette GPL output is stable"
 exit 0

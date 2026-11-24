@@ -11,9 +11,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0128_loader_builtin_apng_animation_metadata_numeric" || {
-    echo "not ok 1 - APNG animation metadata"
+    printf '\n%s\n' "not ok 1 - APNG animation metadata"
     exit 0
 }
 
-echo "ok 1 - APNG animation metadata is exact"
+printf '\n%s\n' "ok 1 - APNG animation metadata is exact"
 exit 0

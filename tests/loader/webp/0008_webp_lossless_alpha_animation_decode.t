@@ -20,9 +20,9 @@ set -v
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
-    echo "not ok" 1 - "libwebp lossless alpha animation decode failed"
+    printf '\n%s\n' "not ok 1 - libwebp lossless alpha animation decode failed"
     exit 0
 }
 
-echo "ok" 1 - "libwebp lossless alpha animation decode succeeded"
+printf '\n%s\n' "ok 1 - libwebp lossless alpha animation decode succeeded"
 exit 0

@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     hanning \
     "${fixture_root}/hanning-downscale-input.ppm" \
     "${fixture_root}/hanning-downscale-expected.ppm" || {
-    echo "not ok" 1 - "hanning downscale pixels changed"
+    printf '\n%s\n' "not ok 1 - hanning downscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "hanning downscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - hanning downscale pixels match the oracle"
 exit 0

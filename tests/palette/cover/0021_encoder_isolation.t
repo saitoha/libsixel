@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/auto_cover_float/0021_encoder_isolation || {
-    echo "not ok 1 - encoder isolation"
+    printf '\n%s\n' "not ok 1 - encoder isolation"
     exit 0
 }
-echo "ok 1 - encoder isolation"
+printf '\n%s\n' "ok 1 - encoder isolation"
 exit 0

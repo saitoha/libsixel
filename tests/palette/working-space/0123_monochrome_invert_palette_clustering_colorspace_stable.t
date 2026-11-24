@@ -21,18 +21,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -X oklab -e -i -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "inverted mono palette export failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - inverted mono palette export failed with -X oklab"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "inverted mono palette output normalization failed"
+    printf '\n%s\n' "not ok 1 - inverted mono palette output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "inverted mono palette changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - inverted mono palette changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "inverted mono palette is stable under clustering colorspace"
+printf '\n%s\n' "ok 1 - inverted mono palette is stable under clustering colorspace"
 exit 0

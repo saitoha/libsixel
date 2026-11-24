@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check dependencies \
     "${TOP_BUILDDIR}/quicklook-extension/package" package-helper || {
-    echo "not ok 1 - Package helper has the required system-only dylib, dynamic-loader and rpath references."
+    printf '\n%s\n' "not ok 1 - Package helper has the required system-only dylib, dynamic-loader and rpath references."
     exit 0
 }
 
-echo "ok 1 - Package helper has the required system-only dylib, dynamic-loader and rpath references."
+printf '\n%s\n' "ok 1 - Package helper has the required system-only dylib, dynamic-loader and rpath references."
 exit 0

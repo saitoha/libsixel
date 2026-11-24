@@ -19,21 +19,21 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     <"${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced gd loader unexpectedly accepted APNG stdin"
+    printf '\n%s\n' "not ok 1 - forced gd loader unexpectedly accepted APNG stdin"
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced gd APNG stdin failure missed generic decode error"
+    printf '\n%s\n' "not ok 1 - forced gd APNG stdin failure missed generic decode error"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable - \
     <"${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >/dev/null || {
-    echo "not ok" 1 - "gd,builtin failed to decode APNG from stdin"
+    printf '\n%s\n' "not ok 1 - gd,builtin failed to decode APNG from stdin"
     exit 0
 }
 
-echo "ok" 1 - "APNG stdin delegates from gd to builtin"
+printf '\n%s\n' "ok 1 - APNG stdin delegates from gd to builtin"
 exit 0

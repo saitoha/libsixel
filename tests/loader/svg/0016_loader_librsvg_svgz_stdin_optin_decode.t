@@ -26,23 +26,23 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L librsvg! - \
     >"${stdin_optin_sixel}" \
     <"${svgz_path}" || {
-    echo "not ok" 1 - "stdin .svgz conversion failed with opt-in env"
+    printf '\n%s\n' "not ok 1 - stdin .svgz conversion failed with opt-in env"
     exit 0
 }
 
 IFS= read -r sixel_line <"${stdin_optin_sixel}" || :
 test -n "${sixel_line-}" || {
-    echo "not ok" 1 - "failed to read stdin .svgz opt-in SIXEL header"
+    printf '\n%s\n' "not ok 1 - failed to read stdin .svgz opt-in SIXEL header"
     exit 0
 }
 case "${sixel_line}" in
     "${esc}P0;0q"*)
         ;;
     *)
-        echo "not ok" 1 - "stdin .svgz opt-in conversion lost transparency header"
+        printf '\n%s\n' "not ok 1 - stdin .svgz opt-in conversion lost transparency header"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg stdin .svgz decode works with opt-in"
+printf '\n%s\n' "ok 1 - librsvg stdin .svgz decode works with opt-in"
 exit 0

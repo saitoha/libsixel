@@ -22,21 +22,21 @@ out_oob="${ARTIFACT_LOCAL_DIR}/builtin_gif_bgindex_oob.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Lbuiltin! -S -ldisable -d none:scan=raster -p 256 \
               "${valid_gif}" >"${out_valid}" || {
-    echo "not ok" 1 - "builtin valid bgindex decode failed"
+    printf '\n%s\n' "not ok 1 - builtin valid bgindex decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Lbuiltin! -S -ldisable -d none:scan=raster -p 256 \
               "${oob_gif}" >"${out_oob}" || {
-    echo "not ok" 1 - "builtin oob bgindex decode failed"
+    printf '\n%s\n' "not ok 1 - builtin oob bgindex decode failed"
     exit 0
 }
 
 cmp -s "${out_valid}" "${out_oob}" || {
-    echo "not ok" 1 - "oob bgindex output differs from black fallback reference"
+    printf '\n%s\n' "not ok 1 - oob bgindex output differs from black fallback reference"
     exit 0
 }
 
-echo "ok" 1 - "builtin oob bgindex uses deterministic black fallback"
+printf '\n%s\n' "ok 1 - builtin oob bgindex uses deterministic black fallback"
 exit 0

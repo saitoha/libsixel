@@ -17,9 +17,9 @@ set -v
 input_jpeg="${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_jpeg}" >/dev/null && {
-    echo "not ok" 1 - "corrupted JPEG unexpectedly decoded by builtin"
+    printf '\n%s\n' "not ok 1 - corrupted JPEG unexpectedly decoded by builtin"
     exit 0
 }
 
-echo "ok" 1 - "corrupted JPEG is rejected by builtin"
+printf '\n%s\n' "ok 1 - corrupted JPEG is rejected by builtin"
 exit 0

@@ -24,18 +24,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
         -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "JASC PAL export failed"
+    printf '\n%s\n' "not ok 1 - JASC PAL export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "JASC PAL output normalization failed"
+    printf '\n%s\n' "not ok 1 - JASC PAL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "JASC PAL layout changed"
+    printf '\n%s\n' "not ok 1 - JASC PAL layout changed"
     exit 0
 }
 
-echo "ok" 1 - "JASC PAL export has exact header, count, and RGB rows"
+printf '\n%s\n' "ok 1 - JASC PAL export has exact header, count, and RGB rows"
 exit 0

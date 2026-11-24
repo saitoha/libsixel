@@ -21,16 +21,16 @@ case "${trace_log}" in
     *"builtin PSD: malformed RLE row table (too short)"*)
         case "${trace_log}" in
             *"builtin PSD: unsupported file without merged/composite image"*)
-                echo "not ok" 1 - "RLE truncation must not be treated as missing composite"
+                printf '\n%s\n' "not ok 1 - RLE truncation must not be treated as missing composite"
                 exit 0
                 ;;
             *)
-                echo "ok" 1 - "RLE row-table truncation with layer records is classified as malformed"
+                printf '\n%s\n' "ok 1 - RLE row-table truncation with layer records is classified as malformed"
                 ;;
         esac
         ;;
     *)
-        echo "not ok" 1 - "RLE row-table truncation malformed trace is missing"
+        printf '\n%s\n' "not ok 1 - RLE row-table truncation malformed trace is missing"
         exit 0
         ;;
 esac

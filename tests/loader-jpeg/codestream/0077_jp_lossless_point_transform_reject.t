@@ -8,8 +8,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/jpeg/0127_jp_lossless_point_transform_reject" 1>&2 || {
-    echo "not ok 1 - Reject lossless point transform"
+    printf '\n%s\n' "not ok 1 - Reject lossless point transform"
     exit 0
 }
-echo "ok 1 - Reject lossless point transform"
+printf '\n%s\n' "ok 1 - Reject lossless point transform"
 exit 0

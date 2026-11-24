@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder-core/0033_or_float_p3_indices || {
-    echo "not ok 1 - or float p3 indices"
+    printf '\n%s\n' "not ok 1 - or float p3 indices"
     exit 0
 }
-echo "ok 1 - or float p3 indices"
+printf '\n%s\n' "ok 1 - or float p3 indices"
 exit 0

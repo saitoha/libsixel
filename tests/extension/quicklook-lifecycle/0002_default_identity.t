@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_FIXTURE}" 'normal' 'default-identity' || {
-    echo "not ok 1 - Default identity."
+    printf '\n%s\n' "not ok 1 - Default identity."
     exit 0
 }
-echo "ok 1 - Default identity."
+printf '\n%s\n' "ok 1 - Default identity."
 exit 0

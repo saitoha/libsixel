@@ -17,10 +17,10 @@ snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -c200x200+100+100 -w400 -da_dither \
         -o/dev/null "${snake_gray_png}" || {
-    echo "not ok" 1 - "cropping with alternate dither fails"
+    printf '\n%s\n' "not ok 1 - cropping with alternate dither fails"
     exit 0
 }
 
-echo "ok" 1 - "cropping with alternate dither succeeds"
+printf '\n%s\n' "ok 1 - cropping with alternate dither succeeds"
 
 exit 0

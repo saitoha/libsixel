@@ -28,25 +28,25 @@ reference_six="${TOP_SRCDIR}/tests/data/loader/quality/24a0f42d-rgb_mab_valid_ti
 output_six="${TMPDIR:-/tmp}/libsixel-rgb-mab-valid-tiff-$$.six"
 
 test -f "${input_tiff}" || {
-    echo "not ok" 1 - "missing input fixture: rgb_mab_valid.tiff"
+    printf '\n%s\n' "not ok 1 - missing input fixture: rgb_mab_valid.tiff"
     exit 0
 }
 
 test -f "${reference_six}" || {
-    echo "not ok" 1 - "missing reference fixture: rgb_mab_valid_tiff_builtin.six"
+    printf '\n%s\n' "not ok 1 - missing reference fixture: rgb_mab_valid_tiff_builtin.six"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" >"${output_six}" || {
-    echo "not ok" 1 - "libtiff builtin cms decode failed: rgb_mab_valid.tiff"
+    printf '\n%s\n' "not ok 1 - libtiff builtin cms decode failed: rgb_mab_valid.tiff"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_six}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "rgb_mab_valid.tiff builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - rgb_mab_valid.tiff builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libtiff builtin cms rgb_mab_valid keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - libtiff builtin cms rgb_mab_valid keeps MS-SSIM ${lsqa_floor}"
 exit 0

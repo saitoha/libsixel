@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0100_register_decimal_
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - register decimal 1000 # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - register decimal 1000 # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - register decimal 1000"
+    printf '\n%s\n' "not ok 1 - register decimal 1000"
     exit 0
 }
-echo "ok 1 - register decimal 1000"
+printf '\n%s\n' "ok 1 - register decimal 1000"
 exit 0

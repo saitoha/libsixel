@@ -62,20 +62,20 @@ set -x
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
     --gpu-policy=off -Wgamma -Ugamma -m "${low_map}" \
     -M pal-jasc:"${low_palette}" -o /dev/null "${input_image}" || {
-    echo "not ok" 1 - "low-value weighted image mapfile failed"
+    printf '\n%s\n' "not ok 1 - low-value weighted image mapfile failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
     --gpu-policy=off -Wgamma -Ugamma -m "${high_map}" \
     -M pal-jasc:"${high_palette}" -o /dev/null "${input_image}" || {
-    echo "not ok" 1 - "high-value weighted image mapfile failed"
+    printf '\n%s\n' "not ok 1 - high-value weighted image mapfile failed"
     exit 0
 }
 
 ! cmp -s "${low_palette}" "${high_palette}" || {
-    echo "not ok" 1 - "image mapfile reduction ignored pixel distribution"
+    printf '\n%s\n' "not ok 1 - image mapfile reduction ignored pixel distribution"
     exit 0
 }
 
-echo "ok" 1 - "image mapfile pixel distribution affects color reduction"
+printf '\n%s\n' "ok 1 - image mapfile pixel distribution affects color reduction"
 exit 0

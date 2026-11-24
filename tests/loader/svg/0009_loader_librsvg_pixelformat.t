@@ -17,14 +17,14 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0023_loader_librsvg_pixelformat" || rc="$?"
 
 test "${rc-}" = 77 && {
-    echo "ok 1 - loader/0023_loader_librsvg_pixelformat # SKIP unavailable"
+    printf '\n%s\n' "ok 1 - loader/0023_loader_librsvg_pixelformat # SKIP unavailable"
     exit 0
 }
 
 test -n "${rc-}" && {
-    echo "not ok 1 - loader/0023_loader_librsvg_pixelformat"
+    printf '\n%s\n' "not ok 1 - loader/0023_loader_librsvg_pixelformat"
     exit 0
 }
 
-echo "ok 1 - loader/0023_loader_librsvg_pixelformat"
+printf '\n%s\n' "ok 1 - loader/0023_loader_librsvg_pixelformat"
 exit 0

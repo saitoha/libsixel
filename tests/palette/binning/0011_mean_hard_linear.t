@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/binning_float/0001_binning_contract \
     mean 1 1 0 || {
-    echo "not ok 1 - mean hard linear"
+    printf '\n%s\n' "not ok 1 - mean hard linear"
     exit 0
 }
-echo "ok 1 - mean hard linear"
+printf '\n%s\n' "ok 1 - mean hard linear"
 exit 0

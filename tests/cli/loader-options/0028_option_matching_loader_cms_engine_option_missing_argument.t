@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 msg_short=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -# 2>&1) && {
-    echo "not ok" 1 - "short -# missing argument unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - short -# missing argument unexpectedly succeeded"
     exit 0
 }
 
@@ -21,10 +21,10 @@ case "${msg_short}" in
     *"requires an argument"*"#"*)
         ;;
     *)
-        echo "not ok" 1 - "short -# missing argument diagnostic is missing"
+        printf '\n%s\n' "not ok 1 - short -# missing argument diagnostic is missing"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "short -# requires an argument"
+printf '\n%s\n' "ok 1 - short -# requires an argument"
 exit 0

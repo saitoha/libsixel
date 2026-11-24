@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/palette/0129_threshold_limit_instance_isolation" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - threshold limit instance isolation"
+    printf '\n%s\n' "not ok 1 - threshold limit instance isolation"
     exit 0
 }
-echo "ok 1 - threshold limit instance isolation"
+printf '\n%s\n' "ok 1 - threshold limit instance isolation"
 exit 0

@@ -27,24 +27,24 @@ trace_output=$(
         "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
         -o/dev/null 2>&1
 ) || {
-    echo "not ok 1 - coregraphics handoff pipeline by-ref trace run"
+    printf '\n%s\n' "not ok 1 - coregraphics handoff pipeline by-ref trace run"
     exit 0
 }
 
 case "${trace_output}" in *"event=callback_handoff_decide handoff=pipeline"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
+    printf '\n%s\n' "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
     exit 0
 }
 
 case "${trace_output}" in *"event=enqueue_by_ref"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
+    printf '\n%s\n' "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
     exit 0
 }
 
 case "${trace_output}" in *"event=worker_clone_fallback_enabled"*) false ;; *) true ;; esac || {
-    echo "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
+    printf '\n%s\n' "not ok 1 - coregraphics handoff pipeline by-ref trace assertions"
     exit 0
 }
 
-echo "ok 1 - coregraphics handoff pipeline by-ref trace"
+printf '\n%s\n' "ok 1 - coregraphics handoff pipeline by-ref trace"
 exit 0

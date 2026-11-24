@@ -18,8 +18,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_colormodes_4x4_8bit_duotone_expected_srgb.ppm" \
     "${TOP_SRCDIR}/tests/data/psd-tools/psdtools_colormodes_4x4_8bit_duotone.psd" \
     'builtin:cms_engine=none!' 0.51 || {
-    echo "not ok 1 - Duotone display samples differ from the independent oracle"
+    printf '\n%s\n' "not ok 1 - Duotone display samples differ from the independent oracle"
     exit 0
 }
-echo "ok 1 - Duotone display samples match the independent oracle"
+printf '\n%s\n' "ok 1 - Duotone display samples match the independent oracle"
 exit 0

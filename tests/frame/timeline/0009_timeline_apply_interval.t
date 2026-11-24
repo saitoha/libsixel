@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0009_timeline_apply_interval" || {
-    echo "not ok 1 - palette application interval contract changed"
+    printf '\n%s\n' "not ok 1 - palette application interval contract changed"
     exit 0
 }
 
-echo "ok 1 - palette application records one interval at 1, 2, and 4 threads"
+printf '\n%s\n' "ok 1 - palette application records one interval at 1, 2, and 4 threads"
 exit 0

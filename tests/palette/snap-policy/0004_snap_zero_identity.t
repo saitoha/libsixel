@@ -18,17 +18,17 @@ set -- --threading-policy=greedy:global_budget=1 --precision-policy=float32 --qu
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 reference=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --snap-policy=none "$@") || {
-    echo "not ok 1 - reference encoding failed"
+    printf '\n%s\n' "not ok 1 - reference encoding failed"
     exit 0
 }
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --snap-policy=nearest:timing=all:rate=0 "$@") || {
-    echo "not ok 1 - zero-rate encoding failed"
+    printf '\n%s\n' "not ok 1 - zero-rate encoding failed"
     exit 0
 }
 test "${actual}" = "${reference}" || {
-    echo "not ok 1 - zero rate changed the output"
+    printf '\n%s\n' "not ok 1 - zero rate changed the output"
     exit 0
 }
-echo "ok 1 - zero rate preserves snap-disabled output"
+printf '\n%s\n' "ok 1 - zero rate preserves snap-disabled output"
 exit 0

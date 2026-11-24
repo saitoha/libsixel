@@ -21,29 +21,29 @@ minimal_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=encode_handoff \
     --env SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1 \
     "${input_image}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "minimal handoff trace conversion failed"
+    printf '\n%s\n' "not ok 1 - minimal handoff trace conversion failed"
     exit 0
 }
 invalid_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=encode_handoff \
     --env SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=on \
     "${input_image}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "invalid handoff trace conversion failed"
+    printf '\n%s\n' "not ok 1 - invalid handoff trace conversion failed"
     exit 0
 }
 
 case "${minimal_trace}" in *event=callback_handoff_decide**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "minimal handoff trace omitted the decision event"
+    printf '\n%s\n' "not ok 1 - minimal handoff trace omitted the decision event"
     exit 0
 }
 case "${minimal_trace}" in *event=callback_enter**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "minimal handoff trace retained verbose events"
+    printf '\n%s\n' "not ok 1 - minimal handoff trace retained verbose events"
     exit 0
 }
 case "${invalid_trace}" in *event=callback_enter**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "handoff trace accepted a nonnumeric boolean"
+    printf '\n%s\n' "not ok 1 - handoff trace accepted a nonnumeric boolean"
     exit 0
 }
 
-echo "ok" 1 - "handoff trace environment matching remains exact"
+printf '\n%s\n' "ok 1 - handoff trace environment matching remains exact"
 exit 0

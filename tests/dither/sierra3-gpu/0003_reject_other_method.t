@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/sierra3-gpu/0003_reject_other_method" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - reject other method"
+    printf '\n%s\n' "not ok 1 - reject other method"
     exit 0
 }
-echo "ok 1 - reject other method"
+printf '\n%s\n' "ok 1 - reject other method"
 exit 0

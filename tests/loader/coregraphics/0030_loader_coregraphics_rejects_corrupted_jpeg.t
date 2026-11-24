@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! \
     "${TOP_SRCDIR}/tests/data/corrupted/metadata_noise.jpg" >/dev/null && {
-    echo "not ok" 1 - "corrupted JPEG unexpectedly decoded by coregraphics"
+    printf '\n%s\n' "not ok 1 - corrupted JPEG unexpectedly decoded by coregraphics"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics rejects corrupted JPEG without crashing"
+printf '\n%s\n' "ok 1 - coregraphics rejects corrupted JPEG without crashing"
 exit 0

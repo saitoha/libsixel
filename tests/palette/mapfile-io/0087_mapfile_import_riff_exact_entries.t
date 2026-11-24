@@ -26,18 +26,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m pal-riff:"${input_palette}" \
         -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "independent RIFF PAL import failed"
+    printf '\n%s\n' "not ok 1 - independent RIFF PAL import failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "RIFF PAL output normalization failed"
+    printf '\n%s\n' "not ok 1 - RIFF PAL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "RIFF PAL entries or flags were interpreted incorrectly"
+    printf '\n%s\n' "not ok 1 - RIFF PAL entries or flags were interpreted incorrectly"
     exit 0
 }
 
-echo "ok" 1 - "RIFF PAL imports ordered RGB and ignores entry flags"
+printf '\n%s\n' "ok 1 - RIFF PAL imports ordered RGB and ignores entry flags"
 exit 0

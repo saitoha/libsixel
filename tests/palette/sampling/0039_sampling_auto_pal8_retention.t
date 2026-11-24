@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0080_sampling_auto_pal8_retention" || {
-    echo "not ok" 1 - "automatic sampling keeps PAL8 palettes"
+    printf '\n%s\n' "not ok 1 - automatic sampling keeps PAL8 palettes"
     exit 0
 }
-echo "ok" 1 - "automatic sampling keeps PAL8 palettes"
+printf '\n%s\n' "ok 1 - automatic sampling keeps PAL8 palettes"
 exit 0

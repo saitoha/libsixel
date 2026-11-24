@@ -20,12 +20,12 @@ expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -g -L libwebp! -ldisable -e -i -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "inverted monochrome WebP baseline encode failed"
+    printf '\n%s\n' "not ok 1 - inverted monochrome WebP baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "inverted monochrome WebP output is empty"
+    printf '\n%s\n' "not ok 1 - inverted monochrome WebP output is empty"
     exit 0
 }
 
@@ -33,14 +33,14 @@ actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -g -L libwebp! -ldisable -X oklab -e -i -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "inverted monochrome WebP encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - inverted monochrome WebP encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "inverted monochrome WebP output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - inverted monochrome WebP output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "inverted monochrome WebP output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - inverted monochrome WebP output ignores clustering colorspace"
 exit 0

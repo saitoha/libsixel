@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0030_binning_policy_contract" || {
-    echo "not ok 1 - binning policy contract"
+    printf '\n%s\n' "not ok 1 - binning policy contract"
     exit 0
 }
 
-echo "ok 1 - binning policy contract"
+printf '\n%s\n' "ok 1 - binning policy contract"
 exit 0

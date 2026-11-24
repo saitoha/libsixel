@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0099_loader_builtin_pic_mixed_rle_extended_numeric" || {
-    echo "not ok 1 - PIC mixed RLE exact extended repeat count"
+    printf '\n%s\n' "not ok 1 - PIC mixed RLE exact extended repeat count"
     exit 0
 }
 
-echo "ok 1 - PIC mixed RLE exact extended repeat count"
+printf '\n%s\n' "ok 1 - PIC mixed RLE exact extended repeat count"
 exit 0

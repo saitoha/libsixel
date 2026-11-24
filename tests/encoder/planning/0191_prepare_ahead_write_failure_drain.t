@@ -8,12 +8,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder/planning/0191_prepare_ahead_write_failure_drain >/dev/null || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP preparation overlap unavailable for this build'
+    printf '\n%s\n' 'ok 1 # SKIP preparation overlap unavailable for this build'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - prepare ahead write failure drain'
+    printf '\n%s\n' 'not ok 1 - prepare ahead write failure drain'
     exit 0
 }
-echo 'ok 1 - prepare ahead write failure drain'
+printf '\n%s\n' 'ok 1 - prepare ahead write failure drain'
 exit 0

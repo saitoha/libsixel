@@ -16,12 +16,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 -Qheckbert -a off -a corners \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "late corners cover encode failed"
+    printf '\n%s\n' "not ok 1 - late corners cover encode failed"
     exit 0
 }
 
 case "${msg}" in *LSXCOV1\|policy=corners**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "late corners did not override early off"
+    printf '\n%s\n' "not ok 1 - late corners did not override early off"
     exit 0
 }
 
@@ -30,14 +30,14 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 -Qheckbert -a corners -a off \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "late off cover encode failed"
+    printf '\n%s\n' "not ok 1 - late off cover encode failed"
     exit 0
 }
 
 case "${msg}" in *LSXCOV1\|policy=off**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "late off did not override early corners"
+    printf '\n%s\n' "not ok 1 - late off did not override early corners"
     exit 0
 }
 
-echo "ok" 1 - "-a cover policy uses argument-order last-wins"
+printf '\n%s\n' "ok 1 - -a cover policy uses argument-order last-wins"
 exit 0

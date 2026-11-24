@@ -31,19 +31,19 @@ run_status=$?
 set -e
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin fallback did not decode 12-bit YCCK JPEG"
+    printf '\n%s\n' "not ok 1 - builtin fallback did not decode 12-bit YCCK JPEG"
     exit 0
 }
 
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=libjpeg\|code=L_ERR_BAD_INPUT**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "libjpeg failure code was not reported"
+    printf '\n%s\n' "not ok 1 - libjpeg failure code was not reported"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*LSXLOAD1\|event=ok\|loader=builtin\|code=L_OK**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin success code was not reported after libjpeg"
+    printf '\n%s\n' "not ok 1 - builtin success code was not reported after libjpeg"
     exit 0
 }
 
-echo "ok" 1 - "12-bit YCCK input falls back to builtin after libjpeg failure when 12-bit API is unavailable"
+printf '\n%s\n' "ok 1 - 12-bit YCCK input falls back to builtin after libjpeg failure when 12-bit API is unavailable"
 exit 0

@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" quant/palette/mono_float/0030_empty_mask || {
-    echo "not ok 1 - mono empty mask"
+    printf '\n%s\n' "not ok 1 - mono empty mask"
     exit 0
 }
 
-echo "ok 1 - mono empty mask"
+printf '\n%s\n' "ok 1 - mono empty mask"
 exit 0

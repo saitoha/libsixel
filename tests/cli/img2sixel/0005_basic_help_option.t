@@ -17,9 +17,9 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -H >/dev/null 2>&1 || status=$?
 set -x
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "sixel2png help option failed"
+    printf '\n%s\n' "not ok 1 - sixel2png help option failed"
     exit 0
 }
 
-echo "ok" 1 - "sixel2png help command remains callable"
+printf '\n%s\n' "ok 1 - sixel2png help command remains callable"
 exit 0

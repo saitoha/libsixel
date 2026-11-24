@@ -28,22 +28,22 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite bevel decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite bevel decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ bevel-join\ vector\ stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite did not apply deferred bevel-join vector stroke coverage"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite did not apply deferred bevel-join vector stroke coverage"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ miter-join\ vector\ stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly used deferred miter-join trace for bevel join"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite unexpectedly used deferred miter-join trace for bevel join"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred bevel-join vector stroke coverage contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps deferred bevel-join vector stroke coverage contract"
 exit 0

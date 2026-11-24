@@ -16,9 +16,9 @@ status=0
 snake_six="${TOP_SRCDIR}/images/map8.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -dx_dither -h100 "${snake_six}" -o/dev/null || {
-    echo "not ok" 1 - "X ordered dither inspection fails"
+    printf '\n%s\n' "not ok 1 - X ordered dither inspection fails"
     exit "${status}"
 }
 
-echo "ok" 1 - "X ordered dither inspection works"
+printf '\n%s\n' "ok 1 - X ordered dither inspection works"
 exit "${status}"

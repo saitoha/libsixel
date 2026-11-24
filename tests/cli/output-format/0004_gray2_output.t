@@ -14,10 +14,10 @@ set -v
 snake_tga="${TOP_SRCDIR}/tests/data/inputs/snake_64.tga"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray2 -w120 "${snake_tga}" -o/dev/null || {
-    echo "not ok" 1 - "2-bit grayscale output fails"
+    printf '\n%s\n' "not ok 1 - 2-bit grayscale output fails"
     exit 0
 }
 
-echo "ok" 1 - "2-bit grayscale output succeeds"
+printf '\n%s\n' "ok 1 - 2-bit grayscale output succeeds"
 
 exit 0

@@ -15,12 +15,12 @@ value=$("${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     xml-value \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/PackageInfo" \
     '/pkg-info/@relocatable') || {
-    echo "not ok 1 - Cannot read package relocatable"
+    printf '\n%s\n' "not ok 1 - Cannot read package relocatable"
     exit 0
 }
 test "$value" = "false" || {
-    echo "not ok 1 - Unexpected package relocatable"
+    printf '\n%s\n' "not ok 1 - Unexpected package relocatable"
     exit 0
 }
-echo "ok 1 - Package relocation is disabled."
+printf '\n%s\n' "ok 1 - Package relocation is disabled."
 exit 0

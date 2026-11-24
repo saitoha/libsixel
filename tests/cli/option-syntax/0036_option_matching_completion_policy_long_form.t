@@ -14,13 +14,13 @@ set -v
 msg=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -K "a:bash_path=/missing-completion-source" -1 bash 2>&1) || {
-    echo "not ok" 1 - "completion policy long form was rejected"
+    printf '\n%s\n' "not ok 1 - completion policy long form was rejected"
     exit 0
 }
 case "${msg}" in *LSXSUB1\|*key=bash_path\|stored=1\|binding=bash_path,bash_path_override\|value=*missing-completion-source**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion policy long form was not stored"
+    printf '\n%s\n' "not ok 1 - completion policy long form was not stored"
     exit 0
 }
 
-echo "ok" 1 - "completion policy accepts base prefix and long key"
+printf '\n%s\n' "ok 1 - completion policy accepts base prefix and long key"
 exit 0

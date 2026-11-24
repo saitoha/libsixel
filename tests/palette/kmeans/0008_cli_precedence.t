@@ -14,16 +14,16 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto --env SIXEL_PALETTE_KMEANS_BACKEND=gpu -Qkmeans:backend=cpu:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || {
-    echo "not ok 1 - cli precedence conversion"
+    printf '\n%s\n' "not ok 1 - cli precedence conversion"
     exit 0
 }
 case "$trace" in
     *LSXKMEANS1\|requested=cpu\|effective=cpu\|*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - cli precedence backend selection"
+    printf '\n%s\n' "not ok 1 - cli precedence backend selection"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - cli precedence"
+printf '\n%s\n' "ok 1 - cli precedence"
 exit 0

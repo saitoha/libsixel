@@ -9,9 +9,9 @@ set -v
 SIXEL_TRACE_TOPIC=dither_contract SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/fixed_animation/0005_builtin_output || {
-    echo "not ok 1 - fixed animation builtin output"
+    printf '\n%s\n' "not ok 1 - fixed animation builtin output"
     exit 0
 }
 
-echo "ok 1 - fixed animation builtin output"
+printf '\n%s\n' "ok 1 - fixed animation builtin output"
 exit 0

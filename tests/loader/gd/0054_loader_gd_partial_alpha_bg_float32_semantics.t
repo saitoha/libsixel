@@ -14,9 +14,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0059_loader_gd_pixelpolicy_detail" \
     "partial_alpha_bg_float32_semantics" || {
-    echo "not ok 1 - gd partial_alpha_bg_float32_semantics"
+    printf '\n%s\n' "not ok 1 - gd partial_alpha_bg_float32_semantics"
     exit 0
 }
 
-echo "ok 1 - gd partial_alpha_bg_float32_semantics"
+printf '\n%s\n' "ok 1 - gd partial_alpha_bg_float32_semantics"
 exit 0

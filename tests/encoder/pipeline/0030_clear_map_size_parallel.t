@@ -12,9 +12,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder-core/0058_clear_map_size_parallel" || {
-    echo "not ok 1 - clear map size parallel"
+    printf '\n%s\n' "not ok 1 - clear map size parallel"
     exit 0
 }
 
-echo "ok 1 - clear map size parallel"
+printf '\n%s\n' "ok 1 - clear map size parallel"
 exit 0

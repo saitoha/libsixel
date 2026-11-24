@@ -23,7 +23,7 @@ set -v
 # Read the compiled dither capability; keep serial option routing covered.
 parallel_dither=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/allocation/0001_allocation_slots parallel-dither) || {
-    echo "not ok 1 - cannot query the compiled dither capability"
+    printf '\n%s\n' "not ok 1 - cannot query the compiled dither capability"
     exit 0
 }
 expected_band=18
@@ -39,17 +39,17 @@ env_output="${artifact_dir}/0121-diffusion-band-width-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     -d "fs:B9" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "band_width short conversion failed"
+    printf '\n%s\n' "not ok 1 - band_width short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=band_width\|stored=1\|binding=dither_parallel_band_width,dither_parallel_band_width_override\|value=9**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "band_width short value was not stored"
+    printf '\n%s\n' "not ok 1 - band_width short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*band_height=12\|*band_width=9\|band_width_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "band_width short value was not effective"
+    printf '\n%s\n' "not ok 1 - band_width short value was not effective"
     exit 0
 }
 
@@ -57,22 +57,22 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=9" -d "fs" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "band_width environment conversion failed"
+    printf '\n%s\n' "not ok 1 - band_width environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=band_width\|stored=1\|binding=dither_parallel_band_width,dither_parallel_band_width_override\|value=9**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "band_width environment value was not stored"
+    printf '\n%s\n' "not ok 1 - band_width environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXDTH1\|*diffuse=fs\|*band_height=12\|*band_width=9\|band_width_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "band_width environment value was not effective"
+    printf '\n%s\n' "not ok 1 - band_width environment value was not effective"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "band_width short and environment output differ"
+    printf '\n%s\n' "not ok 1 - band_width short and environment output differ"
     exit 0
 }
 
@@ -80,17 +80,17 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=-1" -d "fs" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "negative band_width conversion failed"
+    printf '\n%s\n' "not ok 1 - negative band_width conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=band_width\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "band_width accepted a negative environment value"
+    printf '\n%s\n' "not ok 1 - band_width accepted a negative environment value"
     exit 0
 }
 
 case "${range_trace}" in *LSXDTH1\|*band_height=${expected_band}\|*band_width=0\|band_width_override=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "negative band_width changed the default"
+    printf '\n%s\n' "not ok 1 - negative band_width changed the default"
     exit 0
 }
 
@@ -98,26 +98,26 @@ zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=0" -d "fs" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "zero band_width conversion failed"
+    printf '\n%s\n' "not ok 1 - zero band_width conversion failed"
     exit 0
 }
 
 case "${zero_trace}" in *LSXSUB1\|*key=band_width\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "band_width accepted a zero environment value"
+    printf '\n%s\n' "not ok 1 - band_width accepted a zero environment value"
     exit 0
 }
 
 case "${zero_trace}" in *LSXDTH1\|*band_height=${expected_band}\|*band_width=0\|band_width_override=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "zero band_width changed the default"
+    printf '\n%s\n' "not ok 1 - zero band_width changed the default"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "band_width preserves effective image output"
+printf '\n%s\n' "ok 1 - band_width preserves effective image output"
 exit 0

@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0087_loader_builtin_tga_oob_index_fallback_numeric" || {
-    echo "not ok 1 - TGA out-of-range index compatibility fallback"
+    printf '\n%s\n' "not ok 1 - TGA out-of-range index compatibility fallback"
     exit 0
 }
 
-echo "ok 1 - TGA out-of-range index compatibility fallback"
+printf '\n%s\n' "ok 1 - TGA out-of-range index compatibility fallback"
 exit 0

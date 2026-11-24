@@ -31,15 +31,15 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/0115-0006_jpeg_ycbcr_12b
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_12bit.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin! "${input_jpeg}" -o "${output_sixel}" || {
-    echo "not ok" 1 - "builtin 12-bit JPEG decode failed"
+    printf '\n%s\n' "not ok 1 - builtin 12-bit JPEG decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "builtin 12-bit JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - builtin 12-bit JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "builtin 12-bit JPEG keeps MS-SSIM ${lsqa_floor} against expected PNM"
+printf '\n%s\n' "ok 1 - builtin 12-bit JPEG keeps MS-SSIM ${lsqa_floor} against expected PNM"
 exit 0

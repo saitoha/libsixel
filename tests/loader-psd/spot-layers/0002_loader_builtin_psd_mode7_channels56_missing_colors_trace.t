@@ -20,10 +20,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: Multichannel needs explicit colorant definitions (56 channels)"*)
-        echo "ok" 1 - "Multichannel channels=56 requires explicit colorants"
+        printf '\n%s\n' "ok 1 - Multichannel channels=56 requires explicit colorants"
         ;;
     *)
-        echo "not ok" 1 - "Multichannel channels=56 did not emit expected unsupported trace"
+        printf '\n%s\n' "not ok 1 - Multichannel channels=56 did not emit expected unsupported trace"
         ;;
 esac
 

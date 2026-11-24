@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! - <"${input_pic}" >/dev/null || {
-    echo "not ok 1 - loader builtin pic decode from stdin"
+    printf '\n%s\n' "not ok 1 - loader builtin pic decode from stdin"
     exit 0
 }
 
-echo "ok 1 - loader builtin pic decode from stdin"
+printf '\n%s\n' "ok 1 - loader builtin pic decode from stdin"
 exit 0

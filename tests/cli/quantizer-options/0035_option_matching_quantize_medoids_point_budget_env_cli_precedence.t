@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only point_budget=64 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only point_budget=64 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:point_budget=16384 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only point_budget upper bound was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only point_budget upper bound was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:point_budget=63 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI point_budget unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI point_budget unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *-Q\ point_budget\ must\ be\ in\ range\ 64-16384.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI point_budget diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI point_budget diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:point_budget=16384 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI point_budget did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI point_budget did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "medoids point_budget follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - medoids point_budget follows env/CLI acceptance and CLI priority"
 exit 0

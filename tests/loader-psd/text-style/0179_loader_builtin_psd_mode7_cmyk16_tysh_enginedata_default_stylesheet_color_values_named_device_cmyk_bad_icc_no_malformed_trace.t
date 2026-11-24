@@ -29,16 +29,16 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PAT
     "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "bad ICC decode failed: ${trace_log}"
+    printf '\n%s\n' "not ok 1 - bad ICC decode failed: ${trace_log}"
     exit 0
 }
 
 case "${trace_log}" in
     *"malformed ICC resource section; skipping ICC conversion"*)
-        echo "not ok" 1 - "bad ICC was misclassified as malformed ICC resource"
+        printf '\n%s\n' "not ok 1 - bad ICC was misclassified as malformed ICC resource"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "PSD mode7 CMYK16 TySh /DefaultStyleSheet /Color DeviceCMYK bad ICC decodes without malformed-resource misclassification"
+printf '\n%s\n' "ok 1 - PSD mode7 CMYK16 TySh /DefaultStyleSheet /Color DeviceCMYK bad ICC decodes without malformed-resource misclassification"
 exit 0

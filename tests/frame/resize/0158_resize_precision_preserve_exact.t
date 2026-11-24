@@ -27,15 +27,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     -jscalar:resize_precision=preserve \
     -o "${actual_sixel}" \
     "${fixture_root}/bilinear-precision-input.ppm" || {
-    echo "not ok" 1 - "resize_precision=preserve failed"
+    printf '\n%s\n' "not ok 1 - resize_precision=preserve failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     geometry/resampling_exact decode "${actual_sixel}" \
     "${fixture_root}/bilinear-precision-preserve-expected.ppm" || {
-    echo "not ok" 1 - "resize_precision=preserve pixels changed"
+    printf '\n%s\n' "not ok 1 - resize_precision=preserve pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "resize_precision=preserve matches the safe-tone oracle"
+printf '\n%s\n' "ok 1 - resize_precision=preserve matches the safe-tone oracle"
 exit 0

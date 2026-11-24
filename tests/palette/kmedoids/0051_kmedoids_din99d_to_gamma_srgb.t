@@ -11,9 +11,9 @@ SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     wire 1 4 0 0 || {
-    echo "not ok 1 - kmedoids din99d to gamma srgb"
+    printf '\n%s\n' "not ok 1 - kmedoids din99d to gamma srgb"
     exit 0
 }
 
-echo "ok 1 - kmedoids din99d to gamma srgb"
+printf '\n%s\n' "ok 1 - kmedoids din99d to gamma srgb"
 exit 0

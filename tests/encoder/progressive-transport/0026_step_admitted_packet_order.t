@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0094_step_admitted_packet_o
 result=$?
 set -e
 test "$result" -ne 77 || {
-    echo "ok 1 - step admitted packet order # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 - step admitted packet order # SKIP thread support disabled"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - step admitted packet order"
+    printf '\n%s\n' "not ok 1 - step admitted packet order"
     exit 0
 }
-echo "ok 1 - step admitted packet order"
+printf '\n%s\n' "ok 1 - step admitted packet order"
 exit 0

@@ -32,19 +32,19 @@ out_auto="${ARTIFACT_LOCAL_DIR}/webp-oversized-icc-cms-auto.six"
 out_none="${ARTIFACT_LOCAL_DIR}/webp-oversized-icc-cms-none.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=auto! "${input_webp}" >"${out_auto}" || {
-    echo "not ok" 1 - "libwebp oversized ICC decode failed (cms=auto)"
+    printf '\n%s\n' "not ok 1 - libwebp oversized ICC decode failed (cms=auto)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}" >"${out_none}" || {
-    echo "not ok" 1 - "libwebp oversized ICC decode failed (cms=none)"
+    printf '\n%s\n' "not ok 1 - libwebp oversized ICC decode failed (cms=none)"
     exit 0
 }
 
 cmp -s "${out_auto}" "${out_none}" || {
-    echo "not ok" 1 - "oversized ICC did not skip CMS conversion as expected"
+    printf '\n%s\n' "not ok 1 - oversized ICC did not skip CMS conversion as expected"
     exit 0
 }
 
-echo "ok" 1 - "oversized ICC skips CMS conversion while decode succeeds"
+printf '\n%s\n' "ok 1 - oversized ICC skips CMS conversion while decode succeeds"
 exit 0

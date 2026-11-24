@@ -17,7 +17,7 @@ output_file="${ARTIFACT_LOCAL_DIR}/completion.zsh"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/converters/shell-completion" \
               -1 zsh >"${output_file}" || {
-    echo "not ok" 1 - "zsh completion output failed"
+    printf '\n%s\n' "not ok 1 - zsh completion output failed"
     exit 0
 }
 
@@ -32,9 +32,9 @@ while IFS= read -r line; do
 done < "${output_file}"
 
 test "${zsh_header_found}" -eq 1 || {
-    echo "not ok" 1 - "missing zsh completion header"
+    printf '\n%s\n' "not ok 1 - missing zsh completion header"
     exit 0
 }
 
-echo "ok" 1 - "zsh completion output available"
+printf '\n%s\n' "ok 1 - zsh completion output available"
 exit 0

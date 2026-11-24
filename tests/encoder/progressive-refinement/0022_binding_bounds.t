@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0022_binding_bounds" || {
-    echo "not ok 1 - binding bounds"
+    printf '\n%s\n' "not ok 1 - binding bounds"
     exit 0
 }
-echo "ok 1 - binding bounds"
+printf '\n%s\n' "ok 1 - binding bounds"
 exit 0

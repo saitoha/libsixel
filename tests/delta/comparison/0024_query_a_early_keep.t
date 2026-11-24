@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0024_query_a_early_keep" >/dev/null || {
-    echo "not ok 1 - query a early keep"
+    printf '\n%s\n' "not ok 1 - query a early keep"
     exit 0
 }
 
-echo "ok 1 - query a early keep"
+printf '\n%s\n' "ok 1 - query a early keep"
 exit 0

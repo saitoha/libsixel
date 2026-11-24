@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0092_step_offset_alpha_domain" || {
-    echo "not ok 1 - step offset alpha domain"
+    printf '\n%s\n' "not ok 1 - step offset alpha domain"
     exit 0
 }
-echo "ok 1 - step offset alpha domain"
+printf '\n%s\n' "ok 1 - step offset alpha domain"
 exit 0

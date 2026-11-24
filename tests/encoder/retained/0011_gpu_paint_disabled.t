@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/retained/0011_gpu_paint_disabled" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - Disabled presentation marks allocate no paint view'
+    printf '\n%s\n' 'not ok 1 - Disabled presentation marks allocate no paint view'
     exit 0
 }
-echo 'ok 1 - Disabled presentation marks allocate no paint view'
+printf '\n%s\n' 'ok 1 - Disabled presentation marks allocate no paint view'
 exit 0

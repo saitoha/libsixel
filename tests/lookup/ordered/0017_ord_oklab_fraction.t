@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/ordered/0008_ord_oklab_fraction || {
-    echo "not ok 1 - ordered oklab fraction"
+    printf '\n%s\n' "not ok 1 - ordered oklab fraction"
     exit 0
 }
-echo "ok 1 - ordered oklab fraction"
+printf '\n%s\n' "ok 1 - ordered oklab fraction"
 exit 0

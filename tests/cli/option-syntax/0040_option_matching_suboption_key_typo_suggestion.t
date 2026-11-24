@@ -23,7 +23,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 set -x
 
 test "${result}" -eq 2 || {
-    echo "not ok" 1 - "suboption key typo exit status mismatch"
+    printf '\n%s\n' "not ok 1 - suboption key typo exit status mismatch"
     exit 0
 }
 
@@ -31,12 +31,12 @@ case "${msg}" in
     *'unknown suboption key "inittpye".'*'Did you mean: inittype?'*)
         ;;
     *)
-        echo "not ok" 1 - "suboption key typo suggestion mismatch"
+        printf '\n%s\n' "not ok 1 - suboption key typo suggestion mismatch"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "suboption key typo suggests the canonical key"
+printf '\n%s\n' "ok 1 - suboption key typo suggests the canonical key"
 exit 0

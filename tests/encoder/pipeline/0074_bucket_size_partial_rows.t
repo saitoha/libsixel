@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0074_bucket_size_parti
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket size partial rows # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket size partial rows # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket size partial rows"
+    printf '\n%s\n' "not ok 1 - bucket size partial rows"
     exit 0
 }
-echo "ok 1 - bucket size partial rows"
+printf '\n%s\n' "ok 1 - bucket size partial rows"
 exit 0

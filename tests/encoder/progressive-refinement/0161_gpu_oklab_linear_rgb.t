@@ -9,12 +9,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0216_gpu_oklab_linear_rgb"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu oklab linear rgb # SKIP GPU device unavailable"
+    printf '\n%s\n' "ok 1 - gpu oklab linear rgb # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {
-    echo "not ok 1 - gpu oklab linear rgb"
+    printf '\n%s\n' "not ok 1 - gpu oklab linear rgb"
     exit 0
 }
-echo "ok 1 - gpu oklab linear rgb"
+printf '\n%s\n' "ok 1 - gpu oklab linear rgb"
 exit 0

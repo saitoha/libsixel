@@ -12,18 +12,18 @@ set -v
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 image_out="${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six"
 value_short=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 - "failed to calculate metric with -m"
+    printf '\n%s\n' "not ok 1 - failed to calculate metric with -m"
     exit 0
 }
 value_long=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --metrics=MS-SSIM "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 - "failed to calculate metric with --metrics="
+    printf '\n%s\n' "not ok 1 - failed to calculate metric with --metrics="
     exit 0
 }
 
 test "${value_short}" = "${value_long}" || {
-    echo "not ok" 1 - "--metrics= output does not match -m"
+    printf '\n%s\n' "not ok 1 - --metrics= output does not match -m"
     exit 0
 }
 
-echo "ok" 1 - "--metrics= returns same value as -m"
+printf '\n%s\n' "ok 1 - --metrics= returns same value as -m"
 exit 0

@@ -13,7 +13,7 @@ test "$probe_status" -ne 77 || {
 echo '1..1'
 set -v
 test "$probe_status" -eq 0 || {
-    echo 'not ok 1 - Metal availability probe failed'
+    printf '\n%s\n' 'not ok 1 - Metal availability probe failed'
     exit 0
 }
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
@@ -22,7 +22,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -Qauto -_reversible:timing=once \
     -aedges:cover_mode=hard:cover_grow=1 -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1) || {
-    echo 'not ok 1 - Heckbert indexed encoding failed'
+    printf '\n%s\n' 'not ok 1 - Heckbert indexed encoding failed'
     printf '# %s\n' "$trace"
     exit 0
 }
@@ -31,9 +31,9 @@ case "$trace" in
 sample_backend=metal*histogram_backend=metal*) true ;;
     *) false ;;
 esac || {
-    echo 'not ok 1 - Heckbert snap and hard cover did not use resident Metal'
+    printf '\n%s\n' 'not ok 1 - Heckbert snap and hard cover did not use resident Metal'
     printf '# %s\n' "$trace"
     exit 0
 }
-echo 'ok 1 - Heckbert produces indexed output after Metal snap and hard cover'
+printf '\n%s\n' 'ok 1 - Heckbert produces indexed output after Metal snap and hard cover'
 exit 0

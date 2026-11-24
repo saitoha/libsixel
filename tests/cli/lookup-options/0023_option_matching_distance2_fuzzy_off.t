@@ -23,7 +23,7 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_FUZZY_SUGGESTIONS
 set -x
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "distance-2 typo exit status mismatch"
+    printf '\n%s\n' "not ok 1 - distance-2 typo exit status mismatch"
     exit 0
 }
 
@@ -31,7 +31,7 @@ case "${msg}" in
     *'specified desampling method is not supported.'*)
         ;;
     *)
-        echo "not ok" 1 - "invalid choice still reports fuzzy suggestion"
+        printf '\n%s\n' "not ok 1 - invalid choice still reports fuzzy suggestion"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -40,7 +40,7 @@ esac
 
 case "${msg}" in
     *'Did you mean:'*)
-        echo "not ok" 1 - "invalid choice still reports fuzzy suggestion"
+        printf '\n%s\n' "not ok 1 - invalid choice still reports fuzzy suggestion"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -49,5 +49,5 @@ case "${msg}" in
         ;;
 esac
 
-echo "ok" 1 - "invalid choice omits fuzzy suggestion when disabled"
+printf '\n%s\n' "ok 1 - invalid choice omits fuzzy suggestion when disabled"
 exit 0

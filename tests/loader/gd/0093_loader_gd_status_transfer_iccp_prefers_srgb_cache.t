@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" "transfer_iccp_prefers_srgb_cache" || {
-    echo "not ok 1 - gd status transfer_iccp_prefers_srgb_cache"
+    printf '\n%s\n' "not ok 1 - gd status transfer_iccp_prefers_srgb_cache"
     exit 0
 }
 
-echo "ok 1 - gd status transfer_iccp_prefers_srgb_cache"
+printf '\n%s\n' "ok 1 - gd status transfer_iccp_prefers_srgb_cache"
 exit 0

@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0044_filter_dither_transparent_mask_fence_parallel" || {
-    echo "not ok 1 - parallel transparent-mask dither fence"
+    printf '\n%s\n' "not ok 1 - parallel transparent-mask dither fence"
     exit 0
 }
 
-echo "ok 1 - parallel transparent-mask dither fence"
+printf '\n%s\n' "ok 1 - parallel transparent-mask dither fence"
 exit 0

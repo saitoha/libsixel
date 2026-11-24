@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu/blockcull_vulkan_byte_opt_in || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP Vulkan device unavailable"
+    printf '\n%s\n' "ok 1 # SKIP Vulkan device unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - blockcull byte batch opt-in"
+    printf '\n%s\n' "not ok 1 - blockcull byte batch opt-in"
     exit 0
 }
-echo "ok 1 - blockcull byte batch opt-in"
+printf '\n%s\n' "ok 1 - blockcull byte batch opt-in"
 exit 0

@@ -20,21 +20,21 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -x code -p invalid 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - option error exit status changed"
+    printf '\n%s\n' "not ok 1 - option error exit status changed"
     exit 0
 }
 
 case "${message}" in *LSXCLI1\|phase=option_parse\|rc=*\|code=*) true ;; *) false ;; esac || {
-    echo "not ok 1 - option error machine header policy mismatch"
+    printf '\n%s\n' "not ok 1 - option error machine header policy mismatch"
     printf '%s\n' "${message}" >&2
     exit 0
 }
 
 case "${message}" in *invalid*) true ;; *) false ;; esac || {
-    echo "not ok 1 - ordinary option error diagnostic is missing"
+    printf '\n%s\n' "not ok 1 - ordinary option error diagnostic is missing"
     printf '%s\n' "${message}" >&2
     exit 0
 }
 
-echo "ok 1 - explicit code mode overrides human environment"
+printf '\n%s\n' "ok 1 - explicit code mode overrides human environment"
 exit 0

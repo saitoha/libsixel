@@ -19,9 +19,9 @@ set -v
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -S "${input_gif}" -o/dev/null || {
-    echo "not ok" 1 - "gdk-pixbuf2 static GIF decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 static GIF decode failed"
     exit 0
 }
 
-echo "ok" 1 - "gdk-pixbuf2 static GIF decode succeeds"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 static GIF decode succeeds"
 exit 0

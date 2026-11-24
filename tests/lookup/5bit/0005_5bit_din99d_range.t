@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup range 1 4 || {
-    echo "not ok 1 - 5bit din99d range"
+    printf '\n%s\n' "not ok 1 - 5bit din99d range"
     exit 0
 }
 
-echo "ok 1 - 5bit din99d range"
+printf '\n%s\n' "ok 1 - 5bit din99d range"
 exit 0

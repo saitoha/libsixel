@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null && {
-    echo "not ok" 1 - "forced librsvg loader accepted non-SVG signature"
+    printf '\n%s\n' "not ok 1 - forced librsvg loader accepted non-SVG signature"
     exit 0
 }
 
-echo "ok" 1 - "forced librsvg loader rejects non-SVG signature"
+printf '\n%s\n' "ok 1 - forced librsvg loader rejects non-SVG signature"
 exit 0

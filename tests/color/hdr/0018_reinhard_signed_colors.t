@@ -7,12 +7,12 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     hdr/0018_reinhard_signed_colors || result=$?
 test "$result" -ne 77 || {
-    echo 'ok 1 # SKIP loader unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP loader unavailable'
     exit 0
 }
 test "$result" -eq 0 || {
-    echo 'not ok 1 - reinhard signed colors'
+    printf '\n%s\n' 'not ok 1 - reinhard signed colors'
     exit 0
 }
-echo 'ok 1 - reinhard signed colors'
+printf '\n%s\n' 'ok 1 - reinhard signed colors'
 exit 0

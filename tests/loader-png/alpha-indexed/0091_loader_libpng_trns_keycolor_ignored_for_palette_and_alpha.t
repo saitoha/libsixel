@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - palette default render failed"
+    printf '\n%s\n' "not ok 1 - palette default render failed"
     exit 0
 }
 
@@ -35,16 +35,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_optin}" || {
-    echo "not ok 1 - palette opt-in render failed"
+    printf '\n%s\n' "not ok 1 - palette opt-in render failed"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_optin}" || {
-    echo "not ok 1 - opt-in unexpectedly changes palette+tRNS output"
+    printf '\n%s\n' "not ok 1 - opt-in unexpectedly changes palette+tRNS output"
     exit 0
 }
 
-    echo "ok 1 - opt-in is ignored for palette+tRNS"
+    printf '\n%s\n' "ok 1 - opt-in is ignored for palette+tRNS"
 
 
 exit 0

@@ -10,12 +10,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder/indexed/gpu_lookup_preparation 0 fhedt || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - force no cpu grid"
+    printf '\n%s\n' "not ok 1 - force no cpu grid"
     exit 0
 }
-echo "ok 1 - force no cpu grid"
+printf '\n%s\n' "ok 1 - force no cpu grid"
 exit 0

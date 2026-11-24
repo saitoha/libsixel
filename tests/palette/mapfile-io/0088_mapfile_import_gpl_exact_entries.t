@@ -31,18 +31,18 @@ Columns: 2
 200 210 220 Light swatch
 GPL
 ) || {
-    echo "not ok" 1 - "independent GPL import failed"
+    printf '\n%s\n' "not ok 1 - independent GPL import failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "GPL output normalization failed"
+    printf '\n%s\n' "not ok 1 - GPL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "GPL RGB entries or metadata handling changed"
+    printf '\n%s\n' "not ok 1 - GPL RGB entries or metadata handling changed"
     exit 0
 }
 
-echo "ok" 1 - "GPL imports ordered RGB and discards text metadata"
+printf '\n%s\n' "ok 1 - GPL imports ordered RGB and discards text metadata"
 exit 0

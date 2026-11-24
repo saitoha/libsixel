@@ -19,10 +19,10 @@ pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-jasc-valid-with-act-ext
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m pal-jasc:"${pal_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "pal-jasc prefix should override extension"
+    printf '\n%s\n' "not ok 1 - pal-jasc prefix should override extension"
     exit 0
 }
 
-echo "ok" 1 - "pal-jasc prefix overrides .act extension"
+printf '\n%s\n' "ok 1 - pal-jasc prefix overrides .act extension"
 
 exit 0

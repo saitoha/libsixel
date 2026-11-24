@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_GPU_POLICY=force \
         -ds:T24 <"${TOP_SRCDIR}/images/map8.six" >/dev/null 2>&1 && {
-    echo "not ok" 1 - "forced GPU selective_blur fell back to CPU"
+    printf '\n%s\n' "not ok 1 - forced GPU selective_blur fell back to CPU"
     exit 0
 }
 
-echo "ok" 1 - "forced GPU selective_blur is rejected"
+printf '\n%s\n' "ok 1 - forced GPU selective_blur is rejected"
 exit 0

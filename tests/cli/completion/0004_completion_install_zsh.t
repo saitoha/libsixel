@@ -31,12 +31,12 @@ rc_path="${completion_home}/.zshrc"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env IMG2SIXEL_COMPLETION_DIR="${completion_dir}" \
               -2 zsh >/dev/null || {
-    echo "not ok" 1 - "zsh completion install failed"
+    printf '\n%s\n' "not ok 1 - zsh completion install failed"
     exit 0
 }
 
 test -f "${target_path}" || {
-    echo "not ok" 1 - "zsh completion not installed"
+    printf '\n%s\n' "not ok 1 - zsh completion not installed"
     exit 0
 }
 
@@ -51,12 +51,12 @@ while IFS= read -r line; do
 done < "${target_path}"
 
 test "${target_header_found}" -eq 1 || {
-    echo "not ok" 1 - "zsh completion not installed"
+    printf '\n%s\n' "not ok 1 - zsh completion not installed"
     exit 0
 }
 
 test -f "${rc_path}" || {
-    echo "not ok" 1 - "zsh completion not installed"
+    printf '\n%s\n' "not ok 1 - zsh completion not installed"
     exit 0
 }
 
@@ -74,14 +74,14 @@ while IFS= read -r line; do
 done < "${rc_path}"
 
 test "${fpath_line_found}" -eq 1 || {
-    echo "not ok" 1 - "zsh completion not installed"
+    printf '\n%s\n' "not ok 1 - zsh completion not installed"
     exit 0
 }
 
 test "${compinit_line_found}" -eq 1 || {
-    echo "not ok" 1 - "zsh completion not installed"
+    printf '\n%s\n' "not ok 1 - zsh completion not installed"
     exit 0
 }
 
-echo "ok" 1 - "zsh completion installed"
+printf '\n%s\n' "ok 1 - zsh completion installed"
 exit 0

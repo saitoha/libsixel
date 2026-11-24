@@ -15,24 +15,24 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 matched_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env 'SIXEL_TRACE_TOPIC=unused;lifecycle' \
     "${input_image}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "separated trace topic conversion failed"
+    printf '\n%s\n' "not ok 1 - separated trace topic conversion failed"
     exit 0
 }
 partial_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=lifecycl \
     "${input_image}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "partial trace topic conversion failed"
+    printf '\n%s\n' "not ok 1 - partial trace topic conversion failed"
     exit 0
 }
 
 case "${matched_trace}" in *img2sixel?lifecycle?:**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "semicolon-separated trace topic was not matched"
+    printf '\n%s\n' "not ok 1 - semicolon-separated trace topic was not matched"
     exit 0
 }
 test -z "${partial_trace}" || {
-    echo "not ok" 1 - "trace topic accepted a partial token"
+    printf '\n%s\n' "not ok 1 - trace topic accepted a partial token"
     exit 0
 }
 
-echo "ok" 1 - "trace topic token matching remains exact"
+printf '\n%s\n' "ok 1 - trace topic token matching remains exact"
 exit 0

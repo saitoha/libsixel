@@ -15,10 +15,10 @@ snake_ascii_pbm="${TOP_SRCDIR}/images/snake-ascii.pbm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -datkinson "${snake_ascii_pbm}" \
         -o/dev/null || {
-    echo "not ok" 1 - "ASCII PBM Atkinson inspection fails"
+    printf '\n%s\n' "not ok 1 - ASCII PBM Atkinson inspection fails"
     exit 0
 }
 
-echo "ok" 1 - "ASCII PBM Atkinson inspection works"
+printf '\n%s\n' "ok 1 - ASCII PBM Atkinson inspection works"
 
 exit 0

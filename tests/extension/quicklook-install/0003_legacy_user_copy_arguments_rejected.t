@@ -13,9 +13,9 @@ set -v
 
 "${TOP_SRCDIR}/tools/quicklook-extension.bash" uninstall \
     --products-dir /unused --user-home /must-not-touch >/dev/null 2>&1 && {
-    echo "not ok 1 - Legacy deletion arguments were accepted"
+    printf '\n%s\n' "not ok 1 - Legacy deletion arguments were accepted"
     exit 0
 }
 
-echo "ok 1 - legacy user copy arguments rejected."
+printf '\n%s\n' "ok 1 - legacy user copy arguments rejected."
 exit 0

@@ -38,8 +38,8 @@ status=0
     'ls:bridge' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Launch Services installed instance matches bridge"
+    printf '\n%s\n' "not ok 1 - Launch Services installed instance matches bridge"
     exit 0
 }
-echo "ok 1 - Launch Services installed instance matches bridge"
+printf '\n%s\n' "ok 1 - Launch Services installed instance matches bridge"
 exit 0

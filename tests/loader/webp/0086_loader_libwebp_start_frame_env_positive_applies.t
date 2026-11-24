@@ -24,32 +24,32 @@ out_cli_positive="${ARTIFACT_LOCAL_DIR}/webp-start-frame-cli-positive.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
     "${image_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline libwebp animation decode failed"
+    printf '\n%s\n' "not ok 1 - baseline libwebp animation decode failed"
     exit 0
 }
 
 SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
     "${image_webp}" >"${out_env_positive}" || {
-    echo "not ok" 1 - "libwebp decode with start-frame env failed"
+    printf '\n%s\n' "not ok 1 - libwebp decode with start-frame env failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 -L libwebp! -ldisable \
     "${image_webp}" >"${out_cli_positive}" || {
-    echo "not ok" 1 - "libwebp decode with --start-frame=1 failed"
+    printf '\n%s\n' "not ok 1 - libwebp decode with --start-frame=1 failed"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_env_positive}" && {
-    echo "not ok" 1 - "start-frame env did not change libwebp output"
+    printf '\n%s\n' "not ok 1 - start-frame env did not change libwebp output"
     exit 0
 }
 
 cmp -s "${out_env_positive}" "${out_cli_positive}" || {
-    echo "not ok" 1 - "start-frame env output mismatched --start-frame=1"
+    printf '\n%s\n' "not ok 1 - start-frame env output mismatched --start-frame=1"
     exit 0
 }
 
-echo "ok" 1 - "libwebp start-frame env positive index is applied"
+printf '\n%s\n' "ok 1 - libwebp start-frame env positive index is applied"
 exit 0

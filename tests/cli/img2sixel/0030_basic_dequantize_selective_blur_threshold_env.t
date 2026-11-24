@@ -19,9 +19,9 @@ from_cli=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     -dselective_blur:T36 \
     <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${from_env}" = "${from_cli}" || {
-    echo "not ok" 1 - "selective-blur threshold environment changed output"
+    printf '\n%s\n' "not ok 1 - selective-blur threshold environment changed output"
     exit 0
 }
 
-echo "ok" 1 - "selective-blur threshold environment value is applied"
+printf '\n%s\n' "ok 1 - selective-blur threshold environment value is applied"
 exit 0

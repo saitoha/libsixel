@@ -23,13 +23,13 @@ out_forced_rgb="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-forced-rgb-path.six"
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "libwebp static alpha decode with default path failed"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha decode with default path failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_forced_rgb}" || {
-    echo "not ok" 1 - "libwebp static alpha decode with forced RGB path failed"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha decode with forced RGB path failed"
     exit 0
 }
 
@@ -57,19 +57,19 @@ case "${out_forced_rgb_text}" in
 esac
 
 test "${default_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "libwebp static alpha path lost keycolor header"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha path lost keycolor header"
     exit 0
 }
 
 test "${forced_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "libwebp static alpha path lost keycolor header"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha path lost keycolor header"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_forced_rgb}" || {
-    echo "not ok" 1 - "libwebp static alpha default path diverged from forced RGB path"
+    printf '\n%s\n' "not ok 1 - libwebp static alpha default path diverged from forced RGB path"
     exit 0
 }
 
-echo "ok" 1 - "libwebp static alpha default path matches forced RGB path"
+printf '\n%s\n' "ok 1 - libwebp static alpha default path matches forced RGB path"
 exit 0

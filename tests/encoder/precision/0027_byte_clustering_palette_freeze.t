@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0027_byte_clustering_freeze 0 1>&2 || {
-    echo "not ok 1 - byte clustering palette freeze"
+    printf '\n%s\n' "not ok 1 - byte clustering palette freeze"
     exit 0
 }
-echo "ok 1 - byte clustering palette freeze"
+printf '\n%s\n' "ok 1 - byte clustering palette freeze"
 exit 0

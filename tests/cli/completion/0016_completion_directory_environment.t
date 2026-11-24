@@ -16,16 +16,16 @@ msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env IMG2SIXEL_COMPLETION_ZSH= \
     --env IMG2SIXEL_COMPLETION_DIR="${TOP_SRCDIR}/tests/data/completion/sources" \
     -1 all) || {
-    echo "not ok" 1 - "completion directory override failed"
+    printf '\n%s\n' "not ok 1 - completion directory override failed"
     exit 0
 }
 case "${msg}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion directory missed its Bash source"
+    printf '\n%s\n' "not ok 1 - completion directory missed its Bash source"
     exit 0
 }
 case "${msg}" in *completion\ zsh\ path\ fixture**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion directory missed its Zsh source"
+    printf '\n%s\n' "not ok 1 - completion directory missed its Zsh source"
     exit 0
 }
-echo "ok" 1 - "completion directory supplies both shell sources"
+printf '\n%s\n' "ok 1 - completion directory supplies both shell sources"
 exit 0

@@ -24,9 +24,9 @@ capture_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 'https://' 2>/dev/null)
 set -e
 
 test -z "${capture_output}" || {
-    echo "not ok" 1 - "malformed HTTPS URL produced output"
+    printf '\n%s\n' "not ok 1 - malformed HTTPS URL produced output"
     exit 0
 }
 
-echo "ok" 1 - "rejects malformed HTTPS URL"
+printf '\n%s\n' "ok 1 - rejects malformed HTTPS URL"
 exit 0

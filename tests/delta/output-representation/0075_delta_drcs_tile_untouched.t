@@ -11,8 +11,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0218_delta_drcs_tile_untouched \
     "${ARTIFACT_LOCAL_DIR}/tiles.txt" || {
-    echo "not ok 1 - drcs tile untouched"
+    printf '\n%s\n' "not ok 1 - drcs tile untouched"
     exit 0
 }
-echo "ok 1 - drcs tile untouched"
+printf '\n%s\n' "ok 1 - drcs tile untouched"
 exit 0

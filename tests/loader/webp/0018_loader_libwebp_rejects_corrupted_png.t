@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${TOP_SRCDIR}/tests/data/corrupted/truncated.png" \
     >/dev/null && {
-    echo "not ok" 1 - "forced libwebp loader accepted corrupted PNG"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted corrupted PNG"
     exit 0
 }
 
-echo "ok" 1 - "forced libwebp loader rejects corrupted PNG"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects corrupted PNG"
 exit 0

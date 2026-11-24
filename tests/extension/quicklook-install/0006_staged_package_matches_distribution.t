@@ -17,9 +17,9 @@ set -v
 
 cmp "${QUICKLOOK_STAGE_SOURCE}/SixelQuickLook.pkg" \
     "${QUICKLOOK_STAGE_DIR}/SixelQuickLook.pkg" >/dev/null || {
-    echo "not ok 1 - Staged package differs"
+    printf '\n%s\n' "not ok 1 - Staged package differs"
     exit 0
 }
 
-echo "ok 1 - staged package matches distribution."
+printf '\n%s\n' "ok 1 - staged package matches distribution."
 exit 0

@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0043_kcenter_float_grid_values" || {
-    echo "not ok 1 - K-center float hard-grid regression"
+    printf '\n%s\n' "not ok 1 - K-center float hard-grid regression"
     exit 0
 }
 
-echo "ok 1 - K-center float hard-grid regression"
+printf '\n%s\n' "ok 1 - K-center float hard-grid regression"
 exit 0

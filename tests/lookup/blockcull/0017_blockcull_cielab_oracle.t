@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/blockcull/0014_blockcull_cielab_oracle || {
-    echo "not ok 1 - blockcull cielab oracle"
+    printf '\n%s\n' "not ok 1 - blockcull cielab oracle"
     exit 0
 }
-echo "ok 1 - blockcull cielab oracle"
+printf '\n%s\n' "ok 1 - blockcull cielab oracle"
 exit 0

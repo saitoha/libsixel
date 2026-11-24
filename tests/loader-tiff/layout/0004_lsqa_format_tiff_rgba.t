@@ -35,7 +35,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.tiff"
 reference_path="${TOP_SRCDIR}/tests/data/loader/quality/137ef5f9-snake-64-reference-rgba.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 - "tiff rgba conversion failed"
+    printf '\n%s\n' "not ok 1 - tiff rgba conversion failed"
     exit 0
 }
 
@@ -47,14 +47,14 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 - "tiff rgba quality regressed"
+    printf '\n%s\n' "not ok 1 - tiff rgba quality regressed"
     exit 0
 }
 
-echo "ok" 1 - "tiff rgba quality meets baseline"
+printf '\n%s\n' "ok 1 - tiff rgba quality meets baseline"
 exit 0

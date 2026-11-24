@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup fraction 4 0 || {
-    echo "not ok 1 - rbc gamma fraction"
+    printf '\n%s\n' "not ok 1 - rbc gamma fraction"
     exit 0
 }
 
-echo "ok 1 - rbc gamma fraction"
+printf '\n%s\n' "ok 1 - rbc gamma fraction"
 exit 0

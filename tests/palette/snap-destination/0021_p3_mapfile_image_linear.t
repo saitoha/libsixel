@@ -10,8 +10,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0055_p3_mapfile image-linear \
     "${TOP_SRCDIR}/tests/data/color-numeric/display-p3.png" || {
-    echo "not ok 1 - P3 mapfile image_linear"
+    printf '\n%s\n' "not ok 1 - P3 mapfile image_linear"
     exit 0
 }
-echo "ok 1 - P3 mapfile image_linear"
+printf '\n%s\n' "ok 1 - P3 mapfile image_linear"
 exit 0

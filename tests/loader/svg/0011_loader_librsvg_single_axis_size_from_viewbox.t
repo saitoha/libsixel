@@ -21,13 +21,13 @@ svg_path="${TOP_SRCDIR}/tests/data/inputs/formats/librsvg-single-axis-viewbox.sv
 sixel_path="${ARTIFACT_LOCAL_DIR}/librsvg-single-axis-viewbox.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${sixel_path}" || {
-    echo "not ok" 1 - "single-axis viewBox conversion failed"
+    printf '\n%s\n' "not ok 1 - single-axis viewBox conversion failed"
     exit 0
 }
 
 IFS='"' read -r _ raster _ <"${sixel_path}" || :
 test -n "${raster-}" || {
-    echo "not ok" 1 - "failed to read sixel raster for single-axis geometry"
+    printf '\n%s\n' "not ok 1 - failed to read sixel raster for single-axis geometry"
     exit 0
 }
 raster="${raster%%#*}"
@@ -35,10 +35,10 @@ case "${raster}" in
     "1;1;40;10")
         ;;
     *)
-        echo "not ok" 1 - "missing-axis geometry was not resolved to 40x10"
+        printf '\n%s\n' "not ok 1 - missing-axis geometry was not resolved to 40x10"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "librsvg resolves missing axis from viewBox ratio"
+printf '\n%s\n' "ok 1 - librsvg resolves missing axis from viewBox ratio"
 exit 0

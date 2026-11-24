@@ -7,8 +7,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/sampling/0107_gpu_headroom" || status=$?
 test "$status" -eq 0 || {
-    echo 'not ok 1 - shared GPU headroom selection'
+    printf '\n%s\n' 'not ok 1 - shared GPU headroom selection'
     exit 0
 }
-echo 'ok 1 - shared GPU headroom selection'
+printf '\n%s\n' 'ok 1 - shared GPU headroom selection'
 exit 0

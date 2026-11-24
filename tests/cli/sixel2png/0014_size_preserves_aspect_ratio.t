@@ -20,7 +20,7 @@ output_png="${ARTIFACT_LOCAL_DIR}/0013-size-aspect-ratio.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -s 31 \
     -i "${TOP_SRCDIR}/images/map8.six" -o "${output_png}" || {
-    echo "not ok" 1 - "sixel2png size conversion failed"
+    printf '\n%s\n' "not ok 1 - sixel2png size conversion failed"
     exit 0
 }
 
@@ -28,13 +28,13 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -s 31 \
 # shellcheck disable=SC2046
 set -- $(od -An -tx1 -j16 -N8 "${output_png}")
 test "$#" -eq 8 || {
-    echo "not ok" 1 - "PNG IHDR dimensions are unavailable"
+    printf '\n%s\n' "not ok 1 - PNG IHDR dimensions are unavailable"
     exit 0
 }
 test "$1 $2 $3 $4 $5 $6 $7 $8" = "00 00 00 1f 00 00 00 05" || {
-    echo "not ok" 1 - "93x14 input did not scale to 31x5"
+    printf '\n%s\n' "not ok 1 - 93x14 input did not scale to 31x5"
     exit 0
 }
 
-echo "ok" 1 - "size preserves aspect ratio"
+printf '\n%s\n' "ok 1 - size preserves aspect ratio"
 exit 0

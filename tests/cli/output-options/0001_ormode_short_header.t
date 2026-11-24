@@ -14,14 +14,14 @@ set -v
 
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -O -o - \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
-    echo "not ok 1 - OR encode failed"
+    printf '\n%s\n' "not ok 1 - OR encode failed"
     exit 0
 }
 
 case "${output}" in
     *"P7;5q"*) ;;
-    *) echo "not ok 1 - -O did not select OR mode"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - -O did not select OR mode"; exit 0 ;;
 esac
 
-echo "ok 1 - -O selects OR mode"
+printf '\n%s\n' "ok 1 - -O selects OR mode"
 exit 0

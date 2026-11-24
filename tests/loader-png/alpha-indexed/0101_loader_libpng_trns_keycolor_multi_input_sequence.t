@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_
               --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! -d fs:scan=raster \
               "${input_a}" "${input_b}" >"${out_on}" || {
-    echo "not ok 1 - multi-input opt-in render failed"
+    printf '\n%s\n' "not ok 1 - multi-input opt-in render failed"
     exit 0
 }
 
@@ -39,7 +39,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_
               --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! -d fs:scan=raster \
               "${input_a}" "${input_b}" >"${out_off}" || {
-    echo "not ok 1 - multi-input opt-out render failed"
+    printf '\n%s\n' "not ok 1 - multi-input opt-out render failed"
     exit 0
 }
 
@@ -60,16 +60,16 @@ case "${out_off_payload}" in
 esac
 
 test "${out_on_has_header}" = 1 || {
-    echo "not ok 1 - multi-input keycolor mask preservation mismatch"
+    printf '\n%s\n' "not ok 1 - multi-input keycolor mask preservation mismatch"
     exit 0
 }
 
 test "${out_off_has_header}" = 1 || {
-    echo "not ok 1 - multi-input keycolor mask preservation mismatch"
+    printf '\n%s\n' "not ok 1 - multi-input keycolor mask preservation mismatch"
     exit 0
 }
 
-    echo "ok 1 - multi-input keycolor header appears only with opt-in"
+    printf '\n%s\n' "ok 1 - multi-input keycolor header appears only with opt-in"
 
 
 exit 0

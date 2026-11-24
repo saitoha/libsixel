@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'archive-check-failure' 'migration-archive-refused' || {
-    echo "not ok 1 - Failed archive verification cannot authorize original copy deletion."
+    printf '\n%s\n' "not ok 1 - Failed archive verification cannot authorize original copy deletion."
     exit 0
 }
-echo "ok 1 - Failed archive verification cannot authorize original copy deletion."
+printf '\n%s\n' "ok 1 - Failed archive verification cannot authorize original copy deletion."
 exit 0

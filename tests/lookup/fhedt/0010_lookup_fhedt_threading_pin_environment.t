@@ -16,22 +16,22 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma -0hard \
     --env "SIXEL_ENCODER_THREADING_PIN=1" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "FHEDT affinity environment conversion failed"
+    printf '\n%s\n' "not ok 1 - FHEDT affinity environment conversion failed"
     exit 0
 }
 case "${trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${trace}" in *LSXFHD1\|precision=8bit\|*pin_threads=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "SIXEL_ENCODER_THREADING_PIN did not reach FHEDT"
+    printf '\n%s\n' "not ok 1 - SIXEL_ENCODER_THREADING_PIN did not reach FHEDT"
     exit 0
 }
 
-echo "ok" 1 - "SIXEL_ENCODER_THREADING_PIN controls FHEDT affinity"
+printf '\n%s\n' "ok 1 - SIXEL_ENCODER_THREADING_PIN controls FHEDT affinity"
 exit 0

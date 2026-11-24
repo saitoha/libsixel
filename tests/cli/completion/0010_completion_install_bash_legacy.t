@@ -24,14 +24,14 @@ legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
               --env _SIXEL_TEST_COMPLETION_BASH_VERSION=3.2 \
               -2 bash >&2 || {
-    echo "not ok" 1 - "legacy bash completion install failed"
+    printf '\n%s\n' "not ok 1 - legacy bash completion install failed"
     exit 0
 }
 
 test -f "${legacy_path}" || {
-    echo "not ok" 1 - "legacy bash completion path is not created"
+    printf '\n%s\n' "not ok 1 - legacy bash completion path is not created"
     exit 0
 }
 
-echo "ok" 1 - "legacy bash completion path is used"
+printf '\n%s\n' "ok 1 - legacy bash completion path is used"
 exit 0

@@ -13,24 +13,24 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - legacy lcms2 rejection"
+    printf '\n%s\n' "not ok 1 - legacy lcms2 rejection"
     exit 0
 }
 case "${trace}" in *"JCMYK|target-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - target observation marker is absent"
+    printf '\n%s\n' "not ok 1 - target observation marker is absent"
     exit 0
 }
 observed=${trace#*"JCMYK|target-begin"}
 control=${trace%%"JCMYK|target-begin"*}
 case "$control" in
     *"LSXCMS2|event=apply|engine=lcms2|"*"|ok=1"*) ;;
-    *) echo "$trace" >&2; echo "not ok 1 - successful CMS qualification is absent"; exit 0 ;;
+    *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - successful CMS qualification is absent"; exit 0 ;;
 esac
 case "${observed}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - fallback unexpectedly applied an ICC transform"
+    printf '\n%s\n' "not ok 1 - fallback unexpectedly applied an ICC transform"
     exit 0
 }
-echo "ok 1 - legacy lcms2 rejection"
+printf '\n%s\n' "ok 1 - legacy lcms2 rejection"
 exit 0

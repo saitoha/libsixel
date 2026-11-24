@@ -13,30 +13,30 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:Dinvalid "${TOP_SRCDIR}/tests/data/inputs/small.ppm" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown kmeans softdist value unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown kmeans softdist value unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing unknown suboption value diagnostic"
+    printf '\n%s\n' "not ok 1 - missing unknown suboption value diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *\"softdist\"**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing softdist key diagnostic"
+    printf '\n%s\n' "not ok 1 - missing softdist key diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *valid\ values*trilinear**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing kmeans softdist valid value list"
+    printf '\n%s\n' "not ok 1 - missing kmeans softdist valid value list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "unknown kmeans softdist value is rejected"
+printf '\n%s\n' "ok 1 - unknown kmeans softdist value is rejected"
 exit 0

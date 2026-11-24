@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0158_delta_hls_p3_linear_frames || {
-    echo "not ok 1 - delta hls p3 linear frames"
+    printf '\n%s\n' "not ok 1 - delta hls p3 linear frames"
     exit 0
 }
-echo "ok 1 - delta hls p3 linear frames"
+printf '\n%s\n' "ok 1 - delta hls p3 linear frames"
 exit 0

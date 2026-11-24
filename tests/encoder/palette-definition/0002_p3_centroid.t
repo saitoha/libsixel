@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/hls/0002_p3_centroid || {
-    echo "not ok 1 - Native HLS p3 centroid."
+    printf '\n%s\n' "not ok 1 - Native HLS p3 centroid."
     exit 0
 }
-echo "ok 1 - Native HLS p3 centroid."
+printf '\n%s\n' "ok 1 - Native HLS p3 centroid."
 exit 0

@@ -23,24 +23,24 @@ env_message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || env_status=$?
 
 test "${cli_status}" -eq 2 || {
-    echo "not ok" 1 - "diagnostics CLI exit status mismatch"
+    printf '\n%s\n' "not ok 1 - diagnostics CLI exit status mismatch"
     exit 0
 }
 
 test "${env_status}" -eq 2 || {
-    echo "not ok" 1 - "diagnostics environment exit status mismatch"
+    printf '\n%s\n' "not ok 1 - diagnostics environment exit status mismatch"
     exit 0
 }
 
 test "${cli_message}" = "${env_message}" || {
-    echo "not ok" 1 - "diagnostics CLI and environment output differ"
+    printf '\n%s\n' "not ok 1 - diagnostics CLI and environment output differ"
     exit 0
 }
 
 case "${cli_message}" in *\(matches:**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "diagnostics code mode retained candidates"
+    printf '\n%s\n' "not ok 1 - diagnostics code mode retained candidates"
     exit 0
 }
 
-echo "ok" 1 - "diagnostics CLI and environment output are equivalent"
+printf '\n%s\n' "ok 1 - diagnostics CLI and environment output are equivalent"
 exit 0

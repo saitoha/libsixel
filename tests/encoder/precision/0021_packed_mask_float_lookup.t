@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0018_packed_palette 3 1>&2 || {
-    echo "not ok 1 - packed mask float lookup"
+    printf '\n%s\n' "not ok 1 - packed mask float lookup"
     exit 0
 }
-echo "ok 1 - packed mask float lookup"
+printf '\n%s\n' "ok 1 - packed mask float lookup"
 exit 0

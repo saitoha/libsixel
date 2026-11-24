@@ -20,9 +20,9 @@ command_status=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -g "${input_gif}" \
     -o /dev/null >/dev/null 2>&1 || command_status=$?
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "disposal stress decode failed"
+    printf '\n%s\n' "not ok 1 - disposal stress decode failed"
     exit 0
 }
 
-echo "ok" 1 - "disposal stress decode completed within watchdog"
+printf '\n%s\n' "ok 1 - disposal stress decode completed within watchdog"
 exit 0

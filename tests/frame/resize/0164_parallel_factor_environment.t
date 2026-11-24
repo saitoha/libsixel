@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "scale/0001_parallel_factor_environment" || {
-    echo "not ok 1 - parallel factor missed band planning"
+    printf '\n%s\n' "not ok 1 - parallel factor missed band planning"
     exit 0
 }
 
-echo "ok 1 - parallel factor reaches band planning"
+printf '\n%s\n' "ok 1 - parallel factor reaches band planning"
 exit 0

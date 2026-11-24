@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0055_application_noisy_rejection" || {
-    echo "not ok 1 - application noisy rejection"
+    printf '\n%s\n' "not ok 1 - application noisy rejection"
     exit 0
 }
-echo "ok 1 - application noisy rejection"
+printf '\n%s\n' "ok 1 - application noisy rejection"
 exit 0

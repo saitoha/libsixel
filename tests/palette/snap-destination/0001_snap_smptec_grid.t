@@ -27,12 +27,12 @@ P3
 128 64 32
 PPM
 ) || {
-    echo "not ok 1 - snap encoding failed"
+    printf '\n%s\n' "not ok 1 - snap encoding failed"
     exit 0
 }
 case "${stream}" in
     *'#0;2;51;25;14#0@'*) ;;
-    *) echo "not ok 1 - SMPTE-C wire values differ"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - SMPTE-C wire values differ"; exit 0 ;;
 esac
-echo "ok 1 - exact snap uses the SMPTE-C wire grid"
+printf '\n%s\n' "ok 1 - exact snap uses the SMPTE-C wire grid"
 exit 0

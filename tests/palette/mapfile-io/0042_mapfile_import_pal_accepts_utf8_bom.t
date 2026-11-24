@@ -19,10 +19,10 @@ pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-utf8-bom-valid.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${pal_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "PAL UTF-8 BOM should be accepted"
+    printf '\n%s\n' "not ok 1 - PAL UTF-8 BOM should be accepted"
     exit 0
 }
 
-echo "ok" 1 - "PAL UTF-8 BOM is accepted"
+printf '\n%s\n' "ok 1 - PAL UTF-8 BOM is accepted"
 
 exit 0

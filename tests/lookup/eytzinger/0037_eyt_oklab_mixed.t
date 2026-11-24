@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0036_eyt_oklab_mixed || {
-    echo "not ok 1 - eytzinger oklab mixed"
+    printf '\n%s\n' "not ok 1 - eytzinger oklab mixed"
     exit 0
 }
 
-echo "ok 1 - eytzinger oklab mixed"
+printf '\n%s\n' "ok 1 - eytzinger oklab mixed"
 exit 0

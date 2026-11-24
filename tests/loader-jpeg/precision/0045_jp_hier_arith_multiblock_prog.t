@@ -6,8 +6,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/jpeg/0164_jp_hier_arith_multiblock_prog || {
-    echo "not ok 1 - hier arith multiblock prog"
+    printf '\n%s\n' "not ok 1 - hier arith multiblock prog"
     exit 0
 }
-echo "ok 1 - hier arith multiblock prog"
+printf '\n%s\n' "ok 1 - hier arith multiblock prog"
 exit 0

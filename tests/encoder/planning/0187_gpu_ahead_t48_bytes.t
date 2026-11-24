@@ -9,12 +9,12 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} \
     "${TEST_RUNNER_PATH}" --require-gpu-palette \
     encoder/planning/0187_gpu_ahead_t48_bytes 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required preparation overlap or GPU support unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP required preparation overlap or GPU support unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
     printf '# %s\n' "$trace"
-    echo 'not ok 1 - gpu ahead t48 bytes'
+    printf '\n%s\n' 'not ok 1 - gpu ahead t48 bytes'
     exit 0
 }
 case "$trace" in
@@ -22,8 +22,8 @@ case "$trace" in
     *) false ;;
 esac || {
     printf '# %s\n' "$trace"
-    echo 'not ok 1 - GPU kernel was not dispatched'
+    printf '\n%s\n' 'not ok 1 - GPU kernel was not dispatched'
     exit 0
 }
-echo 'ok 1 - gpu ahead t48 bytes'
+printf '\n%s\n' 'ok 1 - gpu ahead t48 bytes'
 exit 0

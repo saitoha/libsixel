@@ -24,23 +24,23 @@ output_linear="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_bgcs_trns_linear_cms_
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -Nexplicit_first --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Llibpng:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
-    echo "not ok 1 - libpng cms=auto tRNS gamma background composition failed"
+    printf '\n%s\n' "not ok 1 - libpng cms=auto tRNS gamma background composition failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -Nexplicit_first --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
               -Llibpng:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_linear}" || {
-    echo "not ok 1 - libpng cms=auto tRNS linear background composition failed"
+    printf '\n%s\n' "not ok 1 - libpng cms=auto tRNS linear background composition failed"
     exit 0
 }
 
 cmp -s "${output_gamma}" "${output_linear}" && {
-    echo "not ok 1 - libpng cms=auto gamma and linear tRNS composition produced identical output"
+    printf '\n%s\n' "not ok 1 - libpng cms=auto gamma and linear tRNS composition produced identical output"
     exit 0
 }
 
-    echo "ok 1 - libpng cms=auto linear background interpretation changes tRNS composition"
+    printf '\n%s\n' "ok 1 - libpng cms=auto linear background interpretation changes tRNS composition"
 
 
 exit 0

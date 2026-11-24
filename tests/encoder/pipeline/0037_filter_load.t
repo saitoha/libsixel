@@ -9,9 +9,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "filter/0008_filter_load" || {
-    echo "not ok 1 - 0008_filter_load"
+    printf '\n%s\n' "not ok 1 - 0008_filter_load"
     exit 0
 }
 
-echo "ok 1 - 0008_filter_load"
+printf '\n%s\n' "ok 1 - 0008_filter_load"
 exit 0

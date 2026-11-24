@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0020_binding_snapshot" || {
-    echo "not ok 1 - binding snapshot"
+    printf '\n%s\n' "not ok 1 - binding snapshot"
     exit 0
 }
-echo "ok 1 - binding snapshot"
+printf '\n%s\n' "ok 1 - binding snapshot"
 exit 0

@@ -14,10 +14,10 @@ set -v
 snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bvt340color "${snake_ppm}" -o/dev/null || {
-    echo "not ok" 1 - "VT340 colour control emission failed"
+    printf '\n%s\n' "not ok 1 - VT340 colour control emission failed"
     exit 0
 }
 
-echo "ok" 1 - "VT340 colour control sequences emitted"
+printf '\n%s\n' "ok 1 - VT340 colour control sequences emitted"
 
 exit 0

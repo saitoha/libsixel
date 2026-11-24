@@ -24,19 +24,19 @@ out_zero_bg="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-zero-force-r
 keycolor_header="$(printf '\033P0;1q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S "${input_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline static lossy-alpha decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static lossy-alpha decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S "${input_webp}" >"${out_zero}" || {
-    echo "not ok" 1 - "zero-force-rgb static lossy-alpha decode failed"
+    printf '\n%s\n' "not ok 1 - zero-force-rgb static lossy-alpha decode failed"
     exit 0
 }
 
 _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite -L libwebp! -S -B#000 "${input_webp}" >"${out_zero_bg}" || {
-    echo "not ok" 1 - "zero-force-rgb lossy-alpha decode with -B#000 failed"
+    printf '\n%s\n' "not ok 1 - zero-force-rgb lossy-alpha decode with -B#000 failed"
     exit 0
 }
 
@@ -75,29 +75,29 @@ case "${out_zero_bg_text}" in
 esac
 
 test "${default_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "default static lossy-alpha output lost keycolor"
+    printf '\n%s\n' "not ok 1 - default static lossy-alpha output lost keycolor"
     exit 0
 }
 
 test "${zero_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "zero-force-rgb static lossy-alpha output lost keycolor"
+    printf '\n%s\n' "not ok 1 - zero-force-rgb static lossy-alpha output lost keycolor"
     exit 0
 }
 
 test "${zero_bg_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "zero-force-rgb output kept keycolor with -B"
+    printf '\n%s\n' "not ok 1 - zero-force-rgb output kept keycolor with -B"
     exit 0
 }
 
 cmp -s "${out_default}" "${out_zero}" || {
-    echo "not ok" 1 - "zero-force-rgb changed lossy-alpha output without -B"
+    printf '\n%s\n' "not ok 1 - zero-force-rgb changed lossy-alpha output without -B"
     exit 0
 }
 
 cmp -s "${out_zero}" "${out_zero_bg}" && {
-    echo "not ok" 1 - "zero-force-rgb output ignored -B composition"
+    printf '\n%s\n' "not ok 1 - zero-force-rgb output ignored -B composition"
     exit 0
 }
 
-echo "ok" 1 - "force-rgb value 0 preserves alpha gating and composition"
+printf '\n%s\n' "ok 1 - force-rgb value 0 preserves alpha gating and composition"
 exit 0

@@ -23,7 +23,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_invalid}" || {
-    echo "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 render failed"
+    printf '\n%s\n' "not ok 1 - builtin SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 render failed"
     exit 0
 }
 
@@ -32,15 +32,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
               -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
-    echo "not ok 1 - builtin keycolor default render failed"
+    printf '\n%s\n' "not ok 1 - builtin keycolor default render failed"
     exit 0
 }
 
 cmp -s "${out_invalid}" "${out_default}" || {
-    echo "not ok 1 - builtin invalid keycolor value did not use default"
+    printf '\n%s\n' "not ok 1 - builtin invalid keycolor value did not use default"
     exit 0
 }
 
-echo "ok 1 - builtin invalid keycolor value uses the enabled default"
+printf '\n%s\n' "ok 1 - builtin invalid keycolor value uses the enabled default"
 
 exit 0

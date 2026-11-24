@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0180_loader_builtin_apng_late_frame_count_reject" 1>&2 || {
-    echo "not ok" 1 - "late APNG frame-count mismatch was hidden"
+    printf '\n%s\n' "not ok 1 - late APNG frame-count mismatch was hidden"
     exit 0
 }
 
-echo "ok" 1 - "late APNG frame-count mismatch stays visible"
+printf '\n%s\n' "ok 1 - late APNG frame-count mismatch stays visible"
 exit 0

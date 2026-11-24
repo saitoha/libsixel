@@ -16,27 +16,27 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --alpha-policy=background \
     -o /dev/null "${input_image}" >/dev/null 2>&1 && {
-    echo "not ok 1 - alpha-policy accepted background"
+    printf '\n%s\n' "not ok 1 - alpha-policy accepted background"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --alpha-policy=transparent \
     -o /dev/null "${input_image}" >/dev/null 2>&1 && {
-    echo "not ok 1 - alpha-policy accepted transparent"
+    printf '\n%s\n' "not ok 1 - alpha-policy accepted transparent"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --alpha-policy=p2-0 \
     -o /dev/null "${input_image}" >/dev/null 2>&1 && {
-    echo "not ok 1 - alpha-policy accepted p2-0"
+    printf '\n%s\n' "not ok 1 - alpha-policy accepted p2-0"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --transparent-policy=keep \
     -o /dev/null "${input_image}" >/dev/null 2>&1 && {
-    echo "not ok 1 - img2sixel accepted --transparent-policy"
+    printf '\n%s\n' "not ok 1 - img2sixel accepted --transparent-policy"
     exit 0
 }
 
-echo "ok 1 - alpha-policy rejects unreleased names"
+printf '\n%s\n' "ok 1 - alpha-policy rejects unreleased names"
 exit 0

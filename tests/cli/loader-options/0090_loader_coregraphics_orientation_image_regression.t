@@ -28,12 +28,12 @@ env_output="${artifact_dir}/0091-loader-coregraphics-orientation-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lcoregraphics:O0!" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "coregraphics:orientation short conversion failed"
+    printf '\n%s\n' "not ok 1 - coregraphics:orientation short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=orientation\|stored=1\|binding=coregraphics_enable_orientation**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "orientation short value was not stored"
+    printf '\n%s\n' "not ok 1 - orientation short value was not stored"
     exit 0
 }
 
@@ -41,26 +41,26 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_COREGRAPHICS_ORIENTATION=0" "-Lcoregraphics!" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "coregraphics:orientation env conversion failed"
+    printf '\n%s\n' "not ok 1 - coregraphics:orientation env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=orientation\|stored=1\|binding=coregraphics_enable_orientation**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "orientation environment value was not stored"
+    printf '\n%s\n' "not ok 1 - orientation environment value was not stored"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "coregraphics:orientation short and env output differ"
+    printf '\n%s\n' "not ok 1 - coregraphics:orientation short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "coregraphics:orientation preserves image output"
+printf '\n%s\n' "ok 1 - coregraphics:orientation preserves image output"
 exit 0

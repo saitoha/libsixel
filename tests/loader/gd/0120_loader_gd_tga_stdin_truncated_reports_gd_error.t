@@ -20,28 +20,28 @@ input_tga="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type2-rgb.tga"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${input_tga}" >/dev/null || {
-    printf "ok 1 # SKIP gd backend does not decode TGA in this runtime\n"
+    printf "\nok 1 # SKIP gd backend does not decode TGA in this runtime\n"
     exit 0
 }
 
 msg=$(set +xv; head -c 64 "${input_tga}" | \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     2>&1 >/dev/null) && {
-    echo "not ok 1 - forced gd loader accepted truncated stdin TGA"
+    printf '\n%s\n' "not ok 1 - forced gd loader accepted truncated stdin TGA"
     exit 0
 }
 
 case "${msg}" in *GD\ error**) true ;; *) false ;; esac || {
-    echo "not ok 1 - forced gd stdin TGA failure missed GD error"
+    printf '\n%s\n' "not ok 1 - forced gd stdin TGA failure missed GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) false ;; *) true ;; esac || {
-    echo "not ok 1 - forced gd stdin TGA degraded to generic error"
+    printf '\n%s\n' "not ok 1 - forced gd stdin TGA degraded to generic error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok 1 - forced gd stdin TGA reports GD-specific failure"
+printf '\n%s\n' "ok 1 - forced gd stdin TGA reports GD-specific failure"
 exit 0

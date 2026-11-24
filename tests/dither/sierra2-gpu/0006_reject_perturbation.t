@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/sierra2-gpu/0006_reject_perturbation" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - reject perturbation"
+    printf '\n%s\n' "not ok 1 - reject perturbation"
     exit 0
 }
-echo "ok 1 - reject perturbation"
+printf '\n%s\n' "ok 1 - reject perturbation"
 exit 0

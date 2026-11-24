@@ -15,7 +15,7 @@ status=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --6delta-threshold=0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" >/dev/null 2>&1 || status=$?
 test "$status" -ne 0 || {
-    echo "not ok 1 - removed delta option accepted: --6delta-threshold=0"
+    printf '\n%s\n' "not ok 1 - removed delta option accepted: --6delta-threshold=0"
     exit 0
 }
 
@@ -23,7 +23,7 @@ status=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --6delta-error=skip \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" >/dev/null 2>&1 || status=$?
 test "$status" -ne 0 || {
-    echo "not ok 1 - removed delta option accepted: --6delta-error=skip"
+    printf '\n%s\n' "not ok 1 - removed delta option accepted: --6delta-error=skip"
     exit 0
 }
 
@@ -31,7 +31,7 @@ status=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Yskip \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" >/dev/null 2>&1 || status=$?
 test "$status" -ne 0 || {
-    echo "not ok 1 - removed delta option accepted: -Yskip"
+    printf '\n%s\n' "not ok 1 - removed delta option accepted: -Yskip"
     exit 0
 }
 
@@ -39,10 +39,10 @@ status=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Z0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" >/dev/null 2>&1 || status=$?
 test "$status" -ne 0 || {
-    echo "not ok 1 - removed delta option accepted: -Z0"
+    printf '\n%s\n' "not ok 1 - removed delta option accepted: -Z0"
     exit 0
 }
 
 
-echo "ok 1 - removed delta options are rejected"
+printf '\n%s\n' "ok 1 - removed delta options are rejected"
 exit 0

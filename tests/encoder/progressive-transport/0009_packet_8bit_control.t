@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0077_packet_8bit_control" || {
-    echo "not ok 1 - packet 8bit control"
+    printf '\n%s\n' "not ok 1 - packet 8bit control"
     exit 0
 }
-echo "ok 1 - packet 8bit control"
+printf '\n%s\n' "ok 1 - packet 8bit control"
 exit 0

@@ -13,9 +13,9 @@ set -v
 
 cmp "${TOP_SRCDIR}/quicklook-extension/package-postinstall" \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Scripts/postinstall" >/dev/null || {
-    echo "not ok 1 - Packaged postinstall differs"
+    printf '\n%s\n' "not ok 1 - Packaged postinstall differs"
     exit 0
 }
 
-echo "ok 1 - Package contains the declared postinstall script."
+printf '\n%s\n' "ok 1 - Package contains the declared postinstall script."
 exit 0

@@ -21,7 +21,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 msg=$(set +xv; SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable "${image_webp}" \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "output-frame limit=1 unexpectedly allowed all frames"
+    printf '\n%s\n' "not ok 1 - output-frame limit=1 unexpectedly allowed all frames"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -29,10 +29,10 @@ msg=$(set +xv; SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=1 \
 
 case "${msg}" in
     *"load_with_libwebp: emitted frame count exceeds safety limit."*)
-        echo "ok" 1 - "output-frame limit=1 enforces safety guard"
+        printf '\n%s\n' "ok 1 - output-frame limit=1 enforces safety guard"
         ;;
     *)
-        echo "not ok" 1 - "expected emitted-frame limit diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected emitted-frame limit diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0

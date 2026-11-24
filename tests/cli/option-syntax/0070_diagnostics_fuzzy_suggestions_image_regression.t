@@ -25,11 +25,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_FUZZY_SUGGESTIONS=1" "-xhuman:F0" \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "fuzzy suggestions short conversion failed"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=fuzzy_suggestions\|stored=1\|binding=fuzzy_suggestions,fuzzy_suggestions_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fuzzy suggestions short value was not stored"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions short value was not stored"
     exit 0
 }
 
@@ -37,11 +37,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_FUZZY_SUGGESTIONS=0" -xhuman \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "fuzzy suggestions environment conversion failed"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=fuzzy_suggestions\|stored=1\|binding=fuzzy_suggestions,fuzzy_suggestions_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fuzzy suggestions environment value was not stored"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions environment value was not stored"
     exit 0
 }
 
@@ -50,24 +50,24 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_FUZZY_SUGGESTIONS=1" \
     -xhuman:F0 -r hamnimg "${input_image}" -o/dev/null 2>&1) || status=$?
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "fuzzy suggestions consumer exit status mismatch"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions consumer exit status mismatch"
     exit 0
 }
 case "${message}" in *Did\ you\ mean:**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "fuzzy suggestions remained enabled"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions remained enabled"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "fuzzy suggestions outputs differ"
+    printf '\n%s\n' "not ok 1 - fuzzy suggestions outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "fuzzy suggestions preserve image and diagnostic output"
+printf '\n%s\n' "ok 1 - fuzzy suggestions preserve image and diagnostic output"
 exit 0

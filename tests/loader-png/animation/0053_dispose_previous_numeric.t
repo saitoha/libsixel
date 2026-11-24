@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "apng/0001_float" 4 || {
-    echo "not ok 1 - builtin APNG dispose previous"
+    printf '\n%s\n' "not ok 1 - builtin APNG dispose previous"
     exit 0
 }
-echo "ok 1 - builtin APNG dispose previous"
+printf '\n%s\n' "ok 1 - builtin APNG dispose previous"
 exit 0

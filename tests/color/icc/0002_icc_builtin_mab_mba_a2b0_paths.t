@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "icc/0002_icc_builtin_mab_mba_a2b0_paths" 1>&2 || {
-    echo "not ok" 1 - "icc builtin mAB/mBA A2B0 coverage"
+    printf '\n%s\n' "not ok 1 - icc builtin mAB/mBA A2B0 coverage"
     exit 0
 }
 
-echo "ok" 1 - "icc builtin mAB/mBA A2B0 coverage"
+printf '\n%s\n' "ok 1 - icc builtin mAB/mBA A2B0 coverage"
 
 exit 0

@@ -16,9 +16,9 @@ set -v
 input_pic="${TOP_SRCDIR}/tests/data/corrupted/pic_invalid_packet_type_reject.pic"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_pic}" >/dev/null && {
-    echo "not ok" 1 - "PIC invalid packet type was unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - PIC invalid packet type was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "PIC invalid packet type is rejected"
+printf '\n%s\n' "ok 1 - PIC invalid packet type is rejected"
 exit 0

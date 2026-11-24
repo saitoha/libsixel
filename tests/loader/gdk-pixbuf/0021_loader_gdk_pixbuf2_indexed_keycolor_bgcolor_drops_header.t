@@ -25,14 +25,14 @@ output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
     -B#ffffff \
     -d fs:scan=raster \
     "${input_png}")" || {
-    echo "not ok 1 - gdk-pixbuf2 indexed+tRNS bgcolor render failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 indexed+tRNS bgcolor render failed"
     exit 0
 }
 
 { test -z "${keycolor_header}" || case "${output_text}" in *"${keycolor_header}"*) false ;; *) true ;; esac; } || {
-    echo "not ok 1 - gdk-pixbuf2 indexed+tRNS bgcolor output kept keycolor DCS header"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 indexed+tRNS bgcolor output kept keycolor DCS header"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 indexed+tRNS bgcolor output drops keycolor DCS header"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 indexed+tRNS bgcolor output drops keycolor DCS header"
 exit 0

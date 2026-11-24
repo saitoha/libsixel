@@ -9,16 +9,16 @@ set -v
 # The finite fixture closes at EOF even on GNV's record-oriented streams.
 actual=$(sh "$TOP_SRCDIR/tools/embed-metal.sh" \
     "$TOP_SRCDIR/tests/tools/metal/data/chunk-boundary.metal" -) || {
-    echo 'not ok 1 - Metal literal generation failed'
+    printf '\n%s\n' 'not ok 1 - Metal literal generation failed'
     exit 0
 }
 case "$actual" in
     *'"),'*'"),'*'"),'*)
-        echo 'not ok 1 - the source was split into more than two literals' ;;
+        printf '\n%s\n' 'not ok 1 - the source was split into more than two literals' ;;
     *'"),
 ("\n"),')
-        echo 'ok 1 - the source newline starts a second C literal' ;;
+        printf '\n%s\n' 'ok 1 - the source newline starts a second C literal' ;;
     *)
-        echo 'not ok 1 - the source newline crossed the C literal limit' ;;
+        printf '\n%s\n' 'not ok 1 - the source newline crossed the C literal limit' ;;
 esac
 exit 0

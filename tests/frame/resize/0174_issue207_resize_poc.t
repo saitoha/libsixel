@@ -19,9 +19,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -h 50% -r lanczos3 -w 300px "${
 
 # Accept success or mapped error exits without crashing.
 test "${command_status-0}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
-    echo "not ok" 1 - "resize path failed"
+    printf '\n%s\n' "not ok 1 - resize path failed"
     exit 0
 }
 
-echo "ok" 1 - "resize path handled"
+printf '\n%s\n' "ok 1 - resize path handled"
 exit 0

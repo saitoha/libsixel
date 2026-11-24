@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 cmp "${TOP_BUILDDIR}/quicklook-extension/SixelThumbnail" "${TOP_BUILDDIR}/quicklook-extension/products/SixelQuickLookHost.app/Contents/PlugIns/SixelThumbnail.appex/Contents/MacOS/SixelThumbnail" || {
-    echo "not ok 1 - Thumbnail bundle contains the completed executable"
+    printf '\n%s\n' "not ok 1 - Thumbnail bundle contains the completed executable"
     exit 0
 }
-echo "ok 1 - Thumbnail bundle contains the completed executable"
+printf '\n%s\n' "ok 1 - Thumbnail bundle contains the completed executable"
 exit 0

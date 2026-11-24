@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0020_fh_enclosing_cell || {
-    echo "not ok 1 - fhedt enclosing cell"
+    printf '\n%s\n' "not ok 1 - fhedt enclosing cell"
     exit 0
 }
 
-echo "ok 1 - fhedt enclosing cell"
+printf '\n%s\n' "ok 1 - fhedt enclosing cell"
 exit 0

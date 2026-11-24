@@ -19,13 +19,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     "-Llibpng:cms_engine=builtin:A512bit!" -m DE00_max \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || {
-    echo "not ok 1 - lsqa arithmetic conversion failed"
+    printf '\n%s\n' "not ok 1 - lsqa arithmetic conversion failed"
     printf '# %s\n' "$trace"
     exit 0
 }
 case "${trace}" in *PNGCHRM1\|*requested=512bit\|selected=512bit\|actual=identity**) true ;; *) false ;; esac || {
-    echo "not ok 1 - lsqa did not forward forced cHRM arithmetic"
+    printf '\n%s\n' "not ok 1 - lsqa did not forward forced cHRM arithmetic"
     exit 0
 }
-echo "ok 1 - lsqa forwards forced cHRM arithmetic"
+printf '\n%s\n' "ok 1 - lsqa forwards forced cHRM arithmetic"
 exit 0

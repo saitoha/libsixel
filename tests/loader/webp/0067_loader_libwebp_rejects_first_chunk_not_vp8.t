@@ -20,7 +20,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_first_chunk_not_vp8.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted invalid first chunk"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted invalid first chunk"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -30,13 +30,13 @@ case "${msg}" in
     *"webp decode: first chunk must be VP8/VP8L/VP8X."*)
         ;;
     *)
-        echo "not ok" 1 - "expected first-chunk diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected first-chunk diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects invalid first chunk"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects invalid first chunk"
 
 exit 0

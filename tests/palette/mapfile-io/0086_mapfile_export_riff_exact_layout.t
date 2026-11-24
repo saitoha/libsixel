@@ -20,14 +20,14 @@ expected_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/riff-two-colors-flags-
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     -M pal-riff:"${actual_palette}" -o /dev/null "${input_image}" || {
-    echo "not ok" 1 - "RIFF PAL export failed"
+    printf '\n%s\n' "not ok 1 - RIFF PAL export failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - "RIFF PAL layout changed"
+    printf '\n%s\n' "not ok 1 - RIFF PAL layout changed"
     exit 0
 }
 
-echo "ok" 1 - "RIFF PAL export has exact chunks, fields, entries, and flags"
+printf '\n%s\n' "ok 1 - RIFF PAL export has exact chunks, fields, entries, and flags"
 exit 0

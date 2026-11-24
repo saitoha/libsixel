@@ -13,28 +13,28 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - 0272_colorsync_gray8_gamma Gray8 values and buffer integrity"
+    printf '\n%s\n' "not ok 1 - 0272_colorsync_gray8_gamma Gray8 values and buffer integrity"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|engine=colorsync|path=external|src=1|dst=4|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - ColorSync transform did not apply"
+    printf '\n%s\n' "not ok 1 - ColorSync transform did not apply"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=source-promotion|engine=colorsync|src=1|dst=4|via=float32"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - Gray8 source was not promoted"
+    printf '\n%s\n' "not ok 1 - Gray8 source was not promoted"
     exit 0
 }
 case "${trace}" in *"LSXCMS1|intent_order=relative|exclusive=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - relative intent was not selected"
+    printf '\n%s\n' "not ok 1 - relative intent was not selected"
     exit 0
 }
 case "${trace}" in *"values-and-guards-verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - independent values were not checked"
+    printf '\n%s\n' "not ok 1 - independent values were not checked"
     exit 0
 }
-echo "ok 1 - 0272_colorsync_gray8_gamma Gray8 values and buffer integrity"
+printf '\n%s\n' "ok 1 - 0272_colorsync_gray8_gamma Gray8 values and buffer integrity"
 exit 0

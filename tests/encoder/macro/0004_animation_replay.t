@@ -16,7 +16,7 @@ set -v
 output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin! -7 -bgray2 -dnone -Efast -g -u -lauto \
     "${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop2.gif") || {
-    echo "not ok 1 - animation macro reuse on the second pass: conversion failed"
+    printf '\n%s\n' "not ok 1 - animation macro reuse on the second pass: conversion failed"
     exit 0
 }
 
@@ -28,9 +28,9 @@ expected="${escape}[H${escape}P0;0;1!z${first}${escape}\\${escape}[0*z"
 expected="${expected}${escape}[H${escape}P1;0;1!z${second}${escape}\\${escape}[1*z"
 expected="${expected}${escape}[H${escape}[0*z${escape}[H${escape}[1*z"
 test "$output" = "$expected" || {
-    echo "not ok 1 - animation macro reuse on the second pass: unexpected control stream"
+    printf '\n%s\n' "not ok 1 - animation macro reuse on the second pass: unexpected control stream"
     exit 0
 }
 
-echo "ok 1 - animation macro reuse on the second pass"
+printf '\n%s\n' "ok 1 - animation macro reuse on the second pass"
 exit 0

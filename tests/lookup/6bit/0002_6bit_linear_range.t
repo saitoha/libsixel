@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup range 2 1 || {
-    echo "not ok 1 - 6bit linear range"
+    printf '\n%s\n' "not ok 1 - 6bit linear range"
     exit 0
 }
 
-echo "ok 1 - 6bit linear range"
+printf '\n%s\n' "ok 1 - 6bit linear range"
 exit 0

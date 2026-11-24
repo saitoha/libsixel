@@ -29,18 +29,18 @@ JASC-PAL
 255 255 255
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile GPL export failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GPL export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "PAL mapfile GPL output normalization failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GPL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "PAL mapfile GPL output changed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GPL output changed"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile GPL output is stable"
+printf '\n%s\n' "ok 1 - PAL mapfile GPL output is stable"
 exit 0

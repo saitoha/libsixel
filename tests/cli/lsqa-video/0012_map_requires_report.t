@@ -9,9 +9,9 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none -E "${ARTIF
 status=$?
 set -e
 test "${status}" -eq 2 || {
-    echo "not ok 1 - map report dependency"
+    printf '\n%s\n' "not ok 1 - map report dependency"
     exit 0
 }
 
-echo "ok 1 - map requires report"
+printf '\n%s\n' "ok 1 - map requires report"
 exit 0

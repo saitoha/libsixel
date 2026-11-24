@@ -11,12 +11,12 @@ trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
     loader/0196_png_chrm_boundary 3 1 2>&1) || result=$?
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - blue inside boundary has exact XYZ"
+    printf '\n%s\n' "not ok 1 - blue inside boundary has exact XYZ"
     exit 0
 }
 case "${trace}" in *"PNG_CHRM_GRID|boundary|point=3|inside=1|checked=3"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - numeric observation did not complete"
+    printf '\n%s\n' "not ok 1 - numeric observation did not complete"
     exit 0
 }
-echo "ok 1 - blue inside boundary has exact XYZ"
+printf '\n%s\n' "ok 1 - blue inside boundary has exact XYZ"
 exit 0

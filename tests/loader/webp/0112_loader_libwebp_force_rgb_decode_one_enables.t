@@ -20,7 +20,7 @@ image_lossy_rgb="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 
 msg_true=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "lossy decode failed with force-rgb value 1"
+    printf '\n%s\n' "not ok 1 - lossy decode failed with force-rgb value 1"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_true}" >&2
     exit 0
@@ -30,12 +30,12 @@ case "${msg_true}" in
     *"static decode path=rgb_u8 "*)
         ;;
     *)
-        echo "not ok" 1 - "force-rgb value 1 did not select rgb_u8 path"
+        printf '\n%s\n' "not ok 1 - force-rgb value 1 did not select rgb_u8 path"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_true}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "force-rgb value 1 selects the legacy RGB path"
+printf '\n%s\n' "ok 1 - force-rgb value 1 selects the legacy RGB path"
 exit 0

@@ -15,13 +15,13 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - TIFF ICC para34 curves"
+    printf '\n%s\n' "not ok 1 - TIFF ICC para34 curves"
     exit 0
 }
 case "${trace}" in *"TIFFICC|mode=0|verified"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - independent values were not verified"
+    printf '\n%s\n' "not ok 1 - independent values were not verified"
     exit 0
 }
-echo "ok 1 - TIFF ICC para34 curves"
+printf '\n%s\n' "ok 1 - TIFF ICC para34 curves"
 exit 0

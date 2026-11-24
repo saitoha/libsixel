@@ -15,9 +15,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0001_decoder_parallel_split_after_newline" || {
-    echo "not ok 1 - 0001_decoder_parallel_split_after_newline"
+    printf '\n%s\n' "not ok 1 - 0001_decoder_parallel_split_after_newline"
     exit 0
 }
 
-echo "ok 1 - 0001_decoder_parallel_split_after_newline"
+printf '\n%s\n' "ok 1 - 0001_decoder_parallel_split_after_newline"
 exit 0

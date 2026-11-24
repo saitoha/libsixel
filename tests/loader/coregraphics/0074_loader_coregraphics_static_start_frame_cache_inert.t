@@ -13,9 +13,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_LOADER_COREGRAPHICS_CACHE_MAX_BYTES=1048576" \
     --env "SIXEL_TEST_COREGRAPHICS_STATIC_START_FRAME_CACHE_INERT=1" \
     "loader/0008_loader_coregraphics_pixelformat" || {
-    echo "not ok 1 - loader/0008_loader_coregraphics_pixelformat (static start-frame cache inert)"
+    printf '\n%s\n' "not ok 1 - loader/0008_loader_coregraphics_pixelformat (static start-frame cache inert)"
     exit 0
 }
 
-echo "ok 1 - loader/0008_loader_coregraphics_pixelformat (static start-frame cache inert)"
+printf '\n%s\n' "ok 1 - loader/0008_loader_coregraphics_pixelformat (static start-frame cache inert)"
 exit 0

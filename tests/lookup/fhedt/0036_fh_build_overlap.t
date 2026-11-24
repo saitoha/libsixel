@@ -14,8 +14,8 @@ SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/fhedt.jsonl"
 export SIXEL_LOG_PATH
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0026_fh_build_overlap "${SIXEL_LOG_PATH}" || {
-    echo "not ok 1 - build overlap"
+    printf '\n%s\n' "not ok 1 - build overlap"
     exit 0
 }
-echo "ok 1 - build overlap"
+printf '\n%s\n' "ok 1 - build overlap"
 exit 0

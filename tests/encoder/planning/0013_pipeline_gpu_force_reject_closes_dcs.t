@@ -19,7 +19,7 @@ echo "1..1"
 set -v
 
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
-    echo "not ok" 1 - "could not create artifact directory"
+    printf '\n%s\n' "not ok 1 - could not create artifact directory"
     exit 0
 }
 out_file="${ARTIFACT_LOCAL_DIR}/pipeline-gpu-force-reject.six"
@@ -36,20 +36,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${probe_image}" >"${out_file}" || rc=$?
 
 test "${rc}" -ne 0 || {
-    echo "not ok" 1 - "forced GPU unsupported request unexpectedly passed"
+    printf '\n%s\n' "not ok 1 - forced GPU unsupported request unexpectedly passed"
     exit 0
 }
 
 # GNV exposes an OpenVMS text-record terminator as a trailing newline.
 checksum=$(tr -d '\n' <"${out_file}" | "${CKSUM:-cksum}") || {
-    echo "not ok" 1 - "forced GPU rejection DCS checksum failed"
+    printf '\n%s\n' "not ok 1 - forced GPU rejection DCS checksum failed"
     exit 0
 }
 
 test "${checksum}" = "${expected}" || {
-    echo "not ok" 1 - "forced GPU rejection closed DCS"
+    printf '\n%s\n' "not ok 1 - forced GPU rejection closed DCS"
     exit 0
 }
 
-echo "ok" 1 - "forced GPU rejection closed DCS"
+printf '\n%s\n' "ok 1 - forced GPU rejection closed DCS"
 exit 0

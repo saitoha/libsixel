@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/0037_gridlut_exact float || {
-    echo "not ok 1 - gridlut float bulk lookup is exhaustive-exact"
+    printf '\n%s\n' "not ok 1 - gridlut float bulk lookup is exhaustive-exact"
     exit 0
 }
-echo "ok 1 - gridlut float bulk lookup is exhaustive-exact"
+printf '\n%s\n' "ok 1 - gridlut float bulk lookup is exhaustive-exact"
 exit 0

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/png_snapshot/0009_transport_rejection || {
-    echo "not ok 1 - PNG transport rejection"
+    printf '\n%s\n' "not ok 1 - PNG transport rejection"
     exit 0
 }
-echo "ok 1 - PNG transport rejection"
+printf '\n%s\n' "ok 1 - PNG transport rejection"
 exit 0

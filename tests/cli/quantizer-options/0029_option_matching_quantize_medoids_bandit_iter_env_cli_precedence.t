@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only bandit_iter=1 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only bandit_iter=1 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:bandit_iter=64 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only bandit_iter upper bound was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only bandit_iter upper bound was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:bandit_iter=0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI bandit_iter unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI bandit_iter unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *-Q\ bandit_iter\ must\ be\ in\ range\ 1-64.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI bandit_iter diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI bandit_iter diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:bandit_iter=64 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI bandit_iter did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI bandit_iter did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "medoids bandit_iter follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - medoids bandit_iter follows env/CLI acceptance and CLI priority"
 exit 0

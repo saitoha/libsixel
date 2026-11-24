@@ -6,8 +6,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "assessment/0033_scielab_selection_reuse" || {
-    echo "not ok 1 - scielab selection reuse"
+    printf '\n%s\n' "not ok 1 - scielab selection reuse"
     exit 0
 }
-echo "ok 1 - scielab selection reuse"
+printf '\n%s\n' "ok 1 - scielab selection reuse"
 exit 0

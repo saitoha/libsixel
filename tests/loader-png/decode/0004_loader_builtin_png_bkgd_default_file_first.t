@@ -22,33 +22,33 @@ builtin_explicit_first="${ARTIFACT_LOCAL_DIR}/builtin_bgan6a08_explicit_first.si
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${builtin_default}" || {
-    echo "not ok" 1 - "builtin default bKGD conversion failed"
+    printf '\n%s\n' "not ok 1 - builtin default bKGD conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_BACKGROUND_POLICY=file_first \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster \
               "${input_png}" >"${builtin_file_first}" || {
-    echo "not ok" 1 - "builtin file_first bKGD conversion failed"
+    printf '\n%s\n' "not ok 1 - builtin file_first bKGD conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_BACKGROUND_POLICY=explicit_first \
               -Lbuiltin:cms_engine=none! -d fs:scan=raster \
               -B#fff "${input_png}" >"${builtin_explicit_first}" || {
-    echo "not ok" 1 - "builtin explicit_first bKGD conversion failed"
+    printf '\n%s\n' "not ok 1 - builtin explicit_first bKGD conversion failed"
     exit 0
 }
 
 cmp -s "${builtin_default}" "${builtin_file_first}" || {
-    echo "not ok" 1 - "builtin default policy mismatch against file_first"
+    printf '\n%s\n' "not ok 1 - builtin default policy mismatch against file_first"
     exit 0
 }
 
 cmp -s "${builtin_default}" "${builtin_explicit_first}" && {
-    echo "not ok" 1 - "builtin explicit_first did not override embedded bKGD"
+    printf '\n%s\n' "not ok 1 - builtin explicit_first did not override embedded bKGD"
     exit 0
 }
 
-echo "ok" 1 - "builtin default bKGD policy remains file_first"
+printf '\n%s\n' "ok 1 - builtin default bKGD policy remains file_first"
 exit 0

@@ -20,15 +20,15 @@ pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-version-01x0-invalid.pa
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m "${pal_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "PAL version 01x0 unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - PAL version 01x0 unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_pal_jasc:\ invalid\ version.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing PAL version 01x0 diagnostic"
+    printf '\n%s\n' "not ok 1 - missing PAL version 01x0 diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "PAL version 01x0 is rejected"
+printf '\n%s\n' "ok 1 - PAL version 01x0 is rejected"
 
 exit 0

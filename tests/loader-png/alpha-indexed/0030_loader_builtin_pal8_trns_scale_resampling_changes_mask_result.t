@@ -24,28 +24,28 @@ bilinear_rgb=0
 nearest_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - nearest scaled render failed"
+    printf '\n%s\n' "not ok 1 - nearest scaled render failed"
     exit 0
 }
 
 bilinear_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r bilinear "${input_png}" 2>&1 >/dev/null) || {
-    echo "not ok 1 - bilinear scaled render failed"
+    printf '\n%s\n' "not ok 1 - bilinear scaled render failed"
     exit 0
 }
 
 nearest_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}") || {
-    echo "not ok 1 - nearest scaled sixel output failed"
+    printf '\n%s\n' "not ok 1 - nearest scaled sixel output failed"
     exit 0
 }
 
 bilinear_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r bilinear "${input_png}") || {
-    echo "not ok 1 - bilinear scaled sixel output failed"
+    printf '\n%s\n' "not ok 1 - bilinear scaled sixel output failed"
     exit 0
 }
 
@@ -62,19 +62,19 @@ case "${bilinear_log}" in
 esac
 
 test "${nearest_rgb}" = 1 || {
-    echo "not ok 1 - nearest path did not promote to rgb888 work format"
+    printf '\n%s\n' "not ok 1 - nearest path did not promote to rgb888 work format"
     exit 0
 }
 
 test "${bilinear_rgb}" = 1 || {
-    echo "not ok 1 - bilinear path did not promote to rgb888 work format"
+    printf '\n%s\n' "not ok 1 - bilinear path did not promote to rgb888 work format"
     exit 0
 }
 
 test "${nearest_out}" != "${bilinear_out}" || {
-    echo "not ok 1 - nearest and bilinear outputs are unexpectedly identical"
+    printf '\n%s\n' "not ok 1 - nearest and bilinear outputs are unexpectedly identical"
     exit 0
 }
 
-echo "ok 1 - nearest and bilinear scaled outputs diverge for pal8 transparency"
+printf '\n%s\n' "ok 1 - nearest and bilinear scaled outputs diverge for pal8 transparency"
 exit 0

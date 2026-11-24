@@ -14,10 +14,10 @@ set -v
 snake_six="${TOP_SRCDIR}/images/map8.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${snake_six}" -o/dev/null || {
-    echo "not ok" 1 - "Sixel metadata inspection fails"
+    printf '\n%s\n' "not ok 1 - Sixel metadata inspection fails"
     exit 0
 }
 
-echo "ok" 1 - "Sixel metadata inspection succeeds"
+printf '\n%s\n' "ok 1 - Sixel metadata inspection succeeds"
 
 exit 0

@@ -12,12 +12,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "planner/pipeline/0022_playback_cancel_f
 result=$?
 set -e
 test "$result" -ne 77 || {
-    echo "ok 1 - playback cancellation and failure complete frames in order # SKIP thread support disabled"
+    printf '\n%s\n' "ok 1 - playback cancellation and failure complete frames in order # SKIP thread support disabled"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - playback cancellation and failure complete frames in order"
+    printf '\n%s\n' "not ok 1 - playback cancellation and failure complete frames in order"
     exit 0
 }
-echo "ok 1 - playback cancellation and failure complete frames in order"
+printf '\n%s\n' "ok 1 - playback cancellation and failure complete frames in order"
 exit 0

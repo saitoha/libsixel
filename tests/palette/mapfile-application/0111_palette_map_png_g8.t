@@ -20,10 +20,10 @@ palette_png="${TOP_SRCDIR}/images/pngsuite/basic/basn0g08.png"
 input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${palette_png}" "${input_png}" -o/dev/null || {
-    echo "not ok" 1 - "G8 PNG palette mapfile rejected"
+    printf '\n%s\n' "not ok 1 - G8 PNG palette mapfile rejected"
     exit 0
 }
 
-echo "ok" 1 - "G8 PNG palette mapfile accepted"
+printf '\n%s\n' "ok 1 - G8 PNG palette mapfile accepted"
 
 exit 0

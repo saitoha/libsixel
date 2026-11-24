@@ -20,22 +20,22 @@ vector_png="${ARTIFACT_LOCAL_DIR}/decoder_0107_auto.png"
 # The odd width leaves a scalar tail after the sixteen-column blocks.
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -O -w181 -o "${stream}" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.jpg" || {
-    echo "not ok 1 - img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 SIXEL_SIMD_LEVEL=none \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" <"${stream}" >"${scalar_png}" || {
-    echo "not ok 1 - scalar decode failed"
+    printf '\n%s\n' "not ok 1 - scalar decode failed"
     exit 0
 }
 SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" <"${stream}" >"${vector_png}" || {
-    echo "not ok 1 - decode at the detected SIMD level failed"
+    printf '\n%s\n' "not ok 1 - decode at the detected SIMD level failed"
     exit 0
 }
 cmp "${scalar_png}" "${vector_png}" || {
-    echo "not ok 1 - OR-mode decode differs between SIMD levels"
+    printf '\n%s\n' "not ok 1 - OR-mode decode differs between SIMD levels"
     exit 0
 }
-echo "ok 1 - OR-mode decode is identical at every SIMD level"
+printf '\n%s\n' "ok 1 - OR-mode decode is identical at every SIMD level"
 exit 0

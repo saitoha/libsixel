@@ -31,12 +31,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Llibwebp:M2!" -=greedy:B1 -ldisable "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "libwebp:max_output_frames short conversion failed"
+    printf '\n%s\n' "not ok 1 - libwebp:max_output_frames short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=max_output_frames\|stored=1\|binding=libwebp_max_output_frames\|value=2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "max_output_frames short value was not stored"
+    printf '\n%s\n' "not ok 1 - max_output_frames short value was not stored"
     exit 0
 }
 
@@ -45,12 +45,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=2" \
     "-Llibwebp!" -=greedy:B1 -ldisable "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "libwebp:max_output_frames env conversion failed"
+    printf '\n%s\n' "not ok 1 - libwebp:max_output_frames env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=max_output_frames\|stored=1\|binding=libwebp_max_output_frames\|value=2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "max_output_frames environment value was not stored"
+    printf '\n%s\n' "not ok 1 - max_output_frames environment value was not stored"
     exit 0
 }
 
@@ -58,43 +58,43 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=262145" \
     "-Llibwebp!" -=greedy:B1 -ldisable "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "max_output_frames upper conversion failed"
+    printf '\n%s\n' "not ok 1 - max_output_frames upper conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=max_output_frames\|stored=1\|binding=libwebp_max_output_frames\|value=262144**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "max_output_frames upper endpoint was not clamped"
+    printf '\n%s\n' "not ok 1 - max_output_frames upper endpoint was not clamped"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Llibwebp:M1!" -=greedy:B1 -ldisable "${input_image}" >/dev/null 2>&1 && {
-    echo "not ok" 1 - "max_output_frames=1 did not stop the second frame"
+    printf '\n%s\n' "not ok 1 - max_output_frames=1 did not stop the second frame"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "max_output_frames short and env output differ"
+    printf '\n%s\n' "not ok 1 - max_output_frames short and env output differ"
     exit 0
 }
 
 cmp -s "${reference_sixel}" "${short_output}" || {
-    echo "not ok" 1 - "max_output_frames animation output regressed"
+    printf '\n%s\n' "not ok 1 - max_output_frames animation output regressed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Llibwebp:M2!" -=greedy:B1 -S "${input_image}" -o/dev/null || {
-    echo "not ok" 1 - "max_output_frames static quality conversion failed"
+    printf '\n%s\n' "not ok 1 - max_output_frames static quality conversion failed"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "libwebp:max_output_frames preserves animation output"
+printf '\n%s\n' "ok 1 - libwebp:max_output_frames preserves animation output"
 exit 0

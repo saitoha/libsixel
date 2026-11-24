@@ -21,8 +21,8 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0002_snake_64_e
 # once; one RGB level plus float roundoff bounds this sample contract.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${reference_path}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD ICC samples differ from the external reference"
+    printf '\n%s\n' "not ok 1 - decoded PSD ICC samples differ from the external reference"
     exit 0
 }
-echo "ok 1 - decoded PSD ICC samples match the external reference"
+printf '\n%s\n' "ok 1 - decoded PSD ICC samples match the external reference"
 exit 0

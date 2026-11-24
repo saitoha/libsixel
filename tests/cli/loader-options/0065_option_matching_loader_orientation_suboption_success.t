@@ -23,18 +23,18 @@ probe_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -o/dev/null 2>&1) || probe_status=$?
 
 case "${probe_output}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "-L libpng orientation suboption was rejected"
+    printf '\n%s\n' "not ok 1 - -L libpng orientation suboption was rejected"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${probe_output}" >&2
     exit 0
 }
 
 test "${probe_status-}" = "" || {
-    echo "not ok" 1 - "libpng orientation suboption decode failed"
+    printf '\n%s\n' "not ok 1 - libpng orientation suboption decode failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${probe_output}" >&2
     exit 0
 }
 
-echo "ok" 1 - "-L accepts libpng:orientation suboption"
+printf '\n%s\n' "ok 1 - -L accepts libpng:orientation suboption"
 exit 0

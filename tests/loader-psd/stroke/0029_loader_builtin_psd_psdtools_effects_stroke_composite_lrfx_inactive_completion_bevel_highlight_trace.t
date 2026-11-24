@@ -29,24 +29,24 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ merging\ legacy\ lrFX\ effects\ missing\ from\ lfx2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX effects"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite did not merge legacy lrFX effects"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ parsed\ bevel\ highlight\ channel\ in\ layer\ effects**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite lost bevel highlight channel parse trace"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite lost bevel highlight channel parse trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ bevel\ highlight\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied bevel highlight"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly applied bevel highlight"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps bevel highlight channel diagnostics on lrFX inactive completion"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps bevel highlight channel diagnostics on lrFX inactive completion"
 exit 0

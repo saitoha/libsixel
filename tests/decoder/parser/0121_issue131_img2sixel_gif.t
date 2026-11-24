@@ -22,20 +22,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -S -Lbuiltin! --high-color "${issue131}" \
 # - The PoC must be rejected (non-zero status).
 # - It must not crash (exit 139 indicates SIGSEGV).
 test "${rc-0}" -ne 0 || {
-    echo "not ok" 1 - "issue #131 PoC unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - issue #131 PoC unexpectedly accepted"
     exit 0
 }
 
 test "${rc-0}" -ne 127 || {
-    echo "not ok" 1 - "img2sixel was not executed as expected"
+    printf '\n%s\n' "not ok 1 - img2sixel was not executed as expected"
     exit 0
 }
 
 test "${rc-0}" -ne 139 || {
-    echo "not ok" 1 - "issue #131 PoC triggered SIGSEGV"
+    printf '\n%s\n' "not ok 1 - issue #131 PoC triggered SIGSEGV"
     exit 0
 }
 
-echo "ok" 1 - "issue #131 PoC rejected without crashing"
+printf '\n%s\n' "ok 1 - issue #131 PoC rejected without crashing"
 
 exit 0

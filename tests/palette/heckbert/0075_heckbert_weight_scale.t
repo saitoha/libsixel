@@ -16,8 +16,8 @@ second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xc \
     -Qheckbert:Tsse:Osse:weights=4/2/2 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png")
 { test -n "$first" && test "$first" = "$second"; } || {
-    echo "not ok 1 - common scale or CLI precedence changed output"
+    printf '\n%s\n' "not ok 1 - common scale or CLI precedence changed output"
     exit 0
 }
-echo "ok 1 - weight_scale"
+printf '\n%s\n' "ok 1 - weight_scale"
 exit 0

@@ -20,9 +20,9 @@ cr=$(printf '\r')
 { test -n "${cr}" && case "${output}" in *"${cr}") true ;; *) false ;; esac; } && output=${output%"${cr}"}
 
 test "${output}" = "binbits=7 mapping=uniform softdist=trilinear feedback=0" || {
-    echo "not ok" 1 - "unexpected kmeans override output: ${output}"
+    printf '\n%s\n' "not ok 1 - unexpected kmeans override output: ${output}"
     exit 0
 }
 
-echo "ok" 1 - "kmeans overrides take precedence over environment"
+printf '\n%s\n' "ok 1 - kmeans overrides take precedence over environment"
 exit 0

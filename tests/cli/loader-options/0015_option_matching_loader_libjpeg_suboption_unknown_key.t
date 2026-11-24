@@ -19,7 +19,7 @@ set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibjpeg:z=1! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown libjpeg -L suboption key unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown libjpeg -L suboption key unexpectedly succeeded"
     exit 0
 }
 
@@ -27,7 +27,7 @@ case "${msg}" in
     *"unknown suboption key"*)
         ;;
     *)
-        echo "not ok" 1 - "missing unknown libjpeg -L suboption key diagnostic"
+        printf '\n%s\n' "not ok 1 - missing unknown libjpeg -L suboption key diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -38,12 +38,12 @@ case "${msg}" in
     *"\"z\""*"valid keys"*"cms_engine"*)
         ;;
     *)
-        echo "not ok" 1 - "missing token/candidate details for unknown libjpeg -L suboption key"
+        printf '\n%s\n' "not ok 1 - missing token/candidate details for unknown libjpeg -L suboption key"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "unknown libjpeg -L suboption key is rejected"
+printf '\n%s\n' "ok 1 - unknown libjpeg -L suboption key is rejected"
 exit 0

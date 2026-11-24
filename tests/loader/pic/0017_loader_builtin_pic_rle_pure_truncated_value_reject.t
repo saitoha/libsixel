@@ -16,9 +16,9 @@ set -v
 input_pic="${TOP_SRCDIR}/tests/data/corrupted/pic_pure_rle_truncated_value_reject.pic"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_pic}" >/dev/null && {
-    echo "not ok" 1 - "PIC pure RLE truncated value was unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - PIC pure RLE truncated value was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "PIC pure RLE truncated value is rejected"
+printf '\n%s\n' "ok 1 - PIC pure RLE truncated value is rejected"
 exit 0

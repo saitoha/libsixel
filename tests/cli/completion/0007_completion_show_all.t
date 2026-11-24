@@ -14,7 +14,7 @@ set -v
 completion_output=''
 
 completion_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 all) || {
-    echo "not ok" 1 - "combined completion output failed"
+    printf '\n%s\n' "not ok 1 - combined completion output failed"
     exit 0
 }
 : "${completion_output}"
@@ -22,7 +22,7 @@ completion_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 all) || {
 case "${completion_output}" in
     *"# bash completion for img2sixel"*) ;;
     *)
-    echo "not ok" 1 - "missing bash completion header in combined output"
+    printf '\n%s\n' "not ok 1 - missing bash completion header in combined output"
     exit 0
     ;;
 esac
@@ -30,10 +30,10 @@ esac
 case "${completion_output}" in
     *"#compdef img2sixel"*) ;;
     *)
-    echo "not ok" 1 - "missing zsh completion header in combined output"
+    printf '\n%s\n' "not ok 1 - missing zsh completion header in combined output"
     exit 0
     ;;
 esac
 
-echo "ok" 1 - "combined completion output available"
+printf '\n%s\n' "ok 1 - combined completion output available"
 exit 0

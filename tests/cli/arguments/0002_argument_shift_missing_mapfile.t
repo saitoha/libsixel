@@ -28,14 +28,14 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "accepted -m without argument"
+    printf '\n%s\n' "not ok 1 - accepted -m without argument"
     exit 0
 }
 
 case "${msg}" in *missing\ required\ argument\ for\ -m,--mapfile\ option*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "no diagnostic for missing -m argument"
+    printf '\n%s\n' "not ok 1 - no diagnostic for missing -m argument"
     exit 0
 }
 
-echo "ok" 1 - "reports missing mapfile argument"
+printf '\n%s\n' "ok 1 - reports missing mapfile argument"
 exit 0

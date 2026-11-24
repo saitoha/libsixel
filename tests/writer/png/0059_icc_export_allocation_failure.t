@@ -7,8 +7,8 @@ set -v
 
 SIXEL_LOG_PATH='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     writer/png/0059_icc_export_allocation_failure || {
-    echo "not ok 1 - ICC export reports allocation failure before opening output"
+    printf '\n%s\n' "not ok 1 - ICC export reports allocation failure before opening output"
     exit 0
 }
-echo "ok 1 - ICC export reports allocation failure before opening output"
+printf '\n%s\n' "ok 1 - ICC export reports allocation failure before opening output"
 exit 0

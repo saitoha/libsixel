@@ -20,10 +20,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported bit depth (1) for Multichannel (4ch->CMYK)"*)
-        echo "ok" 1 - "Multichannel channels=4 depth=1 is rejected by bit-depth policy"
+        printf '\n%s\n' "ok 1 - Multichannel channels=4 depth=1 is rejected by bit-depth policy"
         ;;
     *)
-        echo "not ok" 1 - "Multichannel channels=4 depth=1 did not emit expected unsupported trace"
+        printf '\n%s\n' "not ok 1 - Multichannel channels=4 depth=1 did not emit expected unsupported trace"
         ;;
 esac
 

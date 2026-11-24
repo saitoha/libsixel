@@ -8,12 +8,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "encoder/indexed/0092_retained_neon_all_approximate_refinement" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP ARM64 NEON is unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP ARM64 NEON is unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - retained neon all approximate refinement'
+    printf '\n%s\n' 'not ok 1 - retained neon all approximate refinement'
     exit 0
 }
-echo 'ok 1 - retained neon all approximate refinement'
+printf '\n%s\n' 'ok 1 - retained neon all approximate refinement'
 exit 0

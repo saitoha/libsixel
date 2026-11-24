@@ -31,17 +31,17 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     --env "SIXEL_CMS_RENDERING_INTENT=perceptual!" \
     --cms-engine=builtin "-Llibwebp:Rrelative+saturation!" \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "cms_intent short conversion failed"
+    printf '\n%s\n' "not ok 1 - cms_intent short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=cms_intent\|stored=1\|binding=cms_rendering_intent_order\|value=relative+saturation!**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "cms_intent short value was not stored"
+    printf '\n%s\n' "not ok 1 - cms_intent short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXCMS1\|intent_order=relative+saturation\|exclusive=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "cms_intent short value did not reach CMS"
+    printf '\n%s\n' "not ok 1 - cms_intent short value did not reach CMS"
     exit 0
 }
 
@@ -51,31 +51,31 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     --env "SIXEL_CMS_RENDERING_INTENT=perceptual!" \
     --cms-engine=builtin -Llibwebp "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "cms_intent environment conversion failed"
+    printf '\n%s\n' "not ok 1 - cms_intent environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=cms_intent\|stored=1\|binding=cms_rendering_intent_order\|value=relative+saturation!**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "cms_intent environment value was not stored"
+    printf '\n%s\n' "not ok 1 - cms_intent environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXCMS1\|intent_order=relative+saturation\|exclusive=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "cms_intent environment value did not reach CMS"
+    printf '\n%s\n' "not ok 1 - cms_intent environment value did not reach CMS"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "cms_intent short and environment output differ"
+    printf '\n%s\n' "not ok 1 - cms_intent short and environment output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "cms_intent preserves image output"
+printf '\n%s\n' "ok 1 - cms_intent preserves image output"
 exit 0

@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/color_space/0001_space_contract \
     wire 4 1 1 || {
-    echo "not ok 1 - p3 X din99d W linear wire"
+    printf '\n%s\n' "not ok 1 - p3 X din99d W linear wire"
     exit 0
 }
-echo "ok 1 - p3 X din99d W linear wire"
+printf '\n%s\n' "ok 1 - p3 X din99d W linear wire"
 exit 0

@@ -7,12 +7,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup mahalanobis mahalanobis/gpu_auto_no_cpu || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU mahalanobis program unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU mahalanobis program unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - mahalanobis gpu auto no cpu"
+    printf '\n%s\n' "not ok 1 - mahalanobis gpu auto no cpu"
     exit 0
 }
-echo "ok 1 - mahalanobis gpu auto no cpu"
+printf '\n%s\n' "ok 1 - mahalanobis gpu auto no cpu"
 exit 0

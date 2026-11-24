@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/clamp/0030_option_minimum" || {
-    echo "not ok 1 - option_minimum"
+    printf '\n%s\n' "not ok 1 - option_minimum"
     exit 0
 }
-echo "ok 1 - option_minimum"
+printf '\n%s\n' "ok 1 - option_minimum"
 exit 0

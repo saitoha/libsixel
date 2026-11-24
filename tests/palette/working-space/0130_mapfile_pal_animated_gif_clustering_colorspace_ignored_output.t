@@ -28,12 +28,12 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile GIF baseline encode failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GIF baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "PAL mapfile GIF output is empty"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GIF output is empty"
     exit 0
 }
 
@@ -53,14 +53,14 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile GIF encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GIF encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "PAL mapfile GIF output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - PAL mapfile GIF output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "PAL mapfile GIF output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - PAL mapfile GIF output ignores clustering colorspace"
 exit 0

@@ -30,11 +30,11 @@ env_output="${artifact_dir}/0145-scale-min-bytes-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B2 --lookup-policy=none \
     "-jauto:B17" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "scale threshold short conversion failed"
+    printf '\n%s\n' "not ok 1 - scale threshold short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=scale_min_bytes\|stored=1\|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override\|value=17**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "scale threshold short value was not stored"
+    printf '\n%s\n' "not ok 1 - scale threshold short value was not stored"
     exit 0
 }
 
@@ -42,11 +42,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B2 --lookup-policy=none \
     --env "SIXEL_SCALE_PARALLEL_MIN_BYTES=17" -jauto \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "scale threshold environment conversion failed"
+    printf '\n%s\n' "not ok 1 - scale threshold environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=scale_min_bytes\|stored=1\|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override\|value=17**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "scale threshold environment value was not stored"
+    printf '\n%s\n' "not ok 1 - scale threshold environment value was not stored"
     exit 0
 }
 
@@ -54,34 +54,34 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B2 \
     --env "SIXEL_SCALE_PARALLEL_MIN_BYTES=-1" -jauto \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "scale threshold signed conversion failed"
+    printf '\n%s\n' "not ok 1 - scale threshold signed conversion failed"
     exit 0
 }
 case "${range_trace}" in *LSXSUB1\|*key=scale_min_bytes\|stored=1\|binding=scale_parallel_min_bytes,scale_parallel_min_bytes_override\|value=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "scale threshold did not preserve size clamping"
+    printf '\n%s\n' "not ok 1 - scale threshold did not preserve size clamping"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "scale/0002_parallel_min_bytes_environment" cli || {
-    echo "not ok" 1 - "scale threshold CLI missed parallel dispatch"
+    printf '\n%s\n' "not ok 1 - scale threshold CLI missed parallel dispatch"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "scale/0002_parallel_min_bytes_environment" negative || {
-    echo "not ok" 1 - "scale threshold lost signed strtoull behavior"
+    printf '\n%s\n' "not ok 1 - scale threshold lost signed strtoull behavior"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "scale threshold outputs differ"
+    printf '\n%s\n' "not ok 1 - scale threshold outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "runtime scale threshold preserves image output"
+printf '\n%s\n' "ok 1 - runtime scale threshold preserves image output"
 exit 0

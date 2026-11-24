@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/auto_cover_float/0014_float_byte_preference || {
-    echo "not ok 1 - float byte preference"
+    printf '\n%s\n' "not ok 1 - float byte preference"
     exit 0
 }
-echo "ok 1 - float byte preference"
+printf '\n%s\n' "ok 1 - float byte preference"
 exit 0

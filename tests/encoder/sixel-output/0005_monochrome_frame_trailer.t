@@ -14,9 +14,9 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 1 -h100 -n1 "${snake_jpg}" -o/dev/null || {
-    echo "not ok" 1 - "monochrome frame conversion fails"
+    printf '\n%s\n' "not ok 1 - monochrome frame conversion fails"
     exit 0
 }
 
-echo "ok" 1 - "monochrome frame conversion succeeds"
+printf '\n%s\n' "ok 1 - monochrome frame conversion succeeds"
 exit 0

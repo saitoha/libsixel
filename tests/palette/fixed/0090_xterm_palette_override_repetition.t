@@ -15,10 +15,10 @@ snake_pbm="${TOP_SRCDIR}/tests/data/inputs/snake_64.pbm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -w100 -h100 -bxterm16 -B"#aB3" -B"#aB3" \
         "${snake_pbm}" -o/dev/null || {
-    echo "not ok" 1 - "xterm palette overrides fail"
+    printf '\n%s\n' "not ok 1 - xterm palette overrides fail"
     exit 0
 }
 
-echo "ok" 1 - "xterm palette overrides repeat"
+printf '\n%s\n' "ok 1 - xterm palette overrides repeat"
 
 exit 0

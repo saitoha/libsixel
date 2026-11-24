@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0019_fh_outside_tiny || {
-    echo "not ok 1 - fhedt outside tiny"
+    printf '\n%s\n' "not ok 1 - fhedt outside tiny"
     exit 0
 }
 
-echo "ok 1 - fhedt outside tiny"
+printf '\n%s\n' "ok 1 - fhedt outside tiny"
 exit 0

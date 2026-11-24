@@ -18,14 +18,14 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - byte black fallback"
+    printf '\n%s\n' "not ok 1 - byte black fallback"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - inapplicable ICC unexpectedly applied"
+    printf '\n%s\n' "not ok 1 - inapplicable ICC unexpectedly applied"
     exit 0
 }
 set -x
-echo "ok 1 - byte black fallback "
+printf '\n%s\n' "ok 1 - byte black fallback "
 exit 0

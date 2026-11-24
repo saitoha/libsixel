@@ -13,13 +13,13 @@ set -v
 
 output=$("${TOP_SRCDIR}/tools/quicklook-extension.bash" install --dry-run \
     --package-dir '/missing package' --tool /must-not-run --destdir '' 2>&1) || {
-    echo "not ok 1 - Dry-run executed the package tool"
+    printf '\n%s\n' "not ok 1 - Dry-run executed the package tool"
     exit 0
 }
 case "$output" in
     'Quick Look dry-run: install package=/missing package DESTDIR=') ;;
-    *) echo "not ok 1 - Missing dry-run observation"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - Missing dry-run observation"; exit 0 ;;
 esac
 
-echo "ok 1 - dry run has no tool execution."
+printf '\n%s\n' "ok 1 - dry run has no tool execution."
 exit 0

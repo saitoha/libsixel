@@ -16,9 +16,9 @@ status=0
 snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -c200x200+100+100 -dx_dither "${snake_gray_png}" -o/dev/null || {
-    echo "not ok" 1 - "cropping with X ordered dither fails"
+    printf '\n%s\n' "not ok 1 - cropping with X ordered dither fails"
     exit "${status}"
 }
 
-echo "ok" 1 - "cropping with X ordered dither succeeds"
+printf '\n%s\n' "ok 1 - cropping with X ordered dither succeeds"
 exit "${status}"

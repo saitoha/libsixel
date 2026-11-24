@@ -10,8 +10,8 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none \
     -m MS-SSIM "${TOP_SRCDIR}/tests/data/assessment/video-snake-16.png" \
     "${TOP_SRCDIR}/tests/data/assessment/video-snake-16.six") || status=$?
 { test "${status}" -eq 4 && test -z "${value}"; } || {
-    echo "not ok 1 - unavailable scalar video metric"
+    printf '\n%s\n' "not ok 1 - unavailable scalar video metric"
     exit 0
 }
-echo "ok 1 - unavailable scalar video metric"
+printf '\n%s\n' "ok 1 - unavailable scalar video metric"
 exit 0

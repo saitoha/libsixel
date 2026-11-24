@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "palette/snap_hooks/final_rollback" || {
-    echo "not ok 1 - A later invalid coordinate leaves the complete float palette unchanged"
+    printf '\n%s\n' "not ok 1 - A later invalid coordinate leaves the complete float palette unchanged"
     exit 0
 }
-echo "ok 1 - A later invalid coordinate leaves the complete float palette unchanged"
+printf '\n%s\n' "ok 1 - A later invalid coordinate leaves the complete float palette unchanged"
 exit 0

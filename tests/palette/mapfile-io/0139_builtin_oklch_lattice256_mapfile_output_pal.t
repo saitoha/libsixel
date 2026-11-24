@@ -31,28 +31,28 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -boklch-lattice256 -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "OKLCh lattice palette PAL export failed"
+    printf '\n%s\n' "not ok 1 - OKLCh lattice palette PAL export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "OKLCh lattice PAL output normalization failed"
+    printf '\n%s\n' "not ok 1 - OKLCh lattice PAL output normalization failed"
     exit 0
 }
 
 { test -n "${expected_prefix}" && case "${actual_palette}" in "${expected_prefix}"*) true ;; *) false ;; esac; } || {
-    echo "not ok" 1 - "OKLCh lattice PAL header or gray ramp changed"
+    printf '\n%s\n' "not ok 1 - OKLCh lattice PAL header or gray ramp changed"
     exit 0
 }
 
 { test -n "${expected_middle}" && case "${actual_palette}" in *"${expected_middle}"*) true ;; *) false ;; esac; } || {
-    echo "not ok" 1 - "OKLCh lattice chroma ramp start changed"
+    printf '\n%s\n' "not ok 1 - OKLCh lattice chroma ramp start changed"
     exit 0
 }
 
 { test -n "${expected_suffix}" && case "${actual_palette}" in *"${expected_suffix}") true ;; *) false ;; esac; } || {
-    echo "not ok" 1 - "OKLCh lattice PAL tail changed"
+    printf '\n%s\n' "not ok 1 - OKLCh lattice PAL tail changed"
     exit 0
 }
 
-echo "ok" 1 - "OKLCh lattice palette PAL output is stable"
+printf '\n%s\n' "ok 1 - OKLCh lattice palette PAL output is stable"
 exit 0

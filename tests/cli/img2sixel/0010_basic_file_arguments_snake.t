@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${TOP_SRCDIR}/images/map8.six" -o /dev/null || {
-    echo "not ok" 1 - "snake file conversion failed"
+    printf '\n%s\n' "not ok 1 - snake file conversion failed"
     exit 0
 }
 
-echo "ok" 1 - "converts snake with file arguments"
+printf '\n%s\n' "ok 1 - converts snake with file arguments"
 exit 0

@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0089_mask_sparse_inval
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - mask sparse invalid index # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - mask sparse invalid index # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - mask sparse invalid index"
+    printf '\n%s\n' "not ok 1 - mask sparse invalid index"
     exit 0
 }
-echo "ok 1 - mask sparse invalid index"
+printf '\n%s\n' "ok 1 - mask sparse invalid index"
 exit 0

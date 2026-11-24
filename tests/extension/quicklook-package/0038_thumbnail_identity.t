@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check identities \
     "${TOP_BUILDDIR}/quicklook-extension/package" thumbnail || {
-    echo "not ok 1 - Thumbnail has the required fixed bundle identifier."
+    printf '\n%s\n' "not ok 1 - Thumbnail has the required fixed bundle identifier."
     exit 0
 }
 
-echo "ok 1 - Thumbnail has the required fixed bundle identifier."
+printf '\n%s\n' "ok 1 - Thumbnail has the required fixed bundle identifier."
 exit 0

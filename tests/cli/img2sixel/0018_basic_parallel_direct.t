@@ -25,9 +25,9 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
 
 cmp -s "${parallel_direct_1}" "${parallel_direct_4}" || {
-    echo "not ok" 1 - "parallel direct diverges"
+    printf '\n%s\n' "not ok 1 - parallel direct diverges"
     exit 0
 }
 
-echo "ok" 1 - "parallel direct matches serial"
+printf '\n%s\n' "ok 1 - parallel direct matches serial"
 exit 0

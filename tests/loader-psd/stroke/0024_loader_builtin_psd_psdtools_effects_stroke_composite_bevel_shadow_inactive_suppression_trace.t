@@ -33,20 +33,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite malformed diagnostic header"
         exit 0
         ;;
 esac
@@ -54,8 +54,8 @@ esac
 case "${diag_line}" in
     *FX_BEVEL_HIGHLIGHT_PARSE*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite missing FX_BEVEL_HIGHLIGHT_PARSE"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite missing FX_BEVEL_HIGHLIGHT_PARSE"
         exit 0
         ;;
 esac
@@ -63,28 +63,28 @@ esac
 case "${diag_line}" in
     *FX_EBBL_INACTIVE_PARSE*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite missing FX_EBBL_INACTIVE_PARSE"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite missing FX_EBBL_INACTIVE_PARSE"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_BEVEL_SHADOW_APPLY*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted FX_BEVEL_SHADOW_APPLY"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted FX_BEVEL_SHADOW_APPLY"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_BEVEL_HIGHLIGHT_APPLY*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted FX_BEVEL_HIGHLIGHT_APPLY"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted FX_BEVEL_HIGHLIGHT_APPLY"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps inactive ebbl out of apply-path code contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps inactive ebbl out of apply-path code contract"
 exit 0

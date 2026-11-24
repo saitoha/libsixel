@@ -27,81 +27,81 @@ env_output="${artifact_dir}/0186-budget-png-env-$$.png"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D "-=greedy:B2" \
     -i "${TOP_SRCDIR}/images/map8.six" -o "${short_output}" 2>&1) || {
-    echo "not ok 1 - global budget SIXEL2PNG short conversion failed"
+    printf '\n%s\n' "not ok 1 - global budget SIXEL2PNG short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=2**) true ;; *) false ;; esac || {
-    echo "not ok 1 - global budget short route was not stored"
+    printf '\n%s\n' "not ok 1 - global budget short route was not stored"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
     --env "SIXEL_DECODER_THREADING_GLOBAL_BUDGET=2" "-=balanced" \
     -i "${TOP_SRCDIR}/images/map8.six" -o "${env_output}" 2>&1) || {
-    echo "not ok 1 - global budget SIXEL2PNG environment conversion failed"
+    printf '\n%s\n' "not ok 1 - global budget SIXEL2PNG environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=2**) true ;; *) false ;; esac || {
-    echo "not ok 1 - global budget environment route was not stored"
+    printf '\n%s\n' "not ok 1 - global budget environment route was not stored"
     exit 0
 }
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
     --env "SIXEL_DECODER_THREADING_GLOBAL_BUDGET=-1" "-=balanced" \
     -i "${TOP_SRCDIR}/images/map8.six" 2>&1 >/dev/null) || {
-    echo "not ok 1 - invalid budget environment should fall back"
+    printf '\n%s\n' "not ok 1 - invalid budget environment should fall back"
     exit 0
 }
 case "${range_trace}" in *LSXSUB1\|*key=global_budget\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok 1 - out-of-range budget environment was accepted"
+    printf '\n%s\n' "not ok 1 - out-of-range budget environment was accepted"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - global budget routes changed png output"
+    printf '\n%s\n' "not ok 1 - global budget routes changed png output"
     exit 0
 }
 test -s "${short_output}" || {
-    echo "not ok 1 - global budget output is empty"
+    printf '\n%s\n' "not ok 1 - global budget output is empty"
     exit 0
 }
 all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -i "${TOP_SRCDIR}/images/map8.six" "-=greedy:BaLl" \
     -o "${short_output}" 2>&1) || {
-    echo "not ok 1 - SIXEL2PNG short all conversion failed"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG short all conversion failed"
     exit 0
 }
 case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - SIXEL2PNG short all sentinel missing"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG short all sentinel missing"
     exit 0
 }
 all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -i "${TOP_SRCDIR}/images/map8.six" --threading-policy=greedy:global_budget=ALL \
     -o "${env_output}" 2>&1) || {
-    echo "not ok 1 - SIXEL2PNG long all conversion failed"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG long all conversion failed"
     exit 0
 }
 case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - SIXEL2PNG long all sentinel missing"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG long all sentinel missing"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - SIXEL2PNG long all output differs"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG long all output differs"
     exit 0
 }
 all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -i "${TOP_SRCDIR}/images/map8.six" --env "SIXEL_DECODER_THREADING_GLOBAL_BUDGET=all" "-=greedy" \
     -o "${env_output}" 2>&1) || {
-    echo "not ok 1 - SIXEL2PNG environment all conversion failed"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG environment all conversion failed"
     exit 0
 }
 case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - SIXEL2PNG environment all sentinel missing"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG environment all sentinel missing"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - SIXEL2PNG environment all output differs"
+    printf '\n%s\n' "not ok 1 - SIXEL2PNG environment all output differs"
     exit 0
 }
 
-echo "ok 1 - decoder global budget routes agree"
+printf '\n%s\n' "ok 1 - decoder global budget routes agree"
 exit 0

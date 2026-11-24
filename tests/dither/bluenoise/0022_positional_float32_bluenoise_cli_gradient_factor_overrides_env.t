@@ -19,7 +19,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \
     -d bluenoise:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_env}" "${input_image}" || {
-    echo "not ok" 1 - "float32 bluenoise env baseline failed"
+    printf '\n%s\n' "not ok 1 - float32 bluenoise env baseline failed"
     exit 0
 }
 
@@ -27,14 +27,14 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \
     -d bluenoise:G1.0:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_cli}" "${input_image}" || {
-    echo "not ok" 1 - "float32 bluenoise CLI gradient_factor override failed"
+    printf '\n%s\n' "not ok 1 - float32 bluenoise CLI gradient_factor override failed"
     exit 0
 }
 
 cmp -s "${output_env}" "${output_cli}" && {
-    echo "not ok" 1 - "float32 bluenoise gradient_factor CLI override had no effect"
+    printf '\n%s\n' "not ok 1 - float32 bluenoise gradient_factor CLI override had no effect"
     exit 0
 }
 
-echo "ok" 1 - "float32 bluenoise gradient_factor CLI override takes precedence"
+printf '\n%s\n' "ok 1 - float32 bluenoise gradient_factor CLI override takes precedence"
 exit 0

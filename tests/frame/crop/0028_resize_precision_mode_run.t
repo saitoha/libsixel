@@ -21,10 +21,10 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
-    echo "not ok" 1 - "img2sixel failed with verbose dump"
+    printf '\n%s\n' "not ok 1 - img2sixel failed with verbose dump"
     exit 0
 }
 
-echo "ok" 1 - "img2sixel completed with verbose dump"
+printf '\n%s\n' "ok 1 - img2sixel completed with verbose dump"
 
 exit 0

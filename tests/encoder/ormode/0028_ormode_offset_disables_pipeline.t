@@ -16,9 +16,9 @@ SIXEL_ENCODER_THREADING_POLICY=greedy
 export SIXEL_ENCODER_THREADING_POLICY
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder-core/0029_ormode_offset_disables_pipeline" || {
-    echo "not ok 1 - ormode_pipeline_offset"
+    printf '\n%s\n' "not ok 1 - ormode_pipeline_offset"
     exit 0
 }
 
-echo "ok 1 - ormode_pipeline_offset"
+printf '\n%s\n' "ok 1 - ormode_pipeline_offset"
 exit 0

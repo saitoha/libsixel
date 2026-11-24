@@ -16,7 +16,7 @@ expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -e -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "monochrome baseline encode failed"
+    printf '\n%s\n' "not ok 1 - monochrome baseline encode failed"
     exit 0
 }
 
@@ -24,14 +24,14 @@ actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -X oklab -e -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "monochrome encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - monochrome encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "monochrome output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - monochrome output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "monochrome output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - monochrome output ignores clustering colorspace"
 exit 0

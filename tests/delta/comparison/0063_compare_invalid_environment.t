@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0063_compare_invalid_environment" >/dev/null || {
-    echo "not ok 1 - compare invalid environment"
+    printf '\n%s\n' "not ok 1 - compare invalid environment"
     exit 0
 }
 
-echo "ok 1 - compare invalid environment"
+printf '\n%s\n' "ok 1 - compare invalid environment"
 exit 0

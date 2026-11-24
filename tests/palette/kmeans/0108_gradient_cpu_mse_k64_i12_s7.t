@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/kmeans/0108_gradient_cpu_mse_k64_i12_s7" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - gradient cpu mse k64 i12 s7"
+    printf '\n%s\n' "not ok 1 - gradient cpu mse k64 i12 s7"
     exit 0
 }
-echo "ok 1 - gradient cpu mse k64 i12 s7"
+printf '\n%s\n' "ok 1 - gradient cpu mse k64 i12 s7"
 exit 0

@@ -13,14 +13,14 @@ set -v
 
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:autoratio=32 2>&1) && {
-    echo "not ok 1 - removed Kmeans autoratio suboption succeeded"
+    printf '\n%s\n' "not ok 1 - removed Kmeans autoratio suboption succeeded"
     exit 0
 }
 
 case "${message}" in *unknown\ suboption\ key*autoratio**) true ;; *) false ;; esac || {
-    echo "not ok 1 - missing removed Kmeans autoratio diagnostic"
+    printf '\n%s\n' "not ok 1 - missing removed Kmeans autoratio diagnostic"
     exit 0
 }
 
-echo "ok 1 - removed Kmeans autoratio suboption is rejected"
+printf '\n%s\n' "ok 1 - removed Kmeans autoratio suboption is rejected"
 exit 0

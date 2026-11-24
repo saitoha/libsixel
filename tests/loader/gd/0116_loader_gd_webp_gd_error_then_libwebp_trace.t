@@ -25,7 +25,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
     "${input_webp}" >/dev/null || {
-    printf "ok 1 # SKIP libwebp loader cannot decode WebP in this runtime\n"
+    printf "\nok 1 # SKIP libwebp loader cannot decode WebP in this runtime\n"
     exit 0
 }
 
@@ -33,24 +33,24 @@ trace_log=$(set +xv; head -c 64 "${input_webp}" | \
     SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,libwebp! -ldisable - \
     2>&1 >/dev/null) && {
-    echo "not ok 1 - gd,libwebp unexpectedly accepted truncated WebP"
+    printf '\n%s\n' "not ok 1 - gd,libwebp unexpectedly accepted truncated WebP"
     exit 0
 }
 
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd failure code was not reported"
+    printf '\n%s\n' "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*LSXLOAD1\|event=try\|loader=libwebp\|code=L_TRY**) true ;; *) false ;; esac || {
-    echo "not ok 1 - libwebp loader was not attempted after gd failure"
+    printf '\n%s\n' "not ok 1 - libwebp loader was not attempted after gd failure"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*"LSXLOAD1|event=try|loader=libwebp|code=L_TRY"*LSXLOAD1\|event=fail\|loader=libwebp\|code=**) true ;; *) false ;; esac || {
-    echo "not ok 1 - libwebp failure code was not reported"
+    printf '\n%s\n' "not ok 1 - libwebp failure code was not reported"
     exit 0
 }
 
-echo "ok 1 - truncated WebP reaches libwebp after gd failure"
+printf '\n%s\n' "ok 1 - truncated WebP reaches libwebp after gd failure"
 exit 0

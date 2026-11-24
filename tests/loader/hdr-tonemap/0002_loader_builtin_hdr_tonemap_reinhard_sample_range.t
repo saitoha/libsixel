@@ -19,7 +19,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/builtin-hdr-tonemap-reinhard.six"
 
 SIXEL_LOADER_HDR_TONEMAP=reinhard \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! "${input_hdr}" >"${output_sixel}" || {
-    echo "not ok" 1 - "builtin loader failed to decode HDR with tonemap=reinhard"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode HDR with tonemap=reinhard"
     exit 0
 }
 
@@ -27,9 +27,9 @@ SIXEL_LOADER_HDR_TONEMAP=reinhard \
 # cannot be evidence that the image differs from a solid black/white frame.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_sample_range \
     "${output_sixel}" 1 || {
-    echo "not ok 1 - HDR output lost its RGB sample range"
+    printf '\n%s\n' "not ok 1 - HDR output lost its RGB sample range"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes HDR with tonemap=reinhard and avoids black output collapse"
+printf '\n%s\n' "ok 1 - builtin loader decodes HDR with tonemap=reinhard and avoids black output collapse"
 exit 0

@@ -27,15 +27,15 @@ env_output="${artifact_dir}/0113-threading-pin-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     "-=greedy:B6:I0" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "threading pin short conversion failed"
+    printf '\n%s\n' "not ok 1 - threading pin short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=pin\|stored=1\|binding=pin,pin_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading pin short value was not stored"
+    printf '\n%s\n' "not ok 1 - threading pin short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXDTH1\|*pin_threads=0\|pin_threads_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading pin short did not disable worker affinity"
+    printf '\n%s\n' "not ok 1 - threading pin short did not disable worker affinity"
     exit 0
 }
 
@@ -43,28 +43,28 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_ENCODER_THREADING_PIN=0" \
     "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "threading pin environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading pin environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=pin\|stored=1\|binding=pin,pin_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading pin environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threading pin environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXDTH1\|*pin_threads=0\|pin_threads_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading pin environment did not disable worker affinity"
+    printf '\n%s\n' "not ok 1 - threading pin environment did not disable worker affinity"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "threading pin short and environment output differ"
+    printf '\n%s\n' "not ok 1 - threading pin short and environment output differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "threading pin preserves effective image output"
+printf '\n%s\n' "ok 1 - threading pin preserves effective image output"
 exit 0

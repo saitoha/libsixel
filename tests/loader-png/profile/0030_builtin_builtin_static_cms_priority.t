@@ -12,8 +12,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract \
     priority builtin builtin static || {
-    echo "not ok 1 - builtin builtin static PNG metadata priority"
+    printf '\n%s\n' "not ok 1 - builtin builtin static PNG metadata priority"
     exit 0
 }
-echo "ok 1 - builtin builtin static PNG metadata priority"
+printf '\n%s\n' "ok 1 - builtin builtin static PNG metadata priority"
 exit 0

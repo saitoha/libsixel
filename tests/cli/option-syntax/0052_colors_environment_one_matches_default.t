@@ -18,18 +18,18 @@ env_output="${ARTIFACT_LOCAL_DIR}/colors-one-$$.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input}" \
     >"${default_output}" || {
-    echo "not ok 1 - default colors conversion failed"
+    printf '\n%s\n' "not ok 1 - default colors conversion failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_COLORS=1 "${input}" \
     >"${env_output}" || {
-    echo "not ok 1 - SIXEL_COLORS=1 conversion failed"
+    printf '\n%s\n' "not ok 1 - SIXEL_COLORS=1 conversion failed"
     exit 0
 }
 cmp -s "${default_output}" "${env_output}" || {
-    echo "not ok 1 - SIXEL_COLORS=1 changed the output"
+    printf '\n%s\n' "not ok 1 - SIXEL_COLORS=1 changed the output"
     exit 0
 }
 
-echo "ok 1 - SIXEL_COLORS=1 remains ignored"
+printf '\n%s\n' "ok 1 - SIXEL_COLORS=1 remains ignored"
 exit 0

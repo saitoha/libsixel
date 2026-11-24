@@ -25,12 +25,12 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:J1:N1!" -w16 -h16 "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "pam_large_header short conversion failed"
+    printf '\n%s\n' "not ok 1 - pam_large_header short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=pam_large_header\|stored=1\|binding=builtin_pam_large_header\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "pam_large_header short value was not stored"
+    printf '\n%s\n' "not ok 1 - pam_large_header short value was not stored"
     exit 0
 }
 
@@ -40,33 +40,33 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --env "SIXEL_LOADER_PAM_ALLOW_LARGE_HEADER=1" \
     "-Lbuiltin!" -w16 -h16 "${input_image}" \
     2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "pam_large_header environment conversion failed"
+    printf '\n%s\n' "not ok 1 - pam_large_header environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=pam_large_header\|stored=1\|binding=builtin_pam_large_header\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "pam_large_header environment value was not stored"
+    printf '\n%s\n' "not ok 1 - pam_large_header environment value was not stored"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "-Lbuiltin:J0:N1!" -w16 -h16 "${input_image}" \
     >/dev/null && {
-    echo "not ok" 1 - "pam_large_header disabled control unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - pam_large_header disabled control unexpectedly succeeded"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "pam_large_header short and env output differ"
+    printf '\n%s\n' "not ok 1 - pam_large_header short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "pam_large_header preserves image output"
+printf '\n%s\n' "ok 1 - pam_large_header preserves image output"
 exit 0

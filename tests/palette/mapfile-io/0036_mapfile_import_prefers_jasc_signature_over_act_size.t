@@ -20,15 +20,15 @@ jasc_file="${TOP_SRCDIR}/tests/data/inputs/mapfile/jasc-invalid-version-size768-
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m "${jasc_file}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "extensionless JASC-signature input unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - extensionless JASC-signature input unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_palette_parse_pal_jasc:\ invalid\ version.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing JASC-signature priority diagnostic"
+    printf '\n%s\n' "not ok 1 - missing JASC-signature priority diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "extensionless JASC-signature input follows JASC parser"
+printf '\n%s\n' "ok 1 - extensionless JASC-signature input follows JASC parser"
 
 exit 0

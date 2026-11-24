@@ -31,14 +31,14 @@ expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/468b12ba-0063_pngsuite_bac
 output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-bgan6a16.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -r nearest -w 192 -h 192 -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "background_default background/bgan6a16.png"
+printf '\n%s\n' "ok 1 - background_default background/bgan6a16.png"
 exit 0

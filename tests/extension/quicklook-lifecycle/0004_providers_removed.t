@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_FIXTURE}" 'normal' 'providers-removed' || {
-    echo "not ok 1 - Providers removed."
+    printf '\n%s\n' "not ok 1 - Providers removed."
     exit 0
 }
-echo "ok 1 - Providers removed."
+printf '\n%s\n' "ok 1 - Providers removed."
 exit 0

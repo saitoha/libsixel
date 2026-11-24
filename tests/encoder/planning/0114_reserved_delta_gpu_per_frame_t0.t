@@ -10,12 +10,12 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} \
     "${TEST_RUNNER_PATH}" --require-gpu-palette \
     planner/pipeline/0114_reserved_delta_gpu_per_frame_t0 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
     printf '# %s\n' "$trace"
-    echo "not ok 1 - Reserved UI appears and disappears with gpu per frame t0"
+    printf '\n%s\n' "not ok 1 - Reserved UI appears and disappears with gpu per frame t0"
     exit 0
 }
 case "$trace" in
@@ -23,8 +23,8 @@ case "$trace" in
     *) false ;;
 esac || {
     printf '# %s\n' "$trace"
-    echo "not ok 1 - reserved UI did not dispatch a GPU kernel"
+    printf '\n%s\n' "not ok 1 - reserved UI did not dispatch a GPU kernel"
     exit 0
 }
-echo "ok 1 - Reserved UI appears and disappears with gpu per frame t0"
+printf '\n%s\n' "ok 1 - Reserved UI appears and disappears with gpu per frame t0"
 exit 0

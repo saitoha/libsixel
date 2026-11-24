@@ -19,7 +19,7 @@ expected_cksum=''
 completion_file="${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel"
 
 test -f "${completion_file}" || {
-    echo "not ok" 1 - "missing zsh completion source script"
+    printf '\n%s\n' "not ok 1 - missing zsh completion source script"
     exit 0
 }
 
@@ -32,7 +32,7 @@ msg=$(
 ) || status=$?
 
 test "${status}" = 0 || {
-    echo "not ok" 1 - "zsh completion output failed"
+    printf '\n%s\n' "not ok 1 - zsh completion output failed"
     exit 0
 }
 
@@ -40,7 +40,7 @@ case "${msg}" in
     *__LIBSIXEL_ZSH_COMPLETION_END__)
         ;;
     *)
-        echo "not ok" 1 - "zsh completion output marker missing"
+        printf '\n%s\n' "not ok 1 - zsh completion output marker missing"
         exit 0
         ;;
 esac
@@ -52,11 +52,11 @@ actual_cksum=$(printf '%s' "${msg}" | tr -d '\r' | "${CKSUM:-cksum}")
 expected_cksum=$(tr -d '\r' < "${completion_file}" | "${CKSUM:-cksum}")
 
 test "${actual_cksum}" = "${expected_cksum}" || {
-    echo "not ok" 1 - "zsh completion output diverges from source script"
+    printf '\n%s\n' "not ok 1 - zsh completion output diverges from source script"
     echo "# expected: ${expected_cksum}"
     echo "# actual:   ${actual_cksum}"
     exit 0
 }
 
-echo "ok" 1 - "zsh completion output matches source script"
+printf '\n%s\n' "ok 1 - zsh completion output matches source script"
 exit 0

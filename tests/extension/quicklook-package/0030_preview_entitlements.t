@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check entitlements-preview \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Preview has exactly the required sandbox entitlements."
+    printf '\n%s\n' "not ok 1 - Preview has exactly the required sandbox entitlements."
     exit 0
 }
 
-echo "ok 1 - Preview has exactly the required sandbox entitlements."
+printf '\n%s\n' "ok 1 - Preview has exactly the required sandbox entitlements."
 exit 0

@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0081_mask_vector_lanes
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - mask vector lanes 16 # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - mask vector lanes 16 # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - mask vector lanes 16"
+    printf '\n%s\n' "not ok 1 - mask vector lanes 16"
     exit 0
 }
-echo "ok 1 - mask vector lanes 16"
+printf '\n%s\n' "ok 1 - mask vector lanes 16"
 exit 0

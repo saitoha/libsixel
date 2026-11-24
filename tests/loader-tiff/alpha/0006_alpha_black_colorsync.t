@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - alpha black colorsync"
+    printf '\n%s\n' "not ok 1 - alpha black colorsync"
     exit 0
 }
 # Require exactly one actual requested apply, or none for source fallback.
@@ -29,16 +29,16 @@ expected=none
 while IFS= read -r line; do
     case "$line" in
     "TALPHA|load-begin|engine="*)
-        test "$active" -eq 0 || { echo "not ok 1 - overlapping load"; exit 0; }
+        test "$active" -eq 0 || { printf '\n%s\n' "not ok 1 - overlapping load"; exit 0; }
         active=1
         applies=0
         expected=${line##*=}
         ;;
     *"LSXCMS2|event=apply|"*)
-        test "$active" -eq 1 || { echo "not ok 1 - unscoped apply"; exit 0; }
+        test "$active" -eq 1 || { printf '\n%s\n' "not ok 1 - unscoped apply"; exit 0; }
         case "$line" in
         *"|engine=$expected|"*"|ok=1") applies=$((applies + 1)) ;;
-        *) echo "$trace" >&2; echo "not ok 1 - unexpected apply"; exit 0 ;;
+        *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - unexpected apply"; exit 0 ;;
         esac
         ;;
     "TALPHA|load-end|ok=1")
@@ -46,7 +46,7 @@ while IFS= read -r line; do
         test "$expected" != none || wanted=0
         { test "$active" -eq 1 && test "$applies" -eq "$wanted"; } || {
             echo "$trace" >&2
-            echo "not ok 1 - incomplete engine observation"
+            printf '\n%s\n' "not ok 1 - incomplete engine observation"
             exit 0
         }
         active=0
@@ -57,9 +57,9 @@ done <<EOF
 $trace
 EOF
 { test "$active" -eq 0 && test "$completed" -eq 8; } || {
-    echo "not ok 1 - unexpected load count"
+    printf '\n%s\n' "not ok 1 - unexpected load count"
     exit 0
 }
 set -x
-echo "ok 1 - alpha black colorsync "
+printf '\n%s\n' "ok 1 - alpha black colorsync "
 exit 0

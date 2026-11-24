@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/p3_snap/0001_grid failure 1 || {
-    echo "not ok 1 - full allocation recovery"
+    printf '\n%s\n' "not ok 1 - full allocation recovery"
     exit 0
 }
-echo "ok 1 - full allocation recovery"
+printf '\n%s\n' "ok 1 - full allocation recovery"
 exit 0

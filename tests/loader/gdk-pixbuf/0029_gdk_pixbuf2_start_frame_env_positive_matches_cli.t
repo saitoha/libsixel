@@ -24,7 +24,7 @@ cli_text=''
 default_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 default decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 default decode failed"
     exit 0
 }
 
@@ -32,26 +32,26 @@ env_text="$(SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 env start-frame decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 env start-frame decode failed"
     exit 0
 }
 
 cli_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 --start-frame=1 decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 --start-frame=1 decode failed"
     exit 0
 }
 
 test "${default_text}" != "${env_text}" || {
-    echo "not ok 1 - gdk-pixbuf2 env start-frame did not change output"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 env start-frame did not change output"
     exit 0
 }
 
 test "${env_text}" = "${cli_text}" || {
-    echo "not ok 1 - gdk-pixbuf2 env start-frame mismatched CLI"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 env start-frame mismatched CLI"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 positive start-frame env matches CLI"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 positive start-frame env matches CLI"
 exit 0

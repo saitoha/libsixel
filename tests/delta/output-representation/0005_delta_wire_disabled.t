@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0055_delta_wire_disabled || {
-    echo "not ok 1 - delta wire disabled"
+    printf '\n%s\n' "not ok 1 - delta wire disabled"
     exit 0
 }
-echo "ok 1 - delta wire disabled"
+printf '\n%s\n' "ok 1 - delta wire disabled"
 exit 0

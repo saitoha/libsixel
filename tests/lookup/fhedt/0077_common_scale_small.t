@@ -9,9 +9,9 @@ set -v
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_weight/0025_common_scale_small || {
-    echo "not ok 1 - FHEDT common scale small"
+    printf '\n%s\n' "not ok 1 - FHEDT common scale small"
     exit 0
 }
 
-echo "ok 1 - FHEDT common scale small"
+printf '\n%s\n' "ok 1 - FHEDT common scale small"
 exit 0

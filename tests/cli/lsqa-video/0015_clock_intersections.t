@@ -6,12 +6,12 @@ set -v
 
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -Ac -C "${TOP_SRCDIR}/tests/data/assessment/video-snake-16-clock.jsonl" -m S-CIELAB -L 'builtin!' --cms-engine=none -o "${ARTIFACT_LOCAL_DIR}/report.jsonl" "${TOP_SRCDIR}/tests/data/assessment/video-snake-16.png" "${TOP_SRCDIR}/tests/data/assessment/video-snake-16.six" >/dev/null || {
-    echo "not ok 1 - clock intersections evaluation"
+    printf '\n%s\n' "not ok 1 - clock intersections evaluation"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" assessment/clock_report_check 1 "${ARTIFACT_LOCAL_DIR}/report.jsonl" || {
-    echo "not ok 1 - clock intersections assertion"
+    printf '\n%s\n' "not ok 1 - clock intersections assertion"
     exit 0
 }
-echo "ok 1 - clock intersections"
+printf '\n%s\n' "ok 1 - clock intersections"
 exit 0

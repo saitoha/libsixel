@@ -30,23 +30,23 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing clbl=1 base overlay suppression trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing clbl=1 base overlay suppression trace"
     exit 0
 }
 
 
 case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite kept base gradient overlay apply after clbl=1 base suppression"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite kept base gradient overlay apply after clbl=1 base suppression"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite suppresses base gradient overlay under clbl=1 deferred ownership"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite suppresses base gradient overlay under clbl=1 deferred ownership"
 exit 0

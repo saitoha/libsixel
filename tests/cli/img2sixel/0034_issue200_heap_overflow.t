@@ -17,10 +17,10 @@ set -v
 issue200="${TOP_SRCDIR}/tests/data/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --7bit-mode -8 --invert --palette-type=auto --verbose         "${issue200}" -o /dev/null || {
-    echo "not ok" 1 - "heap overflow regression triggered"
+    printf '\n%s\n' "not ok 1 - heap overflow regression triggered"
     exit 0
 }
 
-echo "ok" 1 - "heap overflow regression avoided"
+printf '\n%s\n' "ok 1 - heap overflow regression avoided"
 
 exit 0

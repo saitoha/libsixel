@@ -13,23 +13,23 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - independent signed Lab16 frame values"
+    printf '\n%s\n' "not ok 1 - independent signed Lab16 frame values"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unexpected CMS apply for untagged TIFF"
+    printf '\n%s\n' "not ok 1 - unexpected CMS apply for untagged TIFF"
     exit 0
 }
 case "${trace}" in *"LAB16|mode=0|calls=1|misses=0|verified=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - independent frame values were not checked"
+    printf '\n%s\n' "not ok 1 - independent frame values were not checked"
     exit 0
 }
 case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - libtiff did not deliver the expected frame"
+    printf '\n%s\n' "not ok 1 - libtiff did not deliver the expected frame"
     exit 0
 }
-echo "ok 1 - 0174_lab16_untagged_le public signed Lab16 values"
+printf '\n%s\n' "ok 1 - 0174_lab16_untagged_le public signed Lab16 values"
 exit 0

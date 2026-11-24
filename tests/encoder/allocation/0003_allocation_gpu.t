@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "planner/allocation/0003_allocation_gpu" || {
-    echo "not ok 1 - GPU application keeps the full CPU encode reservation"
+    printf '\n%s\n' "not ok 1 - GPU application keeps the full CPU encode reservation"
     exit 0
 }
 
-echo "ok 1 - GPU application keeps the full CPU encode reservation"
+printf '\n%s\n' "ok 1 - GPU application keeps the full CPU encode reservation"
 exit 0

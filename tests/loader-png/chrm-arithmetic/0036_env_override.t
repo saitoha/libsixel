@@ -17,14 +17,14 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC=512bit "-Llibpng:cms_engine=builtin:chrm_arithmetic=double!" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-arithmetic-1.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - conversion failed"
+    printf '\n%s\n' "not ok 1 - conversion failed"
     printf '# %s\n' "$trace"
     exit 0
 }
 case "${trace}" in *PNGCHRM1\|*requested=double\|selected=double\|actual=double\|reason=forced**) true ;; *) false ;; esac || {
-    echo "not ok 1 - CLI arithmetic overrides the environment"
+    printf '\n%s\n' "not ok 1 - CLI arithmetic overrides the environment"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - CLI arithmetic overrides the environment"
+printf '\n%s\n' "ok 1 - CLI arithmetic overrides the environment"
 exit 0

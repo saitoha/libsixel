@@ -27,14 +27,14 @@ output_env_last="${ARTIFACT_LOCAL_DIR}/cms_engine_precedence_env_last.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
-    echo "not ok" 1 - "auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - auto reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
-    echo "not ok" 1 - "none reference decode failed"
+    printf '\n%s\n' "not ok 1 - none reference decode failed"
     exit 0
 }
 
@@ -42,7 +42,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     -# auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_option_last}" || {
-    echo "not ok" 1 - "option-last precedence decode failed"
+    printf '\n%s\n' "not ok 1 - option-last precedence decode failed"
     exit 0
 }
 
@@ -50,19 +50,19 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -# auto \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_last}" || {
-    echo "not ok" 1 - "env-last precedence decode failed"
+    printf '\n%s\n' "not ok 1 - env-last precedence decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_auto}" "${output_option_last}" || {
-    echo "not ok" 1 - "option-last precedence did not match auto reference"
+    printf '\n%s\n' "not ok 1 - option-last precedence did not match auto reference"
     exit 0
 }
 
 cmp -s "${output_ref_none}" "${output_env_last}" || {
-    echo "not ok" 1 - "env-last precedence did not match none reference"
+    printf '\n%s\n' "not ok 1 - env-last precedence did not match none reference"
     exit 0
 }
 
-echo "ok" 1 - "global cms engine precedence follows option/env order"
+printf '\n%s\n' "ok 1 - global cms engine precedence follows option/env order"
 exit 0

@@ -13,13 +13,13 @@ set -v
 
 output=$("${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" \
     manage uninstall /nonexistent /usr/local/share relative no 2>&1) && {
-    echo "not ok 1 - Relative DESTDIR was accepted"
+    printf '\n%s\n' "not ok 1 - Relative DESTDIR was accepted"
     exit 0
 }
 case "$output" in
     *"DESTDIR and datadir must be absolute paths without '..'"*) ;;
-    *) echo "not ok 1 - Unexpected refusal"; exit 0 ;;
+    *) printf '\n%s\n' "not ok 1 - Unexpected refusal"; exit 0 ;;
 esac
 
-echo "ok 1 - relative destdir rejected."
+printf '\n%s\n' "ok 1 - relative destdir rejected."
 exit 0

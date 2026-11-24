@@ -11,12 +11,12 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
     "${TOP_SRCDIR}/tests/data/assessment/vif-p-video.png" \
     "${TOP_SRCDIR}/tests/data/assessment/vif-p-video.six") || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - unexpected VIF-P status"
+    printf '\n%s\n' "not ok 1 - unexpected VIF-P status"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" assessment/vif_video_summary "$value" || {
-    echo "not ok 1 - VIF-P temporal extrema"
+    printf '\n%s\n' "not ok 1 - VIF-P temporal extrema"
     exit 0
 }
-echo "ok 1 - VIF-P temporal extrema remain 0 and 1"
+printf '\n%s\n' "ok 1 - VIF-P temporal extrema remain 0 and 1"
 exit 0

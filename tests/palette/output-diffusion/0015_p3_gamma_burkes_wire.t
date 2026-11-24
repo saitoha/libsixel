@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/rgb101_diffusion/0001_spatial_contract \
     wire p3 gamma burkes || {
-    echo "not ok 1 - p3 gamma burkes wire"
+    printf '\n%s\n' "not ok 1 - p3 gamma burkes wire"
     exit 0
 }
-echo "ok 1 - p3 gamma burkes wire"
+printf '\n%s\n' "ok 1 - p3 gamma burkes wire"
 exit 0

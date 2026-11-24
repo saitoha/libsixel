@@ -22,16 +22,16 @@ set -v
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m PSNR_Y -d selective_blur:threshold=24 \
         "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" \
         "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" >/dev/null || {
-    echo "not ok" 1 - "lsqa selective_blur full form rejected"
+    printf '\n%s\n' "not ok 1 - lsqa selective_blur full form rejected"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m PSNR_Y -d s:T24 \
         "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" \
         "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" >/dev/null || {
-    echo "not ok" 1 - "lsqa selective_blur compact form rejected"
+    printf '\n%s\n' "not ok 1 - lsqa selective_blur compact form rejected"
     exit 0
 }
 
-echo "ok" 1 - "lsqa accepts selective_blur full and compact forms"
+printf '\n%s\n' "ok 1 - lsqa accepts selective_blur full and compact forms"
 exit 0

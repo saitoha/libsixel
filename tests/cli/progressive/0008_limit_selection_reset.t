@@ -15,12 +15,12 @@ trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma \
     --env SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD=2 \
     -Z progressive:S0:N1:M1e-300 -Z progressive \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - progressive conversion failed"
+    printf '\n%s\n' "not ok 1 - progressive conversion failed"
     exit 0
 }
 case "${trace}" in *"progressive: stop=converged passes=1"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - limit selection reset"
+    printf '\n%s\n' "not ok 1 - limit selection reset"
     exit 0
 }
-echo "ok 1 - limit selection reset"
+printf '\n%s\n' "ok 1 - limit selection reset"
 exit 0

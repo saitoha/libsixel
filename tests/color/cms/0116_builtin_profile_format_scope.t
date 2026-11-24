@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - known-profile rejection trace and excluded source/destination controls"
+    printf '\n%s\n' "not ok 1 - known-profile rejection trace and excluded source/destination controls"
     exit 0
 }
 # Read the trace once and retain only the current call. Repeated globbing
@@ -116,8 +116,8 @@ test "$outside" -eq 5 || ok=0
 test "$native_controls" -eq 0 || ok=0
 test "$ok" -eq 1 || {
     echo "$trace" >&2
-    echo "not ok 1 - scoped profile-domain trace ownership"
+    printf '\n%s\n' "not ok 1 - scoped profile-domain trace ownership"
     exit 0
 }
-echo "ok 1 - 0342_builtin_profile_format_scope known-profile rejection trace and excluded source/destination controls"
+printf '\n%s\n' "ok 1 - 0342_builtin_profile_format_scope known-profile rejection trace and excluded source/destination controls"
 exit 0

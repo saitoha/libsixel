@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/rgb101_diffusion/0001_spatial_contract \
     residual srgb linear burkes || {
-    echo "not ok 1 - srgb linear burkes residual"
+    printf '\n%s\n' "not ok 1 - srgb linear burkes residual"
     exit 0
 }
-echo "ok 1 - srgb linear burkes residual"
+printf '\n%s\n' "ok 1 - srgb linear burkes residual"
 exit 0

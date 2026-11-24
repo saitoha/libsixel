@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0178_float_byte_boundary 1 0 5 1>&2 || {
-    echo "not ok 1 - frame byte zero width borrowed atomic"
+    printf '\n%s\n' "not ok 1 - frame byte zero width borrowed atomic"
     exit 0
 }
-echo "ok 1 - frame byte zero width borrowed atomic"
+printf '\n%s\n' "ok 1 - frame byte zero width borrowed atomic"
 exit 0

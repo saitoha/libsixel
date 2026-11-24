@@ -23,7 +23,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgb.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" -o "${output_sixel}" || {
-    echo "not ok" 1 - "rgb quality regressed"
+    printf '\n%s\n' "not ok 1 - rgb quality regressed"
     exit 0
 }
 
@@ -35,14 +35,14 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 - "rgb quality regressed"
+    printf '\n%s\n' "not ok 1 - rgb quality regressed"
     exit 0
 }
 
-echo "ok" 1 - "rgb quality meets baseline"
+printf '\n%s\n' "ok 1 - rgb quality meets baseline"
 exit 0

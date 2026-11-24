@@ -22,14 +22,14 @@ case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader was not attempted"
+        printf '\n%s\n' "not ok 1 - builtin loader was not attempted"
         exit 0
         ;;
 esac
 
 case "${trace_log}" in
     *"libsixel: builtin PSD: 16-bpc source decoded as 8-bpc fallback path"*)
-        echo "not ok" 1 - "unexpected PSD 16bpc fallback trace"
+        printf '\n%s\n' "not ok 1 - unexpected PSD 16bpc fallback trace"
         exit 0
         ;;
     *)
@@ -40,10 +40,10 @@ case "${trace_log}" in
     *"libsixel: loader builtin succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "builtin loader did not finish successfully"
+        printf '\n%s\n' "not ok 1 - builtin loader did not finish successfully"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin PSD RLE 16bpc path avoids 8bpc fallback trace"
+printf '\n%s\n' "ok 1 - builtin PSD RLE 16bpc path avoids 8bpc fallback trace"
 exit 0

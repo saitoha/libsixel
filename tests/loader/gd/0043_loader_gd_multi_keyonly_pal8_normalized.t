@@ -14,9 +14,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0059_loader_gd_pixelpolicy_detail" \
     "multi_keyonly_pal8_normalized" || {
-    echo "not ok 1 - gd multi_keyonly_pal8_normalized"
+    printf '\n%s\n' "not ok 1 - gd multi_keyonly_pal8_normalized"
     exit 0
 }
 
-echo "ok 1 - gd multi_keyonly_pal8_normalized"
+printf '\n%s\n' "ok 1 - gd multi_keyonly_pal8_normalized"
 exit 0

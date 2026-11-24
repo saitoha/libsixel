@@ -17,17 +17,17 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     palette/0081_palette_lookup_failure \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || {
     printf '%s\n' "${trace}"
-    echo "not ok 1 - lookup status or diagnostic changed across palette paths"
+    printf '\n%s\n' "not ok 1 - lookup status or diagnostic changed across palette paths"
     exit 0
 }
 
 case "${trace}" in *LSXPFB1\|stage=lookup\|action=propagate\|cause=4354\|rc=4354*) true ;; *) false ;; esac || {
-    echo "not ok 1 - worker lookup failure was not propagated"
+    printf '\n%s\n' "not ok 1 - worker lookup failure was not propagated"
     exit 0
 }
 case "${trace}" in *action=full-frame-sync*|*reason=fallback*) false ;; *) true ;; esac || {
-    echo "not ok 1 - lookup failure retried palette construction"
+    printf '\n%s\n' "not ok 1 - lookup failure retried palette construction"
     exit 0
 }
-echo "ok 1 - lookup failures preserve status and diagnostics without retry"
+printf '\n%s\n' "ok 1 - lookup failures preserve status and diagnostics without retry"
 exit 0

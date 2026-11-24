@@ -29,31 +29,31 @@ default_png="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-default.png"
 bg_png="${ARTIFACT_LOCAL_DIR}/librsvg-transparent-bg.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! "${svg_path}" >"${default_sixel}" || {
-    echo "not ok" 1 - "default transparent SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - default transparent SVG conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L librsvg! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
-    echo "not ok" 1 - "background-composited SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - background-composited SVG conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${default_sixel}" -o "${default_png}" || {
-    echo "not ok" 1 - "default transparent SIXEL decode failed"
+    printf '\n%s\n' "not ok 1 - default transparent SIXEL decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${bg_sixel}" -o "${bg_png}" || {
-    echo "not ok" 1 - "background-composited SIXEL decode failed"
+    printf '\n%s\n' "not ok 1 - background-composited SIXEL decode failed"
     exit 0
 }
 
 default_cksum="$("${CKSUM:-cksum}" "${default_png}")"
 bg_cksum="$("${CKSUM:-cksum}" "${bg_png}")"
 test "${default_cksum}" != "${bg_cksum}" || {
-    echo "not ok" 1 - "default/background decoded PNG unexpectedly matched"
+    printf '\n%s\n' "not ok 1 - default/background decoded PNG unexpectedly matched"
     exit 0
 }
 
-echo "ok" 1 - "background composition changes decoded SVG pixels"
+printf '\n%s\n' "ok 1 - background composition changes decoded SVG pixels"
 exit 0

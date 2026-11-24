@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only center profile=speed was rejected"
+    printf '\n%s\n' "not ok 1 - env-only center profile=speed was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:profile=quality \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only center profile=quality was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only center profile=quality was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:profile=zzz \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI center profile unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI center profile unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI center profile diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI center profile diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:profile=legacy \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI center profile did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI center profile did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "center profile follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - center profile follows env/CLI acceptance and CLI priority"
 exit 0

@@ -10,8 +10,8 @@ set -v
 # shellcheck disable=SC2002
 cat "$TOP_SRCDIR/tests/tools/compare/data/octet.bin" |
     "$SIXEL_TEST_COMPARE" -s - "$TOP_SRCDIR/tests/tools/compare/data/octet.bin" || {
-    echo 'not ok 1 - binary pipe input terminates as the left operand'
+    printf '\n%s\n' 'not ok 1 - binary pipe input terminates as the left operand'
     exit 0
 }
-echo 'ok 1 - binary pipe input terminates as the left operand'
+printf '\n%s\n' 'ok 1 - binary pipe input terminates as the left operand'
 exit 0

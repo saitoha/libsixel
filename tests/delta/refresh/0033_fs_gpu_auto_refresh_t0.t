@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/refresh/0033_fs_gpu_auto_refresh_t0" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - fs gpu auto refresh t0"
+    printf '\n%s\n' "not ok 1 - fs gpu auto refresh t0"
     exit 0
 }
-echo "ok 1 - fs gpu auto refresh t0"
+printf '\n%s\n' "ok 1 - fs gpu auto refresh t0"
 exit 0

@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" \
     || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP CoreGraphics is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP CoreGraphics is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - explicit native named rejects infinity atomically"
+    printf '\n%s\n' "not ok 1 - explicit native named rejects infinity atomically"
     exit 0
 }
-echo "ok 1 - explicit native named rejects infinity atomically"
+printf '\n%s\n' "ok 1 - explicit native named rejects infinity atomically"
 exit 0

@@ -24,25 +24,25 @@ printf '%s' "${pipeline_log}" >&2
 test "$conversion_status" -eq 0 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --gpu-lookup-available none || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU direct lookup is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU direct lookup is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - GPU direct lookup probe failed"
+    printf '\n%s\n' "not ok 1 - GPU direct lookup probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {
-    echo "not ok" 1 - "gpu force thread split run failed"
+    printf '\n%s\n' "not ok 1 - gpu force thread split run failed"
     exit 0
 }
 
 case "${pipeline_log}" in
     *"threads: dither=0 encode="*) ;;
     *)
-        echo "not ok" 1 - "gpu force keeps encode worker budget"
+        printf '\n%s\n' "not ok 1 - gpu force keeps encode worker budget"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "gpu force keeps encode worker budget"
+printf '\n%s\n' "ok 1 - gpu force keeps encode worker budget"
 exit 0

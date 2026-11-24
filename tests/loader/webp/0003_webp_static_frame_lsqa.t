@@ -33,14 +33,14 @@ image_ref="${TOP_SRCDIR}/tests/data/loader/quality/35e6e2c0-animated-8x8-frame1-
 output_sixel="${ARTIFACT_LOCAL_DIR}/webp_static_frame.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
-    echo "not ok" 1 - "libwebp static frame conversion failed"
+    printf '\n%s\n' "not ok 1 - libwebp static frame conversion failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${image_ref}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libwebp static frame output matched expected first frame"
+printf '\n%s\n' "ok 1 - libwebp static frame output matched expected first frame"
 exit 0

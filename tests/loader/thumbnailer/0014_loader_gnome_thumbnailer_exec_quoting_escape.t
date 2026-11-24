@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "PATH=${bin_dir}:${PATH}" \
               --env "THUMB_LOG=${log_file}" \
               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
-    echo "not ok" 1 - "img2sixel failed"
+    printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }
 
@@ -49,17 +49,17 @@ while IFS= read -r line; do
 done < "${log_file}"
 
 test "${has_a3}" -eq 1 || {
-    echo "not ok" 1 - "Exec quote and escape parsing failed"
+    printf '\n%s\n' "not ok 1 - Exec quote and escape parsing failed"
     exit 0
 }
 test "${has_a4}" -eq 1 || {
-    echo "not ok" 1 - "Exec quote and escape parsing failed"
+    printf '\n%s\n' "not ok 1 - Exec quote and escape parsing failed"
     exit 0
 }
 test "${has_a5}" -eq 1 || {
-    echo "not ok" 1 - "Exec quote and escape parsing failed"
+    printf '\n%s\n' "not ok 1 - Exec quote and escape parsing failed"
     exit 0
 }
 
-echo "ok" 1 - "Exec quote and escape tokens are parsed correctly"
+printf '\n%s\n' "ok 1 - Exec quote and escape tokens are parsed correctly"
 exit 0

@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0141_loader_builtin_jpeg_progressive_420_digest" 1>&2 || {
-    echo "not ok" 1 - "JPEG progressive 4:2:0 scans produce exact RGB"
+    printf '\n%s\n' "not ok 1 - JPEG progressive 4:2:0 scans produce exact RGB"
     exit 0
 }
 
-echo "ok" 1 - "JPEG progressive 4:2:0 scans produce exact RGB"
+printf '\n%s\n' "ok 1 - JPEG progressive 4:2:0 scans produce exact RGB"
 
 exit 0

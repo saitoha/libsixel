@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/destination_snap/0001_destination pipeline 1 0 1 0 5 || {
-    echo "not ok 1 - Active snap rebuilds its definition across dci encoder reuse"
+    printf '\n%s\n' "not ok 1 - Active snap rebuilds its definition across dci encoder reuse"
     exit 0
 }
 
-echo "ok 1 - Active snap rebuilds its definition across dci encoder reuse"
+printf '\n%s\n' "ok 1 - Active snap rebuilds its definition across dci encoder reuse"
 exit 0

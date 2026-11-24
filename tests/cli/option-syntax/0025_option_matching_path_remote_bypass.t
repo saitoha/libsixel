@@ -21,13 +21,13 @@ msg=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "https://127.0.0.1:1/test.six" \
 set -x
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "remote input unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - remote input unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in
     *'path "https://127.0.0.1:1/test.six" not found.'*)
-        echo "not ok" 1 - "remote path was validated as a local filesystem path"
+        printf '\n%s\n' "not ok 1 - remote path was validated as a local filesystem path"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -36,5 +36,5 @@ case "${msg}" in
         ;;
 esac
 
-echo "ok" 1 - "remote path bypassed local filesystem existence checks"
+printf '\n%s\n' "ok 1 - remote path bypassed local filesystem existence checks"
 exit 0

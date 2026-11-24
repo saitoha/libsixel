@@ -21,18 +21,18 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --precision-policy=float32 -e -i -M pal:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "inverted mono palette export failed with float32 precision"
+    printf '\n%s\n' "not ok 1 - inverted mono palette export failed with float32 precision"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "inverted mono palette output normalization failed"
+    printf '\n%s\n' "not ok 1 - inverted mono palette output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "inverted mono palette changed under float32 precision"
+    printf '\n%s\n' "not ok 1 - inverted mono palette changed under float32 precision"
     exit 0
 }
 
-echo "ok" 1 - "inverted mono palette is stable under precision mode"
+printf '\n%s\n' "ok 1 - inverted mono palette is stable under precision mode"
 exit 0

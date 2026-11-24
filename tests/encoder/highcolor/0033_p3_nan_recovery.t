@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" codec/highcolor/0033_p3_nan_recovery || {
-    echo "not ok 1 - high-color p3 nan recovery"
+    printf '\n%s\n' "not ok 1 - high-color p3 nan recovery"
     exit 0
 }
-echo "ok 1 - high-color p3 nan recovery"
+printf '\n%s\n' "ok 1 - high-color p3 nan recovery"
 exit 0

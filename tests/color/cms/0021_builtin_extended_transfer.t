@@ -6,8 +6,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "cms/0016_builtin_extended_transfer" || {
-    echo "not ok 1 - builtin extended transfer"
+    printf '\n%s\n' "not ok 1 - builtin extended transfer"
     exit 0
 }
-echo "ok 1 - builtin extended transfer"
+printf '\n%s\n' "ok 1 - builtin extended transfer"
 exit 0

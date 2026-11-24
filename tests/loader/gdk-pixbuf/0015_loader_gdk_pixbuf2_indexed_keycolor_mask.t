@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0010_loader_gdk_pixbuf_pixelformat" "indexed_keycolor_mask" || {
-    echo "not ok 1 - gdk-pixbuf2 indexed_keycolor_mask"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 indexed_keycolor_mask"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 indexed_keycolor_mask"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 indexed_keycolor_mask"
 exit 0

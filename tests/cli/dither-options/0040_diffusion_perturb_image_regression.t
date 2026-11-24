@@ -29,17 +29,17 @@ float_default_output="${artifact_dir}/0165-perturb-float-default-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs:U0.5" \
     --precision-policy=8bit "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "fs:perturb short conversion failed"
+    printf '\n%s\n' "not ok 1 - fs:perturb short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=perturb\|stored=1\|binding=diffusion_perturb,diffusion_perturb_override\|value=0.5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs perturb short value was not stored"
+    printf '\n%s\n' "not ok 1 - fs perturb short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*perturb=0.5\|perturb_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs perturb did not reach the dither"
+    printf '\n%s\n' "not ok 1 - fs perturb did not reach the dither"
     exit 0
 }
 
@@ -47,76 +47,76 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_PERTURB=0.5" -d "fs" \
     --precision-policy=8bit "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "fs:perturb environment conversion failed"
+    printf '\n%s\n' "not ok 1 - fs:perturb environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=perturb\|stored=1\|binding=diffusion_perturb,diffusion_perturb_override\|value=0.5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs perturb environment value was not stored"
+    printf '\n%s\n' "not ok 1 - fs perturb environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXDTH1\|*diffuse=fs\|*perturb=0.5\|perturb_override=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fs environment perturb did not reach the dither"
+    printf '\n%s\n' "not ok 1 - fs environment perturb did not reach the dither"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "fs perturb short and environment output differ"
+    printf '\n%s\n' "not ok 1 - fs perturb short and environment output differ"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs" \
     --precision-policy=8bit "${input_image}" >"${default_output}" || {
-    echo "not ok" 1 - "fs default 8-bit conversion failed"
+    printf '\n%s\n' "not ok 1 - fs default 8-bit conversion failed"
     exit 0
 }
 
 cmp -s "${short_output}" "${default_output}" && {
-    echo "not ok" 1 - "fs perturb did not affect 8-bit output"
+    printf '\n%s\n' "not ok 1 - fs perturb did not affect 8-bit output"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs:U0.5" \
     --precision-policy=float32 "${input_image}" >"${float_short_output}" || {
-    echo "not ok" 1 - "fs float32 short conversion failed"
+    printf '\n%s\n' "not ok 1 - fs float32 short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_PERTURB=0.5" -d "fs" \
     --precision-policy=float32 "${input_image}" >"${float_env_output}" || {
-    echo "not ok" 1 - "fs float32 environment conversion failed"
+    printf '\n%s\n' "not ok 1 - fs float32 environment conversion failed"
     exit 0
 }
 
 cmp -s "${float_short_output}" "${float_env_output}" || {
-    echo "not ok" 1 - "fs float32 short and environment output differ"
+    printf '\n%s\n' "not ok 1 - fs float32 short and environment output differ"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs" \
     --precision-policy=float32 "${input_image}" >"${float_default_output}" || {
-    echo "not ok" 1 - "fs default float32 conversion failed"
+    printf '\n%s\n' "not ok 1 - fs default float32 conversion failed"
     exit 0
 }
 
 cmp -s "${float_short_output}" "${float_default_output}" && {
-    echo "not ok" 1 - "fs perturb did not affect float32 output"
+    printf '\n%s\n' "not ok 1 - fs perturb did not affect float32 output"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
 test -s "${float_short_output}" || {
-    echo "not ok 1 - float32 option output is empty"
+    printf '\n%s\n' "not ok 1 - float32 option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "fs:perturb preserves effective image output"
+printf '\n%s\n' "ok 1 - fs:perturb preserves effective image output"
 exit 0

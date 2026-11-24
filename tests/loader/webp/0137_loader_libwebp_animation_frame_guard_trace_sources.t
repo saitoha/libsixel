@@ -20,26 +20,26 @@ msg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none! -l disable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "animated WebP decode failed while collecting frame-guard trace"
+    printf '\n%s\n' "not ok 1 - animated WebP decode failed while collecting frame-guard trace"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *animation\ frame\ guard\ source=riff\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected RIFF-side frame guard trace was missing"
+    printf '\n%s\n' "not ok 1 - expected RIFF-side frame guard trace was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *animation\ frame\ guard\ source=decoder\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected decoder-side frame guard trace was missing"
+    printf '\n%s\n' "not ok 1 - expected decoder-side frame guard trace was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "webp frame-limit guard trace reports both RIFF and decoder sources"
+printf '\n%s\n' "ok 1 - webp frame-limit guard trace reports both RIFF and decoder sources"
 
 exit 0

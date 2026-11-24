@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "platform/threadpool/0014_finished_rejects_resume" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP thread support unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP thread support unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - finished rejects resume'
+    printf '\n%s\n' 'not ok 1 - finished rejects resume'
     exit 0
 }
-echo 'ok 1 - finished rejects resume'
+printf '\n%s\n' 'ok 1 - finished rejects resume'
 exit 0

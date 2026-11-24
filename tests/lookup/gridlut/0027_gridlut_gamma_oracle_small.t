@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/gridlut/0021_gridlut_gamma_oracle_small || {
-    echo "not ok 1 - gridlut gamma oracle small"
+    printf '\n%s\n' "not ok 1 - gridlut gamma oracle small"
     exit 0
 }
-echo "ok 1 - gridlut gamma oracle small"
+printf '\n%s\n' "ok 1 - gridlut gamma oracle small"
 exit 0

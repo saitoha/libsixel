@@ -6,15 +6,15 @@ echo "1..1"
 set -v
 
 test "${HAVE_SIXEL2PNG-}" = 1 || {
-    echo "ok 1 # SKIP sixel2png disabled"
+    printf '\n%s\n' "ok 1 # SKIP sixel2png disabled"
     exit 0
 }
 SIXEL_DECODER_INPUT_COLORSPACE=srgb ${SIXEL_RUNTIME-} \
     "${SIXEL2PNG_PATH}" -T display-p3 -T srgb \
     <"${TOP_SRCDIR}/tests/writer/png/colors.six" | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "writer/png/0012_last_interpretation_wins" || {
-    echo "not ok 1 - last_interpretation_wins"
+    printf '\n%s\n' "not ok 1 - last_interpretation_wins"
     exit 0
 }
-echo "ok 1 - last_interpretation_wins"
+printf '\n%s\n' "ok 1 - last_interpretation_wins"
 exit 0

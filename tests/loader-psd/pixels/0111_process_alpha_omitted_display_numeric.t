@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/psd/0134_process_alpha_omitted_display_numeric 1>&2 || {
-    echo "not ok 1 - process alpha omitted display numeric"
+    printf '\n%s\n' "not ok 1 - process alpha omitted display numeric"
     exit 0
 }
-echo "ok 1 - process alpha omitted display numeric"
+printf '\n%s\n' "ok 1 - process alpha omitted display numeric"
 exit 0

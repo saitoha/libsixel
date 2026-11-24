@@ -18,14 +18,14 @@ log_path="${ARTIFACT_LOCAL_DIR}/timeline-lines-negative.json"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_path}" --env SIXEL_LOG_LINES=-5 \
     --lookup-policy=certlut -p 4 -o "${output_sixel}" "${small_ppm}" || {
-    echo "not ok" 1 - "conversion with negative SIXEL_LOG_LINES failed"
+    printf '\n%s\n' "not ok 1 - conversion with negative SIXEL_LOG_LINES failed"
     exit 0
 }
 
 test -s "${output_sixel}" || {
-    echo "not ok" 1 - "conversion succeeded but output file is empty"
+    printf '\n%s\n' "not ok 1 - conversion succeeded but output file is empty"
     exit 0
 }
 
-echo "ok" 1 - "negative SIXEL_LOG_LINES keeps conversion stable"
+printf '\n%s\n' "ok 1 - negative SIXEL_LOG_LINES keeps conversion stable"
 exit 0

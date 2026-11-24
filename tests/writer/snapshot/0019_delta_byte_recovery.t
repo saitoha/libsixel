@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     codec/png_snapshot/0019_delta_byte_recovery || {
-    echo "not ok 1 - PNG delta byte recovery"
+    printf '\n%s\n' "not ok 1 - PNG delta byte recovery"
     exit 0
 }
-echo "ok 1 - PNG delta byte recovery"
+printf '\n%s\n' "ok 1 - PNG delta byte recovery"
 exit 0

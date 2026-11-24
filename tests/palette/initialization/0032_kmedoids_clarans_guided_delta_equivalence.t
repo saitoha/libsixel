@@ -10,9 +10,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" clarans-guided-delta-equivalence \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS guided delta equivalence failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS guided delta equivalence failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS guided delta matches full rebuild"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS guided delta matches full rebuild"
 exit 0

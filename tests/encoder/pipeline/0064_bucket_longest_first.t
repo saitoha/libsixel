@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0064_bucket_longest_fi
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - bucket longest first # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - bucket longest first # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - bucket longest first"
+    printf '\n%s\n' "not ok 1 - bucket longest first"
     exit 0
 }
-echo "ok 1 - bucket longest first"
+printf '\n%s\n' "ok 1 - bucket longest first"
 exit 0

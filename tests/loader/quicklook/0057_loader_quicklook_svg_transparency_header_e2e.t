@@ -27,30 +27,30 @@ printf '\033P0;0q' >"${header_alpha}"
 printf '\033Pq' >"${header_opaque}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L quicklook! "${svg_path}" >"${default_sixel}" || {
-    echo "not ok" 1 - "default transparent SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - default transparent SVG conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -A composite \
     -L quicklook! -B '#ffffff' "${svg_path}" >"${bg_sixel}" || {
-    echo "not ok" 1 - "background-composited SVG conversion failed"
+    printf '\n%s\n' "not ok 1 - background-composited SVG conversion failed"
     exit 0
 }
 
 dd if="${default_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" || {
-    echo "not ok" 1 - "transparent SVG did not emit ESC P0;0q header"
+    printf '\n%s\n' "not ok 1 - transparent SVG did not emit ESC P0;0q header"
     exit 0
 }
 
 dd if="${bg_sixel}" bs=1 count=3 2>/dev/null | cmp -s - "${header_opaque}" || {
-    echo "not ok" 1 - "background SVG did not emit ESC Pq header"
+    printf '\n%s\n' "not ok 1 - background SVG did not emit ESC Pq header"
     exit 0
 }
 
 dd if="${bg_sixel}" bs=1 count=6 2>/dev/null | cmp -s - "${header_alpha}" && {
-    echo "not ok" 1 - "background SVG unexpectedly kept ESC P0;0q header"
+    printf '\n%s\n' "not ok 1 - background SVG unexpectedly kept ESC P0;0q header"
     exit 0
 }
 
-echo "ok" 1 - "quicklook transparency header routing is correct end-to-end"
+printf '\n%s\n' "ok 1 - quicklook transparency header routing is correct end-to-end"
 exit 0

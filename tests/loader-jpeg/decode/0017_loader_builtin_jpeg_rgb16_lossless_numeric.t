@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0115_loader_builtin_jpeg_rgb16_lossless_numeric" || {
-    echo "not ok 1 - JPEG RGB16 lossless numeric samples"
+    printf '\n%s\n' "not ok 1 - JPEG RGB16 lossless numeric samples"
     exit 0
 }
 
-echo "ok 1 - JPEG RGB16 lossless numeric samples"
+printf '\n%s\n' "ok 1 - JPEG RGB16 lossless numeric samples"
 exit 0

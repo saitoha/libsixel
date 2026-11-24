@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/retained/0019_gpu_legacy_map" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - Legacy CPU access updates coherent GPU storage'
+    printf '\n%s\n' 'not ok 1 - Legacy CPU access updates coherent GPU storage'
     exit 0
 }
-echo 'ok 1 - Legacy CPU access updates coherent GPU storage'
+printf '\n%s\n' 'ok 1 - Legacy CPU access updates coherent GPU storage'
 exit 0

@@ -24,11 +24,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_STATUS_FORCE_COLORS=0" "-xhuman:C1" \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "forced colors short conversion failed"
+    printf '\n%s\n' "not ok 1 - forced colors short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=force_colors\|stored=1\|binding=force_colors,force_colors_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced colors short value was not stored"
+    printf '\n%s\n' "not ok 1 - forced colors short value was not stored"
     exit 0
 }
 
@@ -36,11 +36,11 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_STATUS_FORCE_COLORS=1" -xhuman \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "forced colors environment conversion failed"
+    printf '\n%s\n' "not ok 1 - forced colors environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=force_colors\|stored=1\|binding=force_colors,force_colors_override\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced colors environment value was not stored"
+    printf '\n%s\n' "not ok 1 - forced colors environment value was not stored"
     exit 0
 }
 
@@ -49,25 +49,25 @@ message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_STATUS_FORCE_COLORS=0" \
     -xhuman:C1 -d s "${input_image}" -o/dev/null 2>&1) || status=$?
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "forced colors consumer exit status mismatch"
+    printf '\n%s\n' "not ok 1 - forced colors consumer exit status mismatch"
     exit 0
 }
 escape=$(printf '\033')
 case "${message}" in *"${escape}[33m"**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "forced colors did not reach consumer"
+    printf '\n%s\n' "not ok 1 - forced colors did not reach consumer"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "forced colors outputs differ"
+    printf '\n%s\n' "not ok 1 - forced colors outputs differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "forced colors preserve image and diagnostic output"
+printf '\n%s\n' "ok 1 - forced colors preserve image and diagnostic output"
 exit 0

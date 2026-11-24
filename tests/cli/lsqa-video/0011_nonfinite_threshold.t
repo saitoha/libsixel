@@ -9,9 +9,9 @@ ${SIXEL_RUNTIME-} "${LSQA_PATH}" -Ma -L 'builtin!' --cms-engine=none -unan "${TO
 status=$?
 set -e
 test "${status}" -eq 2 || {
-    echo "not ok 1 - nonfinite rejection"
+    printf '\n%s\n' "not ok 1 - nonfinite rejection"
     exit 0
 }
 
-echo "ok 1 - nonfinite threshold"
+printf '\n%s\n' "ok 1 - nonfinite threshold"
 exit 0

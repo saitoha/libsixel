@@ -9,12 +9,12 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup delaunay \
     delaunay/gpu_geometry 5 || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU delaunay lookup unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU delaunay lookup unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - gpu geometry cospherical"
+    printf '\n%s\n' "not ok 1 - gpu geometry cospherical"
     exit 0
 }
-echo "ok 1 - gpu geometry cospherical"
+printf '\n%s\n' "ok 1 - gpu geometry cospherical"
 exit 0

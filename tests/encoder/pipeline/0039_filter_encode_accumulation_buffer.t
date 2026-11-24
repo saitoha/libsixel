@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0011_filter_encode_accumulation_buffer" || {
-    echo "not ok 1 - 0011_filter_encode_accumulation_buffer"
+    printf '\n%s\n' "not ok 1 - 0011_filter_encode_accumulation_buffer"
     exit 0
 }
 
-echo "ok 1 - 0011_filter_encode_accumulation_buffer"
+printf '\n%s\n' "ok 1 - 0011_filter_encode_accumulation_buffer"
 exit 0

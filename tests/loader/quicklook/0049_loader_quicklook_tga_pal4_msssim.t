@@ -26,16 +26,16 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L quicklook:thumbnail_size=64! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type1-pal4.tga" \
     >"${ARTIFACT_LOCAL_DIR}/quicklook_tga_pal4.six" || {
-    echo "not ok" 1 - "quicklook TGA pal4 decode failed"
+    printf '\n%s\n' "not ok 1 - quicklook TGA pal4 decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
     "${TOP_SRCDIR}/tests/data/loader/quality/5f0c9219-snake-64-reference-rgb-from-pal4.ppm" \
     "${ARTIFACT_LOCAL_DIR}/quicklook_tga_pal4.six" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+    printf '\n%s\n' "not ok 1 - $lsqa_msg"
     exit 0
 }
 
-echo "ok" 1 - "quicklook TGA pal4 decode preserves quality"
+printf '\n%s\n' "ok 1 - quicklook TGA pal4 decode preserves quality"
 exit 0

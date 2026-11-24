@@ -32,30 +32,30 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing diagnostic header line"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite diagnostic header is malformed"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite diagnostic header is malformed"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_DEFERRED_OUTER_GATE_BG*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted deferred outer gate"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted deferred outer gate"
         exit 0
         ;;
     *) ;;
@@ -63,8 +63,8 @@ esac
 
 case "${diag_line}" in
     *FX_CLBL1_BASE_INTERIOR_SUPPRESS*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly emitted deferred interior suppression"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite unexpectedly emitted deferred interior suppression"
         exit 0
         ;;
     *) ;;
@@ -73,11 +73,11 @@ esac
 case "${diag_line}" in
     *FX_DEFERRED_STROKE_CLIPPED*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite lost deferred stroke contract"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite lost deferred stroke contract"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred outer inactive-gate non-regression"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps deferred outer inactive-gate non-regression"
 exit 0

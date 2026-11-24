@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d bluenoise:phase=3,7 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "bluenoise phase suboption was rejected"
+    printf '\n%s\n' "not ok 1 - bluenoise phase suboption was rejected"
     exit 0
 }
 
-echo "ok" 1 - "bluenoise phase suboption is accepted"
+printf '\n%s\n' "ok 1 - bluenoise phase suboption is accepted"
 exit 0

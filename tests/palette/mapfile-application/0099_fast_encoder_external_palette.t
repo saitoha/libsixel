@@ -16,10 +16,10 @@ map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -8 -m "${map8_palette}" -Esize "${snake_ppm}" \
         -o/dev/null || {
-    echo "not ok" 1 - "fast encoder with palette fails"
+    printf '\n%s\n' "not ok 1 - fast encoder with palette fails"
     exit 0
 }
 
-echo "ok" 1 - "fast encoder with palette succeeds"
+printf '\n%s\n' "ok 1 - fast encoder with palette succeeds"
 
 exit 0

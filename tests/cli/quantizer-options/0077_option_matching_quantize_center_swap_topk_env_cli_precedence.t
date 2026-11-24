@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only center swap_topk=2 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only center swap_topk=2 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:swap_topk=8 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only center swap_topk=8 was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only center swap_topk=8 was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:swap_topk=64 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI swap_topk unexpectedly ignored in favor of env"
+    printf '\n%s\n' "not ok 1 - invalid CLI swap_topk unexpectedly ignored in favor of env"
     exit 0
 }
 
 case "${msg}" in *swap_topk**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI center swap_topk diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI center swap_topk diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:swap_topk=4 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI center swap_topk did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI center swap_topk did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "center swap_topk follows env/CLI acceptance and CLI priority"
+printf '\n%s\n' "ok 1 - center swap_topk follows env/CLI acceptance and CLI priority"
 exit 0

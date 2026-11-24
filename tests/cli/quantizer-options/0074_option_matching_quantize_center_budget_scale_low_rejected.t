@@ -16,14 +16,14 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qcenter:budget_scale=0.20 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "out-of-range center budget_scale unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - out-of-range center budget_scale unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *budget_scale**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing center budget_scale range diagnostic"
+    printf '\n%s\n' "not ok 1 - missing center budget_scale range diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "center budget_scale rejects values below range"
+printf '\n%s\n' "ok 1 - center budget_scale rejects values below range"
 exit 0

@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - legacy gray profile guard"
+    printf '\n%s\n' "not ok 1 - legacy gray profile guard"
     exit 0
 }
 active=0
@@ -30,7 +30,7 @@ while IFS= read -r line; do
     case "$line" in
     "LC1|begin|"*)
         test "$active" -eq 0 || {
-            echo "not ok 1 - overlapping CMS phase"
+            printf '\n%s\n' "not ok 1 - overlapping CMS phase"
             exit 0
         }
         active=1
@@ -39,18 +39,18 @@ while IFS= read -r line; do
         ;;
     *"LSXCMS2|event=apply|"*)
         test "$active" -eq 1 || {
-            echo "not ok 1 - unscoped CMS apply"
+            printf '\n%s\n' "not ok 1 - unscoped CMS apply"
             exit 0
         }
         case "$line" in
         *"|engine=builtin|"*"|ok=1") applies=$((applies + 1)) ;;
-        *) echo "$trace" >&2; echo "not ok 1 - wrong CMS backend or result"; exit 0 ;;
+        *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - wrong CMS backend or result"; exit 0 ;;
         esac
         ;;
     "LC1|end|ok=1")
         { test "$active" -eq 1 && test "$applies" -eq "$wanted"; } || {
             echo "$trace" >&2
-            echo "not ok 1 - unexpected CMS apply count"
+            printf '\n%s\n' "not ok 1 - unexpected CMS apply count"
             exit 0
         }
         active=0
@@ -63,9 +63,9 @@ $trace
 EOF
 { test "$active" -eq 0 && test "$completed" -gt 0 &&
     test "$completed" -eq "$expected"; } || {
-    echo "not ok 1 - incomplete CMS phases"
+    printf '\n%s\n' "not ok 1 - incomplete CMS phases"
     exit 0
 }
 set -x
-echo "ok 1 - legacy gray profile guard"
+printf '\n%s\n' "ok 1 - legacy gray profile guard"
 exit 0

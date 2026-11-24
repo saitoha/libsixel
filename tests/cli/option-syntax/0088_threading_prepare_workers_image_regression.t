@@ -31,15 +31,15 @@ env_output="${artifact_dir}/0183-threading-prepare-workers-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs -j auto:C0:S0:B0 -w128 \
     "-=greedy:B6:W2" -o "${short_output}" "${input_image}" 2>&1) || {
-    echo "not ok" 1 - "threading prepare_workers short conversion failed"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=prepare_workers\|stored=1\|binding=prepare_threads,prepare_threads_override\|value=2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare_workers short value was not stored"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers short value was not stored"
     exit 0
 }
 case "${short_trace}" in *prepare_workers=2\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare_workers short did not cap the prepare workers"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers short did not cap the prepare workers"
     exit 0
 }
 
@@ -47,15 +47,15 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs -j auto:C0:S0:B0 -w128 \
     --env "SIXEL_ENCODER_THREADING_PREPARE_WORKERS=2" \
     "-=greedy:B6" -o "${env_output}" "${input_image}" 2>&1) || {
-    echo "not ok" 1 - "threading prepare_workers environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=prepare_workers\|stored=1\|binding=prepare_threads,prepare_threads_override\|value=2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare_workers environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *prepare_workers=2\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare_workers environment did not cap the prepare workers"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers environment did not cap the prepare workers"
     exit 0
 }
 
@@ -63,35 +63,35 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs -j auto:C0:S0:B0 -w128 \
     --env "SIXEL_ENCODER_THREADING_PREPARE_WORKERS=-1" \
     "-=greedy:B6" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "threading prepare_workers out-of-range conversion failed"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers out-of-range conversion failed"
     exit 0
 }
 case "${range_trace}" in *LSXSUB1\|*key=prepare_workers\|stored=1**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "threading prepare_workers accepted an out-of-range environment value"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers accepted an out-of-range environment value"
     exit 0
 }
 
 # Both captures use converter-owned binary files; GNV redirection is text.
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "threading prepare_workers short and environment output differ"
+    printf '\n%s\n' "not ok 1 - threading prepare_workers short and environment output differ"
     exit 0
 }
 # Hold the emission budget fixed while reducing preparation to one slot.
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs -j auto:C0:S0:B0 -w128 \
     "-=greedy:B6:W1" "${input_image}" -o "${env_output}" || {
-    echo "not ok 1 - single-worker preparation failed"
+    printf '\n%s\n' "not ok 1 - single-worker preparation failed"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - preparation worker count changed output"
+    printf '\n%s\n' "not ok 1 - preparation worker count changed output"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "threading prepare_workers preserves effective image output"
+printf '\n%s\n' "ok 1 - threading prepare_workers preserves effective image output"
 exit 0

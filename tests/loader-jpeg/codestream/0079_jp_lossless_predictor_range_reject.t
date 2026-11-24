@@ -8,8 +8,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "loader/jpeg/0129_jp_lossless_predictor_range_reject" 1>&2 || {
-    echo "not ok 1 - Reject lossless predictor range"
+    printf '\n%s\n' "not ok 1 - Reject lossless predictor range"
     exit 0
 }
-echo "ok 1 - Reject lossless predictor range"
+printf '\n%s\n' "ok 1 - Reject lossless predictor range"
 exit 0

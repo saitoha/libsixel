@@ -16,14 +16,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --env SIXEL_BINNING_POLICY=invalid \
     -Qkmeans -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {
-    echo "not ok 1 - invalid binning-policy environment encode failed"
+    printf '\n%s\n' "not ok 1 - invalid binning-policy environment encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXBIN1\|requested=auto\|origin=default*effective=hard**) true ;; *) false ;; esac || {
-    echo "not ok 1 - invalid binning-policy environment changed AUTO"
+    printf '\n%s\n' "not ok 1 - invalid binning-policy environment changed AUTO"
     exit 0
 }
 
-echo "ok 1 - invalid binning-policy environment keeps AUTO defaults"
+printf '\n%s\n' "ok 1 - invalid binning-policy environment keeps AUTO defaults"
 exit 0

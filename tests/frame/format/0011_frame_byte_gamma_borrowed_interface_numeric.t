@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     frame/0178_float_byte_boundary 0 2 0 1>&2 || {
-    echo "not ok 1 - frame byte gamma borrowed interface numeric"
+    printf '\n%s\n' "not ok 1 - frame byte gamma borrowed interface numeric"
     exit 0
 }
-echo "ok 1 - frame byte gamma borrowed interface numeric"
+printf '\n%s\n' "ok 1 - frame byte gamma borrowed interface numeric"
 exit 0

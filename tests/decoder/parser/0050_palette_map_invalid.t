@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0048_palette_map_invalid" || {
-    echo "not ok 1 - 0048_palette_map_invalid"
+    printf '\n%s\n' "not ok 1 - 0048_palette_map_invalid"
     exit 0
 }
 
-echo "ok 1 - 0048_palette_map_invalid"
+printf '\n%s\n' "ok 1 - 0048_palette_map_invalid"
 exit 0

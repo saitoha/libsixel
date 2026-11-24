@@ -18,9 +18,9 @@ trace=$(
         "${ARTIFACT_LOCAL_DIR}/animation.six" 2>&1
 ) || {
     printf '%s\n' "${trace}" >&2
-    echo "not ok 1 - libpng serial numeric output"
+    printf '\n%s\n' "not ok 1 - libpng serial numeric output"
     exit 0
 }
 
-echo "ok 1 - libpng serial numeric output"
+printf '\n%s\n' "ok 1 - libpng serial numeric output"
 exit 0

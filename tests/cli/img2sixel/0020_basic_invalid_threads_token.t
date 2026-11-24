@@ -14,7 +14,7 @@ set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -= bogus -o/dev/null <"${TOP_SRCDIR}/images/map64.six" \
         2>&1) && {
-    echo "not ok" 1 - "accepts invalid thread token"
+    printf '\n%s\n' "not ok 1 - accepts invalid thread token"
     exit 0
 }
 
@@ -22,12 +22,12 @@ case "${msg}" in
     *"threading-policy accepts lazy, balanced, or greedy."*)
         ;;
     *)
-        echo "not ok" 1 - "missing invalid thread diagnostic"
+        printf '\n%s\n' "not ok 1 - missing invalid thread diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "rejects invalid thread token"
+printf '\n%s\n' "ok 1 - rejects invalid thread token"
 exit 0

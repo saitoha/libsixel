@@ -11,7 +11,7 @@ echo "1..1"
 set -v
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
-    echo "ok 1 # SKIP threading is disabled"
+    printf '\n%s\n' "ok 1 # SKIP threading is disabled"
     exit 0
 }
 
@@ -20,31 +20,31 @@ first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_b
     --gpu-policy=off --precision-policy=8bit -p 16 \
     -d fs:perturb=0.5:scan=serpentine:band_width=12 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
-    echo "not ok 1 - parallel conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel conversion failed"
     exit 0
 }
 second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=8:dither=3 \
     --gpu-policy=off --precision-policy=8bit -p 16 \
     -d fs:perturb=0.5:scan=serpentine:band_width=12 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
-    echo "not ok 1 - parallel conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel conversion failed"
     exit 0
 }
 third=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=8:dither=4 \
     --gpu-policy=off --precision-policy=8bit -p 16 \
     -d fs:perturb=0.5:scan=serpentine:band_width=12 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
-    echo "not ok 1 - parallel conversion failed"
+    printf '\n%s\n' "not ok 1 - parallel conversion failed"
     exit 0
 }
 test "${first}" = "${second}" || {
-    echo "not ok 1 - parallel output differs"
+    printf '\n%s\n' "not ok 1 - parallel output differs"
     exit 0
 }
 test "${first}" = "${third}" || {
-    echo "not ok 1 - parallel output differs"
+    printf '\n%s\n' "not ok 1 - parallel output differs"
     exit 0
 }
 
-echo "ok 1 - fixed bands are deterministic across worker counts"
+printf '\n%s\n' "ok 1 - fixed bands are deterministic across worker counts"
 exit 0

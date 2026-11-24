@@ -21,14 +21,14 @@ expected="${esc}Pq\"1;1;1;1#0;2;100;100;100#0@${esc}\\"
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=composite -B '#ffffff' \
     -L builtin! -d fs:scan=raster -o - "${input_png}") || {
-    echo "not ok" 1 - "builtin composite policy render failed"
+    printf '\n%s\n' "not ok 1 - builtin composite policy render failed"
     exit 0
 }
 
 test "${output}" = "${expected}" || {
-    echo "not ok" 1 - "composite policy did not fill alpha zero with -B"
+    printf '\n%s\n' "not ok 1 - composite policy did not fill alpha zero with -B"
     exit 0
 }
 
-echo "ok" 1 - "composite policy fills alpha zero with -B"
+printf '\n%s\n' "ok 1 - composite policy fills alpha zero with -B"
 exit 0

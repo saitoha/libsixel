@@ -13,9 +13,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -C </dev/null >/dev/null 2>&1 && {
-    echo "not ok" 1 - "unexpected success: missing complexion score argument"
+    printf '\n%s\n' "not ok 1 - unexpected success: missing complexion score argument"
     exit 0
 }
 
-echo "ok" 1 - "missing complexion score argument rejected"
+printf '\n%s\n' "ok 1 - missing complexion score argument rejected"
 exit 0

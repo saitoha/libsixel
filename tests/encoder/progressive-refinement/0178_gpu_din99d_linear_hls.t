@@ -9,12 +9,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0233_gpu_din99d_linear_hls"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu din99d linear hls # SKIP GPU device unavailable"
+    printf '\n%s\n' "ok 1 - gpu din99d linear hls # SKIP GPU device unavailable"
     exit 0
 }
 test "$result" = 0 || {
-    echo "not ok 1 - gpu din99d linear hls"
+    printf '\n%s\n' "not ok 1 - gpu din99d linear hls"
     exit 0
 }
-echo "ok 1 - gpu din99d linear hls"
+printf '\n%s\n' "ok 1 - gpu din99d linear hls"
 exit 0

@@ -27,15 +27,15 @@ env_output="${artifact_dir}/0181-threading-prepare-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     "-=greedy:B6:Pserial" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "threading prepare short conversion failed"
+    printf '\n%s\n' "not ok 1 - threading prepare short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=prepare\|stored=1\|binding=prepare,prepare_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare short value was not stored"
+    printf '\n%s\n' "not ok 1 - threading prepare short value was not stored"
     exit 0
 }
 case "${short_trace}" in *threading:\ *prepare=serial\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare short did not keep frame preparation serial"
+    printf '\n%s\n' "not ok 1 - threading prepare short did not keep frame preparation serial"
     exit 0
 }
 
@@ -43,28 +43,28 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_ENCODER_THREADING_PREPARE=serial" \
     "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "threading prepare environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading prepare environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=prepare\|stored=1\|binding=prepare,prepare_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threading prepare environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *threading:\ *prepare=serial\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading prepare environment did not keep frame preparation serial"
+    printf '\n%s\n' "not ok 1 - threading prepare environment did not keep frame preparation serial"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "threading prepare short and environment output differ"
+    printf '\n%s\n' "not ok 1 - threading prepare short and environment output differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "threading prepare preserves effective image output"
+printf '\n%s\n' "ok 1 - threading prepare preserves effective image output"
 exit 0

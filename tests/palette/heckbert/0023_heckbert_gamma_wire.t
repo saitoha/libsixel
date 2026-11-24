@@ -9,9 +9,9 @@ set -v
 SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0023_heckbert_gamma_wire >/dev/null || {
-    echo "not ok 1 - native Heckbert gamma wire"
+    printf '\n%s\n' "not ok 1 - native Heckbert gamma wire"
     exit 0
 }
 
-echo "ok 1 - native Heckbert gamma wire"
+printf '\n%s\n' "ok 1 - native Heckbert gamma wire"
 exit 0

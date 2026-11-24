@@ -15,10 +15,10 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
 map16_png="${TOP_SRCDIR}/images/map16.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${map16_png}" -w100 -hauto -rbicubic -dauto "${snake_ppm}" -o/dev/null || {
-    echo "not ok" 1 - "PPM conversion with 16-colour palette fails"
+    printf '\n%s\n' "not ok 1 - PPM conversion with 16-colour palette fails"
     exit 0
 }
 
-echo "ok" 1 - "PPM conversion with 16-colour palette works"
+printf '\n%s\n' "ok 1 - PPM conversion with 16-colour palette works"
 
 exit 0

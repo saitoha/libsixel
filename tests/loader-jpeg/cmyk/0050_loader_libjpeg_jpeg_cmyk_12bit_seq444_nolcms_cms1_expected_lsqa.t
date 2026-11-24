@@ -39,15 +39,15 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/7e149ca1-0015_jpeg_cmyk_
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_cmyk_12bit_seq444_nolcms_cms1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
-    echo "not ok" 1 - "libjpeg 12-bit CMYK JPEG decode failed (cms=1, nolcms)"
+    printf '\n%s\n' "not ok 1 - libjpeg 12-bit CMYK JPEG decode failed (cms=1, nolcms)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "libjpeg 12-bit CMYK JPEG (cms=1, nolcms) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - libjpeg 12-bit CMYK JPEG (cms=1, nolcms) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libjpeg 12-bit CMYK JPEG with cms=1 and nolcms keeps MS-SSIM ${lsqa_floor} against expected PNM"
+printf '\n%s\n' "ok 1 - libjpeg 12-bit CMYK JPEG with cms=1 and nolcms keeps MS-SSIM ${lsqa_floor} against expected PNM"
 exit 0

@@ -20,9 +20,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greed
     -lforce -d none:scan=raster -p 256 "${input_gif}" >/dev/null 2>/dev/null \
     || command_status=$?
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin unknown NETSCAPE subtype decode failed"
+    printf '\n%s\n' "not ok 1 - builtin unknown NETSCAPE subtype decode failed"
     exit 0
 }
 
-echo "ok" 1 - "builtin unknown NETSCAPE subtype does not hang in force-loop"
+printf '\n%s\n' "ok 1 - builtin unknown NETSCAPE subtype does not hang in force-loop"
 exit 0

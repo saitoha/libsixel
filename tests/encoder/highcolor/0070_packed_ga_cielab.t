@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" codec/highcolor/0070_packed_ga_cielab || {
-    echo "not ok 1 - high-color packed ga cielab"
+    printf '\n%s\n' "not ok 1 - high-color packed ga cielab"
     exit 0
 }
-echo "ok 1 - high-color packed ga cielab"
+printf '\n%s\n' "ok 1 - high-color packed ga cielab"
 exit 0

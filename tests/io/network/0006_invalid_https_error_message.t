@@ -30,7 +30,7 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "invalid HTTPS endpoint unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - invalid HTTPS endpoint unexpectedly succeeded"
     exit 0
 }
 
@@ -41,7 +41,7 @@ test "${command_status}" -ne 0 || {
 case "${capture_output}" in
     *"curl_easy_"*|*"WinHttp"*|*"fetchGetURL()"*|*"emscripten_fetch()"*|*"runtime error: unable"*) ;;
     *)
-        echo "not ok" 1 - "missing formatted network failure message"
+        printf '\n%s\n' "not ok 1 - missing formatted network failure message"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${capture_output}" >&2
         exit 0
@@ -49,12 +49,12 @@ case "${capture_output}" in
 esac
 
 test -n "${capture_output}" || {
-    echo "not ok" 1 - "missing formatted network failure message"
+    printf '\n%s\n' "not ok 1 - missing formatted network failure message"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${capture_output}" >&2
     exit 0
 }
 
-echo "ok" 1 - "invalid HTTPS endpoint reports formatted network failure"
+printf '\n%s\n' "ok 1 - invalid HTTPS endpoint reports formatted network failure"
 
 exit 0

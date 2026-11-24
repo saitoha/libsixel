@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0071_floor_restart_exact || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - floor restart exact"
+    printf '\n%s\n' "not ok 1 - floor restart exact"
     exit 0
 }
-echo "ok 1 - floor restart exact"
+printf '\n%s\n' "ok 1 - floor restart exact"
 exit 0

@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0077_multi_pass_cancelled_dcs" || {
-    echo "not ok 1 - cancelled dcs"
+    printf '\n%s\n' "not ok 1 - cancelled dcs"
     exit 0
 }
 
-echo "ok 1 - cancelled dcs"
+printf '\n%s\n' "ok 1 - cancelled dcs"
 exit 0

@@ -16,14 +16,14 @@ value1=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image1}" "${image2}")
 value2=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image1}" "${image2}")
 
 test "${value0}" = "${value1}" || {
-    echo "not ok" 1 - "palette repeat variance exceeded tolerance"
+    printf '\n%s\n' "not ok 1 - palette repeat variance exceeded tolerance"
     exit 0
 }
 
 test "${value1}" = "${value2}" || {
-    echo "not ok" 1 - "palette repeat variance exceeded tolerance"
+    printf '\n%s\n' "not ok 1 - palette repeat variance exceeded tolerance"
     exit 0
 }
 
-echo "ok" 1 - "palette repeat variance within tolerance"
+printf '\n%s\n' "ok 1 - palette repeat variance within tolerance"
 exit 0

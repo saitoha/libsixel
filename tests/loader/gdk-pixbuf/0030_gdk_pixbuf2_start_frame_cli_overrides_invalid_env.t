@@ -23,7 +23,7 @@ cli_bad_env_text=''
 cli_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}" 2>&1)" || {
-    echo "not ok 1 - gdk-pixbuf2 --start-frame=1 baseline failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 --start-frame=1 baseline failed"
     exit 0
 }
 
@@ -31,19 +31,19 @@ cli_bad_env_text="$(SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=1 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}" 2>&1)" || {
-    echo "not ok 1 - invalid env unexpectedly overrode --start-frame"
+    printf '\n%s\n' "not ok 1 - invalid env unexpectedly overrode --start-frame"
     exit 0
 }
 
 case "${cli_bad_env_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ must\ be\ an\ integer.*) false ;; *) true ;; esac || {
-    echo "not ok 1 - invalid env error leaked despite --start-frame override"
+    printf '\n%s\n' "not ok 1 - invalid env error leaked despite --start-frame override"
     exit 0
 }
 
 test "${cli_text}" = "${cli_bad_env_text}" || {
-    echo "not ok 1 - invalid env changed output despite --start-frame"
+    printf '\n%s\n' "not ok 1 - invalid env changed output despite --start-frame"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 --start-frame overrides invalid env"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 --start-frame overrides invalid env"
 exit 0

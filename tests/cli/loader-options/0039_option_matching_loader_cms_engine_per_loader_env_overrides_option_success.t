@@ -27,14 +27,14 @@ output_env_none="${ARTIFACT_LOCAL_DIR}/cms_engine_env_override_option_actual_non
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_auto}" || {
-    echo "not ok" 1 - "auto reference decode failed"
+    printf '\n%s\n' "not ok 1 - auto reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_ref_none}" || {
-    echo "not ok" 1 - "none reference decode failed"
+    printf '\n%s\n' "not ok 1 - none reference decode failed"
     exit 0
 }
 
@@ -42,7 +42,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=none \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_auto}" || {
-    echo "not ok" 1 - "per-loader env auto override decode failed"
+    printf '\n%s\n' "not ok 1 - per-loader env auto override decode failed"
     exit 0
 }
 
@@ -50,19 +50,19 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=none" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env_none}" || {
-    echo "not ok" 1 - "per-loader env none override decode failed"
+    printf '\n%s\n' "not ok 1 - per-loader env none override decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_auto}" "${output_env_auto}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto did not override --cms-engine=none"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto did not override --cms-engine=none"
     exit 0
 }
 
 cmp -s "${output_ref_none}" "${output_env_none}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=none did not override --cms-engine=auto"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_LIBWEBP_CMS_ENGINE=none did not override --cms-engine=auto"
     exit 0
 }
 
-echo "ok" 1 - "per-loader CMS engine env overrides global --cms-engine"
+printf '\n%s\n' "ok 1 - per-loader CMS engine env overrides global --cms-engine"
 exit 0

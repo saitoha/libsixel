@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0084_mask_empty_vector
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - mask empty vector 32 # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - mask empty vector 32 # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - mask empty vector 32"
+    printf '\n%s\n' "not ok 1 - mask empty vector 32"
     exit 0
 }
-echo "ok 1 - mask empty vector 32"
+printf '\n%s\n' "ok 1 - mask empty vector 32"
 exit 0

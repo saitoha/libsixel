@@ -16,44 +16,44 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:bmp_info40_mode=invalid! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown builtin bmp_info40_mode value unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown builtin bmp_info40_mode value unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ value**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing unknown suboption value diagnostic"
+    printf '\n%s\n' "not ok 1 - missing unknown suboption value diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *\"bmp_info40_mode\"**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing bmp_info40_mode token in diagnostic"
+    printf '\n%s\n' "not ok 1 - missing bmp_info40_mode token in diagnostic"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *auto**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "valid-values list missing auto"
+    printf '\n%s\n' "not ok 1 - valid-values list missing auto"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *windows**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "valid-values list missing windows"
+    printf '\n%s\n' "not ok 1 - valid-values list missing windows"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *os2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "valid-values list missing os2"
+    printf '\n%s\n' "not ok 1 - valid-values list missing os2"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "unknown builtin bmp_info40_mode value is rejected"
+printf '\n%s\n' "ok 1 - unknown builtin bmp_info40_mode value is rejected"
 exit 0

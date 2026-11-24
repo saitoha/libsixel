@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "cms/0004_transform_owns_endpoints" || {
-    echo "not ok 1 - transform owns endpoints"
+    printf '\n%s\n' "not ok 1 - transform owns endpoints"
     exit 0
 }
 
-echo "ok 1 - transform owns endpoints"
+printf '\n%s\n' "ok 1 - transform owns endpoints"
 exit 0

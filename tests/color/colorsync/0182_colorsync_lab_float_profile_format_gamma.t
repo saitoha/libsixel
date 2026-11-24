@@ -13,8 +13,8 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - independent matched values and prewrite profile-domain rejection"
+    printf '\n%s\n' "not ok 1 - independent matched values and prewrite profile-domain rejection"
     exit 0
 }
-echo "ok 1 - 0339_colorsync_lab_float_profile_format_gamma independent matched values and prewrite profile-domain rejection"
+printf '\n%s\n' "ok 1 - 0339_colorsync_lab_float_profile_format_gamma independent matched values and prewrite profile-domain rejection"
 exit 0

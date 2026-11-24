@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check minimum-os \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Declared minimum OS equals the actual Mach-O maximum with the supported floor."
+    printf '\n%s\n' "not ok 1 - Declared minimum OS equals the actual Mach-O maximum with the supported floor."
     exit 0
 }
 
-echo "ok 1 - Declared minimum OS equals the actual Mach-O maximum with the supported floor."
+printf '\n%s\n' "ok 1 - Declared minimum OS equals the actual Mach-O maximum with the supported floor."
 exit 0

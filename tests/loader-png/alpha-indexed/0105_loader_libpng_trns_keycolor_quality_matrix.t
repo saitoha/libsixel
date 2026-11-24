@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster -q full \
               "${input_png}" >"${out}" || {
-    echo "not ok 1 - quality=full opt-in render failed"
+    printf '\n%s\n' "not ok 1 - quality=full opt-in render failed"
     exit 0
 }
 
@@ -33,10 +33,10 @@ out_text=""
 IFS= read -r out_text < "${out}" || test -n "${out_text}"
 case "${out_text}" in
     *"$(printf '\033')P0;1q"*)
-        echo "ok 1 - quality=full keeps keycolor header"
+        printf '\n%s\n' "ok 1 - quality=full keeps keycolor header"
         ;;
     *)
-        echo "not ok 1 - quality=full lost keycolor header"
+        printf '\n%s\n' "not ok 1 - quality=full lost keycolor header"
         ;;
 esac
 

@@ -13,16 +13,16 @@ set -v
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --env SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1 -Woklab -~fhedt:Wauto "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - FHEDT conversion failed"
+    printf '\n%s\n' "not ok 1 - FHEDT conversion failed"
     exit 0
 }
 case "${trace}" in
     *LSXLUT1\|policy=fhedt\|precision=float32\|*weights=3/1/1*) true ;;
     *) false ;;
 esac || {
-    echo "not ok 1 - oklab auto over environment"
+    printf '\n%s\n' "not ok 1 - oklab auto over environment"
     exit 0
 }
 
-echo "ok 1 - oklab auto over environment"
+printf '\n%s\n' "ok 1 - oklab auto over environment"
 exit 0

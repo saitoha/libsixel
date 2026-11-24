@@ -19,10 +19,10 @@ pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-version-0100-valid.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin -m "${pal_palette}" \
     "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "PAL version 0100 should be accepted"
+    printf '\n%s\n' "not ok 1 - PAL version 0100 should be accepted"
     exit 0
 }
 
-echo "ok" 1 - "PAL version 0100 is accepted"
+printf '\n%s\n' "ok 1 - PAL version 0100 is accepted"
 
 exit 0

@@ -13,9 +13,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_LOADER_PREFER_8BIT=0" \
     --env "SIXEL_TEST_HDR_NUMERIC_GAMMA=1" \
     "loader/0014_loader_builtin_pixelformat" || {
-    echo "not ok 1 - loader/0014_loader_builtin_pixelformat (gamma numeric)"
+    printf '\n%s\n' "not ok 1 - loader/0014_loader_builtin_pixelformat (gamma numeric)"
     exit 0
 }
 
-echo "ok 1 - loader/0014_loader_builtin_pixelformat (gamma numeric)"
+printf '\n%s\n' "ok 1 - loader/0014_loader_builtin_pixelformat (gamma numeric)"
 exit 0

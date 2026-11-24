@@ -7,12 +7,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" delta-refresh/0006_cpu_playback || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU palette backend is unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - cpu playback"
+    printf '\n%s\n' "not ok 1 - cpu playback"
     exit 0
 }
-echo "ok 1 - cpu playback"
+printf '\n%s\n' "ok 1 - cpu playback"
 exit 0

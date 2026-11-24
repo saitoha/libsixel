@@ -14,12 +14,12 @@ set -v
 msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env IMG2SIXEL_COMPLETION_ZSH="${TOP_SRCDIR}/tests/data/completion/sources/zsh/_img2sixel" \
     -1 zsh) || {
-    echo "not ok" 1 - "Zsh completion path override failed"
+    printf '\n%s\n' "not ok 1 - Zsh completion path override failed"
     exit 0
 }
 case "${msg}" in *completion\ zsh\ path\ fixture**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "Zsh completion path override was ignored"
+    printf '\n%s\n' "not ok 1 - Zsh completion path override was ignored"
     exit 0
 }
-echo "ok" 1 - "Zsh completion path override is used"
+printf '\n%s\n' "ok 1 - Zsh completion path override is used"
 exit 0

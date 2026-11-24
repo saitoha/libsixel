@@ -19,14 +19,14 @@ status_invalid=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep --update-policy=delta:error=diffuse \
     -L builtin -b gray1 -o - "${input_image}" >/dev/null || {
-    echo "not ok" 1 - "valid update delta error=diffuse was rejected"
+    printf '\n%s\n' "not ok 1 - valid update delta error=diffuse was rejected"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep -Z delta:error=skip \
     -L builtin -b gray1 -o - "${input_image}" >/dev/null || {
-    echo "not ok" 1 - "valid -Z delta:error=skip was rejected"
+    printf '\n%s\n' "not ok 1 - valid -Z delta:error=skip was rejected"
     exit 0
 }
 
@@ -38,9 +38,9 @@ status_invalid=$?
 set -e
 
 test "${status_invalid}" -ne 0 || {
-    echo "not ok" 1 - "invalid update delta error choice was accepted"
+    printf '\n%s\n' "not ok 1 - invalid update delta error choice was accepted"
     exit 0
 }
 
-echo "ok" 1 - "update delta error validates documented choices"
+printf '\n%s\n' "ok 1 - update delta error validates documented choices"
 exit 0

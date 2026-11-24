@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0080_palette_auto_faster_probe || {
-    echo "not ok 1 - palette auto faster probe"
+    printf '\n%s\n' "not ok 1 - palette auto faster probe"
     exit 0
 }
-echo "ok 1 - palette auto faster probe"
+printf '\n%s\n' "ok 1 - palette auto faster probe"
 exit 0

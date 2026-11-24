@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "palette/snap_hooks/hook_disabled" || {
-    echo "not ok 1 - Inactive typed snap preserves original double coordinates"
+    printf '\n%s\n' "not ok 1 - Inactive typed snap preserves original double coordinates"
     exit 0
 }
-echo "ok 1 - Inactive typed snap preserves original double coordinates"
+printf '\n%s\n' "ok 1 - Inactive typed snap preserves original double coordinates"
 exit 0

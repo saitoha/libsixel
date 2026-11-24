@@ -22,14 +22,14 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-static-invalid-env-default.six"
 out_with_bad_env="${ARTIFACT_LOCAL_DIR}/webp-static-invalid-env-with-env.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_webp}" >"${out_default}" || {
-    echo "not ok" 1 - "baseline static libwebp decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static libwebp decode failed"
     exit 0
 }
 
 msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! "${image_webp}" \
     2>&1 >"${out_with_bad_env}") || {
-    echo "not ok" 1 - "static decode failed with invalid animation start-frame env"
+    printf '\n%s\n' "not ok 1 - static decode failed with invalid animation start-frame env"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -37,7 +37,7 @@ msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc \
 
 case "${msg}" in
     *"SIXEL_LOADER_ANIMATION_START_FRAME_NO"*)
-        echo "not ok" 1 - "static decode should ignore invalid animation start-frame env"
+        printf '\n%s\n' "not ok 1 - static decode should ignore invalid animation start-frame env"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -47,9 +47,9 @@ case "${msg}" in
 esac
 
 cmp -s "${out_default}" "${out_with_bad_env}" || {
-    echo "not ok" 1 - "invalid animation start-frame env changed static output"
+    printf '\n%s\n' "not ok 1 - invalid animation start-frame env changed static output"
     exit 0
 }
 
-echo "ok" 1 - "static libwebp decode ignores invalid animation start-frame env"
+printf '\n%s\n' "ok 1 - static libwebp decode ignores invalid animation start-frame env"
 exit 0

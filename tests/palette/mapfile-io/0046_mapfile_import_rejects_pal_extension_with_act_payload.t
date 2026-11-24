@@ -20,15 +20,15 @@ pal_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-act-sized-binary-invali
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m "${pal_palette}" "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - ".pal ACT-sized payload unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - .pal ACT-sized payload unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_prepare_specified_palette:\ ambiguous\ .pal\ content.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing ambiguous .pal diagnostic"
+    printf '\n%s\n' "not ok 1 - missing ambiguous .pal diagnostic"
     exit 0
 }
 
-echo "ok" 1 - ".pal ACT-sized payload is rejected as ambiguous"
+printf '\n%s\n' "ok 1 - .pal ACT-sized payload is rejected as ambiguous"
 
 exit 0

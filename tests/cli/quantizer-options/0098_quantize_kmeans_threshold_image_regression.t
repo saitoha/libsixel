@@ -30,12 +30,12 @@ env_output="${artifact_dir}/0029-quantize-kmeans-threshold-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 "-Qkmeans:T0.5" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "kmeans:threshold short conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:threshold short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=threshold\|stored=1\|binding=quantize_model_kmeans_threshold,quantize_model_kmeans_threshold_override\|value=0.5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threshold short value was not stored"
+    printf '\n%s\n' "not ok 1 - threshold short value was not stored"
     exit 0
 }
 
@@ -43,12 +43,12 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_THRESHOLD=0.6" -p 16 "-Qkmeans" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "kmeans:threshold env conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:threshold env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=threshold\|stored=1\|binding=quantize_model_kmeans_threshold,quantize_model_kmeans_threshold_override\|value=0.5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threshold environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threshold environment value was not stored"
     exit 0
 }
 
@@ -56,26 +56,26 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_THRESHOLD=-0.1" \
     -p 16 "-Qkmeans" "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "kmeans:threshold lower conversion failed"
+    printf '\n%s\n' "not ok 1 - kmeans:threshold lower conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=threshold\|stored=1\|binding=quantize_model_kmeans_threshold,quantize_model_kmeans_threshold_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threshold lower endpoint was not clamped"
+    printf '\n%s\n' "not ok 1 - threshold lower endpoint was not clamped"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "kmeans:threshold short and env output differ"
+    printf '\n%s\n' "not ok 1 - kmeans:threshold short and env output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "kmeans:threshold preserves image output"
+printf '\n%s\n' "ok 1 - kmeans:threshold preserves image output"
 exit 0

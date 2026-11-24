@@ -24,12 +24,12 @@ output_no=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d fs:scan=raster "${input_psd}" 2>&1) || status_no=$?
 
 test "${status_no}" -eq 0 || {
-    echo "not ok 1 - builtin PSD RGB8 alpha render failed without --bgcolor"
+    printf '\n%s\n' "not ok 1 - builtin PSD RGB8 alpha render failed without --bgcolor"
     exit 0
 }
 
 { test -n "${keycolor_header}" && case "${output_no}" in *"${keycolor_header}"*) true ;; *) false ;; esac; } || {
-    echo "not ok 1 - builtin PSD RGB8 alpha did not emit keycolor header without --bgcolor"
+    printf '\n%s\n' "not ok 1 - builtin PSD RGB8 alpha did not emit keycolor header without --bgcolor"
     exit 0
 }
 
@@ -38,14 +38,14 @@ output_bg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d fs:scan=raster -B "#000000" "${input_psd}" 2>&1) || status_bg=$?
 
 test "${status_bg}" -eq 0 || {
-    echo "not ok 1 - builtin PSD RGB8 alpha render failed with --bgcolor"
+    printf '\n%s\n' "not ok 1 - builtin PSD RGB8 alpha render failed with --bgcolor"
     exit 0
 }
 
 { test -z "${keycolor_header}" || case "${output_bg}" in *"${keycolor_header}"*) false ;; *) true ;; esac; } || {
-    echo "not ok 1 - builtin PSD RGB8 alpha kept keycolor header with --bgcolor"
+    printf '\n%s\n' "not ok 1 - builtin PSD RGB8 alpha kept keycolor header with --bgcolor"
     exit 0
 }
 
-echo "ok 1 - builtin PSD RGB8 alpha keycolor header toggles with --bgcolor"
+printf '\n%s\n' "ok 1 - builtin PSD RGB8 alpha keycolor header toggles with --bgcolor"
 exit 0

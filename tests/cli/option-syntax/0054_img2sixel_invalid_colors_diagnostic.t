@@ -13,14 +13,14 @@ set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --colors=bogus \
     2>&1) && {
-    echo "not ok 1 - img2sixel accepts a non-numeric color count"
+    printf '\n%s\n' "not ok 1 - img2sixel accepts a non-numeric color count"
     exit 0
 }
 case "${msg}" in *cannot*parse*-p/--colors*option.*) true ;; *) false ;; esac || {
-    echo "not ok 1 - invalid colors diagnostic changed"
+    printf '\n%s\n' "not ok 1 - invalid colors diagnostic changed"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok 1 - invalid colors diagnostic is preserved"
+printf '\n%s\n' "ok 1 - invalid colors diagnostic is preserved"
 exit 0

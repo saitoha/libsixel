@@ -15,10 +15,10 @@ snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs \
         -rbilinear -trgb "${snake_ppm}" -o/dev/null || {
-    echo "not ok" 1 - "PPM inspection with scaling fails"
+    printf '\n%s\n' "not ok 1 - PPM inspection with scaling fails"
     exit 0
 }
 
-echo "ok" 1 - "PPM inspection tolerates aggressive scaling"
+printf '\n%s\n' "ok 1 - PPM inspection tolerates aggressive scaling"
 
 exit 0

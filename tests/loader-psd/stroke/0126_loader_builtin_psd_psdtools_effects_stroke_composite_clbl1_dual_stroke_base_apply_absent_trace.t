@@ -30,34 +30,34 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ deferring\ dual-stroke\ ownership\ to\ clipped\ group\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred dual-stroke ownership trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing deferred dual-stroke ownership trace"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback"*builtin\ PSD:\ applying\ vector\ stroke\ and\ layer\ effect\ stroke\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite kept base dual-stroke apply after delegation"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite kept base dual-stroke apply after delegation"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback"*builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ in\ layer\ fallback**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite kept base mode-aware dual-stroke after delegation"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite kept base mode-aware dual-stroke after delegation"
     exit 0
 }
 
 case "${trace_output}" in *"builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback"*builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite lost deferred dual-stroke apply after delegation"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite lost deferred dual-stroke apply after delegation"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps delegated dual-stroke off the base pass"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps delegated dual-stroke off the base pass"
 exit 0

@@ -31,7 +31,7 @@ run_status=$?
 set -e
 
 test "${run_status}" -eq 0 || {
-    echo "not ok" 1 - "arithmetic JPEG decode failed despite arithmetic decoder support"
+    printf '\n%s\n' "not ok 1 - arithmetic JPEG decode failed despite arithmetic decoder support"
     exit 0
 }
 
@@ -39,7 +39,7 @@ case "${trace_log}" in
     *"libsixel: trying libjpeg loader"*)
         ;;
     *)
-        echo "not ok" 1 - "libjpeg loader was not attempted first"
+        printf '\n%s\n' "not ok 1 - libjpeg loader was not attempted first"
         exit 0
         ;;
 esac
@@ -48,19 +48,19 @@ case "${trace_log}" in
     *"libsixel: loader libjpeg succeeded"*)
         ;;
     *)
-        echo "not ok" 1 - "libjpeg loader did not report success"
+        printf '\n%s\n' "not ok 1 - libjpeg loader did not report success"
         exit 0
         ;;
 esac
 
 case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
-        echo "not ok" 1 - "builtin fallback unexpectedly occurred"
+        printf '\n%s\n' "not ok 1 - builtin fallback unexpectedly occurred"
         exit 0
         ;;
     *)
         ;;
 esac
 
-echo "ok" 1 - "arithmetic JPEG decodes in libjpeg without fallback"
+printf '\n%s\n' "ok 1 - arithmetic JPEG decodes in libjpeg without fallback"
 exit 0

@@ -8,9 +8,9 @@ status=0
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none -v60px "${TOP_SRCDIR}/tests/data/inputs/snake_16.bmp" "${TOP_SRCDIR}/tests/data/inputs/snake_16.bmp" \
     >/dev/null 2>&1 || status=$?
 test "${status}" -eq 2 || {
-    echo "not ok 1 - scielab invalid ppd"
+    printf '\n%s\n' "not ok 1 - scielab invalid ppd"
     exit 0
 }
 
-echo "ok 1 - scielab ppd rejects trailing garbage"
+printf '\n%s\n' "ok 1 - scielab ppd rejects trailing garbage"
 exit 0

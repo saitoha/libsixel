@@ -11,17 +11,17 @@ echo "1..1"
 set -v
 
 first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --gpu-policy=off -p 16 --precision-policy=float32 -d fs:perturb=0.5:perturb_seed=1 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
-    echo "not ok 1 - conversion failed"
+    printf '\n%s\n' "not ok 1 - conversion failed"
     exit 0
 }
 second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --gpu-policy=off -p 16 --precision-policy=float32 -d fs:perturb=0.5:perturb_seed=2 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
-    echo "not ok 1 - conversion failed"
+    printf '\n%s\n' "not ok 1 - conversion failed"
     exit 0
 }
 test "${first}" != "${second}" || {
-    echo "not ok 1 - seeds must change float output"
+    printf '\n%s\n' "not ok 1 - seeds must change float output"
     exit 0
 }
 
-echo "ok 1 - different seeds change float32 output"
+printf '\n%s\n' "ok 1 - different seeds change float32 output"
 exit 0

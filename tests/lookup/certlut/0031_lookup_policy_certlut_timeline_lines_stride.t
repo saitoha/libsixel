@@ -20,25 +20,25 @@ log_stride3="${ARTIFACT_LOCAL_DIR}/timeline-stride3.json"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_stride1}" --env SIXEL_LOG_LINES=1 \
     --lookup-policy=certlut -p 4 -o "${output_stride1}" "${small_ppm}" || {
-    echo "not ok" 1 - "conversion with SIXEL_LOG_LINES=1 failed"
+    printf '\n%s\n' "not ok 1 - conversion with SIXEL_LOG_LINES=1 failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_stride3}" --env SIXEL_LOG_LINES=3 \
     --lookup-policy=certlut -p 4 -o "${output_stride3}" "${small_ppm}" || {
-    echo "not ok" 1 - "conversion with SIXEL_LOG_LINES=3 failed"
+    printf '\n%s\n' "not ok 1 - conversion with SIXEL_LOG_LINES=3 failed"
     exit 0
 }
 
 test -s "${output_stride1}" || {
-    echo "not ok" 1 - "one of the conversion outputs is empty"
+    printf '\n%s\n' "not ok 1 - one of the conversion outputs is empty"
     exit 0
 }
 
 test -s "${output_stride3}" || {
-    echo "not ok" 1 - "one of the conversion outputs is empty"
+    printf '\n%s\n' "not ok 1 - one of the conversion outputs is empty"
     exit 0
 }
 
-echo "ok" 1 - "SIXEL_LOG_LINES values are accepted without FHEDT"
+printf '\n%s\n' "ok 1 - SIXEL_LOG_LINES values are accepted without FHEDT"
 exit 0

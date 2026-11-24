@@ -12,8 +12,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract default || {
-    echo "not ok 1 - libpng apng default image excluded numeric"
+    printf '\n%s\n' "not ok 1 - libpng apng default image excluded numeric"
     exit 0
 }
-echo "ok 1 - libpng apng default image excluded numeric"
+printf '\n%s\n' "ok 1 - libpng apng default image excluded numeric"
 exit 0

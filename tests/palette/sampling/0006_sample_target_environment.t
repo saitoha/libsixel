@@ -18,15 +18,15 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --env SIXEL_PALETTE_SAMPLE_TARGET=128 \
     --sampling-policy=adaptive-grid \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "sample target conversion failed"
+    printf '\n%s\n' "not ok 1 - sample target conversion failed"
     exit 0
 }
 
 case "${trace}" in *LSXSMP1\|override=1\|target=128\|stride=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "sample target missed its consumer"
+    printf '\n%s\n' "not ok 1 - sample target missed its consumer"
     exit 0
 }
 
 
-echo "ok" 1 - "sample target reaches the palette consumer"
+printf '\n%s\n' "ok 1 - sample target reaches the palette consumer"
 exit 0

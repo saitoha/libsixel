@@ -19,19 +19,19 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp:cms_engine=none! -l disable \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_vp8x_anim_flag_without_anmf_chunk.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted VP8X animation stream without ANMF"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted VP8X animation stream without ANMF"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *webp\ decode:\ VP8X\ animation\ flag\ requires\ ANIM\ and\ ANMF\ chunks.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected VP8X ANIM/ANMF consistency diagnostic was missing"
+    printf '\n%s\n' "not ok 1 - expected VP8X ANIM/ANMF consistency diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced libwebp loader rejects VP8X animation streams with ANIM but without ANMF"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects VP8X animation streams with ANIM but without ANMF"
 
 exit 0

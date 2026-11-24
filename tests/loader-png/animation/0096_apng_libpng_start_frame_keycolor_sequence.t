@@ -30,7 +30,7 @@ trace_log=$(
                   -Llibpng! -lauto -g \
                   "${image_apng}" -o/dev/null 2>&1
 ) || {
-    echo "not ok 1 - libpng APNG trace run failed (start=1)"
+    printf '\n%s\n' "not ok 1 - libpng APNG trace run failed (start=1)"
     exit 0
 }
 
@@ -62,11 +62,11 @@ ${loop_no}:${frame_no}"
 done
 
 test "${actual_sequence}" = "${expected_sequence}" || {
-    echo "not ok 1 - libpng APNG start=1 keycolor sequence mismatch"
+    printf '\n%s\n' "not ok 1 - libpng APNG start=1 keycolor sequence mismatch"
     exit 0
 }
 
-    echo "ok 1 - libpng APNG start=1 keycolor sequence stays loop-local"
+    printf '\n%s\n' "ok 1 - libpng APNG start=1 keycolor sequence stays loop-local"
 
 
 exit 0

@@ -19,10 +19,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported layer fallback layout"*)
-        echo "ok" 1 - "mode7 CMYK16 missing-composite marker is rejected as unsupported layout"
+        printf '\n%s\n' "ok 1 - mode7 CMYK16 missing-composite marker is rejected as unsupported layout"
         ;;
     *)
-        echo "not ok" 1 - "mode7 CMYK16 missing-composite unsupported-layout trace is missing"
+        printf '\n%s\n' "not ok 1 - mode7 CMYK16 missing-composite unsupported-layout trace is missing"
         exit 0
         ;;
 esac

@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0179_delta_byte_hls_stucki || {
-    echo "not ok 1 - delta byte hls stucki"
+    printf '\n%s\n' "not ok 1 - delta byte hls stucki"
     exit 0
 }
-echo "ok 1 - delta byte hls stucki"
+printf '\n%s\n' "ok 1 - delta byte hls stucki"
 exit 0

@@ -26,21 +26,21 @@ output_linear="${ARTIFACT_LOCAL_DIR}/builtin_bgcs_trns_linear_cms_auto.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Lbuiltin:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
-    echo "not ok 1 - builtin cms=auto RGBA gamma background composition failed"
+    printf '\n%s\n' "not ok 1 - builtin cms=auto RGBA gamma background composition failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
               -Lbuiltin:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_linear}" || {
-    echo "not ok 1 - builtin cms=auto RGBA linear background composition failed"
+    printf '\n%s\n' "not ok 1 - builtin cms=auto RGBA linear background composition failed"
     exit 0
 }
 
 cmp -s "${output_gamma}" "${output_linear}" && {
-    echo "not ok 1 - builtin cms=auto gamma and linear RGBA composition produced identical output"
+    printf '\n%s\n' "not ok 1 - builtin cms=auto gamma and linear RGBA composition produced identical output"
     exit 0
 }
 
-echo "ok 1 - builtin cms=auto linear background interpretation changes RGBA composition"
+printf '\n%s\n' "ok 1 - builtin cms=auto linear background interpretation changes RGBA composition"
 exit 0

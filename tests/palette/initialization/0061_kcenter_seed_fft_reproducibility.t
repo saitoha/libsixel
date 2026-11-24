@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0003_kcenter_constraints" seed-fft >/dev/null || {
-    echo "not ok" 1 - "kcenter seed reproducibility failed for fft"
+    printf '\n%s\n' "not ok 1 - kcenter seed reproducibility failed for fft"
     exit 0
 }
 
-echo "ok" 1 - "kcenter seed reproducibility passed for fft"
+printf '\n%s\n' "ok 1 - kcenter seed reproducibility passed for fft"
 exit 0

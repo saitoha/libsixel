@@ -26,20 +26,20 @@ case "${trace_log}" in
     *"libsixel: trying libjpeg loader"*)
         ;;
     *)
-        echo "not ok" 1 - "libjpeg loader was not attempted first"
+        printf '\n%s\n' "not ok 1 - libjpeg loader was not attempted first"
         exit 0
         ;;
 esac
 
 case "${trace_log}" in
     *"libsixel: loader libjpeg succeeded"*)
-        echo "ok" 1 - "runtime libjpeg can decode arithmetic JPEG; fallback scenario is not applicable"
+        printf '\n%s\n' "ok 1 - runtime libjpeg can decode arithmetic JPEG; fallback scenario is not applicable"
         exit 0
         ;;
     *"libsixel: loader libjpeg failed ("*)
         ;;
     *)
-        echo "not ok" 1 - "libjpeg arithmetic decode outcome was not reported"
+        printf '\n%s\n' "not ok 1 - libjpeg arithmetic decode outcome was not reported"
         exit 0
         ;;
 esac
@@ -48,10 +48,10 @@ case "${trace_log}" in
     *"libsixel: trying builtin loader"*)
         ;;
     *)
-        echo "not ok" 1 - "fallback to builtin loader did not occur"
+        printf '\n%s\n' "not ok 1 - fallback to builtin loader did not occur"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "arithmetic JPEG falls back to builtin when libjpeg arithmetic decode is unavailable"
+printf '\n%s\n' "ok 1 - arithmetic JPEG falls back to builtin when libjpeg arithmetic decode is unavailable"
 exit 0

@@ -20,7 +20,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_riff_header_truncated.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted truncated RIFF header"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted truncated RIFF header"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -30,13 +30,13 @@ case "${msg}" in
     *"webp decode: RIFF header is truncated."*)
         ;;
     *)
-        echo "not ok" 1 - "expected truncated RIFF header diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected truncated RIFF header diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects truncated RIFF header"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects truncated RIFF header"
 
 exit 0

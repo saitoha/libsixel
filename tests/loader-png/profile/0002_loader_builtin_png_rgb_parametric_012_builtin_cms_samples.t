@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${TOP_SRCDIR}/tests/data/colormgmt/reference/custom/rgb_parametric_012_analytic.ppm" \
     "${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_parametric_012.png" \
     'builtin:cms_engine=builtin!' 0.004 || {
-    echo "not ok 1 - parametric ICC samples differ from the analytic oracle"
+    printf '\n%s\n' "not ok 1 - parametric ICC samples differ from the analytic oracle"
     exit 0
 }
 
-echo "ok 1 - parametric ICC samples match the analytic oracle"
+printf '\n%s\n' "ok 1 - parametric ICC samples match the analytic oracle"
 exit 0

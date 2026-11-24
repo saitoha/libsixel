@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_float/0014_heckbert_pca_split >/dev/null || {
-    echo "not ok 1 - native Heckbert pca split"
+    printf '\n%s\n' "not ok 1 - native Heckbert pca split"
     exit 0
 }
 
-echo "ok 1 - native Heckbert pca split"
+printf '\n%s\n' "ok 1 - native Heckbert pca split"
 exit 0

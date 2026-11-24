@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup fraction 3 3 || {
-    echo "not ok 1 - vptree cielab fraction"
+    printf '\n%s\n' "not ok 1 - vptree cielab fraction"
     exit 0
 }
 
-echo "ok 1 - vptree cielab fraction"
+printf '\n%s\n' "ok 1 - vptree cielab fraction"
 exit 0

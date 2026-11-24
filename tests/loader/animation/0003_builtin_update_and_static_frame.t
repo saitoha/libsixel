@@ -16,9 +16,9 @@ set -v
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -dnone -u -g "${image_gif}" >/dev/null || {
-    echo "not ok" 1 - "combined update and static frame fails"
+    printf '\n%s\n' "not ok 1 - combined update and static frame fails"
     exit 0
 }
 
-echo "ok" 1 - "combined update and static frame works"
+printf '\n%s\n' "ok 1 - combined update and static frame works"
 exit 0

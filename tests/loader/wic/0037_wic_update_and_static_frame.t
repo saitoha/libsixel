@@ -24,9 +24,9 @@ test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L wic! -ldisable -dnone -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
-    echo "not ok" 1 - "wic combined update/static frame failed"
+    printf '\n%s\n' "not ok 1 - wic combined update/static frame failed"
     exit 0
 }
 
-echo "ok" 1 - "wic combined update/static frame succeeded"
+printf '\n%s\n' "ok 1 - wic combined update/static frame succeeded"
 exit 0

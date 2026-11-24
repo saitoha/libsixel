@@ -20,5 +20,5 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/corrupted/truncated.heic" >/dev/null 2>/dev/null || :
 
-echo "ok" 1 - "quicklook does not hang on truncated HEIC"
+printf '\n%s\n' "ok 1 - quicklook does not hang on truncated HEIC"
 exit 0

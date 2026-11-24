@@ -30,15 +30,15 @@ env_output="${artifact_dir}/0179-threading-load-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -g -l disable -d fs \
     "-=greedy:B6:Lserial" -o "${short_output}" "${input_image}" 2>&1) || {
-    echo "not ok" 1 - "threading load short conversion failed"
+    printf '\n%s\n' "not ok 1 - threading load short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=load\|stored=1\|binding=load,load_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading load short value was not stored"
+    printf '\n%s\n' "not ok 1 - threading load short value was not stored"
     exit 0
 }
 case "${short_trace}" in *threading:\ *load=serial\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading load short did not keep frame loading serial"
+    printf '\n%s\n' "not ok 1 - threading load short did not keep frame loading serial"
     exit 0
 }
 
@@ -46,38 +46,38 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -g -l disable -d fs \
     --env "SIXEL_ENCODER_THREADING_LOAD=serial" \
     "-=greedy:B6" -o "${env_output}" "${input_image}" 2>&1) || {
-    echo "not ok" 1 - "threading load environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading load environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=load\|stored=1\|binding=load,load_override\|value=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading load environment value was not stored"
+    printf '\n%s\n' "not ok 1 - threading load environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *threading:\ *load=serial\ **) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading load environment did not keep frame loading serial"
+    printf '\n%s\n' "not ok 1 - threading load environment did not keep frame loading serial"
     exit 0
 }
 
 # Both captures use converter-owned binary files; GNV redirection is text.
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "threading load short and environment output differ"
+    printf '\n%s\n' "not ok 1 - threading load short and environment output differ"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -d fs \
     "-=greedy:B6:Lahead" "${input_image}" -o "${env_output}" || {
-    echo "not ok 1 - read-ahead playback failed"
+    printf '\n%s\n' "not ok 1 - read-ahead playback failed"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - load concurrency changed animation output"
+    printf '\n%s\n' "not ok 1 - load concurrency changed animation output"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "threading load preserves effective image output"
+printf '\n%s\n' "ok 1 - threading load preserves effective image output"
 exit 0

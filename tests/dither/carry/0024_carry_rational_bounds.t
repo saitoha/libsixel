@@ -6,8 +6,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/carry/0024_carry_rational_bounds" || {
-    echo "not ok 1 - bounds_reference"
+    printf '\n%s\n' "not ok 1 - bounds_reference"
     exit 0
 }
-echo "ok 1 - bounds_reference"
+printf '\n%s\n' "ok 1 - bounds_reference"
 exit 0

@@ -9,8 +9,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/color_space/0001_space_contract \
     centroid 1 0 0 || {
-    echo "not ok 1 - linear extended centroid"
+    printf '\n%s\n' "not ok 1 - linear extended centroid"
     exit 0
 }
-echo "ok 1 - linear extended centroid"
+printf '\n%s\n' "ok 1 - linear extended centroid"
 exit 0

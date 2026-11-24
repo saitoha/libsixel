@@ -23,27 +23,27 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 \
     "${input_image}" 2>&1 >/dev/null) || status=$?
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "heckbert profile=quality encode failed"
+    printf '\n%s\n' "not ok 1 - heckbert profile=quality encode failed"
     exit 0
 }
 diag_line="LSXPAL1${msg#*LSXPAL1}"
 diag_line=${diag_line%%"${nl}"*}
 case "${diag_line}" in LSXPAL1*rc=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "heckbert profile=quality diagnostic header is malformed"
+    printf '\n%s\n' "not ok 1 - heckbert profile=quality diagnostic header is malformed"
     exit 0
 }
 case "${diag_line}" in *codes=*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "heckbert profile=quality diagnostic header is malformed"
+    printf '\n%s\n' "not ok 1 - heckbert profile=quality diagnostic header is malformed"
     exit 0
 }
 case "${diag_line}" in *MODEL_HECKBERT*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "heckbert profile=quality contract code mismatch"
+    printf '\n%s\n' "not ok 1 - heckbert profile=quality contract code mismatch"
     exit 0
 }
 case "${diag_line}" in *MERGE_WARD*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "heckbert profile=quality contract code mismatch"
+    printf '\n%s\n' "not ok 1 - heckbert profile=quality contract code mismatch"
     exit 0
 }
-echo "ok" 1 - "heckbert profile=quality accepted"
+printf '\n%s\n' "ok 1 - heckbert profile=quality accepted"
 
 exit 0

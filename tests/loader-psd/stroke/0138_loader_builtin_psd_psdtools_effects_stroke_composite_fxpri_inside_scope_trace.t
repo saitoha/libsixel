@@ -36,7 +36,7 @@ inside_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     inside_status=$?
 
 test "${inside_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite inside decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite inside decode failed"
     exit 0
 }
 
@@ -48,7 +48,7 @@ outside_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     outside_status=$?
 
 test "${outside_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite outside decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite outside decode failed"
     exit 0
 }
 
@@ -56,14 +56,14 @@ inside_diag=${inside_trace%%"${nl}"*}
 outside_diag=${outside_trace%%"${nl}"*}
 
 case "${inside_diag}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite inside missing FXPRI code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite inside missing FXPRI code"
     exit 0
 }
 
 case "${outside_diag}" in *FX_DUAL_FXPRI_OVL_DEFER**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite outside unexpectedly used FXPRI code"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite outside unexpectedly used FXPRI code"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite scopes FXPRI overlap policy to inside dual stroke"
+printf '\n%s\n' "ok 1 - effects/stroke-composite scopes FXPRI overlap policy to inside dual stroke"
 exit 0

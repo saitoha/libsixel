@@ -14,14 +14,14 @@ stderr_text=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -B "not_a_color" \
     "${image_ref}" "${image_out}" 2>&1 1>/dev/null) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "invalid -B should exit with status 2"
+    printf '\n%s\n' "not ok 1 - invalid -B should exit with status 2"
     exit 0
 }
 
 case "${stderr_text}" in *invalid\ argument\ for**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "invalid -B error message was missing"
+    printf '\n%s\n' "not ok 1 - invalid -B error message was missing"
     exit 0
 }
 
-echo "ok" 1 - "invalid -B value is rejected"
+printf '\n%s\n' "ok 1 - invalid -B value is rejected"
 exit 0

@@ -16,9 +16,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qc \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     >/dev/null || {
-    echo "not ok" 1 - "-Q c unique prefix was rejected"
+    printf '\n%s\n' "not ok 1 - -Q c unique prefix was rejected"
     exit 0
 }
 
-echo "ok" 1 - "-Q accepts center unique prefix c"
+printf '\n%s\n' "ok 1 - -Q accepts center unique prefix c"
 exit 0

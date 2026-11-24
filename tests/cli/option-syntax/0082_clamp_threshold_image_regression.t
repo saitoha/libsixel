@@ -23,41 +23,41 @@ env_output="${artifact_dir}/0168-clamp-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -0soft:T1.05 -dfs -=greedy:B1 \
     "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok 1 - clamp short conversion failed"
+    printf '\n%s\n' "not ok 1 - clamp short conversion failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=threshold\|stored=1\|binding=clamp_threshold,clamp_threshold_override\|value=1.05*) true ;; *) false ;; esac || {
-    echo "not ok 1 - clamp short threshold was not stored"
+    printf '\n%s\n' "not ok 1 - clamp short threshold was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXDTH1\|*clamp_effective=1\|clamp_threshold=1.05*) true ;; *) false ;; esac || {
-    echo "not ok 1 - clamp threshold missed the dither"
+    printf '\n%s\n' "not ok 1 - clamp threshold missed the dither"
     exit 0
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_CLAMP_THRESHOLD=1.05" -0soft -dfs -=greedy:B1 \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - clamp environment conversion failed"
+    printf '\n%s\n' "not ok 1 - clamp environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=threshold\|stored=1\|binding=clamp_threshold,clamp_threshold_override\|value=1.05*) true ;; *) false ;; esac || {
-    echo "not ok 1 - clamp environment threshold was not stored"
+    printf '\n%s\n' "not ok 1 - clamp environment threshold was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXDTH1\|*clamp_effective=1\|clamp_threshold=1.05*) true ;; *) false ;; esac || {
-    echo "not ok 1 - environment threshold missed the dither"
+    printf '\n%s\n' "not ok 1 - environment threshold missed the dither"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - clamp short and environment output differ"
+    printf '\n%s\n' "not ok 1 - clamp short and environment output differ"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
-echo "ok 1 - clamp threshold preserves image output"
+printf '\n%s\n' "ok 1 - clamp threshold preserves image output"
 exit 0

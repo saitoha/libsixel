@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0117_horizontal_noop_age || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - horizontal noop age"
+    printf '\n%s\n' "not ok 1 - horizontal noop age"
     exit 0
 }
-echo "ok 1 - horizontal noop age"
+printf '\n%s\n' "ok 1 - horizontal noop age"
 exit 0

@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup metric 1 3 || {
-    echo "not ok 1 - 5bit cielab normalized metric"
+    printf '\n%s\n' "not ok 1 - 5bit cielab normalized metric"
     exit 0
 }
 
-echo "ok 1 - 5bit cielab normalized metric"
+printf '\n%s\n' "ok 1 - 5bit cielab normalized metric"
 exit 0

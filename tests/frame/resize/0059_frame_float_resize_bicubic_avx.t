@@ -10,12 +10,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=avx \
     frame/0018_float_resampling bicubic 6 avx || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 - # SKIP avx float scaler is not available"
+    printf '\n%s\n' "ok 1 - # SKIP avx float scaler is not available"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - float bicubic avx"
+    printf '\n%s\n' "not ok 1 - float bicubic avx"
     exit 0
 }
-echo "ok 1 - float bicubic avx"
+printf '\n%s\n' "ok 1 - float bicubic avx"
 exit 0

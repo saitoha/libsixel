@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0007_resize_preserve_float_source 1>&2 || {
-    echo "not ok 1 - resize preserve float source"
+    printf '\n%s\n' "not ok 1 - resize preserve float source"
     exit 0
 }
-echo "ok 1 - resize preserve float source"
+printf '\n%s\n' "ok 1 - resize preserve float source"
 exit 0

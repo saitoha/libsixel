@@ -47,12 +47,12 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
 #
 
 test -x "${TEST_RUNNER_PATH-}" || {
-    echo "ok 1 - builtin GIF pipeline stop trace # SKIP test_runner --sigint-run-until is unavailable in this runtime"
+    printf '\n%s\n' "ok 1 - builtin GIF pipeline stop trace # SKIP test_runner --sigint-run-until is unavailable in this runtime"
     exit 0
 }
 
 test -n "${SIXEL_RUNTIME-}" && {
-    echo "ok 1 - builtin GIF pipeline stop trace # SKIP wrapped runtime signal forwarding is unavailable"
+    printf '\n%s\n' "ok 1 - builtin GIF pipeline stop trace # SKIP wrapped runtime signal forwarding is unavailable"
     exit 0
 }
 
@@ -83,25 +83,25 @@ case "${trace_summary}" in *event=pipeline_stop\ handoff=pipeline*) true ;; *) f
 set -xv
 
 test "${sigint_run_status}" = "0" || {
-    echo "ok 1 - builtin GIF pipeline stop trace # SKIP runtime signal forwarding is unavailable"
+    printf '\n%s\n' "ok 1 - builtin GIF pipeline stop trace # SKIP runtime signal forwarding is unavailable"
     exit 0
 }
 
 test "${handoff_pipeline_flag}" = "1" || {
     test "${handoff_serial_flag}" = "1" && {
-        echo "ok 1 - builtin GIF pipeline stop trace # SKIP runtime selected serial handoff"
+        printf '\n%s\n' "ok 1 - builtin GIF pipeline stop trace # SKIP runtime selected serial handoff"
         exit 0
     }
     echo "# builtin GIF SIGINT trace did not include a pipeline handoff token"
-    echo "not ok" 1 - "builtin GIF pipeline handoff trace missing"
+    printf '\n%s\n' "not ok 1 - builtin GIF pipeline handoff trace missing"
     exit 0
 }
 
 test "${pipeline_stop_flag}" = "1" || {
     echo "# builtin GIF SIGINT trace did not include a pipeline stop token"
-    echo "not ok" 1 - "builtin GIF pipeline stop reason trace missing"
+    printf '\n%s\n' "not ok 1 - builtin GIF pipeline stop reason trace missing"
     exit 0
 }
 
-echo "ok" 1 - "builtin GIF pipeline emits cancel stop trace on SIGINT"
+printf '\n%s\n' "ok 1 - builtin GIF pipeline emits cancel stop trace on SIGINT"
 exit 0

@@ -12,12 +12,12 @@ rc=0
 stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gf -Wo \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || rc=$?
 test "$rc" -ne 0 || {
-    echo 'not ok 1 - incompatible forced GPU colorspace was accepted'
+    printf '\n%s\n' 'not ok 1 - incompatible forced GPU colorspace was accepted'
     exit 0
 }
 test -z "$stream" || {
-    echo 'not ok 1 - forced GPU colorspace rejection wrote output'
+    printf '\n%s\n' 'not ok 1 - forced GPU colorspace rejection wrote output'
     exit 0
 }
-echo 'ok 1 - forced GPU colorspace rejected before DCS'
+printf '\n%s\n' 'ok 1 - forced GPU colorspace rejected before DCS'
 exit 0

@@ -35,7 +35,7 @@ test -n "${PYTHON}" || {
 }
 
 test -n "${PYTHON}" || {
-    printf 'ok 1 - self-signed fetch with -k # SKIP python missing\n'
+    printf '\nok 1 - self-signed fetch with -k # SKIP python missing\n'
     exit 0
 }
 
@@ -70,7 +70,7 @@ test -s "${port_file}" && {
 test -n "${server_port}" || {
     kill "${server_pid}" 2>/dev/null || :
     wait "${server_pid}" 2>/dev/null || :
-    printf 'ok 1 - self-signed fetch with -k # SKIP failed to start HTTPS server\n'
+    printf '\nok 1 - self-signed fetch with -k # SKIP failed to start HTTPS server\n'
     exit 0
 }
 
@@ -84,8 +84,8 @@ kill "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 test ${server_ok} -eq 0 || {
-    echo "not ok" 1 - "self-signed fetch with -k failed"
+    printf '\n%s\n' "not ok 1 - self-signed fetch with -k failed"
     exit 0
 }
 
-echo "ok" 1 - "self-signed fetch succeeds with -k"
+printf '\n%s\n' "ok 1 - self-signed fetch succeeds with -k"

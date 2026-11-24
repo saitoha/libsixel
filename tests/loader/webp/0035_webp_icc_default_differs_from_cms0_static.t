@@ -22,21 +22,21 @@ output_default="${ARTIFACT_LOCAL_DIR}/webp-icc-default-static-diff.sixel"
 output_cms0="${ARTIFACT_LOCAL_DIR}/webp-icc-cms0-static-diff.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! "${input_webp_icc}" >"${output_default}" || {
-    echo "not ok" 1 - "libwebp default decode failed for ICC input (static)"
+    printf '\n%s\n' "not ok 1 - libwebp default decode failed for ICC input (static)"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp_icc}" >"${output_cms0}" || {
-    echo "not ok" 1 - "libwebp cms=0 decode failed for ICC input (static)"
+    printf '\n%s\n' "not ok 1 - libwebp cms=0 decode failed for ICC input (static)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_default}" "${output_cms0}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "libwebp default and cms=0 static outputs were not distinguishable: ${lsqa_msg-}"
+    printf '\n%s\n' "not ok 1 - libwebp default and cms=0 static outputs were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "libwebp default cms behavior differs from cms=0 for static ICC input"
+printf '\n%s\n' "ok 1 - libwebp default cms behavior differs from cms=0 for static ICC input"
 exit 0

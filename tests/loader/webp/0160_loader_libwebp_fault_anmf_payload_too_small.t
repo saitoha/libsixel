@@ -18,10 +18,10 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0048_loader_libwebp_fault_anmf_payload_too_small"
+        printf '\n%s\n' "ok 1 - loader/0048_loader_libwebp_fault_anmf_payload_too_small"
         ;;
     *)
-        echo "not ok" 1 - "loader/0048_loader_libwebp_fault_anmf_payload_too_small"
+        printf '\n%s\n' "not ok 1 - loader/0048_loader_libwebp_fault_anmf_payload_too_small"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

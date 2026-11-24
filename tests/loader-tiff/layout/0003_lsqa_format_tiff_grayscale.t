@@ -34,7 +34,7 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/ecb29f68-snake-64-refere
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 - "tiff grayscale conversion failed"
+    printf '\n%s\n' "not ok 1 - tiff grayscale conversion failed"
     exit 0
 }
 
@@ -46,16 +46,16 @@ lsqa_err=$(
 lsqa_status=${lsqa_run_status-0}
 
 test "${lsqa_status}" -ne 5 || {
-    echo "not ok" 1 - "${lsqa_err}"
+    printf '\n%s\n' "not ok 1 - ${lsqa_err}"
     exit 0
 }
 
 test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 - "tiff grayscale quality regressed"
+    printf '\n%s\n' "not ok 1 - tiff grayscale quality regressed"
     exit 0
 }
 
-echo "ok" 1 - "tiff grayscale quality meets baseline"
+printf '\n%s\n' "ok 1 - tiff grayscale quality meets baseline"
 
 
 exit 0

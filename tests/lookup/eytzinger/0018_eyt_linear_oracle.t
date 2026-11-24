@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0017_eyt_linear_oracle || {
-    echo "not ok 1 - eytzinger linear oracle"
+    printf '\n%s\n' "not ok 1 - eytzinger linear oracle"
     exit 0
 }
 
-echo "ok 1 - eytzinger linear oracle"
+printf '\n%s\n' "ok 1 - eytzinger linear oracle"
 exit 0

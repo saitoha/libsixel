@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/heckbert_policy/bucket_fractional_axis >/dev/null || {
-    echo "not ok 1 - bucket_fractional_axis"
+    printf '\n%s\n' "not ok 1 - bucket_fractional_axis"
     exit 0
 }
 
-echo "ok 1 - bucket_fractional_axis"
+printf '\n%s\n' "ok 1 - bucket_fractional_axis"
 exit 0

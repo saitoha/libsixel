@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "colorspace/0004_extended_srgb_decode" || {
-    echo "not ok 1 - extended srgb decode"
+    printf '\n%s\n' "not ok 1 - extended srgb decode"
     exit 0
 }
 
-echo "ok 1 - extended srgb decode"
+printf '\n%s\n' "ok 1 - extended srgb decode"
 exit 0

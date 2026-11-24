@@ -14,8 +14,8 @@ SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/reclaim.jsonl"
 SIXEL_GPU_POLICY=off
 export SIXEL_LOG_PATH SIXEL_GPU_POLICY
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "colorspace/parallel/0008_overlap_reclaim" "${SIXEL_LOG_PATH}" || {
-    echo "not ok 1 - palette slots join working conversion after completion"
+    printf '\n%s\n' "not ok 1 - palette slots join working conversion after completion"
     exit 0
 }
-echo "ok 1 - palette slots join working conversion after completion"
+printf '\n%s\n' "ok 1 - palette slots join working conversion after completion"
 exit 0

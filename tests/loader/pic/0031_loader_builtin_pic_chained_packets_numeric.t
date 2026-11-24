@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0102_loader_builtin_pic_chained_packets_numeric" || {
-    echo "not ok 1 - PIC chained packet exact component lanes"
+    printf '\n%s\n' "not ok 1 - PIC chained packet exact component lanes"
     exit 0
 }
 
-echo "ok 1 - PIC chained packet exact component lanes"
+printf '\n%s\n' "ok 1 - PIC chained packet exact component lanes"
 exit 0

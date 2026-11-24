@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "dither/carry/0004_carry_deadzone_disabled" || {
-    echo "not ok 1 - deadzone_disabled"
+    printf '\n%s\n' "not ok 1 - deadzone_disabled"
     exit 0
 }
-echo "ok 1 - deadzone_disabled"
+printf '\n%s\n' "ok 1 - deadzone_disabled"
 exit 0

@@ -5,8 +5,8 @@ echo '1..1'
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" filter/0010_filter_encode g1 || {
-    echo 'not ok 1 - encode_bytes preserves every G1 level'
+    printf '\n%s\n' 'not ok 1 - encode_bytes preserves every G1 level'
     exit 0
 }
-echo 'ok 1 - encode_bytes preserves every G1 level'
+printf '\n%s\n' 'ok 1 - encode_bytes preserves every G1 level'
 exit 0

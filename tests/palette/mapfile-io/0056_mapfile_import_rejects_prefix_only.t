@@ -18,15 +18,15 @@ snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
           -m act: "${snake_png}" \
           -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "prefix-only mapfile unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - prefix-only mapfile unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *path\ \"act:\"\ not\ found.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing prefix-only mapfile diagnostic"
+    printf '\n%s\n' "not ok 1 - missing prefix-only mapfile diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "prefix-only mapfile is rejected"
+printf '\n%s\n' "ok 1 - prefix-only mapfile is rejected"
 
 exit 0

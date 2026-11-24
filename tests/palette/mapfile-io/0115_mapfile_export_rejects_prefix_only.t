@@ -17,14 +17,14 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
           -M gpl: -o/dev/null "${input_image}" 2>&1 >/dev/null) && {
-    echo "not ok" 1 - "prefix-only palette output unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - prefix-only palette output unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *sixel_encoder_emit_palette_output:\ invalid\ path.*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing prefix-only palette-output diagnostic"
+    printf '\n%s\n' "not ok 1 - missing prefix-only palette-output diagnostic"
     exit 0
 }
 
-echo "ok" 1 - "prefix-only palette output is rejected"
+printf '\n%s\n' "ok 1 - prefix-only palette output is rejected"
 exit 0

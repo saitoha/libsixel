@@ -25,7 +25,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "unknown -Q suboption key exit status mismatch"
+    printf '\n%s\n' "not ok 1 - unknown -Q suboption key exit status mismatch"
     exit 0
 }
 
@@ -35,12 +35,12 @@ case "${diag_line}" in
     LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY*)
         ;;
     *)
-        echo "not ok" 1 - "unknown -Q suboption key diagnostic header mismatch"
+        printf '\n%s\n' "not ok 1 - unknown -Q suboption key diagnostic header mismatch"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "unknown -Q suboption key keeps RC+diagnostic code contract"
+printf '\n%s\n' "ok 1 - unknown -Q suboption key keeps RC+diagnostic code contract"
 exit 0

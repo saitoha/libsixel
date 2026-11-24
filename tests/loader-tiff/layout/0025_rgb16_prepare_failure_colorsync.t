@@ -16,23 +16,23 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - RGB16 prepare failure colorsync"
+    printf '\n%s\n' "not ok 1 - RGB16 prepare failure colorsync"
     exit 0
 }
 case "${trace}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - libtiff did not deliver the frame"
+    printf '\n%s\n' "not ok 1 - libtiff did not deliver the frame"
     exit 0
 }
 case "${trace}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - unmanaged source unexpectedly passed through CMS"
+    printf '\n%s\n' "not ok 1 - unmanaged source unexpectedly passed through CMS"
     exit 0
 }
 case "${trace}" in *"TIFFNUM|engine=colorsync|prepare-failed"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - ColorSync preparation failure was not proven"
+    printf '\n%s\n' "not ok 1 - ColorSync preparation failure was not proven"
     exit 0
 }
-echo "ok 1 - RGB16 prepare failure colorsync"
+printf '\n%s\n' "ok 1 - RGB16 prepare failure colorsync"
 exit 0

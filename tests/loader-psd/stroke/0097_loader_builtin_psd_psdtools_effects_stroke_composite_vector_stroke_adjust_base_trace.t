@@ -38,27 +38,27 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite (strokeAdjust off) decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite (strokeAdjust off) decode failed"
     exit 0
 }
 
 diag_line_off=${trace_output}
 test -n "${diag_line_off}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing off diagnostic header"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing off diagnostic header"
     exit 0
 }
 
 case "${diag_line_off}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "effects/stroke-composite off diagnostic header is malformed"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite off diagnostic header is malformed"
         exit 0
         ;;
 esac
 
 case "${diag_line_off}" in
     *FX_STROKE_ADJUST_BASE*)
-        echo "not ok" 1 - "effects/stroke-composite unexpectedly enabled base stroke-adjust code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly enabled base stroke-adjust code"
         exit 0
         ;;
     *) ;;
@@ -66,11 +66,11 @@ esac
 
 case "${diag_line_off}" in
     *FX_STROKE_ADJUST_DEFER*)
-        echo "not ok" 1 - "effects/stroke-composite unexpectedly enabled deferred stroke-adjust code"
+        printf '\n%s\n' "not ok 1 - effects/stroke-composite unexpectedly enabled deferred stroke-adjust code"
         exit 0
         ;;
     *) ;;
 esac
 
-echo "ok" 1 - "effects/stroke-composite keeps strokeAdjust disabled in off fixture"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps strokeAdjust disabled in off fixture"
 exit 0

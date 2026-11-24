@@ -15,10 +15,10 @@ snake_tga="${TOP_SRCDIR}/tests/data/inputs/snake_64.tga"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -sauto -w100 -rga -qauto -dburkes -tauto \
     "${snake_tga}" -o/dev/null || {
-    echo "not ok" 1 - "TGA conversion with scaling failed"
+    printf '\n%s\n' "not ok 1 - TGA conversion with scaling failed"
     exit 0
 }
 
-echo "ok" 1 - "TGA conversion with scaling succeeded"
+printf '\n%s\n' "ok 1 - TGA conversion with scaling succeeded"
 
 exit 0

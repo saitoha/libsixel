@@ -14,7 +14,7 @@ set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=foo! \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown cms_engine suboption value unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - unknown cms_engine suboption value unexpectedly succeeded"
     exit 0
 }
 
@@ -22,7 +22,7 @@ case "${msg}" in
     *"unknown suboption value"*)
         ;;
     *)
-        echo "not ok" 1 - "missing unknown cms_engine suboption value diagnostic"
+        printf '\n%s\n' "not ok 1 - missing unknown cms_engine suboption value diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
@@ -33,12 +33,12 @@ case "${msg}" in
     *"\"foo\""*"\"cms_engine\""*"valid values"*"none, auto, builtin, lcms2, colorsync"*)
         ;;
     *)
-        echo "not ok" 1 - "missing token/candidate details for unknown cms_engine suboption value"
+        printf '\n%s\n' "not ok 1 - missing token/candidate details for unknown cms_engine suboption value"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "unknown cms_engine suboption value is rejected"
+printf '\n%s\n' "ok 1 - unknown cms_engine suboption value is rejected"
 exit 0

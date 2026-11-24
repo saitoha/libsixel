@@ -12,7 +12,7 @@ set -v
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 image_out="${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six"
 value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --metrics=MS-SSIM "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 - "failed to calculate baseline source metric"
+    printf '\n%s\n' "not ok 1 - failed to calculate baseline source metric"
     exit 0
 }
 
@@ -20,9 +20,9 @@ cr=$(printf '\r')
 value=${value%"$cr"}
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" --metrics=MS-SSIM --baseline="MS-SSIM:${value}" "${image_ref}" "${image_out}" >/dev/null || {
-    echo "not ok" 1 - "--baseline= should accept METRIC:VALUE"
+    printf '\n%s\n' "not ok 1 - --baseline= should accept METRIC:VALUE"
     exit 0
 }
 
-echo "ok" 1 - "--baseline= accepted METRIC:VALUE"
+printf '\n%s\n' "ok 1 - --baseline= accepted METRIC:VALUE"
 exit 0

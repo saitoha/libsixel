@@ -51,12 +51,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 #
 
 test -x "${TEST_RUNNER_PATH-}" || {
-    echo "ok 1 - libwebp pipeline stop trace # SKIP test_runner --sigint-run-until is unavailable in this runtime"
+    printf '\n%s\n' "ok 1 - libwebp pipeline stop trace # SKIP test_runner --sigint-run-until is unavailable in this runtime"
     exit 0
 }
 
 test -n "${SIXEL_RUNTIME-}" && {
-    echo "ok 1 - libwebp pipeline stop trace # SKIP wrapped runtime signal forwarding is unavailable"
+    printf '\n%s\n' "ok 1 - libwebp pipeline stop trace # SKIP wrapped runtime signal forwarding is unavailable"
     exit 0
 }
 
@@ -87,25 +87,25 @@ case "${trace_summary}" in *event=pipeline_stop\ handoff=pipeline*) true ;; *) f
 set -xv
 
 test "${sigint_run_status}" = "0" || {
-    echo "ok 1 - libwebp pipeline stop trace # SKIP runtime signal forwarding is unavailable"
+    printf '\n%s\n' "ok 1 - libwebp pipeline stop trace # SKIP runtime signal forwarding is unavailable"
     exit 0
 }
 
 test "${handoff_pipeline_flag}" = "1" || {
     test "${handoff_serial_flag}" = "1" && {
-        echo "ok 1 - libwebp pipeline stop trace # SKIP runtime selected serial handoff"
+        printf '\n%s\n' "ok 1 - libwebp pipeline stop trace # SKIP runtime selected serial handoff"
         exit 0
     }
     echo "# libwebp SIGINT trace did not include a pipeline handoff token"
-    echo "not ok" 1 - "libwebp pipeline handoff trace missing"
+    printf '\n%s\n' "not ok 1 - libwebp pipeline handoff trace missing"
     exit 0
 }
 
 test "${pipeline_stop_flag}" = "1" || {
     echo "# libwebp SIGINT trace did not include a pipeline stop token"
-    echo "not ok" 1 - "libwebp pipeline stop reason trace missing"
+    printf '\n%s\n' "not ok 1 - libwebp pipeline stop reason trace missing"
     exit 0
 }
 
-echo "ok" 1 - "libwebp pipeline emits cancel stop trace on SIGINT"
+printf '\n%s\n' "ok 1 - libwebp pipeline emits cancel stop trace on SIGINT"
 exit 0

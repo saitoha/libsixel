@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/merge_float/0001_merge_contract values 1 3 0 || {
-    echo "not ok 1 - kcenter cielab l0 signed mean"
+    printf '\n%s\n' "not ok 1 - kcenter cielab l0 signed mean"
     exit 0
 }
 
-echo "ok 1 - kcenter cielab l0 signed mean"
+printf '\n%s\n' "ok 1 - kcenter cielab l0 signed mean"
 exit 0

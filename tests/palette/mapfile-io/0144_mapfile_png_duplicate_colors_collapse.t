@@ -29,18 +29,18 @@ actual_palette=$(
         -B '#0000ff' -m "${mapfile_png}" -M pal-jasc:- \
         -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "duplicate-color indexed PNG mapfile export failed"
+    printf '\n%s\n' "not ok 1 - duplicate-color indexed PNG mapfile export failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "duplicate-color PNG palette normalization failed"
+    printf '\n%s\n' "not ok 1 - duplicate-color PNG palette normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "duplicate decoded PNG colors did not collapse"
+    printf '\n%s\n' "not ok 1 - duplicate decoded PNG colors did not collapse"
     exit 0
 }
 
-echo "ok" 1 - "duplicate decoded indexed-PNG colors collapse"
+printf '\n%s\n' "ok 1 - duplicate decoded indexed-PNG colors collapse"
 exit 0

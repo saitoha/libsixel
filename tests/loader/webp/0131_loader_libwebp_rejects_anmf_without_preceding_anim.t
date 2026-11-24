@@ -19,7 +19,7 @@ set -v
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! \
              "${TOP_SRCDIR}/tests/data/corrupted/bad_anmf_without_anim_chunk.webp" \
              2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced libwebp loader accepted ANMF without preceding ANIM"
+    printf '\n%s\n' "not ok 1 - forced libwebp loader accepted ANMF without preceding ANIM"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -29,13 +29,13 @@ case "${msg}" in
     *"webp decode: ANMF chunk requires a preceding ANIM chunk."*)
         ;;
     *)
-        echo "not ok" 1 - "expected ANMF ordering diagnostic was missing"
+        printf '\n%s\n' "not ok 1 - expected ANMF ordering diagnostic was missing"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "forced libwebp loader rejects ANMF without preceding ANIM"
+printf '\n%s\n' "ok 1 - forced libwebp loader rejects ANMF without preceding ANIM"
 
 exit 0

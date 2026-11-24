@@ -19,9 +19,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -ldisable -dnone -u -g \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" >/dev/null || {
-    echo "not ok" 1 - "gdk-pixbuf2 combined update/static frame failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 combined update/static frame failed"
     exit 0
 }
 
-echo "ok" 1 - "gdk-pixbuf2 combined update/static frame succeeded"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 combined update/static frame succeeded"
 exit 0

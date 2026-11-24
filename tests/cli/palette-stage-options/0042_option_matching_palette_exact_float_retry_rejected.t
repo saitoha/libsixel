@@ -24,14 +24,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
 # Native C runtimes can map the same failure to another condition severity.
 test "${status}" -ge 1 -a \
     "${status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
-    echo "not ok 1 - exact float failure entered the RGB888 retry"
+    printf '\n%s\n' "not ok 1 - exact float failure entered the RGB888 retry"
     exit 0
 }
 
 case "${trace}" in *LSXBPS1\|quantizer_requested=2\|quantizer_effective=-1\|quantizer_origin=explicit\|quantizer_phase=unresolved\|quantizer_reason=none\|binning_requested=exact\|binning_effective=unset\|binning_origin=explicit\|binning_phase=unresolved\|binning_reason=none\|points=0\|quantizer_retries=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - exact float failure recorded a lossy retry"
+    printf '\n%s\n' "not ok 1 - exact float failure recorded a lossy retry"
     exit 0
 }
 
-echo "ok 1 - exact float binning rejects the RGB888 retry"
+printf '\n%s\n' "ok 1 - exact float binning rejects the RGB888 retry"
 exit 0

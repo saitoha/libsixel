@@ -37,21 +37,21 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite outside decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite outside decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite outside missing header line"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite outside missing header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite outside diagnostic header is malformed"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite outside diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -59,21 +59,21 @@ esac
 case "${diag_line}" in
     *FX_STROKE_ALPHA_INSIDE_BASE*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite outside missing inside base alpha-write"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite outside missing inside base alpha-write"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
     *FX_STROKE_ALPHA_OUTSIDE_BASE*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite outside unexpectedly wrote outside base alpha"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite outside unexpectedly wrote outside base alpha"
         exit 0
         ;;
     *)
         ;;
 esac
 
-echo "ok" 1 - "effects/stroke-composite outside keeps inside base alpha-write"
+printf '\n%s\n' "ok 1 - effects/stroke-composite outside keeps inside base alpha-write"
 exit 0

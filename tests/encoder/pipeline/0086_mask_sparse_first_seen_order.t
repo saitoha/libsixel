@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/pipeline/0086_mask_sparse_first
 status=$?
 set -e
 test "$status" -ne 77 || {
-    echo "ok 1 - mask sparse first seen order # SKIP threads unavailable"
+    printf '\n%s\n' "ok 1 - mask sparse first seen order # SKIP threads unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
-    echo "not ok 1 - mask sparse first seen order"
+    printf '\n%s\n' "not ok 1 - mask sparse first seen order"
     exit 0
 }
-echo "ok 1 - mask sparse first seen order"
+printf '\n%s\n' "ok 1 - mask sparse first seen order"
 exit 0

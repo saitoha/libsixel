@@ -11,9 +11,9 @@ SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/solvers_float/0001_solver_contract \
     wire 0 1 2 0 || {
-    echo "not ok 1 - kcenter linear to oklab srgb"
+    printf '\n%s\n' "not ok 1 - kcenter linear to oklab srgb"
     exit 0
 }
 
-echo "ok 1 - kcenter linear to oklab srgb"
+printf '\n%s\n' "ok 1 - kcenter linear to oklab srgb"
 exit 0

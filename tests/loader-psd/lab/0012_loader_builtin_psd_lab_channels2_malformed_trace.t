@@ -17,10 +17,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: malformed channel count (2) for Lab (requires >=3)"*)
-        echo "ok" 1 - "Lab channel_count<3 is reported as malformed"
+        printf '\n%s\n' "ok 1 - Lab channel_count<3 is reported as malformed"
         ;;
     *)
-        echo "not ok" 1 - "Lab malformed channel count trace is missing"
+        printf '\n%s\n' "not ok 1 - Lab malformed channel count trace is missing"
         exit 0
         ;;
 esac

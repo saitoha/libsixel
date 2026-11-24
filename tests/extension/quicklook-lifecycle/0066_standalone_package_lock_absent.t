@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_GUARDS}" 'standalone' 'standalone-package-lock' || {
-    echo "not ok 1 - Standalone package lock absent after removal."
+    printf '\n%s\n' "not ok 1 - Standalone package lock absent after removal."
     exit 0
 }
-echo "ok 1 - Standalone package lock absent after removal."
+printf '\n%s\n' "ok 1 - Standalone package lock absent after removal."
 exit 0

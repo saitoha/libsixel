@@ -28,14 +28,14 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${input_jpeg}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=libjpeg\|code=L_ERR_BAD_INPUT**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "libjpeg failure code was not reported"
+    printf '\n%s\n' "not ok 1 - libjpeg failure code was not reported"
     exit 0
 }
 
 case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin loader was not attempted after libjpeg"
+    printf '\n%s\n' "not ok 1 - builtin loader was not attempted after libjpeg"
     exit 0
 }
 
-echo "ok" 1 - "12-bit input falls back after libjpeg failure when API is unavailable"
+printf '\n%s\n' "ok 1 - 12-bit input falls back after libjpeg failure when API is unavailable"
 exit 0

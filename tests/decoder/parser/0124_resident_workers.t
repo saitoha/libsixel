@@ -14,9 +14,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0111_resident_workers" || {
-    echo "not ok 1 - decoder objects reuse their decode workers"
+    printf '\n%s\n' "not ok 1 - decoder objects reuse their decode workers"
     exit 0
 }
 
-echo "ok 1 - decoder objects reuse their decode workers"
+printf '\n%s\n' "ok 1 - decoder objects reuse their decode workers"
 exit 0

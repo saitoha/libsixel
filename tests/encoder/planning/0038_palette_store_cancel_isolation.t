@@ -12,8 +12,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0038_palette_store_cancel_isolation || {
-    echo "not ok 1 - palette store cancel isolation"
+    printf '\n%s\n' "not ok 1 - palette store cancel isolation"
     exit 0
 }
-echo "ok 1 - palette store cancel isolation"
+printf '\n%s\n' "ok 1 - palette store cancel isolation"
 exit 0

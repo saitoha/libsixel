@@ -14,15 +14,15 @@ trace=$(SIXEL_TRACE_TOPIC=loader \
     "${TOP_SRCDIR}/tests/data/color-numeric/cmyk-reference.png" \
     "${TOP_SRCDIR}/tests/data/color-numeric/cmyk.psd" \
     'builtin:cms_engine=builtin!' 0.51 2>&1) || {
-    echo "not ok 1 - independent PSD CMYK display samples differ: ${trace}"
+    printf '\n%s\n' "not ok 1 - independent PSD CMYK display samples differ: ${trace}"
     exit 0
 }
 case "${trace}" in
     *"event=apply|engine=builtin|path=extended-rgb|src=5|dst=4|ok=1"*) ;;
     *)
-        echo "not ok 1 - source-domain CMYK ICC was not applied by builtin"
+        printf '\n%s\n' "not ok 1 - source-domain CMYK ICC was not applied by builtin"
         exit 0
         ;;
 esac
-echo "ok 1 - independent PSD CMYK display samples match with builtin CMS"
+printf '\n%s\n' "ok 1 - independent PSD CMYK display samples match with builtin CMS"
 exit 0

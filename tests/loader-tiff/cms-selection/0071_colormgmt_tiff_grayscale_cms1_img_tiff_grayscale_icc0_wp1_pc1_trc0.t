@@ -28,24 +28,24 @@ reference_six="${TOP_SRCDIR}/tests/data/loader/quality/cc845233-img_tiff_graysca
 output_six="${ARTIFACT_LOCAL_DIR}/img_tiff_grayscale_icc0_wp1_pc1_trc0_libtiff.six"
 
 test -f "${input_tiff}" || {
-    echo "not ok" 1 - "missing input fixture: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0.tiff"
+    printf '\n%s\n' "not ok 1 - missing input fixture: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0.tiff"
     exit 0
 }
 
 test -f "${reference_six}" || {
-    echo "not ok" 1 - "missing reference fixture: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0.six"
+    printf '\n%s\n' "not ok 1 - missing reference fixture: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0.six"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 192 -h 192 -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_six}" || {
-    echo "not ok" 1 - "libtiff decode failed: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0"
+    printf '\n%s\n' "not ok 1 - libtiff decode failed: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999"     "${reference_six}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libtiff colormgmt matches reference: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0"
+printf '\n%s\n' "ok 1 - libtiff colormgmt matches reference: grayscale/img_tiff_grayscale_icc0_wp1_pc1_trc0"
 exit 0

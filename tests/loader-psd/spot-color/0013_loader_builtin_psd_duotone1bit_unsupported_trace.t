@@ -17,10 +17,10 @@ trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_
 
 case "${trace_log}" in
     *"builtin PSD: unsupported bit depth (1) for Duotone"*)
-        echo "ok" 1 - "Duotone depth=1 is rejected as unsupported"
+        printf '\n%s\n' "ok 1 - Duotone depth=1 is rejected as unsupported"
         ;;
     *)
-        echo "not ok" 1 - "Duotone unsupported bit depth trace is missing"
+        printf '\n%s\n' "not ok 1 - Duotone unsupported bit depth trace is missing"
         exit 0
         ;;
 esac

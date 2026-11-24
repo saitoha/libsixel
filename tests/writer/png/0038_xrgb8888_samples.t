@@ -8,8 +8,8 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" writer/png/0038_xrgb8888_samples \
     "${ARTIFACT_LOCAL_DIR}/packed.png" || {
-    echo "not ok 1 - PNG XRGB8888 samples"
+    printf '\n%s\n' "not ok 1 - PNG XRGB8888 samples"
     exit 0
 }
-echo "ok 1 - PNG XRGB8888 samples"
+printf '\n%s\n' "ok 1 - PNG XRGB8888 samples"
 exit 0

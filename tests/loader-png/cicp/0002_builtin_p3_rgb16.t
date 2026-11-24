@@ -16,12 +16,12 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - builtin p3 rgb16"
+    printf '\n%s\n' "not ok 1 - builtin p3 rgb16"
     exit 0
 }
 case "$trace" in
     *"LSXCMS2|event=apply|engine=builtin|"*"|ok=1"*) ;;
-    *) echo "$trace" >&2; echo "not ok 1 - CMS apply missing"; exit 0 ;;
+    *) echo "$trace" >&2; printf '\n%s\n' "not ok 1 - CMS apply missing"; exit 0 ;;
 esac
-echo "ok 1 - builtin p3 rgb16"
+printf '\n%s\n' "ok 1 - builtin p3 rgb16"
 exit 0

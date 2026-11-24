@@ -16,9 +16,9 @@ set -v
 input_psd="${TOP_SRCDIR}/tests/data/corrupted/wrong_version.psd"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_psd}" >/dev/null && {
-    echo "not ok" 1 - "unsupported version was unexpectedly accepted"
+    printf '\n%s\n' "not ok 1 - unsupported version was unexpectedly accepted"
     exit 0
 }
 
-echo "ok" 1 - "unsupported version is rejected"
+printf '\n%s\n' "ok 1 - unsupported version is rejected"
 exit 0

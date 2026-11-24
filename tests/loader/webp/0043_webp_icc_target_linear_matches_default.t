@@ -22,21 +22,21 @@ output_default="${ARTIFACT_LOCAL_DIR}/webp-icc-target-default.sixel"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-icc-target-linear.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_default}" || {
-    echo "not ok" 1 - "libwebp ICC decode failed with default cms target"
+    printf '\n%s\n' "not ok 1 - libwebp ICC decode failed with default cms target"
     exit 0
 }
 
 SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_linear}" || {
-    echo "not ok" 1 - "libwebp ICC decode failed with cms target linear"
+    printf '\n%s\n' "not ok 1 - libwebp ICC decode failed with cms target linear"
     exit 0
 }
 
 # Equivalent input/settings require identical output bytes.
 { test -s "${output_default}" && cmp -s "${output_default}" "${output_linear}"; } || {
-    echo "not ok 1 - equivalent WebP output differs or is empty"
+    printf '\n%s\n' "not ok 1 - equivalent WebP output differs or is empty"
     exit 0
 }
 
-echo "ok" 1 - "default cms target matches explicit linear target for ICC decode"
+printf '\n%s\n' "ok 1 - default cms target matches explicit linear target for ICC decode"
 exit 0

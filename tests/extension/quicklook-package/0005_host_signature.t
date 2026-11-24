@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" signature \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Payload/Applications/SixelQuickLookHost.app" || {
-    echo "not ok 1 - Invalid host signature"
+    printf '\n%s\n' "not ok 1 - Invalid host signature"
     exit 0
 }
 
-echo "ok 1 - Packaged host code signature is valid."
+printf '\n%s\n' "ok 1 - Packaged host code signature is valid."
 exit 0

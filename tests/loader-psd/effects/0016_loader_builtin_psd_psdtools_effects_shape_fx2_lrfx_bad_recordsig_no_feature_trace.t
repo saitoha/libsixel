@@ -25,19 +25,19 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/shape-fx2 malformed-lrFX decode failed"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 malformed-lrFX decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ parsed\ clbl=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 malformed-lrFX fixture did not reach layer-effects parse path"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 malformed-lrFX fixture did not reach layer-effects parse path"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ legacy\ lrFX\ contains\ glow/bevel/sofi\ records**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "effects/shape-fx2 malformed lrFX unexpectedly reported feature records"
+    printf '\n%s\n' "not ok 1 - effects/shape-fx2 malformed lrFX unexpectedly reported feature records"
     exit 0
 }
 
-echo "ok" 1 - "effects/shape-fx2 malformed lrFX does not emit feature-record trace"
+printf '\n%s\n' "ok 1 - effects/shape-fx2 malformed lrFX does not emit feature-record trace"
 exit 0

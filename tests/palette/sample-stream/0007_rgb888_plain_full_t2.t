@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     filter/0046_filter_sample_parallel_exact 0 0 2 0 2 || {
-    echo "not ok 1 - rgb888 plain full t2 samples equal the serial stream"
+    printf '\n%s\n' "not ok 1 - rgb888 plain full t2 samples equal the serial stream"
     exit 0
 }
-echo "ok 1 - rgb888 plain full t2 samples equal the serial stream"
+printf '\n%s\n' "ok 1 - rgb888 plain full t2 samples equal the serial stream"
 exit 0

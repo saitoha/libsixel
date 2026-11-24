@@ -30,24 +30,24 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable - \
     <"${input_webp}" >/dev/null || {
-    printf "ok 1 # SKIP libwebp loader cannot decode stdin WebP\n"
+    printf "\nok 1 # SKIP libwebp loader cannot decode stdin WebP\n"
     exit 0
 }
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     <"${input_webp}" 2>&1 >/dev/null) && {
-    echo "not ok 1 - gd unexpectedly accepted unsupported stdin WebP"
+    printf '\n%s\n' "not ok 1 - gd unexpectedly accepted unsupported stdin WebP"
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd-only stdin WebP failure missed generic decode error"
+    printf '\n%s\n' "not ok 1 - gd-only stdin WebP failure missed generic decode error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
-    echo "not ok 1 - gd-only stdin WebP failure should not report GD error"
+    printf '\n%s\n' "not ok 1 - gd-only stdin WebP failure should not report GD error"
     printf '%s\n' "${msg}" >&2
     exit 0
 }
@@ -55,14 +55,14 @@ case "${msg}" in *GD\ error**) false ;; *) true ;; esac || {
 trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,libwebp! -ldisable - <"${input_webp}" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - gd,libwebp fallback failed for stdin WebP"
+    printf '\n%s\n' "not ok 1 - gd,libwebp fallback failed for stdin WebP"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ libwebp\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - libwebp fallback was not attempted for stdin WebP"
+    printf '\n%s\n' "not ok 1 - libwebp fallback was not attempted for stdin WebP"
     exit 0
 }
 
-echo "ok 1 - unsupported stdin WebP delegates from gd to libwebp"
+printf '\n%s\n' "ok 1 - unsupported stdin WebP delegates from gd to libwebp"
 exit 0

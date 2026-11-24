@@ -10,10 +10,10 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0143_loader_builtin_jpeg_ycbcr444_digest" 1>&2 || {
-    echo "not ok" 1 - "JPEG YCbCr 4:4:4 conversion stays exact"
+    printf '\n%s\n' "not ok 1 - JPEG YCbCr 4:4:4 conversion stays exact"
     exit 0
 }
 
-echo "ok" 1 - "JPEG YCbCr 4:4:4 conversion stays exact"
+printf '\n%s\n' "ok 1 - JPEG YCbCr 4:4:4 conversion stays exact"
 
 exit 0

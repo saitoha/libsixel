@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0058_p3_precision_contract auto || {
-    echo "not ok 1 - automatic P3 precision"
+    printf '\n%s\n' "not ok 1 - automatic P3 precision"
     exit 0
 }
 
-echo "ok 1 - automatic P3 precision"
+printf '\n%s\n' "ok 1 - automatic P3 precision"
 exit 0

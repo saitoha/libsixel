@@ -28,28 +28,28 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing FXPRI overlap apply trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing FXPRI overlap apply trace"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ sharing\ clipped\ source\ alpha\ for\ deferred\ inside\ dual-stroke\ coverage**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing shared clipped source trace"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing shared clipped source trace"
     exit 0
 }
 
 case "${trace_output}" in *FX_DUAL_FXPRI_OVL_DEFER**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing FX_DUAL_FXPRI_OVL_DEFER code"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite missing FX_DUAL_FXPRI_OVL_DEFER code"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps FXPRI_INSIDE deferred overlap contract"
+printf '\n%s\n' \
+    "ok 1 - effects/stroke-composite keeps FXPRI_INSIDE deferred overlap contract"
 exit 0

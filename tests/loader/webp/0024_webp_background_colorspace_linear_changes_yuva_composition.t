@@ -24,23 +24,23 @@ output_linear="${ARTIFACT_LOCAL_DIR}/webp-bgcs-yuva-linear.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Llibwebp:cms_engine=none! \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
-    echo "not ok" 1 - "libwebp YUVA gamma background composition failed"
+    printf '\n%s\n' "not ok 1 - libwebp YUVA gamma background composition failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
               -Llibwebp:cms_engine=none! \
               -B#808080 "${input_webp}" >"${output_linear}" || {
-    echo "not ok" 1 - "libwebp YUVA linear background composition failed"
+    printf '\n%s\n' "not ok 1 - libwebp YUVA linear background composition failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" "${output_gamma}" "${output_linear}" 2>&1) || lsqa_status=$?
 
 test "${lsqa_status-0}" -eq 5 || {
-    echo "not ok" 1 - "gamma and linear YUVA composition were not distinguishable: ${lsqa_msg-}"
+    printf '\n%s\n' "not ok 1 - gamma and linear YUVA composition were not distinguishable: ${lsqa_msg-}"
     exit 0
 }
 
-echo "ok" 1 - "linear background interpretation changes libwebp YUVA composition"
+printf '\n%s\n' "ok 1 - linear background interpretation changes libwebp YUVA composition"
 exit 0

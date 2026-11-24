@@ -9,12 +9,12 @@ status=0
 trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup delaunay \
     delaunay/gpu_exact 4 0 4 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo "ok 1 # SKIP GPU delaunay lookup unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU delaunay lookup unavailable"
     exit 0
 }
 test "$status" -eq 0 || {
     printf "# %s\n" "$trace"
-    echo "not ok 1 - gpu a plain p4"
+    printf '\n%s\n' "not ok 1 - gpu a plain p4"
     exit 0
 }
 case "$trace" in
@@ -22,8 +22,8 @@ case "$trace" in
     *) false ;;
 esac || {
     printf "# %s\n" "$trace"
-    echo "not ok 1 - gpu a plain p4 execution path"
+    printf '\n%s\n' "not ok 1 - gpu a plain p4 execution path"
     exit 0
 }
-echo "ok 1 - gpu a plain p4"
+printf '\n%s\n' "ok 1 - gpu a plain p4"
 exit 0

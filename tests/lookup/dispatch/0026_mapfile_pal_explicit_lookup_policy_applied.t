@@ -30,16 +30,16 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile conversion with FHEDT failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile conversion with FHEDT failed"
     exit 0
 }
 case "${trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 
 case "${trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "explicit FHEDT missed PAL mapfile palette application"
+    printf '\n%s\n' "not ok 1 - explicit FHEDT missed PAL mapfile palette application"
     exit 0
 }
 
@@ -60,18 +60,18 @@ JASC-PAL
 2 2 2
 PAL
 ) || {
-    echo "not ok" 1 - "PAL mapfile conversion with FHEDT failed"
+    printf '\n%s\n' "not ok 1 - PAL mapfile conversion with FHEDT failed"
     exit 0
 }
 case "${float_trace}" in *work=rgb-f32**) true ;; *) false ;; esac || {
-    echo "not ok 1 - float lookup did not use rgb-f32 working samples"
+    printf '\n%s\n' "not ok 1 - float lookup did not use rgb-f32 working samples"
     exit 0
 }
 
 case "${float_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.float32\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "explicit FHEDT missed PAL mapfile palette application"
+    printf '\n%s\n' "not ok 1 - explicit FHEDT missed PAL mapfile palette application"
     exit 0
 }
 
-echo "ok" 1 - "explicit FHEDT applies to a PAL mapfile"
+printf '\n%s\n' "ok 1 - explicit FHEDT applies to a PAL mapfile"
 exit 0

@@ -10,9 +10,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" clarans-guided-reject-no-rebuild \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS reject path rebuild suppression failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS reject path rebuild suppression failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS reject path avoids extra full rebuild"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS reject path avoids extra full rebuild"
 exit 0

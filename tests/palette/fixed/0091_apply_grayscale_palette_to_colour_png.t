@@ -15,10 +15,10 @@ snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${snake_gray_png}" "${snake_png}" -o/dev/null || {
-    echo "not ok" 1 - "grayscale palette application fails"
+    printf '\n%s\n' "not ok 1 - grayscale palette application fails"
     exit 0
 }
 
-echo "ok" 1 - "grayscale palette applied to colour PNG"
+printf '\n%s\n' "ok 1 - grayscale palette applied to colour PNG"
 
 exit 0

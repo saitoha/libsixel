@@ -17,8 +17,8 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_black_values \
     "${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/bgan6a08-srgb-black.ppm" \
     "${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png" 'libpng:cms_engine=none!' 0.004 || {
-    echo "not ok 1 - composited color samples differ from independent values"
+    printf '\n%s\n' "not ok 1 - composited color samples differ from independent values"
     exit 0
 }
-echo "ok 1 - composited color samples match independent values"
+printf '\n%s\n' "ok 1 - composited color samples match independent values"
 exit 0

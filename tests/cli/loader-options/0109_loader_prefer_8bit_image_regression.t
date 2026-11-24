@@ -30,17 +30,17 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     --env "SIXEL_LOADER_PREFER_8BIT=invalid" \
     "-Llibwebp:Tgamma:V1:Eauto!" "${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "prefer_8bit short conversion failed"
+    printf '\n%s\n' "not ok 1 - prefer_8bit short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=prefer_8bit\|stored=1\|binding=cms_prefer_8bit\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "prefer_8bit short value was not stored"
+    printf '\n%s\n' "not ok 1 - prefer_8bit short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXLDR1\|cms_target=gamma\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "prefer_8bit short value did not reach the loader"
+    printf '\n%s\n' "not ok 1 - prefer_8bit short value did not reach the loader"
     exit 0
 }
 
@@ -49,31 +49,31 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     --env "SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma" \
     --env "SIXEL_LOADER_PREFER_8BIT=1" "-Llibwebp:Eauto!" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "prefer_8bit environment conversion failed"
+    printf '\n%s\n' "not ok 1 - prefer_8bit environment conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=prefer_8bit\|stored=1\|binding=cms_prefer_8bit\|value=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "prefer_8bit environment value was not stored"
+    printf '\n%s\n' "not ok 1 - prefer_8bit environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXLDR1\|cms_target=gamma\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "prefer_8bit environment value did not reach the loader"
+    printf '\n%s\n' "not ok 1 - prefer_8bit environment value did not reach the loader"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "prefer_8bit short and environment output differ"
+    printf '\n%s\n' "not ok 1 - prefer_8bit short and environment output differ"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "prefer_8bit preserves image output"
+printf '\n%s\n' "ok 1 - prefer_8bit preserves image output"
 exit 0

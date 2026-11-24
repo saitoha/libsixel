@@ -10,8 +10,8 @@ set -v
 # preserve source color and coverage, so output differences cannot prove it.
 SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR='' ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0189_png_palette_samples" 8 || {
-    echo "not ok 1 - PNG tRNS keycolor default is enabled"
+    printf '\n%s\n' "not ok 1 - PNG tRNS keycolor default is enabled"
     exit 0
 }
-echo "ok 1 - PNG tRNS keycolor default is enabled"
+printf '\n%s\n' "ok 1 - PNG tRNS keycolor default is enabled"
 exit 0

@@ -23,21 +23,21 @@ frame0_text=''
 default_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 default start-frame decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 default start-frame decode failed"
     exit 0
 }
 
 frame0_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --start-frame=0 -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}")" || {
-    echo "not ok 1 - gdk-pixbuf2 --start-frame=0 decode failed"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 --start-frame=0 decode failed"
     exit 0
 }
 
 test "${default_text}" = "${frame0_text}" || {
-    echo "not ok 1 - gdk-pixbuf2 --start-frame=0 output mismatched default"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 --start-frame=0 output mismatched default"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 --start-frame=0 matches default"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 --start-frame=0 matches default"
 exit 0

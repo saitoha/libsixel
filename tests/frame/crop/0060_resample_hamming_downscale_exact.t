@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     hamming \
     "${fixture_root}/hamming-downscale-input.ppm" \
     "${fixture_root}/hamming-downscale-expected.ppm" || {
-    echo "not ok" 1 - "hamming downscale pixels changed"
+    printf '\n%s\n' "not ok 1 - hamming downscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "hamming downscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - hamming downscale pixels match the oracle"
 exit 0

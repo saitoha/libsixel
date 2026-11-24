@@ -16,7 +16,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qmedoids:prune=elkan \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "removed medoids prune key unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - removed medoids prune key unexpectedly succeeded"
     exit 0
 }
 
@@ -24,14 +24,14 @@ valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
 case "${valid_keys_line}" in *,\ prune,**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "removed medoids prune key is still listed"
+    printf '\n%s\n' "not ok 1 - removed medoids prune key is still listed"
     exit 0
 }
 
 case "${valid_keys_line}" in *prune_mass**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "medoids prune_mass key missing from candidates"
+    printf '\n%s\n' "not ok 1 - medoids prune_mass key missing from candidates"
     exit 0
 }
 
-echo "ok" 1 - "removed medoids prune key is not listed in candidates"
+printf '\n%s\n' "ok 1 - removed medoids prune key is not listed in candidates"
 exit 0

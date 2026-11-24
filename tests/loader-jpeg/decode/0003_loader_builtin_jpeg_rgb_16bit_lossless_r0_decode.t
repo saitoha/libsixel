@@ -16,9 +16,9 @@ set -v
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-16bit-lossless.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${input_jpeg}" -o/dev/null || {
-    echo "not ok" 1 - "builtin 16-bit lossless JPEG decode failed"
+    printf '\n%s\n' "not ok 1 - builtin 16-bit lossless JPEG decode failed"
     exit 0
 }
 
-echo "ok" 1 - "builtin 16-bit lossless JPEG decode succeeds"
+printf '\n%s\n' "ok 1 - builtin 16-bit lossless JPEG decode succeeds"
 exit 0

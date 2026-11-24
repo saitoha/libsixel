@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     clarans-adaptive-row-cache-seed-reproducibility \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS adaptive row-cache seed failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS adaptive row-cache seed failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS adaptive row-cache seed passed"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS adaptive row-cache seed passed"
 exit 0

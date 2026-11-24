@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder/highcolor/0088_byte_jajuni_neighborhood || {
-    echo "not ok 1 - high-color Jarvis, Judice and Ninke diffusion"
+    printf '\n%s\n' "not ok 1 - high-color Jarvis, Judice and Ninke diffusion"
     exit 0
 }
-echo "ok 1 - high-color Jarvis, Judice and Ninke diffusion"
+printf '\n%s\n' "ok 1 - high-color Jarvis, Judice and Ninke diffusion"
 exit 0

@@ -20,14 +20,14 @@ set -v
 input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png"
 output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-basn6a08.sixel"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0  -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
-    echo "not ok 1 - RGBA resize failed"
+    printf '\n%s\n' "not ok 1 - RGBA resize failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_dimensions \
     "${output_sixel}" 192 192 || {
-    echo "not ok 1 - RGBA resize changed the requested raster dimensions"
+    printf '\n%s\n' "not ok 1 - RGBA resize changed the requested raster dimensions"
     exit 0
 }
-echo "ok 1 - RGBA output has the requested 192x192 dimensions"
+printf '\n%s\n' "ok 1 - RGBA output has the requested 192x192 dimensions"
 exit 0

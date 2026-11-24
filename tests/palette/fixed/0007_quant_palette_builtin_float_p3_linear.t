@@ -8,9 +8,9 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" quant/palette/builtin_float/0007_p3_linear || {
-    echo "not ok 1 - builtin p3 linear"
+    printf '\n%s\n' "not ok 1 - builtin p3 linear"
     exit 0
 }
 
-echo "ok 1 - builtin p3 linear"
+printf '\n%s\n' "ok 1 - builtin p3 linear"
 exit 0

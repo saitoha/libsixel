@@ -6,12 +6,12 @@ set -v
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/retained/0031_gpu_legacy_then_move" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP GPU unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP GPU unavailable'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - A later GPU rectangle preserves an intervening CPU edit'
+    printf '\n%s\n' 'not ok 1 - A later GPU rectangle preserves an intervening CPU edit'
     exit 0
 }
-echo 'ok 1 - A later GPU rectangle preserves an intervening CPU edit'
+printf '\n%s\n' 'ok 1 - A later GPU rectangle preserves an intervening CPU edit'
 exit 0

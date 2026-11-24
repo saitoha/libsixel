@@ -19,7 +19,7 @@ frame0_six=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=0" \
     -Lbuiltin! -S "${input_png}") || {
-    echo "not ok" 1 - "APNG decode with env start frame 0 failed"
+    printf '\n%s\n' "not ok 1 - APNG decode with env start frame 0 failed"
     exit 0
 }
 
@@ -27,7 +27,7 @@ frame1_six=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
     -Lbuiltin! -S "${input_png}") || {
-    echo "not ok" 1 - "APNG decode with env start frame 1 failed"
+    printf '\n%s\n' "not ok 1 - APNG decode with env start frame 1 failed"
     exit 0
 }
 
@@ -35,19 +35,19 @@ override_six=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=0" \
     -T 1 -Lbuiltin! -S "${input_png}") || {
-    echo "not ok" 1 - "APNG decode with -T override failed"
+    printf '\n%s\n' "not ok 1 - APNG decode with -T override failed"
     exit 0
 }
 
 test "${override_six}" = "${frame1_six}" || {
-    echo "not ok" 1 - "-T output does not match env start frame 1"
+    printf '\n%s\n' "not ok 1 - -T output does not match env start frame 1"
     exit 0
 }
 
 test "${override_six}" != "${frame0_six}" || {
-    echo "not ok" 1 - "-T output still matches env start frame 0"
+    printf '\n%s\n' "not ok 1 - -T output still matches env start frame 0"
     exit 0
 }
 
-echo "ok" 1 - "builtin APNG -T start frame overrides env value"
+printf '\n%s\n' "ok 1 - builtin APNG -T start frame overrides env value"
 exit 0

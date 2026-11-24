@@ -22,7 +22,7 @@ png_path="${ARTIFACT_LOCAL_DIR}/builtin-crc.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         <"${TOP_SRCDIR}/images/map8.six" >"${png_path}" || {
-    echo "not ok" 1 - "builtin PNG conversion failed"
+    printf '\n%s\n' "not ok 1 - builtin PNG conversion failed"
     exit 0
 }
 
@@ -31,9 +31,9 @@ actual_ihdr_crc_cksum=$(dd bs=1 skip=29 count=4 if="${png_path}" \
         2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_ihdr_crc_cksum}" = "${expected_ihdr_crc_cksum}" || {
-    echo "not ok" 1 - "builtin IHDR CRC does not match PNG CRC-32"
+    printf '\n%s\n' "not ok 1 - builtin IHDR CRC does not match PNG CRC-32"
     exit 0
 }
 
-echo "ok" 1 - "builtin IHDR CRC matches PNG CRC-32"
+printf '\n%s\n' "ok 1 - builtin IHDR CRC matches PNG CRC-32"
 exit 0

@@ -8,8 +8,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     delta/refresh/0096_spatial_blue_cpu_keep || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - spatial blue cpu keep"
+    printf '\n%s\n' "not ok 1 - spatial blue cpu keep"
     exit 0
 }
-echo "ok 1 - spatial blue cpu keep"
+printf '\n%s\n' "ok 1 - spatial blue cpu keep"
 exit 0

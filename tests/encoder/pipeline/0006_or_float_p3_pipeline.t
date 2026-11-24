@@ -13,8 +13,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     encoder-core/0034_or_float_p3_pipeline || {
-    echo "not ok 1 - or float p3 pipeline"
+    printf '\n%s\n' "not ok 1 - or float p3 pipeline"
     exit 0
 }
-echo "ok 1 - or float p3 pipeline"
+printf '\n%s\n' "ok 1 - or float p3 pipeline"
 exit 0

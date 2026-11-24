@@ -11,12 +11,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-raw-8-rgb.png" \
     || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP CoreGraphics is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP CoreGraphics is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - raw 8 rgb original samples with float preference 0"
+    printf '\n%s\n' "not ok 1 - raw 8 rgb original samples with float preference 0"
     exit 0
 }
-echo "ok 1 - raw 8 rgb original samples with float preference 0"
+printf '\n%s\n' "ok 1 - raw 8 rgb original samples with float preference 0"
 exit 0

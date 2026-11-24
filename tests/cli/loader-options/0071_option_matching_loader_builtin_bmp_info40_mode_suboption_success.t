@@ -18,18 +18,18 @@ input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-info40-os2-huffman1d-2x2.
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:bmp_info40_mode=auto! \
     "${input_bmp}" -o/dev/null 2>&1) || {
-    echo "not ok" 1 - "builtin:bmp_info40_mode=auto suboption decode failed"
+    printf '\n%s\n' "not ok 1 - builtin:bmp_info40_mode=auto suboption decode failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *invalid\ argument\ for\ -L,--loaders\ option**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "builtin:bmp_info40_mode=auto was rejected by option parser"
+    printf '\n%s\n' "not ok 1 - builtin:bmp_info40_mode=auto was rejected by option parser"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "-L accepts builtin:bmp_info40_mode=auto"
+printf '\n%s\n' "ok 1 - -L accepts builtin:bmp_info40_mode=auto"
 exit 0

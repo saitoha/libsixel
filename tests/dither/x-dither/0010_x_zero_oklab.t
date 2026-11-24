@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" dither/positional/precision/0014_x_zero_oklab || {
-    echo "not ok 1 - x_zero_oklab"
+    printf '\n%s\n' "not ok 1 - x_zero_oklab"
     exit 0
 }
 
-echo "ok 1 - x_zero_oklab"
+printf '\n%s\n' "ok 1 - x_zero_oklab"
 exit 0

@@ -24,11 +24,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 16 -Qheckbert -d none \
     --threading-policy=greedy:global_budget=1 -4 "auto:Soff" \
     "${input}" 2>&1 >"${short_output}") || {
-    echo 'not ok 1 - short solid option conversion failed'
+    printf '\n%s\n' 'not ok 1 - short solid option conversion failed'
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=solid\|stored=1\|binding=palette_sample_solid,palette_sample_solid_override**) true ;; *) false ;; esac || {
-    echo 'not ok 1 - short solid option was not stored'
+    printf '\n%s\n' 'not ok 1 - short solid option was not stored'
     exit 0
 }
 
@@ -37,21 +37,21 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     --threading-policy=greedy:global_budget=1 \
     --env "SIXEL_SAMPLING_SOLID=off" -4 "auto" \
     "${input}" 2>&1 >"${env_output}") || {
-    echo 'not ok 1 - solid environment conversion failed'
+    printf '\n%s\n' 'not ok 1 - solid environment conversion failed'
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=solid\|stored=1\|binding=palette_sample_solid,palette_sample_solid_override**) true ;; *) false ;; esac || {
-    echo 'not ok 1 - solid environment value was not stored'
+    printf '\n%s\n' 'not ok 1 - solid environment value was not stored'
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo 'not ok 1 - short and environment solid output differ'
+    printf '\n%s\n' 'not ok 1 - short and environment solid output differ'
     exit 0
 }
 test -s "${short_output}" || {
-    echo 'not ok 1 - solid option output is empty'
+    printf '\n%s\n' 'not ok 1 - solid option output is empty'
     exit 0
 }
-echo 'ok 1 - short and environment solid values preserve image output'
+printf '\n%s\n' 'ok 1 - short and environment solid values preserve image output'
 exit 0

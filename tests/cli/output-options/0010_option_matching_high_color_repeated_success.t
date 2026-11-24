@@ -14,9 +14,9 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin -I -I -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - "repeated high-color option failed"
+    printf '\n%s\n' "not ok 1 - repeated high-color option failed"
     exit 0
 }
 
-echo "ok" 1 - "repeated high-color option is accepted"
+printf '\n%s\n' "ok 1 - repeated high-color option is accepted"
 exit 0

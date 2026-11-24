@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -dk_ \
         <"${TOP_SRCDIR}/images/map8.six" >/dev/null || {
-    echo "not ok" 1 - "legacy k_undither prefix rejected"
+    printf '\n%s\n' "not ok 1 - legacy k_undither prefix rejected"
     exit 0
 }
 
-echo "ok" 1 - "accepts legacy k_undither prefix"
+printf '\n%s\n' "ok 1 - accepts legacy k_undither prefix"
 exit 0

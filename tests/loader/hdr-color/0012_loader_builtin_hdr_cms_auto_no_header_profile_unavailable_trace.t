@@ -21,13 +21,13 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PAT
     "${input_hdr}" -o /dev/null 2>&1) || trace_status=$?
 
 test "${trace_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin HDR cms=auto trace run failed"
+    printf '\n%s\n' "not ok 1 - builtin HDR cms=auto trace run failed"
     exit 0
 }
 case "${trace_log}" in *header-derived\ source\ profile\ is\ unavailable\ on\ this\ CMS\ backend**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "builtin HDR cms=auto emitted unexpected header-profile unavailable trace"
+    printf '\n%s\n' "not ok 1 - builtin HDR cms=auto emitted unexpected header-profile unavailable trace"
     exit 0
 }
 
-echo "ok" 1 - "builtin HDR cms=auto does not emit header-profile unavailable trace"
+printf '\n%s\n' "ok 1 - builtin HDR cms=auto does not emit header-profile unavailable trace"
 exit 0

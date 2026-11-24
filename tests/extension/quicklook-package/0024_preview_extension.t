@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check preview-extension \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Preview declares its extension point, provider and supported content type."
+    printf '\n%s\n' "not ok 1 - Preview declares its extension point, provider and supported content type."
     exit 0
 }
 
-echo "ok 1 - Preview declares its extension point, provider and supported content type."
+printf '\n%s\n' "ok 1 - Preview declares its extension point, provider and supported content type."
 exit 0

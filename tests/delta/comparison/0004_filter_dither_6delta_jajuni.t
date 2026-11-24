@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0016_filter_dither_6delta_jajuni" || {
-    echo "not ok 1 - 0016_filter_dither_6delta_jajuni"
+    printf '\n%s\n' "not ok 1 - 0016_filter_dither_6delta_jajuni"
     exit 0
 }
 
-echo "ok 1 - 0016_filter_dither_6delta_jajuni"
+printf '\n%s\n' "ok 1 - 0016_filter_dither_6delta_jajuni"
 exit 0

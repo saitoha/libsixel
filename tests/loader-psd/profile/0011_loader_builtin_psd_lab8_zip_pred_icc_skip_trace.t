@@ -22,7 +22,7 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PAT
     "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "Lab ZIP+Prediction decode failed unexpectedly: ${trace_log}"
+    printf '\n%s\n' "not ok 1 - Lab ZIP+Prediction decode failed unexpectedly: ${trace_log}"
     exit 0
 }
 
@@ -32,11 +32,11 @@ case "${trace_log}" in
     *"builtin PSD: failed to apply embedded ICC profile"*|\
     *"builtin PSD: skipping embedded ICC conversion for Lab custom decode path"*|\
     *"builtin PSD: skipping embedded ICC conversion for CIELAB path (cms backend unsupported)"*)
-        echo "not ok" 1 - "Lab ZIP+Prediction produced unexpected ICC trace"
+        printf '\n%s\n' "not ok 1 - Lab ZIP+Prediction produced unexpected ICC trace"
         exit 0
         ;;
     *)
-        echo "ok" 1 - "Lab ZIP+Prediction keeps ICC trace contract without false failure"
+        printf '\n%s\n' "ok 1 - Lab ZIP+Prediction keeps ICC trace contract without false failure"
         ;;
 esac
 

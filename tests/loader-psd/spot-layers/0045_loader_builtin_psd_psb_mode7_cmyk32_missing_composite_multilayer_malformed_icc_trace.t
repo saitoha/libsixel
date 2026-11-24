@@ -21,7 +21,7 @@ command_status=0
 trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto!     "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "mode7 PSB CMYK32 multi-layer malformed resource decode failed: ${trace_log}"
+    printf '\n%s\n' "not ok 1 - mode7 PSB CMYK32 multi-layer malformed resource decode failed: ${trace_log}"
     exit 0
 }
 
@@ -29,10 +29,10 @@ case "${trace_log}" in
     *"malformed ICC resource section; skipping ICC conversion"*)
         ;;
     *)
-        echo "not ok" 1 - "mode7 PSB CMYK32 multi-layer malformed ICC trace is missing"
+        printf '\n%s\n' "not ok 1 - mode7 PSB CMYK32 multi-layer malformed ICC trace is missing"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "mode7 PSB CMYK32 multi-layer malformed ICC is traced and decode succeeds"
+printf '\n%s\n' "ok 1 - mode7 PSB CMYK32 multi-layer malformed ICC is traced and decode succeeds"
 exit 0

@@ -24,18 +24,18 @@ expected_palette='JASC-PAL
 actual_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -m gpl:"${input_palette}" \
         -M pal-jasc:- -o /dev/null "${input_image}") || {
-    echo "not ok" 1 - "GPL surrounding whitespace was rejected"
+    printf '\n%s\n' "not ok 1 - GPL surrounding whitespace was rejected"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "GPL output normalization failed"
+    printf '\n%s\n' "not ok 1 - GPL output normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "GPL whitespace changed imported entries"
+    printf '\n%s\n' "not ok 1 - GPL whitespace changed imported entries"
     exit 0
 }
 
-echo "ok" 1 - "GPL surrounding spaces and tabs are trimmed"
+printf '\n%s\n' "ok 1 - GPL surrounding spaces and tabs are trimmed"
 exit 0

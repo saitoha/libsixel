@@ -32,18 +32,18 @@ actual_palette=$(
         --precision-policy=float32 -m "${mapfile_png}" \
         -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "indexed PNG with a source index gap failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG with a source index gap failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "indexed PNG palette normalization failed"
+    printf '\n%s\n' "not ok 1 - indexed PNG palette normalization failed"
     exit 0
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "indexed PNG source indices were retained"
+    printf '\n%s\n' "not ok 1 - indexed PNG source indices were retained"
     exit 0
 }
 
-echo "ok" 1 - "indexed PNG source indices are not preserved"
+printf '\n%s\n' "ok 1 - indexed PNG source indices are not preserved"
 exit 0

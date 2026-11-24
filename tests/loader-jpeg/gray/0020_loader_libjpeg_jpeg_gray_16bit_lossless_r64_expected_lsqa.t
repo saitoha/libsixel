@@ -36,15 +36,15 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/86e745b5-0008_jpeg_gray_
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_gray_16bit_lossless_r64.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg! "${input_jpeg}" >"${output_sixel}" || {
-    echo "not ok" 1 - "libjpeg 16-bit grayscale lossless restart JPEG decode failed"
+    printf '\n%s\n' "not ok 1 - libjpeg 16-bit grayscale lossless restart JPEG decode failed"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "libjpeg 16-bit grayscale lossless restart JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - libjpeg 16-bit grayscale lossless restart JPEG fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libjpeg 16-bit grayscale lossless restart JPEG keeps MS-SSIM ${lsqa_floor} against expected PNM"
+printf '\n%s\n' "ok 1 - libjpeg 16-bit grayscale lossless restart JPEG keeps MS-SSIM ${lsqa_floor} against expected PNM"
 exit 0

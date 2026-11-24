@@ -15,10 +15,10 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p 2 -h100 -wauto -rlanczos3 "${snake_jpg}" \
         -o/dev/null || {
-    echo "not ok" 1 - "Lanczos3 scaling with two-colour palette fails"
+    printf '\n%s\n' "not ok 1 - Lanczos3 scaling with two-colour palette fails"
     exit 0
 }
 
-echo "ok" 1 - "Lanczos3 scaling with two-colour palette works"
+printf '\n%s\n' "ok 1 - Lanczos3 scaling with two-colour palette works"
 
 exit 0

@@ -13,9 +13,9 @@ set -v
 
 "${TOP_SRCDIR}/tools/quicklook-extension.bash" install --package-dir '' \
     --tool /must-not-run >/dev/null 2>&1 && {
-    echo "not ok 1 - Empty package path was accepted"
+    printf '\n%s\n' "not ok 1 - Empty package path was accepted"
     exit 0
 }
 
-echo "ok 1 - empty package path rejected."
+printf '\n%s\n' "ok 1 - empty package path rejected."
 exit 0

@@ -26,17 +26,17 @@ env_output="${artifact_dir}/0126-gpu-dequant-threshold-env-$$.png"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,gpu_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -d lso_undither:Vlight \
     -G "auto:D300" <"${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "GPU dequant threshold short conversion failed"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold short conversion failed"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=dequant_threshold\|stored=1\|binding=gpu_dequant_threshold,gpu_dequant_threshold_override\|value=300**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "GPU dequant threshold short value was not stored"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold short value was not stored"
     exit 0
 }
 
 case "${short_trace}" in *LSXGPU1\|*consumer=decoder\|policy=1\|threshold=300**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "GPU dequant threshold did not reach the request"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold did not reach the request"
     exit 0
 }
 
@@ -44,22 +44,22 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,gpu_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -d lso_undither:Vlight \
     --env "SIXEL_GPU_DEQUANT_THRESHOLD=300" -G auto \
     <"${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "GPU dequant threshold env conversion failed"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold env conversion failed"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=dequant_threshold\|stored=1\|binding=gpu_dequant_threshold,gpu_dequant_threshold_override\|value=300**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "GPU dequant threshold environment value was not stored"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold environment value was not stored"
     exit 0
 }
 
 case "${env_trace}" in *LSXGPU1\|*consumer=decoder\|policy=1\|threshold=300**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "environment GPU threshold did not reach the request"
+    printf '\n%s\n' "not ok 1 - environment GPU threshold did not reach the request"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "GPU dequant threshold outputs differ"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold outputs differ"
     exit 0
 }
 
@@ -67,21 +67,21 @@ range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -d lso_undither:Vlight \
     --env "SIXEL_GPU_DEQUANT_THRESHOLD=184467440737095516150" -G off \
     <"${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "GPU dequant threshold overflow conversion failed"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold overflow conversion failed"
     exit 0
 }
 
 case "${range_trace}" in *LSXSUB1\|*key=dequant_threshold\|stored=1\|binding=gpu_dequant_threshold,gpu_dequant_threshold_override\|value=*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "GPU dequant threshold did not saturate overflow"
+    printf '\n%s\n' "not ok 1 - GPU dequant threshold did not saturate overflow"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "GPU dequant threshold preserves image output"
+printf '\n%s\n' "ok 1 - GPU dequant threshold preserves image output"
 exit 0

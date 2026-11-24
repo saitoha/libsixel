@@ -18,9 +18,9 @@ reference_image="${TOP_SRCDIR}/tests/data/colormgmt/reference/png/rgb/img_rgb_ic
 # permits either byte or float32 decoder storage without a spatial metric.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${reference_image}" "${input_png}" 'builtin:cms_engine=auto!' 0.51 || {
-    echo "not ok 1 - decoded PNG color samples differ from the independent oracle"
+    printf '\n%s\n' "not ok 1 - decoded PNG color samples differ from the independent oracle"
     exit 0
 }
 
-echo "ok" 1 - "builtin colormgmt matches reference: rgb/img_rgb_icc0_srgb1_chrm1_gama0.png"
+printf '\n%s\n' "ok 1 - builtin colormgmt matches reference: rgb/img_rgb_icc0_srgb1_chrm1_gama0.png"
 exit 0

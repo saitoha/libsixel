@@ -18,13 +18,13 @@ P3
 128 128 128
 PNM
 ) || {
-    echo "not ok 1 - uniform gray 128 with auto"
+    printf '\n%s\n' "not ok 1 - uniform gray 128 with auto"
     exit 0
 }
 case "$sixel" in *'#0;2;50;50;50#0'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - gray 128 must emit 50 percent with auto"
+    printf '\n%s\n' "not ok 1 - gray 128 must emit 50 percent with auto"
     exit 0
 }
 
-echo "ok 1 - gray 128 emits 50 percent with auto"
+printf '\n%s\n' "ok 1 - gray 128 emits 50 percent with auto"
 exit 0

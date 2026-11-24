@@ -8,8 +8,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "gpu-kmeans/0006_option_atomicity" || {
-    echo "not ok 1 - invalid k-means backend is atomic"
+    printf '\n%s\n' "not ok 1 - invalid k-means backend is atomic"
     exit 0
 }
-echo "ok 1 - invalid k-means backend is atomic"
+printf '\n%s\n' "ok 1 - invalid k-means backend is atomic"
 exit 0

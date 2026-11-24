@@ -12,7 +12,7 @@ set -v
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 image_out="${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six"
 metric=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image_ref}" "${image_out}") || {
-    echo "not ok" 1 - "failed to calculate MS-SSIM"
+    printf '\n%s\n' "not ok 1 - failed to calculate MS-SSIM"
     exit 0
 }
 case "${metric}" in
@@ -25,7 +25,7 @@ case "${metric}" in
 esac
 
 test -n "${metric}" || {
-    echo "not ok" 1 - "failed to calculate MS-SSIM"
+    printf '\n%s\n' "not ok 1 - failed to calculate MS-SSIM"
     exit 0
 }
 
@@ -36,10 +36,10 @@ status=$?
 set -e
 
 test "${status}" -eq 5 || {
-    echo "not ok" 1 - "expected exit code 5, got ${status}"
+    printf '\n%s\n' "not ok 1 - expected exit code 5, got ${status}"
     exit 0
 }
 
-echo "ok" 1 - "baseline above metric returned exit code 5"
+printf '\n%s\n' "ok 1 - baseline above metric returned exit code 5"
 
 exit 0

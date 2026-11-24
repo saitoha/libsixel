@@ -64,14 +64,14 @@ ${invalid_size_line}"
 done < "${invalid_log}"
 
 test -n "${default_size}" || {
-    echo "not ok" 1 - "invalid size env fallback check failed"
+    printf '\n%s\n' "not ok 1 - invalid size env fallback check failed"
     exit 0
 }
 
 test "${default_size}" = "${invalid_size}" || {
-    echo "not ok" 1 - "invalid size env fallback check failed"
+    printf '\n%s\n' "not ok 1 - invalid size env fallback check failed"
     exit 0
 }
 
-echo "ok" 1 - "invalid size env falls back to default hint"
+printf '\n%s\n' "ok 1 - invalid size env falls back to default hint"
 exit 0

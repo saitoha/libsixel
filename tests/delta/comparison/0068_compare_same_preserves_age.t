@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "delta/comparison/0068_compare_same_preserves_age" >/dev/null || {
-    echo "not ok 1 - compare same preserves age"
+    printf '\n%s\n' "not ok 1 - compare same preserves age"
     exit 0
 }
 
-echo "ok 1 - compare same preserves age"
+printf '\n%s\n' "ok 1 - compare same preserves age"
 exit 0

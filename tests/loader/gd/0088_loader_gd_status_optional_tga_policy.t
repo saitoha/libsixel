@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" "optional_tga_policy" || {
-    echo "not ok 1 - gd status optional_tga_policy"
+    printf '\n%s\n' "not ok 1 - gd status optional_tga_policy"
     exit 0
 }
 
-echo "ok 1 - gd status optional_tga_policy"
+printf '\n%s\n' "ok 1 - gd status optional_tga_policy"
 exit 0

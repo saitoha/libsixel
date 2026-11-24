@@ -19,32 +19,32 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp" \
     >/dev/null || {
-    printf "ok 1 # SKIP gd backend does not decode WBMP in this runtime\n"
+    printf "\nok 1 # SKIP gd backend does not decode WBMP in this runtime\n"
     exit 0
 }
 
 msg=$(set +xv; printf '\000\000\377\377\177\377\177\000' | \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable - \
     2>&1 >/dev/null) && {
-    echo "not ok" 1 - "forced gd loader accepted malformed WBMP stream"
+    printf '\n%s\n' "not ok 1 - forced gd loader accepted malformed WBMP stream"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *GD\ error**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected GD error diagnostic was missing"
+    printf '\n%s\n' "not ok 1 - expected GD error diagnostic was missing"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
 case "${msg}" in *runtime\ error:\ unable\ to\ decode\ input\ with\ available\ loaders**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "unexpected generic loader-chain failure message"
+    printf '\n%s\n' "not ok 1 - unexpected generic loader-chain failure message"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
 }
 
-echo "ok" 1 - "forced gd loader reports GD failure for malformed WBMP"
+printf '\n%s\n' "ok 1 - forced gd loader reports GD failure for malformed WBMP"
 exit 0

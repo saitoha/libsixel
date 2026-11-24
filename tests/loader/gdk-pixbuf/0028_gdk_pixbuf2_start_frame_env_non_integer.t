@@ -23,14 +23,14 @@ error_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=abc" \
     -L gdk-pixbuf2! -ldisable -S \
     "${input_gif}" 2>&1 >/dev/null)" && {
-    echo "not ok 1 - gdk-pixbuf2 accepted non-integer start-frame env"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 accepted non-integer start-frame env"
     exit 0
 }
 
 case "${error_text}" in *SIXEL_LOADER_ANIMATION_START_FRAME_NO\ must\ be\ an\ integer.*) true ;; *) false ;; esac || {
-    echo "not ok 1 - gdk-pixbuf2 non-integer env error message mismatch"
+    printf '\n%s\n' "not ok 1 - gdk-pixbuf2 non-integer env error message mismatch"
     exit 0
 }
 
-echo "ok 1 - gdk-pixbuf2 rejects non-integer start-frame env"
+printf '\n%s\n' "ok 1 - gdk-pixbuf2 rejects non-integer start-frame env"
 exit 0

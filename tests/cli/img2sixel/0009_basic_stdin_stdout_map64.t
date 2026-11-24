@@ -15,9 +15,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" - - <"${TOP_SRCDIR}/images/map64.six" \
         >/dev/null || {
-    echo "not ok" 1 - "map64 stdin/stdout conversion failed"
+    printf '\n%s\n' "not ok 1 - map64 stdin/stdout conversion failed"
     exit 0
 }
 
-echo "ok" 1 - "converts map64 with explicit stdin/stdout"
+printf '\n%s\n' "ok 1 - converts map64 with explicit stdin/stdout"
 exit 0

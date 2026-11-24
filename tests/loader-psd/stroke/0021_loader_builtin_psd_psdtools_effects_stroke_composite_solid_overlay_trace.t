@@ -34,21 +34,21 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - \
-            "effects/stroke-composite diagnostic header is malformed"
+        printf '\n%s\n' \
+            "not ok 1 - effects/stroke-composite diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -57,10 +57,10 @@ case "${diag_line}" in *FX_SOLID_OVERLAY_BASE**) true ;; *) false ;; esac && ove
 case "${diag_line}" in *FX_CLBL1_BASE_OVERLAY_SUPPRESS**) true ;; *) false ;; esac && overlay_trace_ok=1
 
 test "${overlay_trace_ok}" = "1" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite solid-overlay diagnostic code is missing"
+    printf '\n%s\n' \
+        "not ok 1 - effects/stroke-composite solid-overlay diagnostic code is missing"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps solid-overlay code contract"
+printf '\n%s\n' "ok 1 - effects/stroke-composite keeps solid-overlay code contract"
 exit 0

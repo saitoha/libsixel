@@ -19,8 +19,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-Lbuiltin:chrm_arithmetic=512bit!" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-arithmetic-1.png" \
     >/dev/null 2>&1 || status=$?
 test "$status" -ne 0 || {
-    echo "not ok 1 - invalid cHRM arithmetic assignment was accepted"
+    printf '\n%s\n' "not ok 1 - invalid cHRM arithmetic assignment was accepted"
     exit 0
 }
-echo "ok 1 - invalid cHRM arithmetic assignment is rejected"
+printf '\n%s\n' "ok 1 - invalid cHRM arithmetic assignment is rejected"
 exit 0

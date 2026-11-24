@@ -29,13 +29,13 @@ compinit_count=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {
-    echo "not ok" 1 - "zsh completion install failed on first run"
+    printf '\n%s\n' "not ok 1 - zsh completion install failed on first run"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     -2 zsh >/dev/null || {
-    echo "not ok" 1 - "zsh completion install failed on second run"
+    printf '\n%s\n' "not ok 1 - zsh completion install failed on second run"
     exit 0
 }
 
@@ -51,14 +51,14 @@ while IFS= read -r line; do
 done < "${rc_path}"
 
 test "${fpath_count}" -eq 1 || {
-    echo "not ok" 1 - "zsh fpath line was duplicated"
+    printf '\n%s\n' "not ok 1 - zsh fpath line was duplicated"
     exit 0
 }
 
 test "${compinit_count}" -eq 1 || {
-    echo "not ok" 1 - "zsh compinit line was duplicated"
+    printf '\n%s\n' "not ok 1 - zsh compinit line was duplicated"
     exit 0
 }
 
-echo "ok" 1 - "zsh rc lines stay unique across repeated installs"
+printf '\n%s\n' "ok 1 - zsh rc lines stay unique across repeated installs"
 exit 0

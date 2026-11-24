@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/eytzinger/0029_eyt_cielab_oracle_small || {
-    echo "not ok 1 - eytzinger cielab oracle_small"
+    printf '\n%s\n' "not ok 1 - eytzinger cielab oracle_small"
     exit 0
 }
 
-echo "ok 1 - eytzinger cielab oracle_small"
+printf '\n%s\n' "ok 1 - eytzinger cielab oracle_small"
 exit 0

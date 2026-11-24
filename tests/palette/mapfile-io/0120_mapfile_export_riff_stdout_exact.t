@@ -23,14 +23,14 @@ printf '\122\111\106\106\030\000\000\000\120\101\114\040\144\141\164\141\014\000
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     -M pal-riff:- -o/dev/null "${input_image}" >"${actual_palette}" || {
-    echo "not ok" 1 - "RIFF PAL export to stdout failed"
+    printf '\n%s\n' "not ok 1 - RIFF PAL export to stdout failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - "RIFF PAL stdout layout changed"
+    printf '\n%s\n' "not ok 1 - RIFF PAL stdout layout changed"
     exit 0
 }
 
-echo "ok" 1 - "RIFF PAL export to stdout has exact layout"
+printf '\n%s\n' "ok 1 - RIFF PAL export to stdout has exact layout"
 exit 0

@@ -31,7 +31,7 @@ case_name=snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel
         -Lbuiltin! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
-        echo "not ok" 1 - "builtin loader failed to decode PSB TySh EngineData StyleSheetData /CIELab fixture ${case_name}: ${trace_output}"
+        printf '\n%s\n' "not ok 1 - builtin loader failed to decode PSB TySh EngineData StyleSheetData /CIELab fixture ${case_name}: ${trace_output}"
         status=1
         exit 0
     }
@@ -40,7 +40,7 @@ case_name=snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel
         *"builtin PSD: ignoring non-pixel payload in layer fallback"*)
             ;;
         *)
-            echo "not ok" 1 - "ignore non-pixel payload trace is missing for ${case_name}"
+            printf '\n%s\n' "not ok 1 - ignore non-pixel payload trace is missing for ${case_name}"
             status=1
             exit 0
             ;;
@@ -50,7 +50,7 @@ case_name=snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel
         *"builtin PSD: rendering non-pixel fill payload in layer fallback"*)
             ;;
         *)
-            echo "not ok" 1 - "render non-pixel fill payload trace is missing for ${case_name}"
+            printf '\n%s\n' "not ok 1 - render non-pixel fill payload trace is missing for ${case_name}"
             status=1
             exit 0
             ;;
@@ -61,10 +61,10 @@ case_name=snake16_psb_mode7_cmyk32_missing_composite_multilayer_nonpixel_nopixel
 # floating-point arithmetic in addition to that one-level sample budget.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${gray_reference}" "${input_psd}" 'builtin:cms_engine=auto!' 1.01 || {
-    echo "not ok 1 - decoded PSD samples differ from the independent PPM"
+    printf '\n%s\n' "not ok 1 - decoded PSD samples differ from the independent PPM"
     exit 0
 }
 test "${status}" -eq 0 || exit 0
 
-echo "ok" 1 - "PSB TySh EngineData StyleSheetData /CIELab matrix keeps deterministic trace matches reference pixel values"
+printf '\n%s\n' "ok 1 - PSB TySh EngineData StyleSheetData /CIELab matrix keeps deterministic trace matches reference pixel values"
 exit 0

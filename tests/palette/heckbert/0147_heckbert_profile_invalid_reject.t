@@ -24,18 +24,18 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -p 16 \
     "${input_image}" 2>&1 >/dev/null) || status=$?
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "heckbert invalid profile unexpectedly passed"
+    printf '\n%s\n' "not ok 1 - heckbert invalid profile unexpectedly passed"
     exit 0
 }
 diag_line=${msg%%"${nl}"*}
 case "${diag_line}" in LSXCLI1*phase=option_parse*rc=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "heckbert invalid profile diagnostic header is malformed"
+    printf '\n%s\n' "not ok 1 - heckbert invalid profile diagnostic header is malformed"
     exit 0
 }
 case "${diag_line}" in *code=UNKNOWN_SUBOPTION_VALUE*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "heckbert invalid profile diagnostic code mismatch"
+    printf '\n%s\n' "not ok 1 - heckbert invalid profile diagnostic code mismatch"
     exit 0
 }
-echo "ok" 1 - "heckbert invalid profile rejected"
+printf '\n%s\n' "ok 1 - heckbert invalid profile rejected"
 
 exit 0

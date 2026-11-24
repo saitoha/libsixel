@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'normal' 'migration-receipt' || {
-    echo "not ok 1 - Migration removes the exact system receipt."
+    printf '\n%s\n' "not ok 1 - Migration removes the exact system receipt."
     exit 0
 }
-echo "ok 1 - Migration removes the exact system receipt."
+printf '\n%s\n' "ok 1 - Migration removes the exact system receipt."
 exit 0

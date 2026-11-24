@@ -11,7 +11,7 @@ set -v
 actual=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SAMPLING_POLICY=full-frame \
     palette/export_capture/0005_reuse_count "${TOP_SRCDIR}/tests/data/inputs/small.ppm") || {
-    echo "not ok 1 - repeated palette export failed"
+    printf '\n%s\n' "not ok 1 - repeated palette export failed"
     exit 0
 }
 # The first six primary/secondary entries may occur in solver order.
@@ -29,9 +29,9 @@ JASC-PAL
 0 170 170
 255 85 85') ;;
     *)
-        echo "not ok 1 - reused export has a stale count or wrong centroid"
+        printf '\n%s\n' "not ok 1 - reused export has a stale count or wrong centroid"
         exit 0
         ;;
 esac
-echo "ok 1 - palette export reuse count"
+printf '\n%s\n' "ok 1 - palette export reuse count"
 exit 0

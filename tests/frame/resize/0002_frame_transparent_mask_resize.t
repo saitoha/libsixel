@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "frame/0004_frame_transparent_mask_resize" || {
-    echo "not ok 1 - frame transparent-mask resize contract"
+    printf '\n%s\n' "not ok 1 - frame transparent-mask resize contract"
     exit 0
 }
 
-echo "ok 1 - frame transparent-mask resize contract"
+printf '\n%s\n' "ok 1 - frame transparent-mask resize contract"
 exit 0

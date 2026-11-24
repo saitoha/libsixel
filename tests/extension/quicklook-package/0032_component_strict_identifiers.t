@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check component-strict-identifier \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Component strict identifier policy names all fixed bundles."
+    printf '\n%s\n' "not ok 1 - Component strict identifier policy names all fixed bundles."
     exit 0
 }
 
-echo "ok 1 - Component strict identifier policy names all fixed bundles."
+printf '\n%s\n' "ok 1 - Component strict identifier policy names all fixed bundles."
 exit 0

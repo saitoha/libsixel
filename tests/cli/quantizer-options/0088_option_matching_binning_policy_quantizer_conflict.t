@@ -19,19 +19,19 @@ message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 2 || {
-    echo "not ok 1 - incompatible quantizer exit status mismatch"
+    printf '\n%s\n' "not ok 1 - incompatible quantizer exit status mismatch"
     exit 0
 }
 
 case "${message}" in *unsupported\ by\ the\ selected\ quantizer**) true ;; *) false ;; esac || {
-    echo "not ok 1 - incompatible quantizer diagnostic is missing"
+    printf '\n%s\n' "not ok 1 - incompatible quantizer diagnostic is missing"
     exit 0
 }
 
 case "${message}" in *LSXPFB1**) false ;; *) true ;; esac || {
-    echo "not ok 1 - incompatible policy entered sampling fallback"
+    printf '\n%s\n' "not ok 1 - incompatible policy entered sampling fallback"
     exit 0
 }
 
-echo "ok 1 - explicit hard binning rejects a raw-only quantizer"
+printf '\n%s\n' "ok 1 - explicit hard binning rejects a raw-only quantizer"
 exit 0

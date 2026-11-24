@@ -17,8 +17,8 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-lifecycle-audit" \
     "${QUICKLOOK_LIFECYCLE_MIGRATION}" 'normal' 'migration-default:sixel' || {
-    echo "not ok 1 - Migration observes the original sixel default without a setter."
+    printf '\n%s\n' "not ok 1 - Migration observes the original sixel default without a setter."
     exit 0
 }
-echo "ok 1 - Migration observes the original sixel default without a setter."
+printf '\n%s\n' "ok 1 - Migration observes the original sixel default without a setter."
 exit 0

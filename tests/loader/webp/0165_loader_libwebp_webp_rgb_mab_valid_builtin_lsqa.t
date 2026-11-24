@@ -27,25 +27,25 @@ reference_six="${TOP_SRCDIR}/tests/data/loader/quality/f6003cf0-rgb_mab_valid_we
 output_six="${TMPDIR:-/tmp}/libsixel-rgb-mab-valid-webp-$$.six"
 
 test -f "${input_webp}" || {
-    echo "not ok" 1 - "missing input fixture: rgb_mab_valid.webp"
+    printf '\n%s\n' "not ok 1 - missing input fixture: rgb_mab_valid.webp"
     exit 0
 }
 
 test -f "${reference_six}" || {
-    echo "not ok" 1 - "missing reference fixture: rgb_mab_valid_webp_builtin.six"
+    printf '\n%s\n' "not ok 1 - missing reference fixture: rgb_mab_valid_webp_builtin.six"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibwebp:cms_engine=builtin! "${input_webp}" >"${output_six}" || {
-    echo "not ok" 1 - "libwebp builtin cms decode failed: rgb_mab_valid.webp"
+    printf '\n%s\n' "not ok 1 - libwebp builtin cms decode failed: rgb_mab_valid.webp"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_six}" "${output_six}" 2>&1) || {
-    echo "not ok" 1 - "rgb_mab_valid.webp builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - rgb_mab_valid.webp builtin cms fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libwebp builtin cms rgb_mab_valid keeps MS-SSIM ${lsqa_floor}"
+printf '\n%s\n' "ok 1 - libwebp builtin cms rgb_mab_valid keeps MS-SSIM ${lsqa_floor}"
 exit 0

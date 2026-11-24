@@ -18,15 +18,15 @@ pipeline_log=$(
         -o /dev/null \
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1
 ) || {
-    echo "not ok" 1 - "planner run failed for bluenoise CLI gradient_factor"
+    printf '\n%s\n' "not ok 1 - planner run failed for bluenoise CLI gradient_factor"
     exit 0
 }
 printf '%s' "${pipeline_log}" >&2
 
 case "${pipeline_log}" in *gradient-map\ -\>\ dither**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "planner missed gradient-map -> dither edge"
+    printf '\n%s\n' "not ok 1 - planner missed gradient-map -> dither edge"
     exit 0
 }
 
-echo "ok" 1 - "planner inserts gradient-map before dither for CLI factor"
+printf '\n%s\n' "ok 1 - planner inserts gradient-map before dither for CLI factor"
 exit 0

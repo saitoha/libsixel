@@ -9,12 +9,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0197_gpu_pending_destroy"
 result=$?
 set -e
 test "$result" != 77 || {
-    echo "ok 1 - gpu pending destroy # SKIP threads or GPU unavailable"
+    printf '\n%s\n' "ok 1 - gpu pending destroy # SKIP threads or GPU unavailable"
     exit 0
 }
 test "$result" = 0 || {
-    echo "not ok 1 - gpu pending destroy"
+    printf '\n%s\n' "not ok 1 - gpu pending destroy"
     exit 0
 }
-echo "ok 1 - gpu pending destroy"
+printf '\n%s\n' "ok 1 - gpu pending destroy"
 exit 0

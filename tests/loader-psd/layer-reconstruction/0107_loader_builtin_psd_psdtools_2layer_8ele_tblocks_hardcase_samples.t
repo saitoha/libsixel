@@ -14,9 +14,9 @@ set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_display_values \
     "${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_2layer_8ele_tblocks_expected_psdtools.ppm" \
     "${TOP_SRCDIR}/tests/data/psd-tools/psdtools_2layer_8ele_tblocks.psd" 'builtin:Eauto!' 1.01 || {
-    echo "not ok 1 - decoded samples differ from the reference"
+    printf '\n%s\n' "not ok 1 - decoded samples differ from the reference"
     exit 0
 }
 
-echo "ok 1 - decoded samples match the independent reference"
+printf '\n%s\n' "ok 1 - decoded samples match the independent reference"
 exit 0

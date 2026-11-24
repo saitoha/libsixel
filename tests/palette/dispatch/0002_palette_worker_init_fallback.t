@@ -24,24 +24,24 @@ message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${output}") || {
-    echo "not ok 1 - palette worker init failure stopped encoding"
+    printf '\n%s\n' "not ok 1 - palette worker init failure stopped encoding"
     exit 0
 }
 
 test -s "${output}" || {
-    echo "not ok 1 - palette worker init fallback produced no output"
+    printf '\n%s\n' "not ok 1 - palette worker init fallback produced no output"
     exit 0
 }
 
 case "${message}" in *LSXPFB1\|stage=init\|action=full-frame-sync\|*\|rc=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - palette worker init fallback was not traced"
+    printf '\n%s\n' "not ok 1 - palette worker init fallback was not traced"
     exit 0
 }
 
 case "${message}" in *LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=fallback\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - palette worker init fallback state was not recorded"
+    printf '\n%s\n' "not ok 1 - palette worker init fallback state was not recorded"
     exit 0
 }
 
-echo "ok 1 - palette worker init failure falls back to full frame"
+printf '\n%s\n' "ok 1 - palette worker init failure falls back to full frame"
 exit 0

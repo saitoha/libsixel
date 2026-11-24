@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check content-types \
     "${TOP_BUILDDIR}/quicklook-extension/package" host || {
-    echo "not ok 1 - Host has the required SIXEL content type and associations."
+    printf '\n%s\n' "not ok 1 - Host has the required SIXEL content type and associations."
     exit 0
 }
 
-echo "ok 1 - Host has the required SIXEL content type and associations."
+printf '\n%s\n' "ok 1 - Host has the required SIXEL content type and associations."
 exit 0

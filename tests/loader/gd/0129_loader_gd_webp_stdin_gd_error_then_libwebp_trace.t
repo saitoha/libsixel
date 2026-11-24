@@ -25,26 +25,26 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable - \
     < "${input_webp}" >/dev/null || {
-    printf "ok 1 # SKIP libwebp loader cannot decode stdin WebP\n"
+    printf "\nok 1 # SKIP libwebp loader cannot decode stdin WebP\n"
     exit 0
 }
 
 trace_log=$(set +xv; head -c 32 "${input_webp}" | \
     SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gd,libwebp! -ldisable - 2>&1 >/dev/null) && {
-    printf "ok 1 # SKIP truncated stdin WebP was accepted in this runtime\n"
+    printf "\nok 1 # SKIP truncated stdin WebP was accepted in this runtime\n"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd loader was not attempted for truncated stdin WebP"
+    printf '\n%s\n' "not ok 1 - gd loader was not attempted for truncated stdin WebP"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ libwebp\ loader**) true ;; *) false ;; esac || {
-    echo "not ok 1 - libwebp loader was not attempted after gd error"
+    printf '\n%s\n' "not ok 1 - libwebp loader was not attempted after gd error"
     exit 0
 }
 
-echo "ok 1 - truncated stdin WebP progressed from gd to libwebp"
+printf '\n%s\n' "ok 1 - truncated stdin WebP progressed from gd to libwebp"
 exit 0

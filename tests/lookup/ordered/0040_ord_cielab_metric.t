@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/ordered/0031_ord_cielab_metric || {
-    echo "not ok 1 - ordered cielab metric"
+    printf '\n%s\n' "not ok 1 - ordered cielab metric"
     exit 0
 }
-echo "ok 1 - ordered cielab metric"
+printf '\n%s\n' "ok 1 - ordered cielab metric"
 exit 0

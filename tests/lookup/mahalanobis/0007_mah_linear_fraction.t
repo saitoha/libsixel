@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/mahalanobis/0007_mah_linear_fraction || {
-    echo "not ok 1 - mahalanobis linear fraction"
+    printf '\n%s\n' "not ok 1 - mahalanobis linear fraction"
     exit 0
 }
 
-echo "ok 1 - mahalanobis linear fraction"
+printf '\n%s\n' "ok 1 - mahalanobis linear fraction"
 exit 0

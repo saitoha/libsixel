@@ -18,7 +18,7 @@ input_hdr="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.hdr"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin-hdr-default.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_hdr}" >"${output_sixel}" || {
-    echo "not ok" 1 - "builtin loader failed to decode HDR with builtin!"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode HDR with builtin!"
     exit 0
 }
 
@@ -26,9 +26,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_hdr}" >"${output_sixe
 # cannot be evidence that the image differs from a solid black/white frame.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_sample_range \
     "${output_sixel}" 1 || {
-    echo "not ok 1 - HDR output lost its RGB sample range"
+    printf '\n%s\n' "not ok 1 - HDR output lost its RGB sample range"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes HDR with builtin! and avoids black output collapse"
+printf '\n%s\n' "ok 1 - builtin loader decodes HDR with builtin! and avoids black output collapse"
 exit 0

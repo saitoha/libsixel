@@ -20,9 +20,9 @@ set -v
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -M 6delta-progressive \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" >/dev/null 2>&1 && {
-    echo "not ok 1 - non-capture target silently used a loader"
+    printf '\n%s\n' "not ok 1 - non-capture target silently used a loader"
     exit 0
 }
 
-echo "ok 1 - multi pass non capture"
+printf '\n%s\n' "ok 1 - multi pass non capture"
 exit 0

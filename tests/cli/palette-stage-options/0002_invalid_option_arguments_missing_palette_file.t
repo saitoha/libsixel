@@ -15,9 +15,9 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${ARTIFACT_LOCAL_DIR}/invalid_filename" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg" </dev/null >/dev/null  && {
-    echo "not ok" 1 - "unexpected success: missing palette file"
+    printf '\n%s\n' "not ok 1 - unexpected success: missing palette file"
     exit 0
 }
 
-echo "ok" 1 - "invalid option rejected"
+printf '\n%s\n' "ok 1 - invalid option rejected"
 exit 0

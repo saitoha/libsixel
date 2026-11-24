@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     planner/pipeline/0111_reserved_delta_cpu_per_frame_t48 || {
-    echo "not ok 1 - Reserved UI appears and disappears with cpu per frame t48"
+    printf '\n%s\n' "not ok 1 - Reserved UI appears and disappears with cpu per frame t48"
     exit 0
 }
-echo "ok 1 - Reserved UI appears and disappears with cpu per frame t48"
+printf '\n%s\n' "ok 1 - Reserved UI appears and disappears with cpu per frame t48"
 exit 0

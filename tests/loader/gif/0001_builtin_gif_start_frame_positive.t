@@ -19,7 +19,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default.six" || {
-    echo "not ok" 1 - "baseline builtin GIF decode failed"
+    printf '\n%s\n' "not ok 1 - baseline builtin GIF decode failed"
     exit 0
 }
 
@@ -29,15 +29,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_positive.six" || {
-    echo "not ok" 1 - "builtin GIF decode with positive start frame failed"
+    printf '\n%s\n' "not ok 1 - builtin GIF decode with positive start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default.six" \
     "${ARTIFACT_LOCAL_DIR}/builtin_gif_start_positive.six" && {
-    echo "not ok" 1 - "positive start frame did not change builtin GIF output"
+    printf '\n%s\n' "not ok 1 - positive start frame did not change builtin GIF output"
     exit 0
 }
 
-echo "ok" 1 - "builtin GIF positive start frame is applied"
+printf '\n%s\n' "ok 1 - builtin GIF positive start frame is applied"
 exit 0

@@ -25,24 +25,24 @@ env_output="${artifact_dir}/0132-fhedt-tile-depth-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma \
     "-~fhedt:T6" "${input_image}" 2>&1 >"${short_output}") || {
-    echo "not ok" 1 - "fhedt:tile_depth short conversion failed"
+    printf '\n%s\n' "not ok 1 - fhedt:tile_depth short conversion failed"
     exit 0
 }
 case "${short_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${short_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${short_trace}" in *LSXSUB1\|*key=tile_depth\|stored=1\|binding=lut_policy_fhedt_tile_depth,lut_policy_fhedt_tile_depth_override\|value=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt tile_depth short value was not stored"
+    printf '\n%s\n' "not ok 1 - fhedt tile_depth short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXFHD1\|*precision=8bit\|*tile_depth=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt tile_depth did not reach the backend"
+    printf '\n%s\n' "not ok 1 - fhedt tile_depth did not reach the backend"
     exit 0
 }
 
@@ -50,40 +50,40 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma \
     --env "SIXEL_LOOKUP_FHEDT_TILE_DEPTH=6" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok" 1 - "fhedt:tile_depth environment conversion failed"
+    printf '\n%s\n' "not ok 1 - fhedt:tile_depth environment conversion failed"
     exit 0
 }
 case "${env_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${env_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${env_trace}" in *LSXSUB1\|*key=tile_depth\|stored=1\|binding=lut_policy_fhedt_tile_depth,lut_policy_fhedt_tile_depth_override\|value=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt tile_depth environment value was not stored"
+    printf '\n%s\n' "not ok 1 - fhedt tile_depth environment value was not stored"
     exit 0
 }
 case "${env_trace}" in *LSXFHD1\|*precision=8bit\|*tile_depth=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "environment tile_depth missed the backend"
+    printf '\n%s\n' "not ok 1 - environment tile_depth missed the backend"
     exit 0
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma \
     --precision-policy=float32 "-~fhedt:T6" "${input_image}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "fhedt tile_depth float32 conversion failed"
+    printf '\n%s\n' "not ok 1 - fhedt tile_depth float32 conversion failed"
     exit 0
 }
 case "${float_trace}" in *LSXFHD1\|*precision=float32\|*tile_depth=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "fhedt tile_depth missed the float32 backend"
+    printf '\n%s\n' "not ok 1 - fhedt tile_depth missed the float32 backend"
     exit 0
 }
 
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok" 1 - "fhedt tile_depth outputs differ"
+    printf '\n%s\n' "not ok 1 - fhedt tile_depth outputs differ"
     exit 0
 }
 
@@ -91,29 +91,29 @@ legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=greedy:global_budget=1 -v --precision-policy=8bit -Wgamma \
     --env "SIXEL_FHEDT_TILE_DEPTH=6" "-~fhedt" \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "legacy tile_depth conversion failed"
+    printf '\n%s\n' "not ok 1 - legacy tile_depth conversion failed"
     exit 0
 }
 case "${legacy_trace}" in *work=rgb888**) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte lookup did not use rgb888 working samples"
+    printf '\n%s\n' "not ok 1 - byte lookup did not use rgb888 working samples"
     exit 0
 }
 case "${legacy_trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/fhedt.8bit\|explicit=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit byte lookup missed palette application"
+    printf '\n%s\n' "not ok 1 - explicit byte lookup missed palette application"
     exit 0
 }
 
 case "${legacy_trace}" in *LSXFHD1\|*tile_depth=6**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "legacy tile_depth was not consumed"
+    printf '\n%s\n' "not ok 1 - legacy tile_depth was not consumed"
     exit 0
 }
 
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
 
-echo "ok" 1 - "fhedt:tile_depth preserves effective image output"
+printf '\n%s\n' "ok 1 - fhedt:tile_depth preserves effective image output"
 exit 0

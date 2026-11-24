@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0136_delta_smptec_output_oklab_frames || {
-    echo "not ok 1 - delta smptec output oklab frames"
+    printf '\n%s\n' "not ok 1 - delta smptec output oklab frames"
     exit 0
 }
-echo "ok 1 - delta smptec output oklab frames"
+printf '\n%s\n' "ok 1 - delta smptec output oklab frames"
 exit 0

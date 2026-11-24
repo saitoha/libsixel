@@ -10,8 +10,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0209_jpeg_dnl_stuffed_numeric" 1>&2 || {
-    echo "not ok 1 - Skip stuffed FF bytes while finding the first-scan DNL"
+    printf '\n%s\n' "not ok 1 - Skip stuffed FF bytes while finding the first-scan DNL"
     exit 0
 }
-echo "ok 1 - Skip stuffed FF bytes while finding the first-scan DNL"
+printf '\n%s\n' "ok 1 - Skip stuffed FF bytes while finding the first-scan DNL"
 exit 0

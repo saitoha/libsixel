@@ -13,9 +13,9 @@ set -v
 
 cmp "${TOP_SRCDIR}/quicklook-extension/package-preinstall" \
     "${TOP_BUILDDIR}/quicklook-extension/package/work/expanded/payload.pkg/Scripts/preinstall" || {
-    echo "not ok 1 - Packaged preinstall differs"
+    printf '\n%s\n' "not ok 1 - Packaged preinstall differs"
     exit 0
 }
 
-echo "ok 1 - Package contains the declared preinstall script."
+printf '\n%s\n' "ok 1 - Package contains the declared preinstall script."
 exit 0

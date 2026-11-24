@@ -24,21 +24,21 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${input_image}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "auto accepted unsupported shared_instance"
+    printf '\n%s\n' "not ok 1 - auto accepted unsupported shared_instance"
     exit 0
 }
 
 diag_line=${msg%%"${nl}"*}
 case "${diag_line}" in LSXCLI1*phase=option_parse*rc=**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "auto shared_instance reject diagnostic malformed"
+    printf '\n%s\n' "not ok 1 - auto shared_instance reject diagnostic malformed"
     exit 0
 }
 
 case "${diag_line}" in *code=UNKNOWN_SUBOPTION_KEY*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "auto shared_instance reject diagnostic code mismatch"
+    printf '\n%s\n' "not ok 1 - auto shared_instance reject diagnostic code mismatch"
     exit 0
 }
 
-echo "ok" 1 - "auto rejects shared_instance suboption"
+printf '\n%s\n' "ok 1 - auto rejects shared_instance suboption"
 
 exit 0

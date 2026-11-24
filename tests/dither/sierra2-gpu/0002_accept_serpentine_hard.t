@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/sierra2-gpu/0002_accept_serpentine_hard" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - accept serpentine hard"
+    printf '\n%s\n' "not ok 1 - accept serpentine hard"
     exit 0
 }
-echo "ok 1 - accept serpentine hard"
+printf '\n%s\n' "ok 1 - accept serpentine hard"
 exit 0

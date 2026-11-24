@@ -7,8 +7,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "palette/direct_float" "27" || {
-    echo "not ok 1 - standalone linear getter write"
+    printf '\n%s\n' "not ok 1 - standalone linear getter write"
     exit 0
 }
-echo "ok 1 - standalone linear getter write"
+printf '\n%s\n' "ok 1 - standalone linear getter write"
 exit 0

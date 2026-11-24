@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" subset-banditpam-8bit >/dev/null || {
-    echo "not ok" 1 - "kmedoids subset failed for banditpam 8bit"
+    printf '\n%s\n' "not ok 1 - kmedoids subset failed for banditpam 8bit"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids subset passed for banditpam 8bit"
+printf '\n%s\n' "ok 1 - kmedoids subset passed for banditpam 8bit"
 exit 0

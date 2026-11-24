@@ -18,24 +18,24 @@ result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0210_png_arith_loader 5 getter || result=$?
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP libpng does not expose the fixture cHRM"
+    printf '\n%s\n' "ok 1 # SKIP libpng does not expose the fixture cHRM"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - external cHRM getter probe failed"
+    printf '\n%s\n' "not ok 1 - external cHRM getter probe failed"
     exit 0
 }
 trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC= "-Llibpng:cms_engine=builtin!" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-arithmetic-5.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - conversion failed"
+    printf '\n%s\n' "not ok 1 - conversion failed"
     printf '# %s\n' "$trace"
     exit 0
 }
 case "${trace}" in *PNGCHRM1\|*requested=auto\|selected=512bit\|actual=512bit\|reason=small-area+cone**) true ;; *) false ;; esac || {
-    echo "not ok 1 - omitted arithmetic selects auto"
+    printf '\n%s\n' "not ok 1 - omitted arithmetic selects auto"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - omitted arithmetic selects auto"
+printf '\n%s\n' "ok 1 - omitted arithmetic selects auto"
 exit 0

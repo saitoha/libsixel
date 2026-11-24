@@ -27,22 +27,22 @@ actual_palette=$(
         -M act:"${first_palette}" -M gpl:- \
         -o/dev/null "${input_image}"
 ) || {
-    echo "not ok" 1 - "repeated palette-output option failed"
+    printf '\n%s\n' "not ok 1 - repeated palette-output option failed"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
-    echo "not ok" 1 - "repeated palette-output normalization failed"
+    printf '\n%s\n' "not ok 1 - repeated palette-output normalization failed"
     exit 0
 }
 
 test ! -e "${first_palette}" || {
-    echo "not ok" 1 - "earlier palette-output path was written"
+    printf '\n%s\n' "not ok 1 - earlier palette-output path was written"
     exit 0
 }
 test "${actual_palette}" = "${expected_palette}" || {
-    echo "not ok" 1 - "last palette-output option did not win"
+    printf '\n%s\n' "not ok 1 - last palette-output option did not win"
     exit 0
 }
 
-echo "ok" 1 - "repeated palette-output follows last occurrence"
+printf '\n%s\n' "ok 1 - repeated palette-output follows last occurrence"
 exit 0

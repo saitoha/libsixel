@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0090_step_reduction_odd_sort" || {
-    echo "not ok 1 - step reduction odd sort"
+    printf '\n%s\n' "not ok 1 - step reduction odd sort"
     exit 0
 }
-echo "ok 1 - step reduction odd sort"
+printf '\n%s\n' "ok 1 - step reduction odd sort"
 exit 0

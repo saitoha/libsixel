@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0074_loader_builtin_gif_rectangle_oob_reject" || {
-    echo "not ok 1 - GIF out-of-bounds image rectangle rejection"
+    printf '\n%s\n' "not ok 1 - GIF out-of-bounds image rectangle rejection"
     exit 0
 }
 
-echo "ok 1 - GIF out-of-bounds image rectangle rejection"
+printf '\n%s\n' "ok 1 - GIF out-of-bounds image rectangle rejection"
 exit 0

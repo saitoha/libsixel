@@ -7,9 +7,9 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" dither/positional/precision/0008_a_byte_saturation || {
-    echo "not ok 1 - a_byte_saturation"
+    printf '\n%s\n' "not ok 1 - a_byte_saturation"
     exit 0
 }
 
-echo "ok 1 - a_byte_saturation"
+printf '\n%s\n' "ok 1 - a_byte_saturation"
 exit 0

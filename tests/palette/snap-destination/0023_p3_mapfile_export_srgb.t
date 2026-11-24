@@ -8,7 +8,7 @@ echo "1..1"
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "ok 1 # SKIP img2sixel disabled"
+    printf '\n%s\n' "ok 1 # SKIP img2sixel disabled"
     exit 0
 }
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
@@ -24,7 +24,7 @@ P3
 91 91 91
 PPM
 ) || {
-    echo "not ok 1 - P3 fixed-palette export failed"
+    printf '\n%s\n' "not ok 1 - P3 fixed-palette export failed"
     exit 0
 }
 actual=$(printf '%s' "${actual}" | tr -d '\015')
@@ -35,8 +35,8 @@ test "${actual}" = 'JASC-PAL
 94 94 94
 88 88 88
 255 0 0' || {
-    echo "not ok 1 - wire rounding, gamut conversion or compaction leaked into export"
+    printf '\n%s\n' "not ok 1 - wire rounding, gamut conversion or compaction leaked into export"
     exit 0
 }
-echo "ok 1 - P3 fixed palette exports original sRGB entries"
+printf '\n%s\n' "ok 1 - P3 fixed palette exports original sRGB entries"
 exit 0

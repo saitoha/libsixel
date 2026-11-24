@@ -16,12 +16,12 @@ expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -g -L builtin! -bxterm16 -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "builtin palette APNG baseline encode failed"
+    printf '\n%s\n' "not ok 1 - builtin palette APNG baseline encode failed"
     exit 0
 }
 
 test -n "${expected_output}" || {
-    echo "not ok" 1 - "builtin palette APNG output is empty"
+    printf '\n%s\n' "not ok 1 - builtin palette APNG output is empty"
     exit 0
 }
 
@@ -29,14 +29,14 @@ actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         -g -L builtin! -X oklab -bxterm16 -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "builtin palette APNG encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - builtin palette APNG encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "builtin palette APNG output changed under -X oklab"
+    printf '\n%s\n' "not ok 1 - builtin palette APNG output changed under -X oklab"
     exit 0
 }
 
-echo "ok" 1 - "built-in palette APNG output ignores clustering colorspace"
+printf '\n%s\n' "ok 1 - built-in palette APNG output ignores clustering colorspace"
 exit 0

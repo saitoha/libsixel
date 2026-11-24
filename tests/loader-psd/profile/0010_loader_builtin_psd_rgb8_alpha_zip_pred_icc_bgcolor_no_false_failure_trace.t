@@ -21,16 +21,16 @@ command_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_en
     -B "#112233" "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin ZIP+Prediction ICC decode failed: ${command_output}"
+    printf '\n%s\n' "not ok 1 - builtin ZIP+Prediction ICC decode failed: ${command_output}"
     exit 0
 }
 
 case "${command_output}" in
     *"embedded ICC conversion failed"*)
-        echo "not ok" 1 - "unexpected embedded ICC failure trace was emitted on ZIP+Prediction path"
+        printf '\n%s\n' "not ok 1 - unexpected embedded ICC failure trace was emitted on ZIP+Prediction path"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "builtin PSD RGB+alpha ZIP+Prediction ICC path avoids false failure trace"
+printf '\n%s\n' "ok 1 - builtin PSD RGB+alpha ZIP+Prediction ICC path avoids false failure trace"
 exit 0

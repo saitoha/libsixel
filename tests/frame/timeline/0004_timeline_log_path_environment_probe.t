@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0004_timeline_log_path_environment_probe" || {
-    echo "not ok 1 - timeline log path environment probe is one-shot"
+    printf '\n%s\n' "not ok 1 - timeline log path environment probe is one-shot"
     exit 0
 }
 
-echo "ok 1 - timeline log path environment probe is one-shot"
+printf '\n%s\n' "ok 1 - timeline log path environment probe is one-shot"
 exit 0

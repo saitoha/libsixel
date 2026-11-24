@@ -19,36 +19,36 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,completion_contract 
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "IMG2SIXEL_COMPLETION_BASH=/missing-bash-completion" \
     -K "auto:B${completion_path}" -1 bash 2>&1) || {
-    echo "not ok" 1 - "completion bash_path short lookup failed"
+    printf '\n%s\n' "not ok 1 - completion bash_path short lookup failed"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=bash_path\|stored=1\|binding=bash_path,bash_path_override\|value="${completion_path}"**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion bash_path short value was not stored"
+    printf '\n%s\n' "not ok 1 - completion bash_path short value was not stored"
     exit 0
 }
 case "${short_trace}" in *LSXCMP1\|*key=bash_path\|configured=1\|override=1\|used=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion bash_path short value missed its consumer"
+    printf '\n%s\n' "not ok 1 - completion bash_path short value missed its consumer"
     exit 0
 }
 case "${short_trace}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion bash_path short source was not read"
+    printf '\n%s\n' "not ok 1 - completion bash_path short source was not read"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,completion_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "IMG2SIXEL_COMPLETION_BASH=${completion_path}" -1 bash 2>&1) || {
-    echo "not ok" 1 - "completion bash_path environment lookup failed"
+    printf '\n%s\n' "not ok 1 - completion bash_path environment lookup failed"
     exit 0
 }
 case "${env_trace}" in *LSXCMP1\|*key=bash_path\|configured=1\|override=0\|used=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion bash_path environment missed its consumer"
+    printf '\n%s\n' "not ok 1 - completion bash_path environment missed its consumer"
     exit 0
 }
 case "${env_trace}" in *completion\ bash\ path\ fixture**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "completion bash_path environment source was not read"
+    printf '\n%s\n' "not ok 1 - completion bash_path environment source was not read"
     exit 0
 }
 
-echo "ok" 1 - "completion bash_path preserves source selection"
+printf '\n%s\n' "ok 1 - completion bash_path preserves source selection"
 exit 0

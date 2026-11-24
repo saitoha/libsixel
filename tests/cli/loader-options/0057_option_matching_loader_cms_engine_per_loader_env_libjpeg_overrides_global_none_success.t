@@ -24,12 +24,12 @@ output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libjpeg_ref_cms0.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libjpeg_override.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibjpeg:cms_engine=auto! "${input_jpeg}" >"${output_cms1}" || {
-    echo "not ok" 1 - "libjpeg cms=1 reference decode failed"
+    printf '\n%s\n' "not ok 1 - libjpeg cms=1 reference decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibjpeg:cms_engine=none! "${input_jpeg}" >"${output_cms0}" || {
-    echo "not ok" 1 - "libjpeg cms=0 reference decode failed"
+    printf '\n%s\n' "not ok 1 - libjpeg cms=0 reference decode failed"
     exit 0
 }
 
@@ -37,7 +37,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBJPEG_CMS_ENGINE=auto" \
     -Llibjpeg! "${input_jpeg}" >"${output_override}" || {
-    echo "not ok" 1 - "SIXEL_LOADER_LIBJPEG_CMS_ENGINE override decode failed"
+    printf '\n%s\n' "not ok 1 - SIXEL_LOADER_LIBJPEG_CMS_ENGINE override decode failed"
     exit 0
 }
 
@@ -45,13 +45,13 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 
 # the nonempty disabled-CMS control. Keep lookup deterministic across runs.
 { test -s "${output_cms1}" && test -s "${output_cms0}" &&
     cmp -s "${output_override}" "${output_cms1}"; } || {
-    echo "not ok 1 - per-loader CMS override did not match enabled CMS"
+    printf '\n%s\n' "not ok 1 - per-loader CMS override did not match enabled CMS"
     exit 0
 }
 ! cmp -s "${output_override}" "${output_cms0}" || {
-    echo "not ok 1 - per-loader CMS override matched disabled CMS"
+    printf '\n%s\n' "not ok 1 - per-loader CMS override matched disabled CMS"
     exit 0
 }
 
-echo "ok" 1 - "SIXEL_LOADER_LIBJPEG_CMS_ENGINE overrides global none"
+printf '\n%s\n' "ok 1 - SIXEL_LOADER_LIBJPEG_CMS_ENGINE overrides global none"
 exit 0

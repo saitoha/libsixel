@@ -29,14 +29,14 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite decode failed"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite decode failed"
     exit 0
 }
 
 case "${trace_output}" in *builtin\ PSD:\ hardening\ vector-style\ clipping\ sibling\ alpha\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite did not harden vector-style clipping sibling alpha"
+    printf '\n%s\n' "not ok 1 - effects/stroke-composite did not harden vector-style clipping sibling alpha"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite hardens vector-style clipping sibling alpha"
+printf '\n%s\n' "ok 1 - effects/stroke-composite hardens vector-style clipping sibling alpha"
 exit 0

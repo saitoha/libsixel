@@ -19,17 +19,17 @@ command_status=$?
 set -e
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "unexpected success: high-color conflicts with built-in palette"
+    printf '\n%s\n' "not ok 1 - unexpected success: high-color conflicts with built-in palette"
     exit 0
 }
 
 case "${msg}" in
 *"option -b, --builtin-palette conflicts with -I, --high-color."*) ;;
 *)
-    echo "not ok" 1 - "missing high-color and built-in palette conflict diagnostic"
+    printf '\n%s\n' "not ok 1 - missing high-color and built-in palette conflict diagnostic"
     exit 0
     ;;
 esac
 
-echo "ok" 1 - "invalid option combination rejected"
+printf '\n%s\n' "ok 1 - invalid option combination rejected"
 exit 0

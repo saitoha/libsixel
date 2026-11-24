@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" "can_try_status_optional_matrix" || {
-    echo "not ok 1 - gd can_try/status optional matrix"
+    printf '\n%s\n' "not ok 1 - gd can_try/status optional matrix"
     exit 0
 }
 
-echo "ok 1 - gd can_try/status optional matrix"
+printf '\n%s\n' "ok 1 - gd can_try/status optional matrix"
 exit 0

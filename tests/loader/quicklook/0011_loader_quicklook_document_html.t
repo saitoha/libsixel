@@ -24,9 +24,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THUMBNAILER_HINT_SIZE=64 -L quicklook! \
     "${TOP_SRCDIR}/tests/data/inputs/quicklook/sample.html" >/dev/null || {
-    echo "not ok" 1 - "quicklook HTML render failed"
+    printf '\n%s\n' "not ok 1 - quicklook HTML render failed"
     exit 0
 }
 
-echo "ok" 1 - "quicklook renders HTML"
+printf '\n%s\n' "ok 1 - quicklook renders HTML"
 exit 0

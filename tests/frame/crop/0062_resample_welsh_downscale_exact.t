@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     welsh \
     "${fixture_root}/welsh-downscale-input.ppm" \
     "${fixture_root}/welsh-downscale-expected.ppm" || {
-    echo "not ok" 1 - "welsh downscale pixels changed"
+    printf '\n%s\n' "not ok 1 - welsh downscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "welsh downscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - welsh downscale pixels match the oracle"
 exit 0

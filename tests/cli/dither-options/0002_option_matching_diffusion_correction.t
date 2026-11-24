@@ -26,11 +26,11 @@ set -x
 test "${status}" -eq 0 && {
     case "${msg}" in
         *'corrected --diffusion value "burkez" -> "burkes".'*)
-            echo "ok" 1 - "distance-1 typo is corrected"
+            printf '\n%s\n' "ok 1 - distance-1 typo is corrected"
             exit 0
             ;;
         *)
-            echo "not ok" 1 - "missing correction notice"
+            printf '\n%s\n' "not ok 1 - missing correction notice"
             printf '%s\n' '--- stderr ---' >&2
             printf '%s\n' "${msg}" >&2
             exit 0
@@ -39,7 +39,7 @@ test "${status}" -eq 0 && {
 }
 
 test "${status}" -eq 2 || {
-    echo "not ok" 1 - "distance-1 typo exit status mismatch"
+    printf '\n%s\n' "not ok 1 - distance-1 typo exit status mismatch"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0
@@ -47,16 +47,16 @@ test "${status}" -eq 2 || {
 
 case "${msg}" in
     *'corrected --diffusion value "burkez" -> "burkes".'*)
-        echo "ok" 1 - "distance-1 typo is corrected"
+        printf '\n%s\n' "ok 1 - distance-1 typo is corrected"
         exit 0
         ;;
     *'specified diffusion method is not supported.'*|\
     *'unknown option base value "burkez".'*)
-        echo "ok" 1 - "distance-1 typo rejected with diagnostic"
+        printf '\n%s\n' "ok 1 - distance-1 typo rejected with diagnostic"
         exit 0
         ;;
     *)
-        echo "not ok" 1 - "unexpected rejection without diagnostic"
+        printf '\n%s\n' "not ok 1 - unexpected rejection without diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0

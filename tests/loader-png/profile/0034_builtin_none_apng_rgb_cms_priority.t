@@ -15,12 +15,12 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract \
     priority builtin none apng rgb || result=$?
 
 test "$result" -ne 77 || {
-    echo "ok 1 # SKIP Little CMS is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP Little CMS is unavailable"
     exit 0
 }
 test "$result" -eq 0 || {
-    echo "not ok 1 - builtin none APNG rgb metadata priority"
+    printf '\n%s\n' "not ok 1 - builtin none APNG rgb metadata priority"
     exit 0
 }
-echo "ok 1 - builtin none APNG rgb metadata priority"
+printf '\n%s\n' "ok 1 - builtin none APNG rgb metadata priority"
 exit 0

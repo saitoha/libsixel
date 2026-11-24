@@ -25,21 +25,21 @@ output_long="${ARTIFACT_LOCAL_DIR}/cms_engine_option_long_auto.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=auto" \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_env}" || {
-    echo "not ok" 1 - "reference decode with env cms engine failed"
+    printf '\n%s\n' "not ok 1 - reference decode with env cms engine failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --cms-engine=auto \
     -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_long}" || {
-    echo "not ok" 1 - "long --cms-engine option was rejected"
+    printf '\n%s\n' "not ok 1 - long --cms-engine option was rejected"
     exit 0
 }
 
 cmp -s "${output_env}" "${output_long}" || {
-    echo "not ok" 1 - "long --cms-engine output diverged from env reference"
+    printf '\n%s\n' "not ok 1 - long --cms-engine output diverged from env reference"
     exit 0
 }
-echo "ok" 1 - "long --cms-engine option mirrors environment behavior"
+printf '\n%s\n' "ok 1 - long --cms-engine option mirrors environment behavior"
 
 exit 0

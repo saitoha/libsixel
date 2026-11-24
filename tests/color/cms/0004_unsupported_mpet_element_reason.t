@@ -10,14 +10,14 @@ set -v
 input="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/rgb_trace_ignored_tags.png"
 
 message=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=builtin -L "builtin!" -m MS-SSIM --env SIXEL_TRACE_TOPIC=loader "$input" "$input" 2>&1 1>/dev/null) || {
-    echo "not ok 1 - profiled image must remain loadable"
+    printf '\n%s\n' "not ok 1 - profiled image must remain loadable"
     exit 0
 }
 
 case "${message}" in *event=pipeline-rejected\|tag=D2B0\|reason=unsupported-mpet-element*) true ;; *) false ;; esac || {
-    echo "not ok 1 - missing ICC decision reason"
+    printf '\n%s\n' "not ok 1 - missing ICC decision reason"
     exit 0
 }
 
-echo "ok 1 - unsupported mpet element reason"
+printf '\n%s\n' "ok 1 - unsupported mpet element reason"
 exit 0

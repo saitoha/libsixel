@@ -15,35 +15,35 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - logluv orientation2"
+    printf '\n%s\n' "not ok 1 - logluv orientation2"
     exit 0
 }
 case "${trace}" in *"TLOGLUV|native-begin"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - native route marker is absent"
+    printf '\n%s\n' "not ok 1 - native route marker is absent"
     exit 0
 }
 control=${trace%%"TLOGLUV|native-begin"*}
 case "${control}" in *"LSXCMS2|event=apply|engine=builtin|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - positive CMS trace control did not apply"
+    printf '\n%s\n' "not ok 1 - positive CMS trace control did not apply"
     exit 0
 }
 case "${control}" in *"|ok=1"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - positive CMS control was unsuccessful"
+    printf '\n%s\n' "not ok 1 - positive CMS control was unsuccessful"
     exit 0
 }
 native=${trace#*"TLOGLUV|native-begin"}
 case "${native}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - native XYZ was reinterpreted by CMS"
+    printf '\n%s\n' "not ok 1 - native XYZ was reinterpreted by CMS"
     exit 0
 }
 case "${native}" in *"LSXLOAD1|event=ok|loader=libtiff|"*) true ;; *) false ;; esac || {
     echo "$trace" >&2
-    echo "not ok 1 - libtiff did not deliver the frame"
+    printf '\n%s\n' "not ok 1 - libtiff did not deliver the frame"
     exit 0
 }
-echo "ok 1 - logluv orientation2"
+printf '\n%s\n' "ok 1 - logluv orientation2"
 exit 0

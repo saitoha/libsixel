@@ -11,9 +11,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" \
     clarans-exhausted-candidate-skip-determinism \
     >/dev/null || {
-    echo "not ok" 1 - "kmedoids CLARANS exhausted candidate skip failed"
+    printf '\n%s\n' "not ok 1 - kmedoids CLARANS exhausted candidate skip failed"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids CLARANS exhausted candidate skip passed"
+printf '\n%s\n' "ok 1 - kmedoids CLARANS exhausted candidate skip passed"
 exit 0

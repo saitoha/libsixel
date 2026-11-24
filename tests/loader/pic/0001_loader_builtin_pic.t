@@ -16,9 +16,9 @@ set -v
 input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.pic"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input_pic}" >/dev/null || {
-    echo "not ok" 1 - "builtin loader failed to decode PIC"
+    printf '\n%s\n' "not ok 1 - builtin loader failed to decode PIC"
     exit 0
 }
 
-echo "ok" 1 - "builtin loader decodes PIC"
+printf '\n%s\n' "ok 1 - builtin loader decodes PIC"
 exit 0

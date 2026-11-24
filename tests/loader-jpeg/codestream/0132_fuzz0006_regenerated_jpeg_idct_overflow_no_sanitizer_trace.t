@@ -14,7 +14,7 @@ set -v
 fuzz_input="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0006/jpeg_idct_overflow_regenerated.jpg"
 
 test -f "${fuzz_input}" || {
-    echo "not ok 1 - fuzz0006 regenerated input is missing"
+    printf '\n%s\n' "not ok 1 - fuzz0006 regenerated input is missing"
     exit 0
 }
 
@@ -25,36 +25,36 @@ rc=$?
 set -e
 
 test "${rc-0}" -ne 127 || {
-    echo "not ok 1 - fuzz0006 did not execute img2sixel"
+    printf '\n%s\n' "not ok 1 - fuzz0006 did not execute img2sixel"
     exit 0
 }
 
 test "${rc-0}" -ne 134 || {
-    echo "not ok 1 - fuzz0006 triggered abort"
+    printf '\n%s\n' "not ok 1 - fuzz0006 triggered abort"
     exit 0
 }
 
 test "${rc-0}" -ne 139 || {
-    echo "not ok 1 - fuzz0006 triggered SIGSEGV"
+    printf '\n%s\n' "not ok 1 - fuzz0006 triggered SIGSEGV"
     exit 0
 }
 
 case "${err}" in *runtime\ error:**) false ;; *) true ;; esac || {
-    echo "not ok 1 - fuzz0006 emitted UBSAN runtime error trace"
+    printf '\n%s\n' "not ok 1 - fuzz0006 emitted UBSAN runtime error trace"
     exit 0
 }
 
 case "${err}" in *UndefinedBehaviorSanitizer**) false ;; *) true ;; esac || {
-    echo "not ok 1 - fuzz0006 emitted UBSAN summary"
+    printf '\n%s\n' "not ok 1 - fuzz0006 emitted UBSAN summary"
     exit 0
 }
 
 case "${err}" in *AddressSanitizer**) false ;; *) true ;; esac || {
-    echo "not ok 1 - fuzz0006 emitted ASAN trace"
+    printf '\n%s\n' "not ok 1 - fuzz0006 emitted ASAN trace"
     exit 0
 }
 
-echo "ok 1 - fuzz0006 regenerated JPEG is handled without sanitizer trace"
+printf '\n%s\n' "ok 1 - fuzz0006 regenerated JPEG is handled without sanitizer trace"
 
 
 exit 0

@@ -21,7 +21,7 @@ image_lossy_alpha="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-key
 
 msg_rgb=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! "${image_lossy_rgb}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "lossy RGB static decode failed"
+    printf '\n%s\n' "not ok 1 - lossy RGB static decode failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_rgb}" >&2
     exit 0
@@ -31,7 +31,7 @@ case "${msg_rgb}" in
     *"static decode path=lossy_yuv "*)
         ;;
     *)
-        echo "not ok" 1 - "expected lossy_yuv trace was missing for non-alpha lossy input"
+        printf '\n%s\n' "not ok 1 - expected lossy_yuv trace was missing for non-alpha lossy input"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_rgb}" >&2
         exit 0
@@ -40,7 +40,7 @@ esac
 
 msg_alpha_no_bg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -S "${image_lossy_alpha}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "lossy alpha static decode without -B failed"
+    printf '\n%s\n' "not ok 1 - lossy alpha static decode without -B failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_alpha_no_bg}" >&2
     exit 0
@@ -50,7 +50,7 @@ case "${msg_alpha_no_bg}" in
     *"static decode path=rgba_u8 "*)
         ;;
     *)
-        echo "not ok" 1 - "expected rgba_u8 trace was missing for alpha/no-bg input"
+        printf '\n%s\n' "not ok 1 - expected rgba_u8 trace was missing for alpha/no-bg input"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_alpha_no_bg}" >&2
         exit 0
@@ -60,7 +60,7 @@ esac
 msg_alpha_bg=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -.float32 -L libwebp! -S -B#000 "${image_lossy_alpha}" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "lossy alpha static decode with -B failed"
+    printf '\n%s\n' "not ok 1 - lossy alpha static decode with -B failed"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg_alpha_bg}" >&2
     exit 0
@@ -70,12 +70,12 @@ case "${msg_alpha_bg}" in
     *"static decode path=lossy_yuva "*)
         ;;
     *)
-        echo "not ok" 1 - "expected lossy_yuva trace was missing for alpha/bg input"
+        printf '\n%s\n' "not ok 1 - expected lossy_yuva trace was missing for alpha/bg input"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg_alpha_bg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "static libwebp trace reports lossy path selection correctly"
+printf '\n%s\n' "ok 1 - static libwebp trace reports lossy path selection correctly"
 exit 0

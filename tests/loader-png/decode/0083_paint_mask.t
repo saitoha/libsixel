@@ -16,13 +16,13 @@ set -v
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 -Goff -dnone -Llibpng:K1:cms_engine=none! \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbrn2c08.png") || {
-    echo "not ok 1 - keycolor CLI conversion"
+    printf '\n%s\n' "not ok 1 - keycolor CLI conversion"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" png-keycolor/0002_paint_mask \
     "${output}" || {
-    echo "not ok 1 - keycolor paint coverage"
+    printf '\n%s\n' "not ok 1 - keycolor paint coverage"
     exit 0
 }
-echo "ok 1 - keycolor paint coverage"
+printf '\n%s\n' "ok 1 - keycolor paint coverage"
 exit 0

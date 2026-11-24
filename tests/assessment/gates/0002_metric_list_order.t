@@ -12,8 +12,8 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none -m " PS
   "GMSD": 0.000000,
   "PSNR_Y": 99.000000
 }'; } || {
-    echo "not ok 1 - Comma lists emit metrics in registry order"
+    printf '\n%s\n' "not ok 1 - Comma lists emit metrics in registry order"
     exit 0
 }
-echo "ok 1 - Comma lists emit metrics in registry order"
+printf '\n%s\n' "ok 1 - Comma lists emit metrics in registry order"
 exit 0

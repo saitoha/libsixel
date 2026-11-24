@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0059_multi_pass_mixed_framing" || {
-    echo "not ok 1 - mixed framing"
+    printf '\n%s\n' "not ok 1 - mixed framing"
     exit 0
 }
 
-echo "ok 1 - mixed framing"
+printf '\n%s\n' "ok 1 - mixed framing"
 exit 0

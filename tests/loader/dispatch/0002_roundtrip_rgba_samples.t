@@ -27,12 +27,12 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Lbuiltin! "${image_path}" >"${output_sixel}" || {
-    echo "not ok" 1 - "rgba roundtrip encode failed"
+    printf '\n%s\n' "not ok 1 - rgba roundtrip encode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${output_sixel}" -o "${output_png}" || {
-    echo "not ok" 1 - "rgba roundtrip decode failed"
+    printf '\n%s\n' "not ok 1 - rgba roundtrip decode failed"
     exit 0
 }
 
@@ -40,8 +40,8 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${output_sixel}" -o "${output_png}" ||
 # color/alpha interpretation is covered by the dedicated numeric cases.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/image_values \
     "${output_sixel}" "${output_png}" 'builtin:Enone!' 0 || {
-    echo "not ok 1 - PNG export changed the SIXEL samples"
+    printf '\n%s\n' "not ok 1 - PNG export changed the SIXEL samples"
     exit 0
 }
-echo "ok 1 - RGBA roundtrip preserves decoded SIXEL samples"
+printf '\n%s\n' "ok 1 - RGBA roundtrip preserves decoded SIXEL samples"
 exit 0

@@ -21,22 +21,22 @@ out_gamma="${ARTIFACT_LOCAL_DIR}/builtin_bgcs_gamma_explicit.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=invalid \
               -Lbuiltin:cms_engine=none! \
               -B#808080 "${input_png}" >"${out_invalid}" || {
-    echo "not ok 1 - builtin invalid background colorspace render failed"
+    printf '\n%s\n' "not ok 1 - builtin invalid background colorspace render failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Lbuiltin:cms_engine=none! \
               -B#808080 "${input_png}" >"${out_gamma}" || {
-    echo "not ok 1 - builtin gamma background colorspace render failed"
+    printf '\n%s\n' "not ok 1 - builtin gamma background colorspace render failed"
     exit 0
 }
 
 cmp -s "${out_invalid}" "${out_gamma}" || {
-    echo "not ok 1 - builtin invalid background colorspace changed output"
+    printf '\n%s\n' "not ok 1 - builtin invalid background colorspace changed output"
     exit 0
 }
 
-echo "ok 1 - builtin invalid background colorspace falls back to gamma"
+printf '\n%s\n' "ok 1 - builtin invalid background colorspace falls back to gamma"
 
 exit 0

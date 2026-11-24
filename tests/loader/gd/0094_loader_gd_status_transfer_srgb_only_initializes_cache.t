@@ -13,9 +13,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0058_loader_gd_status_policy" "transfer_srgb_only_initializes_cache" || {
-    echo "not ok 1 - gd status transfer_srgb_only_initializes_cache"
+    printf '\n%s\n' "not ok 1 - gd status transfer_srgb_only_initializes_cache"
     exit 0
 }
 
-echo "ok 1 - gd status transfer_srgb_only_initializes_cache"
+printf '\n%s\n' "ok 1 - gd status transfer_srgb_only_initializes_cache"
 exit 0

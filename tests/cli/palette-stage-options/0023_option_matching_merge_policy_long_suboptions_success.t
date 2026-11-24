@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qauto -Fward:merge_oversplit=1.2:merge_lloyd=0:channel_l=0.5 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "ward merge-policy suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - ward merge-policy suboptions were rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qheckbert -Fnone:merge_oversplit=1.8:merge_lloyd=3:channel_l=0.4 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "none merge-policy suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - none merge-policy suboptions were rejected"
     exit 0
 }
 
@@ -34,9 +34,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Fauto:merge_oversplit=2.0:merge_lloyd=5:channel_l=0.3 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "auto merge-policy suboptions were rejected"
+    printf '\n%s\n' "not ok 1 - auto merge-policy suboptions were rejected"
     exit 0
 }
 
-echo "ok" 1 - "merge-policy long suboptions are accepted"
+printf '\n%s\n' "ok 1 - merge-policy long suboptions are accepted"
 exit 0

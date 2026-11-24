@@ -24,22 +24,22 @@ optin_out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_optin.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${default_out}" || {
-    echo "not ok" 1 - "libpng default decode failed"
+    printf '\n%s\n' "not ok 1 - libpng default decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               -Llibpng:cms_engine=none! \
               "${input_png}" >"${optin_out}" || {
-    echo "not ok" 1 - "libpng opt-in keycolor decode failed"
+    printf '\n%s\n' "not ok 1 - libpng opt-in keycolor decode failed"
     exit 0
 }
 
 cmp -s "${default_out}" "${optin_out}" || {
-    echo "not ok" 1 - "opt-in keycolor mode changed output"
+    printf '\n%s\n' "not ok 1 - opt-in keycolor mode changed output"
     exit 0
 }
 
 
-echo "ok" 1 - "opt-in keycolor mode preserves ColorType 2+tRNS output"
+printf '\n%s\n' "ok 1 - opt-in keycolor mode preserves ColorType 2+tRNS output"
 exit 0

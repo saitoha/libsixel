@@ -18,10 +18,10 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0042_loader_libwebp_frame_count_limit_decoder_guard"
+        printf '\n%s\n' "ok 1 - loader/0042_loader_libwebp_frame_count_limit_decoder_guard"
         ;;
     *)
-        echo "not ok" 1 - "loader/0042_loader_libwebp_frame_count_limit_decoder_guard"
+        printf '\n%s\n' "not ok 1 - loader/0042_loader_libwebp_frame_count_limit_decoder_guard"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

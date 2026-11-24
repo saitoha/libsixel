@@ -15,19 +15,19 @@ first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     "${TOP_SRCDIR}/images/pngsuite/basic/basn4a16.png") || {
-    echo "not ok 1 - first ga16 render failed"
+    printf '\n%s\n' "not ok 1 - first ga16 render failed"
     exit 0
 }
 second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     "${TOP_SRCDIR}/images/pngsuite/basic/basn4a16.png") || {
-    echo "not ok 1 - second ga16 render failed"
+    printf '\n%s\n' "not ok 1 - second ga16 render failed"
     exit 0
 }
 test "$first" = "$second" || {
-    echo "not ok 1 - keycolor selection changed original ga16 precision"
+    printf '\n%s\n' "not ok 1 - keycolor selection changed original ga16 precision"
     exit 0
 }
-echo "ok 1 - keycolor selection preserves ga16 precision"
+printf '\n%s\n' "ok 1 - keycolor selection preserves ga16 precision"
 exit 0

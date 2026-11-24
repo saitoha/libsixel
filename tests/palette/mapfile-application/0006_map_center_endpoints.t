@@ -9,8 +9,8 @@ set -v
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/map_cluster/0006_map_center_endpoints \
     "${TOP_SRCDIR}/tests/data/inputs/mapfile/red-blue.ppm" || {
-    echo "not ok 1 - map center endpoints"
+    printf '\n%s\n' "not ok 1 - map center endpoints"
     exit 0
 }
-echo "ok 1 - map center endpoints"
+printf '\n%s\n' "ok 1 - map center endpoints"
 exit 0

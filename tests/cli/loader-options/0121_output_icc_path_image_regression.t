@@ -9,7 +9,7 @@ echo "1..1"
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo "ok 1 # SKIP converter disabled"
+    printf '\n%s\n' "ok 1 # SKIP converter disabled"
     exit 0
 }
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
@@ -23,11 +23,11 @@ short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:seed=1 -dnone -aoff \
     -U "icc:P${profile}" <"${input_image}" \
     2>&1 >"${short_output}") || {
-    echo "not ok 1 - ICC short path conversion"
+    printf '\n%s\n' "not ok 1 - ICC short path conversion"
     exit 0
 }
 case "${short_trace}" in *LSXSUB1\|*key=path\|stored=1\|binding=path,path_override\|value="${profile}"**) true ;; *) false ;; esac || {
-    echo "not ok 1 - ICC short path binding"
+    printf '\n%s\n' "not ok 1 - ICC short path binding"
     exit 0
 }
 # Keep the registered path byte-identical across both option routes.
@@ -36,22 +36,22 @@ env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:seed=1 -dnone -aoff \
     --env "SIXEL_OUTPUT_COLORSPACE_ICC_PATH=${profile}" -U icc \
     <"${input_image}" 2>&1 >"${env_output}") || {
-    echo "not ok 1 - ICC environment path conversion"
+    printf '\n%s\n' "not ok 1 - ICC environment path conversion"
     exit 0
 }
 case "${env_trace}" in *LSXSUB1\|*key=path\|stored=1\|binding=path,path_override\|value="${profile}"**) true ;; *) false ;; esac || {
-    echo "not ok 1 - ICC environment path binding"
+    printf '\n%s\n' "not ok 1 - ICC environment path binding"
     exit 0
 }
 cmp -s "${short_output}" "${env_output}" || {
-    echo "not ok 1 - ICC short and environment image agreement"
+    printf '\n%s\n' "not ok 1 - ICC short and environment image agreement"
     exit 0
 }
 # The observation is option routing and exact output equivalence.
 # Image quality belongs to the dither, palette and loader quality suites.
 test -s "${short_output}" || {
-    echo "not ok 1 - option output is empty"
+    printf '\n%s\n' "not ok 1 - option output is empty"
     exit 0
 }
-echo "ok 1 - ICC file suboption image"
+printf '\n%s\n' "ok 1 - ICC file suboption image"
 exit 0

@@ -5,8 +5,8 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" component/vptree_live_plan_isolation || {
-    echo "not ok 1 - vptree live plan isolation"
+    printf '\n%s\n' "not ok 1 - vptree live plan isolation"
     exit 0
 }
-echo "ok 1 - vptree live plan isolation"
+printf '\n%s\n' "ok 1 - vptree live plan isolation"
 exit 0

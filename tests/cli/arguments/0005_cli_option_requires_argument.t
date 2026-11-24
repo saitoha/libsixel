@@ -14,9 +14,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 set -e
 
 test "${rc}" -eq 0 || {
-    echo "not ok" 1 - "cli_option_requires_argument"
+    printf '\n%s\n' "not ok 1 - cli_option_requires_argument"
     exit 0
 }
 
-echo "ok" 1 - "cli_option_requires_argument"
+printf '\n%s\n' "ok 1 - cli_option_requires_argument"
 exit 0

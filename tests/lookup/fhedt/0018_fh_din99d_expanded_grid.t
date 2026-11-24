@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt/0008_fh_din99d_expanded_grid || {
-    echo "not ok 1 - fhedt din99d expanded grid"
+    printf '\n%s\n' "not ok 1 - fhedt din99d expanded grid"
     exit 0
 }
 
-echo "ok 1 - fhedt din99d expanded grid"
+printf '\n%s\n' "ok 1 - fhedt din99d expanded grid"
 exit 0

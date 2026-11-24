@@ -15,21 +15,21 @@ set -v
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     dither/positional/precision/0042_a_encoder_workers 2>&1) || {
-    echo "not ok 1 - a_encoder_workers"
+    printf '\n%s\n' "not ok 1 - a_encoder_workers"
     printf '# %s\n' "${trace}"
     exit 0
 }
 
 case "${trace}" in *"positional: compiler disables parallel apply"*)
-    echo "ok 1 # SKIP compiler disables parallel palette application"
+    printf '\n%s\n' "ok 1 # SKIP compiler disables parallel palette application"
     exit 0 ;;
 esac
 
 case "${trace}" in *"selected=lookup/none.float32"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - actual float32 lookup"
+    printf '\n%s\n' "not ok 1 - actual float32 lookup"
     printf '# %s\n' "${trace}"
     exit 0
 }
 
-echo "ok 1 - a_encoder_workers"
+printf '\n%s\n' "ok 1 - a_encoder_workers"
 exit 0

@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0002_kmedoids_constraints" seed-clarans >/dev/null || {
-    echo "not ok" 1 - "kmedoids seed reproducibility failed for clarans"
+    printf '\n%s\n' "not ok 1 - kmedoids seed reproducibility failed for clarans"
     exit 0
 }
 
-echo "ok" 1 - "kmedoids seed reproducibility passed for clarans"
+printf '\n%s\n' "ok 1 - kmedoids seed reproducibility passed for clarans"
 exit 0

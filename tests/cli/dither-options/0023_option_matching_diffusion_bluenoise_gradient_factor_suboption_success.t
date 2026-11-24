@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -d bluenoise:gradient_factor=1.0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "bluenoise gradient_factor suboption was rejected"
+    printf '\n%s\n' "not ok 1 - bluenoise gradient_factor suboption was rejected"
     exit 0
 }
 
-echo "ok" 1 - "bluenoise gradient_factor suboption is accepted"
+printf '\n%s\n' "ok 1 - bluenoise gradient_factor suboption is accepted"
 exit 0

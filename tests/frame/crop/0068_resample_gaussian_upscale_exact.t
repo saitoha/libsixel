@@ -15,9 +15,9 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     gaussian \
     "${fixture_root}/gaussian-upscale-input.ppm" \
     "${fixture_root}/gaussian-upscale-expected.ppm" || {
-    echo "not ok" 1 - "gaussian upscale pixels changed"
+    printf '\n%s\n' "not ok 1 - gaussian upscale pixels changed"
     exit 0
 }
 
-echo "ok" 1 - "gaussian upscale pixels match the oracle"
+printf '\n%s\n' "ok 1 - gaussian upscale pixels match the oracle"
 exit 0

@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/atkinson-gpu/0004_reject_lso2_method" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - reject lso2 method"
+    printf '\n%s\n' "not ok 1 - reject lso2 method"
     exit 0
 }
-echo "ok 1 - reject lso2 method"
+printf '\n%s\n' "ok 1 - reject lso2 method"
 exit 0

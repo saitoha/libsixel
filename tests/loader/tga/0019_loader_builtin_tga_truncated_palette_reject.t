@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0086_loader_builtin_tga_truncated_palette_reject" || {
-    echo "not ok 1 - TGA truncated palette rejection"
+    printf '\n%s\n' "not ok 1 - TGA truncated palette rejection"
     exit 0
 }
 
-echo "ok 1 - TGA truncated palette rejection"
+printf '\n%s\n' "ok 1 - TGA truncated palette rejection"
 exit 0

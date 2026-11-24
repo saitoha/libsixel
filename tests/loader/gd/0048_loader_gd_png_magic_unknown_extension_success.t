@@ -19,9 +19,9 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gd! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/png-magic-unknown-extension.bin" \
     >/dev/null || {
-    echo "not ok" 1 - "forced gd loader rejected PNG magic with .bin"
+    printf '\n%s\n' "not ok 1 - forced gd loader rejected PNG magic with .bin"
     exit 0
 }
 
-echo "ok" 1 - "forced gd loader accepts PNG magic with unknown extension"
+printf '\n%s\n' "ok 1 - forced gd loader accepts PNG magic with unknown extension"
 exit 0

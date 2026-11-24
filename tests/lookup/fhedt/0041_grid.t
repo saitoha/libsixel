@@ -8,9 +8,9 @@ set -v
 
 SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_byte/0003_grid || {
-    echo "not ok 1 - byte FHEDT exhaustive discrete grid"
+    printf '\n%s\n' "not ok 1 - byte FHEDT exhaustive discrete grid"
     exit 0
 }
 
-echo "ok 1 - byte FHEDT exhaustive discrete grid"
+printf '\n%s\n' "ok 1 - byte FHEDT exhaustive discrete grid"
 exit 0

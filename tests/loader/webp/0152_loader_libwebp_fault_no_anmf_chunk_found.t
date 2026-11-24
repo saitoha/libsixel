@@ -18,10 +18,10 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 
 case "${status}" in
     0)
-        echo "ok" 1 - "loader/0040_loader_libwebp_fault_no_anmf"
+        printf '\n%s\n' "ok 1 - loader/0040_loader_libwebp_fault_no_anmf"
         ;;
     *)
-        echo "not ok" 1 - "loader/0040_loader_libwebp_fault_no_anmf"
+        printf '\n%s\n' "not ok 1 - loader/0040_loader_libwebp_fault_no_anmf"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         ;;

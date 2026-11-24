@@ -14,8 +14,8 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none -m GMSD
   "GMSD": 0.000000,
   "PSNR_Y": 99.000000
 }'; } || {
-    echo "not ok 1 - Multiple metrics and gates share one stdin input"
+    printf '\n%s\n' "not ok 1 - Multiple metrics and gates share one stdin input"
     exit 0
 }
-echo "ok 1 - Multiple metrics and gates share one stdin input"
+printf '\n%s\n' "ok 1 - Multiple metrics and gates share one stdin input"
 exit 0

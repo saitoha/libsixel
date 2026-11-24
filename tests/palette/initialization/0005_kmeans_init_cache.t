@@ -18,9 +18,9 @@ case "${output}" in
 esac
 
 test "${output}" = "pca pca" || {
-    echo "not ok" 1 - "cache check returned ${output}"
+    printf '\n%s\n' "not ok 1 - cache check returned ${output}"
     exit 0
 }
 
-echo "ok" 1 - "cache preserves initial value"
+printf '\n%s\n' "ok 1 - cache preserves initial value"
 exit 0

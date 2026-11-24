@@ -27,14 +27,14 @@ Columns: 16
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bgray1 \
     -M gpl:"${actual_palette}" -o/dev/null "${input_image}" || {
-    echo "not ok" 1 - "palette-output prefix override failed"
+    printf '\n%s\n' "not ok 1 - palette-output prefix override failed"
     exit 0
 }
 
 cmp -s "${actual_palette}" "${expected_palette}" || {
-    echo "not ok" 1 - "palette-output extension overrode explicit prefix"
+    printf '\n%s\n' "not ok 1 - palette-output extension overrode explicit prefix"
     exit 0
 }
 
-echo "ok" 1 - "palette-output prefix overrides a mismatched extension"
+printf '\n%s\n' "ok 1 - palette-output prefix overrides a mismatched extension"
 exit 0

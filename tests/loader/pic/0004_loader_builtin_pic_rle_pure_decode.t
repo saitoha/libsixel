@@ -16,9 +16,9 @@ set -v
 input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/pic_valid_rle_pure_rgb_6x2.pic"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_pic}" >/dev/null || {
-    echo "not ok" 1 - "builtin PIC pure RLE decode failed"
+    printf '\n%s\n' "not ok 1 - builtin PIC pure RLE decode failed"
     exit 0
 }
 
-echo "ok" 1 - "builtin PIC pure RLE decode succeeded"
+printf '\n%s\n' "ok 1 - builtin PIC pure RLE decode succeeded"
 exit 0

@@ -27,21 +27,21 @@ esac
 test "$conversion_status:$backend_ok" = 0:1 ||
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/available || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo "ok 1 # SKIP GPU device is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP GPU device is unavailable"
     exit 0
 }
 test "$probe_status" -eq 0 || {
-    echo "not ok 1 - GPU device probe failed"
+    printf '\n%s\n' "not ok 1 - GPU device probe failed"
     exit 0
 }
 test "$conversion_status" -eq 0 || {
-    echo "not ok 1 - force cpu backend conversion"
+    printf '\n%s\n' "not ok 1 - force cpu backend conversion"
     exit 0
 }
 test "$backend_ok" -eq 1 || {
-    echo "not ok 1 - force cpu backend backend selection"
+    printf '\n%s\n' "not ok 1 - force cpu backend backend selection"
     printf '# %s\n' "$trace"
     exit 0
 }
-echo "ok 1 - force cpu backend"
+printf '\n%s\n' "ok 1 - force cpu backend"
 exit 0

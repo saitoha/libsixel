@@ -18,19 +18,19 @@ msg=$(
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
         -o /dev/null 2>&1
 ) && {
-    echo "not ok" 1 - "non-sierra variant unexpectedly succeeded"
+    printf '\n%s\n' "not ok 1 - non-sierra variant unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in *unknown\ suboption\ key**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing non-sierra variant diagnostic"
+    printf '\n%s\n' "not ok 1 - missing non-sierra variant diagnostic"
     exit 0
 }
 
 case "${msg}" in *variant**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "non-sierra variant diagnostic lacked key name"
+    printf '\n%s\n' "not ok 1 - non-sierra variant diagnostic lacked key name"
     exit 0
 }
 
-echo "ok" 1 - "non-sierra variant suboption is rejected"
+printf '\n%s\n' "ok 1 - non-sierra variant suboption is rejected"
 exit 0

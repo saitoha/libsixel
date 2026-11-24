@@ -38,8 +38,8 @@ status=0
     'election:thumbnail' "${QUICKLOOK_EXPECTED_DIR:-${TOP_BUILDDIR}/quicklook-extension/package}" \
     "${QUICKLOOK_USER_CONTEXT:-}" >&2 || status=$?
 test "$status" = 0 || {
-    echo "not ok 1 - Election current value matches journal owned value thumbnail"
+    printf '\n%s\n' "not ok 1 - Election current value matches journal owned value thumbnail"
     exit 0
 }
-echo "ok 1 - Election current value matches journal owned value thumbnail"
+printf '\n%s\n' "ok 1 - Election current value matches journal owned value thumbnail"
 exit 0

@@ -21,12 +21,12 @@ pin_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_ENCODER_THREADING_PIN=0" -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "threading pin environment conversion failed"
+    printf '\n%s\n' "not ok 1 - threading pin environment conversion failed"
     exit 0
 }
 
 case "${pin_trace}" in *LSXDTH1\|*pin_threads=0**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threading pin was not disabled"
+    printf '\n%s\n' "not ok 1 - threading pin was not disabled"
     exit 0
 }
 
@@ -34,14 +34,14 @@ invalid_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_ENCODER_THREADING_PIN=off" -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "invalid threading pin conversion failed"
+    printf '\n%s\n' "not ok 1 - invalid threading pin conversion failed"
     exit 0
 }
 
 case "${invalid_trace}" in *LSXDTH1\|*pin_threads=1**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "invalid threading pin changed the default"
+    printf '\n%s\n' "not ok 1 - invalid threading pin changed the default"
     exit 0
 }
 
-echo "ok" 1 - "threading pin environment controls affinity"
+printf '\n%s\n' "ok 1 - threading pin environment controls affinity"
 exit 0

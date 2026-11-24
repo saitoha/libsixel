@@ -20,12 +20,12 @@ esc="$(printf '\033')"
 keep_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --alpha-policy=keep -B '#ffffff' \
     -L builtin! -d fs:scan=raster -o - "${input_image}") || {
-    echo "not ok" 1 - "keep alpha-policy render failed"
+    printf '\n%s\n' "not ok 1 - keep alpha-policy render failed"
     exit 0
 }
 palette="${keep_output#"${esc}"P0;1q\"1;1;1;1#0;2;}"
 case "${keep_output}" in "${esc}"P0\;1q\"1\;1\;1\;1#0\;2\;*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "keep policy did not emit P2=1"
+    printf '\n%s\n' "not ok 1 - keep policy did not emit P2=1"
     exit 0
 }
 palette="${palette%"${esc}"\\}"
@@ -34,37 +34,37 @@ green_blue="${palette#*;}"
 green="${green_blue%%;*}"
 blue="${green_blue#*;}"
 case "${palette}" in *\;*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 case "${green_blue}" in *\;*) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 test "${red}" -ge 0 || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 test "${red}" -le 100 || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 test "${green}" -ge 0 || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 test "${green}" -le 100 || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 test "${blue}" -ge 0 || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 test "${blue}" -le 100 || {
-    echo "not ok" 1 - "keep policy painted the alpha-zero pixel"
+    printf '\n%s\n' "not ok 1 - keep policy painted the alpha-zero pixel"
     exit 0
 }
 
-echo "ok" 1 - "keep policy omits alpha zero and emits P2=1"
+printf '\n%s\n' "ok 1 - keep policy omits alpha zero and emits P2=1"
 exit 0

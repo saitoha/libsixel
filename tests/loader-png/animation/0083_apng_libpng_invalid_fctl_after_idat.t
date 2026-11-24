@@ -22,9 +22,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apn
     -v -Llibpng! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_libpng_fctl_after_idat.png" \
     -o/dev/null && {
-    echo "not ok" 1 - "APNG fcTL overcount was accepted"
+    printf '\n%s\n' "not ok 1 - APNG fcTL overcount was accepted"
     exit 0
 }
 
-echo "ok" 1 - "APNG fcTL after IDAT overcount is rejected"
+printf '\n%s\n' "ok 1 - APNG fcTL after IDAT overcount is rejected"
 exit 0

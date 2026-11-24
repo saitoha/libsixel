@@ -12,13 +12,13 @@ set -v
 
 output=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/libpng_contract emit_trns |
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -Llibpng:cms_engine=none! --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0) || {
-    echo "not ok 1 - APNG conversion failed"
+    printf '\n%s\n' "not ok 1 - APNG conversion failed"
     exit 0
 }
 header=$(printf '\033P0;1q')
 { test -n "${header}" && case "${output}" in *"${header}"*) true ;; *) false ;; esac; } || {
-    echo "not ok 1 - APNG lost the keep header"
+    printf '\n%s\n' "not ok 1 - APNG lost the keep header"
     exit 0
 }
-echo "ok 1 - APNG tRNS retains the keep header"
+printf '\n%s\n' "ok 1 - APNG tRNS retains the keep header"
 exit 0

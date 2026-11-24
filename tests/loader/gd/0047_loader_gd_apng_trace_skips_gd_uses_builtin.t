@@ -20,19 +20,19 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     2>&1 >/dev/null) || {
-    echo "not ok" 1 - "gd,builtin APNG conversion failed"
+    printf '\n%s\n' "not ok 1 - gd,builtin APNG conversion failed"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ builtin\ loader**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "builtin loader was not attempted for APNG"
+    printf '\n%s\n' "not ok 1 - builtin loader was not attempted for APNG"
     exit 0
 }
 
 case "${trace_log}" in *libsixel:\ trying\ gd\ loader**) false ;; *) true ;; esac || {
-    echo "not ok" 1 - "gd loader should be skipped for APNG input"
+    printf '\n%s\n' "not ok 1 - gd loader should be skipped for APNG input"
     exit 0
 }
 
-echo "ok" 1 - "APNG trace confirms gd skip and builtin fallback"
+printf '\n%s\n' "ok 1 - APNG trace confirms gd skip and builtin fallback"
 exit 0

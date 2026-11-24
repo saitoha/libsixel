@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "progressive/0066_prepare_cancel_resume" || {
-    echo "not ok 1 - prepare cancel resume"
+    printf '\n%s\n' "not ok 1 - prepare cancel resume"
     exit 0
 }
-echo "ok 1 - prepare cancel resume"
+printf '\n%s\n' "ok 1 - prepare cancel resume"
 exit 0

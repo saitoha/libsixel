@@ -17,14 +17,14 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 png_stdout="${ARTIFACT_LOCAL_DIR}/png-stdout.png"
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -o "png:-" <"${TOP_SRCDIR}/images/map8.six" >"${png_stdout}" || {
-    echo "not ok" 1 - "png:- command failed"
+    printf '\n%s\n' "not ok 1 - png:- command failed"
     exit 0
 }
 
 test -s "${png_stdout}" || {
-    echo "not ok" 1 - "png:- produced empty output"
+    printf '\n%s\n' "not ok 1 - png:- produced empty output"
     exit 0
 }
 
-echo "ok" 1 - "png:- writes to stdout"
+printf '\n%s\n' "ok 1 - png:- writes to stdout"
 exit 0

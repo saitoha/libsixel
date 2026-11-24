@@ -7,8 +7,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     precision/0004_non_gamma_float_work 1>&2 || {
-    echo "not ok 1 - non gamma float work"
+    printf '\n%s\n' "not ok 1 - non gamma float work"
     exit 0
 }
-echo "ok 1 - non gamma float work"
+printf '\n%s\n' "ok 1 - non gamma float work"
 exit 0

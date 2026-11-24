@@ -22,7 +22,7 @@ expected_output=$(
         -Lbuiltin:cms_engine=none! --precision-policy=float -Xoklab -Wgamma -0hard \
         -m "${mapfile_png}" -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "explicit float PNG mapfile baseline encode failed"
+    printf '\n%s\n' "not ok 1 - explicit float PNG mapfile baseline encode failed"
     exit 0
 }
 
@@ -31,14 +31,14 @@ actual_output=$(
         -Lbuiltin:cms_engine=none! --precision-policy=auto -Wgamma -0hard \
         -X oklab -m "${mapfile_png}" -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "automatic PNG mapfile encode failed with -X oklab"
+    printf '\n%s\n' "not ok 1 - automatic PNG mapfile encode failed with -X oklab"
     exit 0
 }
 
 test "${actual_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "PNG mapfile lost required float clustering precision"
+    printf '\n%s\n' "not ok 1 - PNG mapfile lost required float clustering precision"
     exit 0
 }
 
-echo "ok" 1 - "PNG mapfile clustering keeps float precision automatically"
+printf '\n%s\n' "ok 1 - PNG mapfile clustering keeps float precision automatically"
 exit 0

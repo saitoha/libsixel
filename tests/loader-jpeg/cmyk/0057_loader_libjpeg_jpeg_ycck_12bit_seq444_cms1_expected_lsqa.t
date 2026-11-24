@@ -34,15 +34,15 @@ reference_path="${TOP_SRCDIR}/tests/data/loader/quality/11fa4232-0017_jpeg_ycck_
 output_sixel="${ARTIFACT_LOCAL_DIR}/libjpeg_jpeg_ycck_12bit_seq444_cms1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -L libjpeg:cms_engine=auto! "${input_jpeg}" >"${output_sixel}" || {
-    echo "not ok" 1 - "libjpeg 12-bit YCCK JPEG decode failed (cms=1)"
+    printf '\n%s\n' "not ok 1 - libjpeg 12-bit YCCK JPEG decode failed (cms=1)"
     exit 0
 }
 
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" \
     "${reference_path}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "libjpeg 12-bit YCCK JPEG (cms=1) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
+    printf '\n%s\n' "not ok 1 - libjpeg 12-bit YCCK JPEG (cms=1) fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"
     exit 0
 }
 
-echo "ok" 1 - "libjpeg 12-bit YCCK JPEG with cms=1 keeps MS-SSIM ${lsqa_floor} against expected PNM"
+printf '\n%s\n' "ok 1 - libjpeg 12-bit YCCK JPEG with cms=1 keeps MS-SSIM ${lsqa_floor} against expected PNM"
 exit 0

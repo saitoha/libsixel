@@ -9,8 +9,8 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "dither/stucki-gpu/0001_accept_raster_soft" || status=$?
 test "$status" -eq 0 || {
-    echo "not ok 1 - accept raster soft"
+    printf '\n%s\n' "not ok 1 - accept raster soft"
     exit 0
 }
-echo "ok 1 - accept raster soft"
+printf '\n%s\n' "ok 1 - accept raster soft"
 exit 0

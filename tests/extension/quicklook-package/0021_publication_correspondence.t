@@ -13,9 +13,9 @@ set -v
 
 "${TOP_BUILDDIR}/quicklook-extension/sixel-quicklook-package" check correspondence \
     "${TOP_BUILDDIR}/quicklook-extension/package" || {
-    echo "not ok 1 - Published archive, manifest, evidence and complete expansion correspond."
+    printf '\n%s\n' "not ok 1 - Published archive, manifest, evidence and complete expansion correspond."
     exit 0
 }
 
-echo "ok 1 - Published archive, manifest, evidence and complete expansion correspond."
+printf '\n%s\n' "ok 1 - Published archive, manifest, evidence and complete expansion correspond."
 exit 0

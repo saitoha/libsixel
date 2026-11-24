@@ -8,8 +8,8 @@ set -v
 
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/delta_native/0048_delta_fixed_fs_diffuse || {
-    echo "not ok 1 - delta fixed fs diffuse"
+    printf '\n%s\n' "not ok 1 - delta fixed fs diffuse"
     exit 0
 }
-echo "ok 1 - delta fixed fs diffuse"
+printf '\n%s\n' "ok 1 - delta fixed fs diffuse"
 exit 0

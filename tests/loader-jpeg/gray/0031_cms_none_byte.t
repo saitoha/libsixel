@@ -14,13 +14,13 @@ echo "1..1"
 set -v
 test "$result" -eq 0 || {
     echo "$trace" >&2
-    echo "not ok 1 - cms none byte values"
+    printf '\n%s\n' "not ok 1 - cms none byte values"
     exit 0
 }
 case "$trace" in *"LSXCMS2|event=apply|"*)
     echo "$trace" >&2
-    echo "not ok 1 - unexpected profile application"
+    printf '\n%s\n' "not ok 1 - unexpected profile application"
     exit 0 ;;
 esac
-echo "ok 1 - cms none byte"
+printf '\n%s\n' "ok 1 - cms none byte"
 exit 0

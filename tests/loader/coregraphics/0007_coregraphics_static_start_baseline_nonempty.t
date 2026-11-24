@@ -21,14 +21,14 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
-    echo "not ok" 1 - "baseline static coregraphics decode failed"
+    printf '\n%s\n' "not ok 1 - baseline static coregraphics decode failed"
     exit 0
 }
 
 test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
-    echo "not ok" 1 - "baseline static coregraphics decode produced empty output"
+    printf '\n%s\n' "not ok 1 - baseline static coregraphics decode produced empty output"
     exit 0
 }
 
-echo "ok" 1 - "baseline static coregraphics output is non-empty"
+printf '\n%s\n' "ok 1 - baseline static coregraphics output is non-empty"
 exit 0

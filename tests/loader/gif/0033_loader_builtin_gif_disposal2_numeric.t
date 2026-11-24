@@ -10,9 +10,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "loader/0078_loader_builtin_gif_disposal2_numeric" || {
-    echo "not ok 1 - GIF disposal method 2 composition"
+    printf '\n%s\n' "not ok 1 - GIF disposal method 2 composition"
     exit 0
 }
 
-echo "ok 1 - GIF disposal method 2 composition"
+printf '\n%s\n' "ok 1 - GIF disposal method 2 composition"
 exit 0

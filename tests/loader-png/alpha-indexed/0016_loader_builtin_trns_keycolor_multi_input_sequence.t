@@ -26,14 +26,14 @@ out_repeated="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-multi-repeated.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=keep \
               --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_keep}" || {
-    echo "not ok 1 - builtin multi-input alpha-policy=keep render failed"
+    printf '\n%s\n' "not ok 1 - builtin multi-input alpha-policy=keep render failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=composite \
               --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_composite}" || {
-    echo "not ok 1 - builtin multi-input alpha-policy=composite render failed"
+    printf '\n%s\n' "not ok 1 - builtin multi-input alpha-policy=composite render failed"
     exit 0
 }
 
@@ -42,20 +42,20 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
               --env SIXEL_ALPHA_POLICY=composite \
               --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_repeated}" || {
-    echo "not ok 1 - builtin multi-input repeated alpha-policy render failed"
+    printf '\n%s\n' "not ok 1 - builtin multi-input repeated alpha-policy render failed"
     exit 0
 }
 
 cmp -s "${out_keep}" "${out_composite}" && {
-    echo "not ok 1 - builtin multi-input alpha-policy switch had no effect"
+    printf '\n%s\n' "not ok 1 - builtin multi-input alpha-policy switch had no effect"
     exit 0
 }
 
 cmp -s "${out_repeated}" "${out_composite}" || {
-    echo "not ok 1 - builtin multi-input repeated alpha-policy did not use last value"
+    printf '\n%s\n' "not ok 1 - builtin multi-input repeated alpha-policy did not use last value"
     exit 0
 }
 
-echo "ok 1 - builtin multi-input alpha-policy sequencing is stable"
+printf '\n%s\n' "ok 1 - builtin multi-input alpha-policy sequencing is stable"
 
 exit 0

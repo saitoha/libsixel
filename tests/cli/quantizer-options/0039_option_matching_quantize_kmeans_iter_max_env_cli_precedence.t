@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "env-only iter_max=5 was rejected"
+    printf '\n%s\n' "not ok 1 - env-only iter_max=5 was rejected"
     exit 0
 }
 
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:iter_max=100 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "cli-only iter_max upper bound was rejected"
+    printf '\n%s\n' "not ok 1 - cli-only iter_max upper bound was rejected"
     exit 0
 }
 
@@ -34,12 +34,12 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:iter_max=101 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "invalid CLI iter_max unexpectedly ignored"
+    printf '\n%s\n' "not ok 1 - invalid CLI iter_max unexpectedly ignored"
     exit 0
 }
 
 case "${msg}" in *-Q\ iter_max\ must\ be\ in\ range\ 1-100.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "missing invalid CLI iter_max diagnostic"
+    printf '\n%s\n' "not ok 1 - missing invalid CLI iter_max diagnostic"
     exit 0
 }
 
@@ -48,9 +48,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:iter_max=100 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null >/dev/null 2>&1 || {
-    echo "not ok" 1 - "valid CLI iter_max did not override invalid env"
+    printf '\n%s\n' "not ok 1 - valid CLI iter_max did not override invalid env"
     exit 0
 }
 
-echo "ok" 1 - "kmeans iter_max follows env/CLI precedence"
+printf '\n%s\n' "ok 1 - kmeans iter_max follows env/CLI precedence"
 exit 0

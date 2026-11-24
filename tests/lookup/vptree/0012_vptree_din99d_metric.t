@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/extended/0001_extended_lookup metric 3 4 || {
-    echo "not ok 1 - vptree din99d metric"
+    printf '\n%s\n' "not ok 1 - vptree din99d metric"
     exit 0
 }
 
-echo "ok 1 - vptree din99d metric"
+printf '\n%s\n' "ok 1 - vptree din99d metric"
 exit 0
