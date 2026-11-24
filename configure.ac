@@ -3024,7 +3024,7 @@ AS_IF([test "x$ac_cv_lib_m_floor" = xyes], [
 # Test the cancellation behavior needed to recover a product's roundoff.
 # FP_FAST_FMA describes speed, not whether a particular libm is correct.
 AC_CACHE_CHECK([whether fma preserves product residuals],
-               [sixel_cv_working_fma], [
+               [sixel_cv_exact_fma], [
   sixel_fma_save_CFLAGS="$CFLAGS"
   sixel_fma_save_CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CPPFLAGS $CFLAGS"
@@ -3033,14 +3033,19 @@ AC_CACHE_CHECK([whether fma preserves product residuals],
     volatile double a = 1.0 + 0x1p-23;
     volatile double b = 0.5 + 0x1p-31;
     volatile double product = a * b;
-    return fma(a, b, -product) != 0x1p-54 ||
+    int inexact = fma(a, b, -product) != 0x1p-54 ||
         fma(-a, b, product) != -0x1p-54;
-  ]])], [sixel_cv_working_fma=yes], [sixel_cv_working_fma=no],
-        [sixel_cv_working_fma=no])
+    /* MinGW's MSVCRT fma can lose low bits of a non-power-of-two tail. */
+    a = -0x1.c083126e978d5p-2;
+    b = 0x1.47ae147ae147bp-1;
+    product = a * b;
+    return inexact || fma(a, b, -product) != 0x1.143bf727136a4p-57;
+  ]])], [sixel_cv_exact_fma=yes], [sixel_cv_exact_fma=no],
+        [sixel_cv_exact_fma=no])
   CFLAGS="$sixel_fma_save_CFLAGS"
   CPPFLAGS="$sixel_fma_save_CPPFLAGS"
 ])
-AS_IF([test "x$sixel_cv_working_fma" = xyes], [
+AS_IF([test "x$sixel_cv_exact_fma" = xyes], [
   AC_DEFINE([HAVE_WORKING_FMA], [1],
             [Define to 1 if fma preserves product residuals.])
 ])

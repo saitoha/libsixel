@@ -1176,8 +1176,13 @@ if meson.can_run_host_binaries()
       volatile double a = 1.0 + 0x1p-23;
       volatile double b = 0.5 + 0x1p-31;
       volatile double product = a * b;
-      return fma(a, b, -product) != 0x1p-54 ||
+      int inexact = fma(a, b, -product) != 0x1p-54 ||
           fma(-a, b, product) != -0x1p-54;
+      /* MinGW's MSVCRT fma can lose low bits of a non-power-of-two tail. */
+      a = -0x1.c083126e978d5p-2;
+      b = 0x1.47ae147ae147bp-1;
+      product = a * b;
+      return inexact || fma(a, b, -product) != 0x1.143bf727136a4p-57;
     }
     ''', dependencies: m_dep, name: 'fma preserves product residuals')
   if fma_probe.compiled() and fma_probe.returncode() == 0
