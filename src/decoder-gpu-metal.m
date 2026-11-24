@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "decoder-gpu.h"
+#include "decoder-prescan.h"
 #include "gpu-program.h"
 #include "gpu-runtime-metal.h"
 
@@ -40,7 +41,7 @@ enum {
 /* A thread per segment leaves the device mostly idle, since a frame has
  * only about a thousand of them; long segments are cut into chunks of
  * about this many bytes so their parses overlap. */
-#define DECODER_GPU_CHUNK_BYTES 64u
+#define DECODER_GPU_CHUNK_BYTES SIXEL_PRESCAN_CHUNK_BYTES
 
 /* One process-wide parser; a caller that finds it busy parses on the CPU. */
 static pthread_mutex_t g_decoder_gpu_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -246,6 +247,68 @@ terminated:
     return count;
 }
 
+/* The caller scanned from the DCS final byte, while the workers start
+ * after the prefix parsed by the CPU. Translate the offsets once here. */
+static uint32_t
+decoder_gpu_rebase(sixel_decode_prescan_t const *plan,
+                   unsigned char const *input, size_t length, size_t body,
+                   decoder_gpu_segment_t *segments, uint32_t capacity,
+                   uint32_t *end, uint32_t *bands)
+{
+    unsigned char const *final;
+    uint32_t const *cuts;
+    size_t prefix;
+    size_t cut_count;
+    size_t i;
+    uint32_t band;
+    uint32_t seg;
+    uint32_t start;
+    uint32_t offset;
+    uint32_t kind;
+    uint32_t count;
+    uint32_t bias;
+
+    if (length < 5u || body < 2u || input[length - 2u] != 0x1bu ||
+            input[length - 1u] != '\\')
+        return 0u;
+    if (input[0] == 0x1bu && input[1] == 'P')
+        prefix = 2u;
+    else if (input[0] == 0x90u)
+        prefix = 1u;
+    else
+        return 0u;
+    final = (unsigned char const *)memchr(input + prefix, 'q', body - prefix);
+    if (final == NULL || (size_t)(final - input) >= length - 2u)
+        return 0u;
+
+    prefix = (size_t)(final - input) + 1u;
+    cuts = sixel_decode_prescan_cuts(plan, length - 2u - prefix, &cut_count);
+    if (cuts == NULL || cut_count >= capacity)
+        return 0u;
+    bias = (uint32_t)(body - prefix);
+    count = 0u;
+    band = 0u;
+    seg = 0u;
+    start = 0u;
+    for (i = 0; i < cut_count; ++i) {
+        offset = cuts[i] & SIXEL_PRESCAN_CUT_OFFSET;
+        if (offset < bias)
+            continue;
+        offset -= bias;
+        kind = cuts[i] >> SIXEL_PRESCAN_CUT_SHIFT;
+        if (kind == SIXEL_PRESCAN_CUT_GRAPHIC && offset <= start)
+            continue;
+        decoder_gpu_add_chunk(segments, &count, start, offset, band, seg);
+        start = offset + (kind != SIXEL_PRESCAN_CUT_GRAPHIC);
+        band += kind == SIXEL_PRESCAN_CUT_NL;
+        seg += kind != SIXEL_PRESCAN_CUT_GRAPHIC;
+    }
+    *end = (uint32_t)(length - 2u - body);
+    *bands = band + 1u;
+    decoder_gpu_add_chunk(segments, &count, start, *end, band, seg);
+    return count;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_gpu_parse_columns(unsigned char const *input,
                                 size_t length,
@@ -256,7 +319,9 @@ sixel_decoder_gpu_parse_columns(unsigned char const *input,
                                 int trust_raster_size,
                                 uint64_t *columns,
                                 int *alpha_opaque,
-                                int *painted_outside_raster)
+                                int *painted_outside_raster,
+                                sixel_decode_prescan_t const *plan,
+                                sixel_timeline_logger_t *logger)
 {
     decoder_gpu_params_t params;
     id<MTLCommandBuffer> command;
@@ -270,6 +335,7 @@ sixel_decoder_gpu_parse_columns(unsigned char const *input,
     uint32_t end;
     uint32_t reached;
     uint32_t flags;
+    int prescanned;
     SIXELSTATUS status;
 
     if (input == NULL || columns == NULL || alpha_opaque == NULL ||
@@ -305,9 +371,18 @@ sixel_decoder_gpu_parse_columns(unsigned char const *input,
                     (NSUInteger)words * sizeof(uint64_t),
                     MTLResourceStorageModeShared))
             goto end;
-        count = decoder_gpu_split(input + body, (uint32_t)span,
-            (decoder_gpu_segment_t *)[g_decoder_gpu_segments contents],
-            capacity, &end, &reached);
+        count = 0u;
+        if (plan != NULL && body <= length - 2u) {
+            count = decoder_gpu_rebase(plan, input, length, body,
+                (decoder_gpu_segment_t *)[g_decoder_gpu_segments contents],
+                capacity, &end, &reached);
+        }
+        prescanned = count != 0u;
+        if (!prescanned) {
+            count = decoder_gpu_split(input + body, (uint32_t)span,
+                (decoder_gpu_segment_t *)[g_decoder_gpu_segments contents],
+                capacity, &end, &reached);
+        }
         if (count == 0u ||
                 !decoder_gpu_reserve(&g_decoder_gpu_info,
                     (NSUInteger)count * 2u * sizeof(uint32_t),
@@ -374,6 +449,10 @@ sixel_decoder_gpu_parse_columns(unsigned char const *input,
         /* Like the gather, bands the body never reached leave it unknown. */
         *alpha_opaque = reached < params.bands ? (-1)
             : (flags & DECODER_GPU_TRANSPARENT) == 0u;
+        if (logger != NULL) {
+            sixel_timeline_logger_logf(logger, "decoder", "metal",
+                prescanned ? "complete_prescan" : "complete", 0);
+        }
         status = SIXEL_OK;
     }
 end:

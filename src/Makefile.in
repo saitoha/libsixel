@@ -524,6 +524,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
 	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-gpu.h \
+	$(srcdir)/decoder-prescan.c $(srcdir)/decoder-prescan.h \
 	$(srcdir)/decoder-image.h $(srcdir)/fromsixel-internal.h \
 	$(srcdir)/decoder-ormode.h $(srcdir)/decoder-columns.h \
 	$(srcdir)/decoder-simd.h $(srcdir)/simd-config.h \
@@ -826,6 +827,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-planner.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-parallel.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-prescan.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-options.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-options-registry.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-path.lo \
@@ -898,6 +900,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-cpu.Plo \
 	./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo \
 	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
+	./$(DEPDIR)/libsixel_la-decoder-prescan.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
 	./$(DEPDIR)/libsixel_la-delta-residual.Plo \
 	./$(DEPDIR)/libsixel_la-dither-carry.Plo \
@@ -2168,6 +2171,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-prescan.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-prescan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-image.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromsixel-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-ormode.h \
@@ -2573,6 +2578,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-prescan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-delta-residual.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-carry.Plo@am__quote@ # am--include-marker
@@ -4264,6 +4270,13 @@ libsixel_la-decoder-parallel.lo: decoder-parallel.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
 
+libsixel_la-decoder-prescan.lo: decoder-prescan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-decoder-prescan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder-prescan.Tpo -c -o libsixel_la-decoder-prescan.lo `test -f 'decoder-prescan.c' || echo '$(srcdir)/'`decoder-prescan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder-prescan.Tpo $(DEPDIR)/libsixel_la-decoder-prescan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder-prescan.c' object='libsixel_la-decoder-prescan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder-prescan.lo `test -f 'decoder-prescan.c' || echo '$(srcdir)/'`decoder-prescan.c
+
 libsixel_la-options.lo: options.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-options.lo -MD -MP -MF $(DEPDIR)/libsixel_la-options.Tpo -c -o libsixel_la-options.lo `test -f 'options.c' || echo '$(srcdir)/'`options.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-options.Tpo $(DEPDIR)/libsixel_la-options.Plo
@@ -4912,6 +4925,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-prescan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
@@ -5219,6 +5233,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-gpu-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-prescan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo

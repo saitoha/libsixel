@@ -2751,6 +2751,48 @@ sixel_decoder_decode(
 /* Stateful decoding accepts explicit multi-pass still-image captures. */
 #define SIXEL_HAVE_DECODER_6DELTA_PROGRESSIVE 1
 
+/*
+ * Incremental scan of the body between the DCS q final byte and ST. Each
+ * call returns the length of the same printable/C0 run that it appends to
+ * the plan. The caller owns DCS framing, cancellation and validation. A
+ * null plan only finds the run boundary. A failed plan allocation or an
+ * exhausted cut list leaves ordinary decoding available.
+ *
+ * Append each fragment of a single body in byte order. After publication
+ * the plan is read-only and may be shared across threads with ref/unref.
+ * Raster returns 1 and a body-relative offset only for exactly one '"'
+ * in a complete plan of payload_size bytes; the caller parses its values.
+ */
+#define SIXEL_HAVE_DECODE_PRESCAN 1
+typedef struct sixel_decode_prescan sixel_decode_prescan_t;
+
+SIXELAPI SIXELSTATUS
+sixel_decode_prescan_new(sixel_decode_prescan_t **out_plan);
+SIXELAPI void
+sixel_decode_prescan_ref(sixel_decode_prescan_t *plan);
+SIXELAPI void
+sixel_decode_prescan_unref(sixel_decode_prescan_t *plan);
+SIXELAPI size_t
+sixel_decode_prescan_scan(sixel_decode_prescan_t *plan,
+                         unsigned char const *data, size_t size);
+SIXELAPI int
+sixel_decode_prescan_raster(sixel_decode_prescan_t const *plan,
+                           size_t payload_size, size_t *offset);
+
+/*
+ * Decode one DCS ending in ESC-backslash, with an optional prescan of its
+ * exact body bytes. The decoder borrows the plan for this call. The caller
+ * guarantees byte-for-byte agreement with the scanned body, even if it
+ * copied the fragments into a different buffer. The ordinary path handles
+ * unsupported backends, absent plans and declined accelerator work.
+ */
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_mapped_prescan(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform,
+    sixel_decode_prescan_t const *plan, sixel_decode_result_t *result);
+
 /* Object reconstruction in the output RGB basis selected by transform. */
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode_mapped(sixel_decoder_t *decoder,

@@ -769,6 +769,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/decoder-parallel.c \
                 $(srcdir)/decoder-parallel.h \
                 $(srcdir)/decoder-gpu.h \
+                $(srcdir)/decoder-prescan.c \
+                $(srcdir)/decoder-prescan.h \
                 $(srcdir)/decoder-image.h \
                 $(srcdir)/fromsixel-internal.h \
                 $(srcdir)/decoder-ormode.h \

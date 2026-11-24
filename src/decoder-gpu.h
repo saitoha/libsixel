@@ -7,6 +7,8 @@
 
 #include <sixel.h>
 
+#include "timeline-logger.h"
+
 /* Under the AUTO GPU policy, bodies shorter than this decode faster on the
  * CPU workers than a device submission takes to complete; FORCE tries the
  * device for any body. */
@@ -33,7 +35,9 @@ sixel_decoder_gpu_parse_columns(unsigned char const *input,
                                 int trust_raster_size,
                                 uint64_t *columns,
                                 int *alpha_opaque,
-                                int *painted_outside_raster);
+                                int *painted_outside_raster,
+                                sixel_decode_prescan_t const *plan,
+                                sixel_timeline_logger_t *logger);
 #endif
 
 #endif

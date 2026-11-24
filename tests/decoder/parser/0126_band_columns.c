@@ -272,6 +272,69 @@ end:
 }
 
 /* keep_unpainted leaves unpainted destination bytes alone. */
+/* Match ordinary decode across fragments that split commands and ST. */
+static int
+band_check_prescan(sixel_decoder_t *gpu)
+{
+    sixel_decode_prescan_t *plan;
+    sixel_decode_result_t expect;
+    sixel_decode_result_t got;
+    sixel_decode_options_t options;
+    unsigned char const *stream;
+    unsigned char const *body;
+    size_t size;
+    size_t offset;
+    size_t fragment;
+    size_t quote;
+    size_t bytes;
+    int ok;
+
+    stream = (unsigned char const *)band_stream;
+    body = (unsigned char const *)strchr(band_stream, 'q') + 1u;
+    size = band_stream_size - (size_t)(body - stream) - 2u;
+    plan = NULL;
+    memset(&got, 0, sizeof(got));
+    memset(&expect, 0, sizeof(expect));
+    memset(&options, 0, sizeof(options));
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_BANDCOLUMNS;
+    options.flags = band_flags;
+    ok = 0;
+    if (SIXEL_FAILED(sixel_decode_prescan_new(&plan)))
+        goto end;
+    for (offset = 0; offset < size; offset += fragment) {
+        fragment = size - offset < 113u ? size - offset + 2u : 113u;
+        fragment = sixel_decode_prescan_scan(plan, body + offset, fragment);
+        if (fragment == 0)
+            goto end;
+    }
+    if (offset != size || sixel_decode_prescan_scan(plan, body + size, 2u) != 0
+            || !sixel_decode_prescan_raster(plan, size, &quote) || quote != 0u
+            || sixel_decode_prescan_raster(plan, size - 1u, &quote))
+        goto end;
+    if (SIXEL_FAILED(band_decode(gpu, 0, SIXEL_PIXELFORMAT_BANDCOLUMNS,
+                                 NULL, &expect))
+            || SIXEL_FAILED(sixel_decoder_decode_mapped_prescan(gpu, stream,
+                band_stream_size, &options, NULL, plan, &got)))
+        goto end;
+    if (got.width != expect.width || got.height != expect.height ||
+            got.pixelformat != expect.pixelformat ||
+            got.stride != expect.stride || got.flags != expect.flags)
+        goto end;
+    bytes = expect.pixelformat == SIXEL_PIXELFORMAT_BANDCOLUMNS
+        ? SIXEL_BANDCOLUMNS_PALETTE_BYTES +
+            (size_t)((expect.height + 5) / 6) * (size_t)expect.stride
+        : (size_t)expect.height * (size_t)expect.stride;
+    ok = memcmp(got.pixels, expect.pixels, bytes) == 0;
+
+end:
+    free(expect.pixels);
+    free(got.pixels);
+    sixel_decode_prescan_unref(plan);
+    if (!ok)
+        fprintf(stderr, "fragmented prescan differs from ordinary decode\n");
+    return ok;
+}
+
 static int
 band_check_keep(sixel_decoder_t *decoder)
 {
@@ -398,7 +461,8 @@ test_decoder_0112(int argc, char **argv)
     if (band_stream_size == 0u ||
             !band_check(threaded, 0, NULL, 1, "long stream") ||
             !band_check_gpu(threaded, gpu, 0, "long gpu") ||
-            !band_check_gpu(threaded, gpu, 1, "long gpu body")) {
+            !band_check_gpu(threaded, gpu, 1, "long gpu body") ||
+            !band_check_prescan(gpu)) {
         goto end;
     }
     band_stream_size = band_build(band_stream, sizeof(band_stream), 1, 0, 1);

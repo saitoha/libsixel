@@ -3145,7 +3145,8 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
                    sixel_allocator_t *allocator, unsigned int decode_flags,
                    sixel_decoder_undither_context_t *undither, int body_only,
                    int const *body_params, size_t body_nparams,
-                   sixel_palette_transform_t const *transform)
+                   sixel_palette_transform_t const *transform,
+                   sixel_decode_prescan_t const *plan)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_timeline_logger_t *logger;
@@ -3161,6 +3162,7 @@ sixel_decode_image(unsigned char *p, int len, int initial_width,
     image->ormode_high_planes = NULL;
     image->normal_columns = NULL;
     image->alpha_opaque = -1;
+    image->prescan = NULL;
     image->keep_columns = 0;
     image->band_block = NULL;
     image->band_width = 0;
@@ -3236,6 +3238,7 @@ retry:
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    image->prescan = plan;
     image->keep_columns = (decode_flags &
         SIXEL_DECODE_PIXELS_OPTION_BANDCOLUMNS_INTERNAL) != 0U &&
         depth == 4 && !keep_paint_mask && undither == NULL;
@@ -3453,7 +3456,8 @@ static SIXELSTATUS sixel_decode_raw_with_options_internal(
                                 1,         /* initial_height */
                                 1,         /* depth */
                                 paint_mask != NULL, image, &context, allocator,
-                                decode_flags, NULL, 0, NULL, 0U, transform);
+                                decode_flags, NULL, 0, NULL, 0U, transform,
+                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -3729,7 +3733,7 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
     undither.allocator = allocator;
 
     status = sixel_decode_image(p, len, 1, 1, 1, 0, image, &context, allocator,
-                                decode_flags, &undither, 0, NULL, 0U, NULL);
+                                decode_flags, &undither, 0, NULL, 0U, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3903,7 +3907,7 @@ sixel_decode_wide(
                                 1,         /* initial height */
                                 2,         /* depth */
                                 0, image, &context, allocator, 0U, NULL, 0,
-                                NULL, 0U, NULL);
+                                NULL, 0U, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -4871,12 +4875,13 @@ sixel_decode_sequence_mapped(unsigned char const *data, size_t size,
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_decode_direct_mapped(
+sixel_decode_direct_prescanned(
     unsigned char *p, int len, unsigned int decode_flags,
     sixel_palette_transform_t const *transform, int body_only,
     int const *body_params, size_t body_nparams, unsigned char **pixels,
     int *pwidth, int *pheight, unsigned char **palette, int *ncolors,
-    unsigned int *result_flags, sixel_allocator_t *allocator)
+    unsigned int *result_flags, sixel_allocator_t *allocator,
+    sixel_decode_prescan_t const *plan)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
@@ -4924,7 +4929,7 @@ sixel_decode_direct_mapped(
 
     status = sixel_decode_image(p, len, 1, 1, 4U, 0, image, &context, allocator,
                                 decode_flags, NULL, body_only, body_params,
-                                body_nparams, transform);
+                                body_nparams, transform, plan);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -5009,6 +5014,19 @@ end:
     free(image);
     sixel_allocator_unref(allocator);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_direct_mapped(
+    unsigned char *p, int len, unsigned int decode_flags,
+    sixel_palette_transform_t const *transform, int body_only,
+    int const *body_params, size_t body_nparams, unsigned char **pixels,
+    int *pwidth, int *pheight, unsigned char **palette, int *ncolors,
+    unsigned int *result_flags, sixel_allocator_t *allocator)
+{
+    return sixel_decode_direct_prescanned(p, len, decode_flags, transform,
+        body_only, body_params, body_nparams, pixels, pwidth, pheight, palette,
+        ncolors, result_flags, allocator, NULL);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS

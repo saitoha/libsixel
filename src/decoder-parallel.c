@@ -2757,7 +2757,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
                 initial_color_index, trust_raster_size,
                 (uint64_t *)(void *)(image->band_block +
                     SIXEL_BANDCOLUMNS_PALETTE_BYTES),
-                &image->alpha_opaque, &gpu_outside) == SIXEL_OK) {
+                &image->alpha_opaque, &gpu_outside, image->prescan,
+                logger) == SIXEL_OK) {
         if (painted_outside_raster != NULL) {
             *painted_outside_raster = gpu_outside;
         }

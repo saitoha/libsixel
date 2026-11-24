@@ -383,6 +383,8 @@ srcs = [
   'decoder-parallel.c',
   'decoder-parallel.h',
   'decoder-gpu.h',
+  'decoder-prescan.c',
+  'decoder-prescan.h',
   'decoder-image.h',
   'fromsixel-internal.h',
   'decoder-ormode.h',

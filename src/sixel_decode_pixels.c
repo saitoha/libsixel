@@ -440,7 +440,7 @@ static SIXELSTATUS sixel_decode_pixels_try(
     unsigned char const *data, size_t size, unsigned int decode_flags,
     sixel_palette_transform_t const *transform, unsigned char **out_pixels,
     int *out_width, int *out_height, unsigned int *result_flags,
-    sixel_allocator_t *allocator)
+    sixel_allocator_t *allocator, sixel_decode_prescan_t const *plan)
 {
     SIXELSTATUS status;
     unsigned char *buffer;
@@ -462,9 +462,9 @@ static SIXELSTATUS sixel_decode_pixels_try(
      * normal path and allocate a mutable work buffer only for terminator retry.
      */
     buffer = (unsigned char *)(void const *)data;
-    status = sixel_decode_direct_mapped(
+    status = sixel_decode_direct_prescanned(
         buffer, (int)size, decode_flags, transform, 0, NULL, 0U, out_pixels,
-        out_width, out_height, NULL, NULL, result_flags, allocator);
+        out_width, out_height, NULL, NULL, result_flags, allocator, plan);
 
     return status;
 }
@@ -486,7 +486,7 @@ static SIXELSTATUS sixel_decode_pixels_terminated_attempts(
     workbuf[size] = 0x07U;
     status = sixel_decode_pixels_try(workbuf, size + 1U, decode_flags,
                                      transform, out_pixels, out_width,
-                                     out_height, &second_flags, allocator);
+                                     out_height, &second_flags, allocator, NULL);
     if (status == SIXEL_OK) {
         *result_flags = second_flags;
         return status;
@@ -497,7 +497,7 @@ static SIXELSTATUS sixel_decode_pixels_terminated_attempts(
     workbuf[size + 1U] = '\\';
     status = sixel_decode_pixels_try(workbuf, size + 2U, decode_flags,
                                      transform, out_pixels, out_width,
-                                     out_height, &third_flags, allocator);
+                                     out_height, &third_flags, allocator, NULL);
     if (status == SIXEL_OK) {
         *result_flags = third_flags;
     }
@@ -505,11 +505,12 @@ static SIXELSTATUS sixel_decode_pixels_terminated_attempts(
     return status;
 }
 
-SIXELAPI SIXELSTATUS
-sixel_decode_pixels_mapped(
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_pixels_mapped_prescan(
     unsigned char const *data, size_t size,
     sixel_decode_options_t const *options,
-    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    sixel_palette_transform_t const *transform,
+    sixel_decode_prescan_t const *plan, sixel_decode_result_t *result,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -591,7 +592,7 @@ sixel_decode_pixels_mapped(
 
     status =
         sixel_decode_pixels_try(data, size, decode_flags, transform, &decoded,
-                                &width, &height, &first_flags, work_allocator);
+                                &width, &height, &first_flags, work_allocator, plan);
     if (status == SIXEL_OK) {
         result_flags = first_flags;
     } else {
@@ -647,6 +648,17 @@ cleanup:
     }
 
     return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels_mapped(
+    unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    sixel_allocator_t *allocator)
+{
+    return sixel_decode_pixels_mapped_prescan(data, size, options, transform,
+                                             NULL, result, allocator);
 }
 
 SIXELAPI SIXELSTATUS

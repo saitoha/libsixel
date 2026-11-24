@@ -3148,12 +3148,12 @@ sixel_decoder_decode_body_mapped(
     return status;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_decoder_decode_mapped_with_pass_count(
+static SIXELSTATUS
+decoder_decode_mapped(
     sixel_decoder_t *decoder, unsigned char const *data, size_t size,
     sixel_decode_options_t const *options,
     sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
-    size_t *input_passes)
+    size_t *input_passes, sixel_decode_prescan_t const *plan)
 {
     sixel_thread_budget_scope_t policy_scope;
     sixel_decode_options_t gpu_options;
@@ -3229,8 +3229,8 @@ sixel_decoder_decode_mapped_with_pass_count(
     }
     if (decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         options = decoder_gpu_decode_options(decoder, options, &gpu_options);
-        status = sixel_decode_pixels_mapped(data, size, options, transform,
-                                            result, decoder->allocator);
+        status = sixel_decode_pixels_mapped_prescan(data, size, options,
+            transform, plan, result, decoder->allocator);
         goto end;
     }
 
@@ -3289,6 +3289,28 @@ end:
     sixel_thread_budget_leave(&policy_scope);
     sixel_decoder_unref(decoder);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_decode_mapped_with_pass_count(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform, sixel_decode_result_t *result,
+    size_t *input_passes)
+{
+    return decoder_decode_mapped(decoder, data, size, options, transform,
+                                 result, input_passes, NULL);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_mapped_prescan(
+    sixel_decoder_t *decoder, unsigned char const *data, size_t size,
+    sixel_decode_options_t const *options,
+    sixel_palette_transform_t const *transform,
+    sixel_decode_prescan_t const *plan, sixel_decode_result_t *result)
+{
+    return decoder_decode_mapped(decoder, data, size, options, transform,
+                                 result, NULL, plan);
 }
 
 SIXELAPI SIXELSTATUS

@@ -66,6 +66,8 @@ typedef struct image_buffer {
      * still untouched.  band_kept says the gather filled it in place of the
      * RGBA pixels, which then hold nothing. */
     int keep_columns;
+    /* The decode call owns this optional input metadata. */
+    sixel_decode_prescan_t const *prescan;
     unsigned char *band_block;
     int band_width;
     int band_height;
