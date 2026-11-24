@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include <sixel.h>
+#include "frame.h"
 #include <6cells.h>
 
 #include "sixel_atomic.h"
@@ -76,7 +77,7 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return frame_if->vtbl->get_pixels(frame_if, view);
+    return sixel_frame_get_work_pixels(frame_if, view);
 }
 
 #define SIXEL_ASSESSMENT_SECTION_NONE        0x00000000u

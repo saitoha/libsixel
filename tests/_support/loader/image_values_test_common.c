@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/frame-private.h"
+#include "src/frame-normalize.h"
 #include "src/loader.h"
 #include "src/loader-common.h"
 
@@ -60,8 +61,8 @@ image_values_capture(sixel_frame_t *frame, void *context)
     }
     status = sixel_frame_strip_alpha(frame, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_frame_set_pixelformat(frame,
-            SIXEL_PIXELFORMAT_RGBFLOAT32);
+        status = sixel_frame_convert_pixels(frame,
+            SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA);
     }
     if (SIXEL_FAILED(status)) {
         return status;

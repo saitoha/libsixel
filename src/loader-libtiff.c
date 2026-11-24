@@ -56,6 +56,7 @@
 #include <tiffio.h>
 
 #include <sixel.h>
+#include "frame-normalize.h"
 #include "pixelformat.h"
 
 #include "allocator.h"
@@ -2676,7 +2677,7 @@ load_with_libtiff(
          * resolves background composition before this final boundary.
          * Failed byte ICC input keeps its original straight-source values
          * in gamma byte or float storage, depending on source fractions. */
-        status = sixel_frame_set_pixelformat(
+        status = sixel_frame_convert_workformat(
             frame, loader_cms_target_pixelformat());
         if (SIXEL_FAILED(status)) {
             goto end;

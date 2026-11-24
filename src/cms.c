@@ -7168,6 +7168,31 @@ sixel_cdef_icc(void const *bytes, size_t length)
     return definition;
 }
 
+int
+sixel_cdef_matches_srgb(sixel_color_def_t const *definition, int colorspace)
+{
+    if (definition == NULL || definition->bytes != NULL ||
+            !(definition->srgb_invariants & SIXEL_CDEF_SRGB_IDENTITY)) {
+        return 0;
+    }
+    if (colorspace == SIXEL_COLORSPACE_GAMMA) {
+        return definition->trc == SIXEL_COLOR_TRC_SRGB;
+    }
+    return colorspace == SIXEL_COLORSPACE_LINEAR &&
+        definition->trc == SIXEL_COLOR_TRC_POWER &&
+        definition->gamma[0] == 1.0 && definition->gamma[1] == 1.0 &&
+        definition->gamma[2] == 1.0;
+}
+
+int
+sixel_cdef_frame_input_ready(sixel_color_def_t const *definition)
+{
+    return definition != NULL &&
+        (definition->bytes == NULL || definition->matrix_valid ||
+         sixel_cms_has_slot(&definition->icc, 1u, 0) ||
+         sixel_cms_has_slot(&definition->icc, 0u, 0));
+}
+
 /* A missing RGB definition denotes encoded sRGB. Compare analytic models
  * by their D50 colorants and active transfer parameters. ICC endpoints may
  * also contain intent-specific tables, so compare their full payloads. */

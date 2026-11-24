@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Independent original-sample, linear composition and canvas-state probes. */
 #include <math.h>
+#include "src/frame.h"
 #include <stdint.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/loader-common.h"
@@ -159,7 +160,7 @@ ap_capture(sixel_frame_t *frame, void *data)
     probe = (ap_probe_t *)data;
     n = probe->count++;
     iface = sixel_frame_as_interface(frame);
-    iface->vtbl->get_pixels(iface, &view);
+    sixel_frame_get_work_pixels(iface, &view);
     iface->vtbl->get_transparency(iface, &mask);
     iface->vtbl->get_alpha(iface, &alpha);
     /* Fractional coverage must be resolved before the legacy callback. */

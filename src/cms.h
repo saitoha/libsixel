@@ -356,6 +356,14 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
                       unsigned char **bytes, size_t *length,
                       sixel_allocator_t *allocator);
 
+/* Match an explicit analytic model against an implicit sRGB encoding. */
+SIXEL_INTERNAL_API int
+sixel_cdef_matches_srgb(sixel_color_def_t const *definition, int colorspace);
+
+/* A frame needs a usable forward path for relative or perceptual PCS. */
+SIXEL_INTERNAL_API int
+sixel_cdef_frame_input_ready(sixel_color_def_t const *definition);
+
 /* NULL denotes the implicit gamma sRGB model in an RGB comparison. */
 SIXEL_INTERNAL_API int
 sixel_cdef_same_rgb(sixel_color_def_t const *a, sixel_color_def_t const *b);

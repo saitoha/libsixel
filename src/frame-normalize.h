@@ -37,6 +37,10 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
                            int target_colorspace);
 
+/* Resolve an internal output/work format to an explicit conversion target. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_convert_workformat(sixel_frame_t *frame, int format);
+
 /* Normalize packed gamma RGB/gray alpha for the native float encoder.
  * Metadata still decides whether alpha is interpreted. Fractional blending
  * retains the legacy gamma-domain/background-gray convention, without byte

@@ -97,7 +97,7 @@ test_frame_get_pixels_view(sixel_frame_t const *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return frame_if->vtbl->get_pixels(frame_if, view);
+    return sixel_frame_get_work_pixels(frame_if, view);
 }
 
 static int
@@ -462,7 +462,7 @@ test_profiled_grid(void)
     }
     iface = sixel_frame_as_interface(frame);
     if (SIXEL_FAILED(iface->vtbl->set_rgb_definition(iface, profile)) ||
-        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view))) {
+        SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view))) {
         goto end;
     }
     sixel_filter_bind_input(filter, &frame, view.pixelformat, view.colorspace);
@@ -475,11 +475,11 @@ test_profiled_grid(void)
     sixel_frame_unref(frame);
     frame = NULL;
     iface = sixel_frame_as_interface(samples.frame);
-    if (SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+    if (SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
         view.width != 1 || view.height != 1 || view.rgb_definition == NULL ||
         SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) ||
-        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
         view.pixels_float32 == NULL) {
         goto end;
     }

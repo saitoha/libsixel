@@ -5,6 +5,7 @@
 /* Exclude unavailable test code, including its private helpers. */
 #if !(defined(__PCC__) || defined(__TINYC__))
 #include <string.h>
+#include "src/frame.h"
 #include "../../_support/planner/pipeline/palette_launch_test_common.h"
 
 int
@@ -34,8 +35,8 @@ test_palette_scheduler_0043(int argc, char **argv)
             &request, &sample));
         source_if = sixel_frame_as_interface(source);
         sample_if = sixel_frame_as_interface(sample);
-        PALETTE_STORE_CHECK(source_if->vtbl->get_pixels(source_if, &input)
-            == SIXEL_OK && sample_if->vtbl->get_pixels(sample_if, &copy)
+        PALETTE_STORE_CHECK(sixel_frame_get_work_pixels(source_if, &input)
+            == SIXEL_OK && sixel_frame_get_work_pixels(sample_if, &copy)
             == SIXEL_OK);
         size = (size_t)768 * (floating ? sizeof(float) : 1);
         PALETTE_STORE_CHECK(input.width == copy.width &&

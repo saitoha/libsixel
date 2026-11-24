@@ -49,6 +49,7 @@
 #endif
 
 #include <sixel.h>
+#include "frame-normalize.h"
 #include "pixelformat.h"
 #include <6cells.h>
 
@@ -1722,7 +1723,7 @@ sixel_builtin_load_hdr_frame(
 
     if (enable_cms) {
         target_pixelformat = loader_cms_target_pixelformat();
-        status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+        status = sixel_frame_convert_workformat(frame, target_pixelformat);
     }
 
     return status;

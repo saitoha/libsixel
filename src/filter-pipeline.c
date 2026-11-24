@@ -172,7 +172,7 @@ sixel_filter_pipeline_run(sixel_filter_t *first, sixel_filter_t *second,
         return SIXEL_FALSE;
     }
     object = (sixel_frame_interface_t *)frame;
-    if (SIXEL_FAILED(object->vtbl->get_pixels(object, &view)) ||
+    if (SIXEL_FAILED(sixel_frame_get_work_pixels(object, &view)) ||
             SIXEL_FAILED(object->vtbl->get_alpha(object, &alpha)) ||
             view.rgb_definition != NULL || alpha.values != NULL ||
             view.width <= 0 || view.height <= 0 ||

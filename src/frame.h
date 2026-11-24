@@ -26,6 +26,7 @@
 #define LIBSIXEL_FRAME_H
 
 #include <6cells.h>
+#include "pixelformat.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,6 +50,22 @@ sixel_frame_format(sixel_frame_t const *frame);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_borrow_pixels(sixel_frame_t *frame,
                          sixel_frame_pixels_request_t const *request);
+
+/* Adapt public layouts at the boundary to existing work-buffer kernels. */
+static inline SIXELSTATUS
+sixel_frame_get_work_pixels(sixel_frame_interface_t *frame,
+                            sixel_frame_pixels_view_t *view)
+{
+    SIXELSTATUS status;
+
+    status = frame->vtbl->get_pixels(frame, view);
+    if (SIXEL_SUCCEEDED(status) &&
+            view->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        view->pixelformat =
+            sixel_pixelformat_for_colorspace(view->colorspace, 1);
+    }
+    return status;
+}
 
 #ifdef __cplusplus
 }

@@ -136,7 +136,7 @@ loader_test_frame_get_pixels_view(sixel_frame_t *frame,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return frame_if->vtbl->get_pixels(frame_if, view);
+    return sixel_frame_get_work_pixels(frame_if, view);
 }
 
 static SIXEL_TEST_UNUSED SIXELSTATUS

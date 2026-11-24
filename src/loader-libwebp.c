@@ -48,6 +48,7 @@
 #include <webp/demux.h>
 
 #include <sixel.h>
+#include "frame-normalize.h"
 #include "pixelformat.h"
 
 #include "allocator.h"
@@ -2672,7 +2673,7 @@ webp_finalize_frame_output(sixel_frame_t *frame,
         (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888 ||
          sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
          sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
-        status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+        status = sixel_frame_convert_workformat(frame, target_pixelformat);
         if (SIXEL_FAILED(status)) {
             return status;
         }

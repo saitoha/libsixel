@@ -26,6 +26,7 @@
 # include "config.h"
 #endif
 #include <limits.h>
+#include "frame.h"
 #include <stdlib.h>
 #include "filter-gamut.h"
 #include "pixelformat.h"
@@ -55,7 +56,7 @@ sixel_filter_gamut_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
     object = (sixel_frame_interface_t *)frame;
-    status = object->vtbl->get_pixels(object, &view);
+    status = sixel_frame_get_work_pixels(object, &view);
     if (SIXEL_FAILED(status)) {
         return status;
     }

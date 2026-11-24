@@ -167,7 +167,7 @@ test_frame_0239_alpha(int argc, char **argv)
     } else if (mode == 6) {
         status = iface->vtbl->clip(iface, 1, 0, 1, 2);
         iface->vtbl->get_alpha(iface, &alpha);
-        iface->vtbl->get_pixels(iface, &pixels);
+        sixel_frame_get_work_pixels(iface, &pixels);
         if (SIXEL_FAILED(status) || alpha.count != 2u ||
             alpha.values[0] != coverage[1] ||
             alpha.values[1] != coverage[3] ||
@@ -193,7 +193,7 @@ test_frame_0239_alpha(int argc, char **argv)
         status = sixel_frame_resolve_alpha(frame, mode == 9 ? NULL : bg,
                                            mode != 11);
         fa_fail = 0;
-        iface->vtbl->get_pixels(iface, &pixels);
+        sixel_frame_get_work_pixels(iface, &pixels);
         if (pixels.colorspace != SIXEL_COLORSPACE_LINEAR ||
             frame->cms_history != cms_history) {
             goto end;
@@ -263,7 +263,7 @@ test_frame_0239_alpha(int argc, char **argv)
         status = sixel_frame_init_borrowed(frame, replacement, 0, 1,
             SIXEL_PIXELFORMAT_RGB888, NULL, -1);
         if (SIXEL_SUCCEEDED(status) || frame->cms_history != cms_history ||
-            SIXEL_FAILED(iface->vtbl->get_pixels(iface, &pixels)) ||
+            SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &pixels)) ||
             pixels.pixels_float32 != storage ||
             pixels.colorspace != SIXEL_COLORSPACE_LINEAR ||
             SIXEL_FAILED(iface->vtbl->get_alpha(iface, &alpha)) ||
@@ -275,7 +275,7 @@ test_frame_0239_alpha(int argc, char **argv)
         result = SIXEL_SUCCEEDED(status) && frame->cms_history == 0u &&
             SIXEL_SUCCEEDED(iface->vtbl->get_alpha(iface, &alpha)) &&
             alpha.values == NULL && alpha.count == 0u &&
-            SIXEL_SUCCEEDED(iface->vtbl->get_pixels(iface, &pixels)) &&
+            SIXEL_SUCCEEDED(sixel_frame_get_work_pixels(iface, &pixels)) &&
             pixels.pixels == replacement && pixels.width == 1 &&
             pixels.height == 1 && pixels.pixelformat == SIXEL_PIXELFORMAT_RGB888
             && pixels.colorspace == SIXEL_COLORSPACE_GAMMA

@@ -996,7 +996,7 @@ sixel_frame_get_pixels_view(sixel_frame_t const *frame,
     view->palette = frame->palette;
     view->width = frame->width;
     view->height = frame->height;
-    view->pixelformat = sixel_frame_format(frame);
+    view->pixelformat = frame->format.layout;
     view->colorspace = frame->format.coordinates;
     view->ncolors = frame->ncolors;
     view->rgb_definition = frame->format.rgb;
@@ -1753,6 +1753,11 @@ sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (!sixel_cdef_frame_input_ready(definition)) {
+        sixel_helper_set_additional_message(
+            "RGB definition has no frame input path.");
+        return SIXEL_BAD_INPUT;
+    }
     /* Prepare the color definition before replacing live frame storage. */
     copy = sixel_cdef_clone(definition);
     if (copy == NULL) {
@@ -2406,14 +2411,24 @@ sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
 }
 
 
-/* Adapt integer layouts and the working representations used by IFrame. */
-SIXELAPI SIXELSTATUS
-sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_convert_workformat(sixel_frame_t *frame, int pixelformat)
 {
     return sixel_frame_convert_pixels(frame,
         SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
             ? SIXEL_PIXELFORMAT_RGBFLOAT32 : pixelformat,
         sixel_pixelformat_get_colorspace(pixelformat));
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
+{
+    if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+            frame->format.layout == pixelformat) {
+        return SIXEL_OK;
+    }
+    return sixel_frame_convert_workformat(frame, pixelformat);
 }
 
 
@@ -2885,6 +2900,11 @@ sixel_frame_vtbl_set_rgb_definition(sixel_frame_interface_t *iface,
          frame->format.coordinates != SIXEL_COLORSPACE_LINEAR &&
          frame->format.coordinates != SIXEL_FRAME_COLORSPACE_PROFILE_RGB)) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (!sixel_cdef_frame_input_ready(definition)) {
+        sixel_helper_set_additional_message(
+            "RGB definition has no frame input path.");
+        return SIXEL_BAD_INPUT;
     }
     copy = sixel_cdef_clone(definition);
     if (copy == NULL) {

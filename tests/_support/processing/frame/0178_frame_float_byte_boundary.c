@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/pixelformat.h"
 #include <6cells.h>
 #include "tests/data/color-numeric/frame-byte.h"
@@ -209,7 +210,7 @@ test_frame_0178_byte(int argc, char **argv)
         sixel_frame_set_width(frame, INT_MAX);
         sixel_frame_set_height(frame, INT_MAX);
     }
-    status = iface->vtbl->get_pixels(iface, &before);
+    status = sixel_frame_get_work_pixels(iface, &before);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -233,7 +234,7 @@ test_frame_0178_byte(int argc, char **argv)
             status, expected_status, fb_source_freed, fb_failed);
         goto end;
     }
-    status = iface->vtbl->get_pixels(iface, &after);
+    status = sixel_frame_get_work_pixels(iface, &after);
     if (SIXEL_FAILED(status) || after.width != before.width ||
         after.height != before.height) {
         goto end;
@@ -276,7 +277,7 @@ test_frame_0178_byte(int argc, char **argv)
         goto end;
     }
     if (clone != NULL) {
-        status = sixel_frame_as_interface(frame)->vtbl->get_pixels(
+        status = sixel_frame_get_work_pixels(
             sixel_frame_as_interface(frame), &after);
         if (SIXEL_FAILED(status) || after.pixels_float32 != pixels ||
             after.pixelformat != before.pixelformat ||

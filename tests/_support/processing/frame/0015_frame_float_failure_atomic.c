@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/pixelformat.h"
 #include <6cells.h>
 
@@ -59,7 +60,7 @@ test_frame_0015_atomic(int argc, char **argv)
     if (status != SIXEL_BAD_INPUT) {
         goto end;
     }
-    status = iface->vtbl->get_pixels(iface, &view);
+    status = sixel_frame_get_work_pixels(iface, &view);
     if (SIXEL_FAILED(status) || view.pixels != NULL
             || view.pixels_float32 != pixels || view.pixelformat != source
             || view.colorspace != colorspace || view.width != 3

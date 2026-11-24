@@ -13,6 +13,7 @@
 #endif
 #if defined(HAVE_VULKAN)
 #include <stddef.h>
+#include "frame.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -891,7 +892,7 @@ jajuni_gpu_vk_run_impl(jajuni_gpu_vk_plan_t *plan,
     memset(&source, 0, sizeof(source));
     memset(&transparency, 0, sizeof(transparency));
     if (mode != JAJUNI_GPU_VK_RESOLVE_ONLY) {
-        status = request->source->vtbl->get_pixels(request->source, &source);
+        status = sixel_frame_get_work_pixels(request->source, &source);
         if (status != SIXEL_OK) {
             return status;
         }

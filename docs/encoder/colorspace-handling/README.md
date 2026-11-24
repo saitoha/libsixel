@@ -27,7 +27,7 @@ The implementation may reuse storage, clone only the palette-building view, or s
 
 C callers can initialize tightly packed RGB float samples with `sixel_frame_init_rgbf32_borrowed()` and an explicit definition from `sixel_color_def_new_named()` or `sixel_color_def_new_icc()`. Initialization borrows mutable pixel storage and copies the definition, so the caller may free the definition immediately while retaining the pixels until the frame is reset or released. The definition describes the supplied samples, and the encoder converts them when a subsequent stage requires different coordinates.
 
-`sixel_frame_get_pixelformat()` exposes the storage layout. Float triplets share `SIXEL_PIXELFORMAT_RGBFLOAT32`, while the frame retains the coordinates separately for operations that interpret the samples. Callers supplying already encoded or linear RGB samples specify the matching color definition at initialization.
+`sixel_frame_get_pixelformat()` exposes the storage layout. Float triplets share `SIXEL_PIXELFORMAT_RGBFLOAT32` in both the public getter and the `6cells` pixel view. Specifying that layout on a frame that already stores float triplets preserves its pixels and color definition. Explicit color conversions use a destination coordinate system. Callers supplying already encoded or linear RGB samples specify the matching color definition at initialization.
 
 ## Lazy conversion at operation boundaries
 

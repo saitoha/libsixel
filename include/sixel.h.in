@@ -1787,7 +1787,8 @@ sixel_color_def_free(sixel_color_def_t *definition);
 /* Borrow mutable, tightly packed RGB float triplets in the supplied
  * definition. The frame copies the definition and does not convert the
  * samples. Follow sixel_frame_init_borrowed() for the pixel lifetime.
- * A failed initialization leaves the existing frame unchanged. */
+ * The definition must support RGB input. A failed initialization leaves
+ * the existing frame unchanged. */
 #define SIXEL_HAVE_FRAME_INIT_RGBF32_BORROWED 1
 SIXELAPI SIXELSTATUS
 sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
@@ -1838,7 +1839,8 @@ sixel_frame_set_ncolors(
 SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
 
-/* set pixelformat */
+/* Set the pixel layout. Reapplying RGBFLOAT32 preserves float samples
+ * and their current color definition. */
 SIXELAPI SIXELSTATUS
 sixel_frame_set_pixelformat(
     sixel_frame_t /* in */ *frame,

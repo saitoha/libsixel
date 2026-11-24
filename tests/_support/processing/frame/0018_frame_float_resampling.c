@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/cpu.h"
@@ -346,7 +347,7 @@ test_frame_0018_resampling(int argc, char **argv)
             sixel_helper_get_additional_message());
         goto end;
     }
-    status = iface->vtbl->get_pixels(iface, &view);
+    status = sixel_frame_get_work_pixels(iface, &view);
     if (SIXEL_FAILED(status) || view.pixels != NULL
             || view.pixels_float32 == NULL
             || view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32

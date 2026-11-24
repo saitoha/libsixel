@@ -145,7 +145,7 @@ test_frame_factory_creates_default_frame(void)
         goto end;
     }
 
-    status = frame->vtbl->get_pixels(frame, &view);
+    status = sixel_frame_get_work_pixels(frame, &view);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
