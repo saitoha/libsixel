@@ -673,7 +673,9 @@ test_analytic_independence(int p3)
 static int
 test_linear_resize(int retry, int explicit_rgb)
 {
-    float pixel[] = {.0015f, .0015f, .0015f};
+    /* Compare stored samples at float precision, including on x87. */
+    static float const original_pixels[] = {.0015f, .0015f, .0015f};
+    float pixel[3];
     unsigned char const expected[] = {5, 5, 5, 5, 5, 5};
     sixel_allocator_t *allocator = NULL;
     sixel_frame_t *frame = NULL;
@@ -682,6 +684,7 @@ test_linear_resize(int retry, int explicit_rgb)
     sixel_frame_interface_t *iface;
     int result = EXIT_FAILURE;
 
+    memcpy(pixel, original_pixels, sizeof(pixel));
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, profile_frame_malloc,
             calloc, realloc, free)) ||
         SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
@@ -705,7 +708,7 @@ test_linear_resize(int retry, int explicit_rgb)
             SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
             view.pixels_float32 != pixel || view.width != 1 ||
             view.height != 1 || view.colorspace != SIXEL_COLORSPACE_LINEAR ||
-            pixel[0] != .0015f || pixel[1] != .0015f || pixel[2] != .0015f) {
+            memcmp(pixel, original_pixels, sizeof(pixel)) != 0) {
             goto end;
         }
         fail_six_bytes = 0;
@@ -1020,7 +1023,9 @@ end:
 static int
 test_profile_byte_resize_retry(void)
 {
-    float pixel[] = {.4f, .5f, .6f};
+    /* Compare stored samples at float precision, including on x87. */
+    static float const original_pixels[] = {.4f, .5f, .6f};
+    float pixel[3];
     /* Encoded Display P3 to gamma sRGB, rounded directly to RGB888. */
     unsigned char const expected[] = {95, 128, 156, 95, 128, 156};
     sixel_allocator_t *allocator = NULL;
@@ -1031,6 +1036,7 @@ test_profile_byte_resize_retry(void)
     sixel_color_def_t const *original;
     int result = EXIT_FAILURE;
 
+    memcpy(pixel, original_pixels, sizeof(pixel));
     p3 = sixel_cdef_name("display-p3");
     if (p3 == NULL || SIXEL_FAILED(sixel_allocator_new(&allocator,
             profile_frame_malloc, calloc, realloc, free)) ||
@@ -1051,7 +1057,7 @@ test_profile_byte_resize_retry(void)
         SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
         view.rgb_definition != original || view.pixels_float32 != pixel ||
         view.width != 1 || view.height != 1 ||
-        pixel[0] != .4f || pixel[1] != .5f || pixel[2] != .6f) {
+        memcmp(pixel, original_pixels, sizeof(pixel)) != 0) {
         goto end;
     }
     fail_six_bytes = 0;

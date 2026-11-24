@@ -1171,6 +1171,7 @@ working_fma = false
 if meson.can_run_host_binaries()
   fma_probe = cc.run('''
     #include <math.h>
+    #include <stdio.h>
     int main(void)
     {
       double (*volatile libm_fma)(double, double, double) = fma;
@@ -1183,10 +1184,14 @@ if meson.can_run_host_binaries()
       a = -0x1.c083126e978d5p-2;
       b = 0x1.47ae147ae147bp-1;
       product = a * b;
-      return inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57;
+      if (inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57) {
+        return 1;
+      }
+      puts("exact");
+      return 0;
     }
     ''', dependencies: m_dep, name: 'fma preserves product residuals')
-  working_fma = fma_probe.compiled() and fma_probe.returncode() == 0
+  working_fma = fma_probe.compiled() and fma_probe.returncode() == 0 and fma_probe.stdout().strip() == 'exact'
 endif
 
 if working_fma

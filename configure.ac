@@ -3025,23 +3025,33 @@ AS_IF([test "x$ac_cv_lib_m_floor" = xyes], [
 # FP_FAST_FMA describes speed, not whether a particular libm is correct.
 AC_CACHE_CHECK([whether fma preserves product residuals],
                [sixel_cv_exact_libm_fma], [
+  # GNV can report success for a failed C runtime probe. Require an explicit
+  # marker written only after the numeric checks pass.
+  test ! -f conftest.fma || rm -f conftest.fma
   sixel_fma_save_CFLAGS="$CFLAGS"
   sixel_fma_save_CPPFLAGS="$CPPFLAGS"
   CFLAGS="$CPPFLAGS $CFLAGS"
   CPPFLAGS=""
-  AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <math.h>]], [[
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <math.h>
+#include <stdio.h>]], [[
     double (*volatile libm_fma)(double, double, double) = fma;
     volatile double a = 1.0 + 0x1p-23;
     volatile double b = 0.5 + 0x1p-31;
     volatile double product = a * b;
+    FILE *marker;
     int inexact = libm_fma(a, b, -product) != 0x1p-54 ||
         libm_fma(-a, b, product) != -0x1p-54;
     /* MinGW's MSVCRT fma can lose low bits of a non-power-of-two tail. */
     a = -0x1.c083126e978d5p-2;
     b = 0x1.47ae147ae147bp-1;
     product = a * b;
-    return inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57;
-  ]])], [sixel_cv_exact_libm_fma=yes], [sixel_cv_exact_libm_fma=no],
+    if (inexact || libm_fma(a, b, -product) != 0x1.143bf727136a4p-57) {
+      return 1;
+    }
+    marker = fopen("conftest.fma", "w");
+    return marker == NULL || fclose(marker) != 0;
+  ]])], [AS_IF([test -f conftest.fma], [sixel_cv_exact_libm_fma=yes],
+               [sixel_cv_exact_libm_fma=no])], [sixel_cv_exact_libm_fma=no],
         [sixel_cv_exact_libm_fma=no])
   CFLAGS="$sixel_fma_save_CFLAGS"
   CPPFLAGS="$sixel_fma_save_CPPFLAGS"
