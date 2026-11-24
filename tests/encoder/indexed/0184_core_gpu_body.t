@@ -5,7 +5,9 @@ set -eux
 echo '1..1'
 set -v
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/indexed/0184_core_gpu_body" || status=$?
+# Instrumented pipelines can require more threadgroup memory. The resulting
+# body must still match the CPU bytes when Metal selects serial ordering.
+MTL_DEBUG_LAYER=1 MTL_SHADER_VALIDATION=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder/indexed/0184_core_gpu_body" || status=$?
 test "$status" -ne 77 || {
     printf '\n%s\n' 'ok 1 # SKIP thread support unavailable'
     exit 0

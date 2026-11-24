@@ -56,6 +56,7 @@ struct sixel_body_gpu {
     void *pipelines[BODY_PIPELINES];    /* id<MTLComputePipelineState> */
     void *buffers[BODY_SLOTS];  /* id<MTLBuffer>, grown on demand */
     size_t lengths[BODY_SLOTS];
+    uint32_t group_limit;
     uint32_t *band_first;
     size_t band_first_count;
 };
@@ -134,6 +135,17 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
                 [library newFunctionWithName:
                     [NSString stringWithUTF8String:
                         sixel_body_gpu_kernels[i]]] error:&error];
+            /* The serial order kernel covers every band when the grouped
+             * kernel exceeds this device's limits (including validation
+             * instrumentation). Never submit an unsupported threadgroup. */
+            if (i == BODY_ORDER_GROUP) {
+                if (pipeline == nil ||
+                        pipeline.staticThreadgroupMemoryLength >
+                            device.maxThreadgroupMemoryLength ||
+                        pipeline.maxTotalThreadsPerThreadgroup <
+                            SIXEL_BODY_GROUP_THREADS) continue;
+                context->group_limit = SIXEL_BODY_GROUP_NODES;
+            }
             if (pipeline == nil) {
                 goto end;
             }
@@ -304,17 +316,20 @@ sixel_body_gpu_encode_emit(id<MTLComputeCommandEncoder> encoder,
         sizeof(lengths) / sizeof(lengths[0]), params, params->nodes);
     sixel_body_gpu_dispatch(encoder, context, BODY_ORDER, order,
         sizeof(order) / sizeof(order[0]), params, params->bands);
-    pipeline = (__bridge id<MTLComputePipelineState>)
-        context->pipelines[BODY_ORDER_GROUP];
-    [encoder setComputePipelineState:pipeline];
-    for (i = 0; i < sizeof(group) / sizeof(group[0]); ++i) {
-        [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[group[i]]
-                    offset:0 atIndex:i];
+    if (params->group_limit != 0) {
+        pipeline = (__bridge id<MTLComputePipelineState>)
+            context->pipelines[BODY_ORDER_GROUP];
+        [encoder setComputePipelineState:pipeline];
+        for (i = 0; i < sizeof(group) / sizeof(group[0]); ++i) {
+            [encoder setBuffer:(__bridge id<MTLBuffer>)
+                context->buffers[group[i]] offset:0 atIndex:i];
+        }
+        [encoder setBytes:params length:sizeof(*params)
+                  atIndex:sizeof(group) / sizeof(group[0])];
+        [encoder dispatchThreadgroups:MTLSizeMake(params->bands, 1, 1)
+                threadsPerThreadgroup:MTLSizeMake(
+                    SIXEL_BODY_GROUP_THREADS, 1, 1)];
     }
-    [encoder setBytes:params length:sizeof(*params)
-              atIndex:sizeof(group) / sizeof(group[0])];
-    [encoder dispatchThreadgroups:MTLSizeMake(params->bands, 1, 1)
-            threadsPerThreadgroup:MTLSizeMake(SIXEL_BODY_GROUP_THREADS, 1, 1)];
     sixel_body_gpu_dispatch(encoder, context, BODY_BASES, bases,
         sizeof(bases) / sizeof(bases[0]), params, 1);
     sixel_body_gpu_dispatch(encoder, context, BODY_WRITE, write,
@@ -422,6 +437,9 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
                     pairs * 4U) == nil ||
                 sixel_body_gpu_buffer(context, BODY_MAP_FIRST,
                     pairs * 4U) == nil ||
+                /* Metal validates write-pass arguments on the count
+                 * dispatch too. Grow these after counts are available. */
+                sixel_body_gpu_buffer(context, BODY_NODE_BAND, 16) == nil ||
                 sixel_body_gpu_buffer(context, BODY_NODES, 16) == nil ||
                 sixel_body_gpu_buffer(context, BODY_MAP, 16) == nil) {
             return SIXEL_BAD_ALLOCATION;
@@ -529,7 +547,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             emit.nodes = (uint32_t)nodes_total;
             /* Spans pack start and end in 16 bits each. */
             emit.group_limit = params.encoded_width <= 0xffffU
-                ? SIXEL_BODY_GROUP_NODES : 0U;
+                ? context->group_limit : 0U;
             if (sixel_body_gpu_buffer(context, BODY_BAND_FIRST,
                         ((size_t)params.bands + 1U) * 4U) == nil ||
                     sixel_body_gpu_buffer(context, BODY_LENGTHS,
@@ -553,10 +571,10 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
                     sixel_body_gpu_buffer(context, BODY_BYTES,
                         byte_bound) == nil ||
                     sixel_body_gpu_buffer(context, BODY_KEYS,
-                        (size_t)params.bands * SIXEL_BODY_GROUP_NODES * 8U)
+                        (size_t)params.bands * emit.group_limit * 8U)
                         == nil ||
                     sixel_body_gpu_buffer(context, BODY_KEY_SLOTS,
-                        (size_t)params.bands * SIXEL_BODY_GROUP_NODES * 2U)
+                        (size_t)params.bands * emit.group_limit * 2U)
                         == nil) {
                 return SIXEL_BAD_ALLOCATION;
             }

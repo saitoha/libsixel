@@ -5,6 +5,20 @@
 #include "src/lookup-policy-gpu.h"
 #include <stdlib.h>
 
+/* Preserve both complete SIXEL streams in the failing TAP transcript.
+ * Hex keeps terminal controls inert and can be decoded for pixel comparison. */
+static void
+lso2_gpu_playback_dump(char const *name, playback_test_buffer_t const *buf)
+{
+    size_t i;
+
+    for (i = 0; i < buf->size; ++i) {
+        if (i % 32 == 0) fprintf(stderr, "%s[%zu] ", name, i);
+        fprintf(stderr, "%02x", (unsigned int)buf->bytes[i]);
+        if (i % 32 == 31 || i + 1 == buf->size) fputc('\n', stderr);
+    }
+}
+
 /* The frame sequence and refresh clock are fixed. Both paths construct the
  * palette from the same source; only scheduling differs. */
 static int
@@ -21,6 +35,7 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
     sixel_gpu_device_interface_t *device;
     sixel_frame_t *frame;
     SIXELSTATUS status;
+    size_t ends[4], offset;
     int outcome, i;
 
     memset(&reference, 0, sizeof(reference));
@@ -68,6 +83,7 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
         if (resize == 2 && i == 2)
             sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_G8);
         LSO2_GPU_CHECK(sixel_encoder_encode_frame(a, frame, out_a) == SIXEL_OK);
+        ends[i] = reference.size;
         sixel_frame_unref(frame);
         frame = NULL;
     }
@@ -103,9 +119,25 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
         outcome = 0;
         goto end;
     }
-    LSO2_GPU_CHECK(reference.size == candidate.size);
-    LSO2_GPU_CHECK(memcmp(reference.bytes, candidate.bytes, reference.size)
-        == 0);
+    /* A failed helper elsewhere can leave an unrelated last-error string.
+     * Report the first differing byte against the synchronous frame ends. */
+    for (offset = 0; offset < reference.size && offset < candidate.size;
+            ++offset) {
+        if (reference.bytes[offset] != candidate.bytes[offset]) break;
+    }
+    if (offset != reference.size || offset != candidate.size) {
+        fprintf(stderr, "playback %s %s capacity=%u stage=0x%x: "
+            "sync=%zu queued=%zu sync frame ends=%zu,%zu,%zu,%zu; "
+            "first difference at %zu (sync=%d queued=%d, -1=EOF)\n",
+            method, delta != NULL ? delta : "full", capacity, sample.valid,
+            reference.size, candidate.size, ends[0], ends[1], ends[2],
+            ends[3], offset,
+            offset < reference.size ? reference.bytes[offset] : -1,
+            offset < candidate.size ? candidate.bytes[offset] : -1);
+        lso2_gpu_playback_dump("sync", &reference);
+        lso2_gpu_playback_dump("queued", &candidate);
+        goto end;
+    }
     outcome = 0;
 end:
     if (device != NULL) device->vtbl->unref(device);
