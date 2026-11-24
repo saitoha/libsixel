@@ -100,7 +100,9 @@ Adaptive sampling owns its sample and runs before preprocessing can mutate the l
 
 `-Q ...:sample_target=COUNT` controls the effective adaptive-grid target, without changing the selected policy. Without an override, the target is at least 4096 and at least 64 times the requested color count; high quality doubles it and full quality quadruples it. The grid stride is one when the cropped pixel count is at most that target. This does **not** guarantee equivalence to full-frame sampling: solid-region augmentation can append repeated colors even at stride one, and resize changes the full-frame source population. Therefore small images keep `adaptive-grid` and its recorded reason. Indexed loader frames are cloned and expanded to RGB888 before adaptive extraction, keeping the original frame available to preprocessing.
 
-Resize can introduce colors absent from the loaded-frame sample, so `full-frame` remains useful when the output distribution should determine the palette. Clip is applied to the adaptive extraction coordinates, so pixels outside the crop do not enter the grid or solid-region search. Neither operation changes automatic policy selection.
+Resize can introduce colors absent from the loaded-frame sample, so `full-frame` remains useful when the output distribution should determine the palette. Clip limits the adaptive grid and the centers of solid-region checks to the crop. A solid-region check can read neighbors across the crop edge within the full frame. Both operations preserve automatic policy selection.
+
+For eligible unmasked RGB888 frames, Metal, Vulkan and WebGPU can build the integer solid-color histogram on the device. WebGPU reads the histogram back for the shared CPU color selection, so the feature preserves the adaptive sample and its tie order.
 
 Resolution and scheduling are ordered explicitly:
 

@@ -152,6 +152,7 @@ host_triplet = @host@
 @WITH_SHEBANG_FILE_TRUE@am__append_11 = $(SIXEL_SHEBANG_STAMP)
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_12 = $(srcdir)/dither-diffusion-webgpu.c \
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/encoder-body-gpu-webgpu.c \
+@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/filter-sample-webgpu.c \
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/gpu-palette-webgpu.c
 
 @HAVE_WEBGPU_TRUE@am__append_13 = $(webgpu_headers)
@@ -581,6 +582,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/clipboard_carbon.c \
 	$(srcdir)/dither-diffusion-webgpu.c \
 	$(srcdir)/encoder-body-gpu-webgpu.c \
+	$(srcdir)/filter-sample-webgpu.c \
 	$(srcdir)/gpu-palette-webgpu.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-runtime-vulkan.lo \
@@ -623,6 +625,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_5 = libsixel_la-clipboard_carbon.lo
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_6 = libsixel_la-dither-diffusion-webgpu.lo \
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-body-gpu-webgpu.lo \
+@HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample-webgpu.lo \
 @HAVE_WEBGPU_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette-webgpu.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
@@ -983,6 +986,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample-metal.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample-vulkan.Plo \
+	./$(DEPDIR)/libsixel_la-filter-sample-webgpu.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
 	./$(DEPDIR)/libsixel_la-filter-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
@@ -2397,6 +2401,7 @@ webgpu_shaders = \
     dither-policy-stucki.wgsl \
     dither-policy-x-dither.wgsl \
     encoder-body-webgpu.wgsl \
+    filter-sample-gpu.wgsl \
     gpu-palette.wgsl \
     gpu-palette-batch.wgsl \
     gpu-palette-point.wgsl \
@@ -2437,6 +2442,7 @@ webgpu_headers = $(webgpu_shaders:.wgsl=-wgsl.inc.h)
 @HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-stucki-gpu.lo \
 @HAVE_WEBGPU_TRUE@    libsixel_la-dither-policy-x-dither-gpu.lo \
 @HAVE_WEBGPU_TRUE@    libsixel_la-encoder-body-gpu-webgpu.lo \
+@HAVE_WEBGPU_TRUE@    libsixel_la-filter-sample-webgpu.lo \
 @HAVE_WEBGPU_TRUE@    libsixel_la-gpu-palette-webgpu.lo \
 @HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-5bit-gpu.lo \
 @HAVE_WEBGPU_TRUE@    libsixel_la-lookup-policy-6bit-gpu.lo \
@@ -2653,6 +2659,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample-vulkan.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample-webgpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
@@ -4514,6 +4521,13 @@ libsixel_la-encoder-body-gpu-webgpu.lo: encoder-body-gpu-webgpu.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-encoder-body-gpu-webgpu.lo `test -f 'encoder-body-gpu-webgpu.c' || echo '$(srcdir)/'`encoder-body-gpu-webgpu.c
 
+libsixel_la-filter-sample-webgpu.lo: filter-sample-webgpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-sample-webgpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-sample-webgpu.Tpo -c -o libsixel_la-filter-sample-webgpu.lo `test -f 'filter-sample-webgpu.c' || echo '$(srcdir)/'`filter-sample-webgpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-sample-webgpu.Tpo $(DEPDIR)/libsixel_la-filter-sample-webgpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-sample-webgpu.c' object='libsixel_la-filter-sample-webgpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-sample-webgpu.lo `test -f 'filter-sample-webgpu.c' || echo '$(srcdir)/'`filter-sample-webgpu.c
+
 libsixel_la-gpu-palette-webgpu.lo: gpu-palette-webgpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette-webgpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette-webgpu.Tpo -c -o libsixel_la-gpu-palette-webgpu.lo `test -f 'gpu-palette-webgpu.c' || echo '$(srcdir)/'`gpu-palette-webgpu.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette-webgpu.Tpo $(DEPDIR)/libsixel_la-gpu-palette-webgpu.Plo
@@ -4984,6 +4998,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample-vulkan.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample-webgpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
@@ -5290,6 +5305,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample-vulkan.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample-webgpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo

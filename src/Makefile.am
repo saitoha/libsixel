@@ -1112,6 +1112,7 @@ webgpu_shaders = \
     dither-policy-stucki.wgsl \
     dither-policy-x-dither.wgsl \
     encoder-body-webgpu.wgsl \
+    filter-sample-gpu.wgsl \
     gpu-palette.wgsl \
     gpu-palette-batch.wgsl \
     gpu-palette-point.wgsl \
@@ -1139,6 +1140,7 @@ if HAVE_WEBGPU
 if !WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES += $(srcdir)/dither-diffusion-webgpu.c \
     $(srcdir)/encoder-body-gpu-webgpu.c \
+    $(srcdir)/filter-sample-webgpu.c \
     $(srcdir)/gpu-palette-webgpu.c
 endif
 BUILT_SOURCES += $(webgpu_headers)
@@ -1160,6 +1162,7 @@ webgpu_consumers = \
     libsixel_la-dither-policy-stucki-gpu.lo \
     libsixel_la-dither-policy-x-dither-gpu.lo \
     libsixel_la-encoder-body-gpu-webgpu.lo \
+    libsixel_la-filter-sample-webgpu.lo \
     libsixel_la-gpu-palette-webgpu.lo \
     libsixel_la-lookup-policy-5bit-gpu.lo \
     libsixel_la-lookup-policy-6bit-gpu.lo \

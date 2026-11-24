@@ -1232,14 +1232,20 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
     if (cells == NULL) {
         return 0u;
     }
-#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN) || defined(HAVE_WEBGPU)
     /* The device scan covers the common unmasked RGB frame. Vulkan keeps
      * the upload for dither when possible; a separate palette source uses
-     * the scanner's own input buffer under the same headroom policy. */
+     * the scanner's own input buffer under the same headroom policy.
+     * WebGPU's separate upload and histogram readback need larger clips
+     * before the end-to-end scan pays off. */
     if (gpu && mask == NULL && depth == 3
             && sizeof(*cells) == 5u * sizeof(unsigned int)
             && (size_t)clip_width * (size_t)clip_height
+#if defined(HAVE_WEBGPU)
+               >= sixel_runtime_policy_sample_min_pixels(1048576u)
+#else
                >= sixel_runtime_policy_sample_min_pixels(524288u)
+#endif
 #if defined(HAVE_VULKAN)
             && sixel_filter_sample_vulkan_choose(gpu)
 #endif
@@ -1296,7 +1302,7 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
         }
         sixel_allocator_free(allocator, partial);
     }
-#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN) || defined(HAVE_WEBGPU)
 select:
 #endif
     for (cell = 0; cell < SIXEL_SAMPLE_SOLID_CELLS; ++cell) {

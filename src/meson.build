@@ -521,6 +521,7 @@ if webgpu
     libsixel_sources += files(
       'dither-diffusion-webgpu.c',
       'encoder-body-gpu-webgpu.c',
+      'filter-sample-webgpu.c',
       'gpu-palette-webgpu.c',
     )
   endif
@@ -544,6 +545,7 @@ if webgpu
     'dither-policy-stucki',
     'dither-policy-x-dither',
     'encoder-body-webgpu',
+    'filter-sample-gpu',
     'gpu-palette',
     'gpu-palette-batch',
     'gpu-palette-point',

@@ -10,16 +10,18 @@ for (let i = header.length; i < image.length; ++i) {
 }
 
 function convert(createConverter, policy, method, lookup = 'none',
-                 palette = 'xterm256') {
+                 palette = 'xterm256', input = image) {
     return new Promise((resolve, reject) => {
         let fs;
         createConverter({
             arguments: ['--gpu-policy=' + policy, '--lookup-policy=' + lookup,
-                '--precision-policy=8bit', '-d' + method, '-b' + palette,
+                '--precision-policy=8bit', '-d' + method,
+                ...(palette ? ['-b' + palette] :
+                    ['-Qheckbert', '-4adaptive-grid:solid=on', '-p16']),
                 '-o', 'output.six', 'input.ppm'],
             preRun: [module => {
                 fs = module.FS;
-                fs.writeFile('input.ppm', image);
+                fs.writeFile('input.ppm', input);
             }],
             onAbort: reason => reject(Error(String(reason))),
             onExit: status => {
@@ -33,6 +35,24 @@ function convert(createConverter, policy, method, lookup = 'none',
 async function sha256(bytes) {
     const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
     return Array.from(digest, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function solidSamplingImage() {
+    // Above the scanner's admission threshold and not word-aligned.
+    const width = 1027, height = 1025;
+    const header = new TextEncoder().encode(`P6\n${width} ${height}\n255\n`);
+    const input = new Uint8Array(header.length + width * height * 3);
+    input.set(header);
+    let at = header.length;
+    for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
+            const tile = (x >> 5) + 33 * (y >> 5);
+            input[at++] = tile * 37;
+            input[at++] = tile * 71;
+            input[at++] = tile * 113;
+        }
+    }
+    return input;
 }
 
 async function paletteByteEquivalence(createConverter) {
@@ -146,6 +166,14 @@ async function paletteByteEquivalence(createConverter) {
                     await sha256(gpu) !== digest)
                 throw Error('fhedt' + options + ' builders or output differ');
         }
+        const sample = solidSamplingImage();
+        const before = multiGroupPasses.length;
+        const cpu = await convert(createConverter, 'off', 'none', 'none', '', sample);
+        const gpu = await convert(createConverter, 'force', 'none', 'none', '', sample);
+        // 1027 columns scanned at stride three take eleven groups of 32.
+        if (!multiGroupPasses.slice(before).includes(11) ||
+                await sha256(gpu) !== await sha256(cpu))
+            throw Error('WebGPU solid-region sampling or SIXEL output differs');
         return 'ok 1 - WebGPU palette application preserves SIXEL bytes';
     } finally {
         GPUComputePassEncoder.prototype.dispatchWorkgroups = dispatch;
