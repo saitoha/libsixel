@@ -529,13 +529,25 @@ runs:
       shell: bash
       run: |
         set -exv
+        emsdk_archive="$RUNNER_TEMP/emsdk-source.tar.gz"
         for attempt in 1 2 3; do
           rm -rf emsdk
           if git clone --depth 1 https://github.com/emscripten-core/emsdk.git; then
             break
           fi
+          # Hosted runners can reach the source archive even when GitHub
+          # rejects the Git transport request.
+          rm -rf emsdk
+          mkdir emsdk
+          if curl --fail --location --connect-timeout 15 --max-time 60 \
+              --output "$emsdk_archive" \
+              https://codeload.github.com/emscripten-core/emsdk/tar.gz/refs/heads/main &&
+              tar -xzf "$emsdk_archive" -C emsdk --strip-components=1 &&
+              test -f emsdk/emsdk; then
+            break
+          fi
           if [ "$attempt" -eq 3 ]; then
-            echo "Failed to clone emsdk after ${attempt} attempts." >&2
+            echo "Failed to fetch emsdk after ${attempt} attempts." >&2
             exit 1
           fi
           sleep $((attempt * 10))
