@@ -344,17 +344,18 @@ fill_info(GdkPixbufFormat *info)
 #define G_MODULE_EXPORT
 #endif
 
-typedef struct _GdkPixbufModule GdkPixbufModule;
-typedef struct _GdkPixbufFormat GdkPixbufFormat;
+/* The amalgamated runner may already have the GdkPixbuf typedefs. */
+struct _GdkPixbufModule;
+struct _GdkPixbufFormat;
 
 G_MODULE_EXPORT void
-fill_vtable(GdkPixbufModule *module)
+fill_vtable(struct _GdkPixbufModule *module)
 {
     (void) module;
 }
 
 G_MODULE_EXPORT void
-fill_info(GdkPixbufFormat *info)
+fill_info(struct _GdkPixbufFormat *info)
 {
     (void) info;
 }
