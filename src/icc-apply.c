@@ -163,6 +163,7 @@ sixel_icc_add_compensated(double *sum, double *residual, double term)
 
 #if !HAVE_WORKING_FMA && HAVE_ICC_FMA3
 /* Keep AVX and FMA instructions out of the baseline code path. */
+/* Accel: ICC-PRODUCT-RESIDUAL sse2 */
 __attribute__((target("avx,fma")))
 static double
 sixel_icc_fma3_residual(double a, double b, double product)
