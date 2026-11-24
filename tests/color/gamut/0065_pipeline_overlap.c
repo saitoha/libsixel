@@ -4,6 +4,7 @@
  */
 /* A two-way rendezvous proves stage overlap, not just worker creation. */
 #include "../../_support/processing/gamut/gamut_filter_common.h"
+#include "src/pixelformat.h"
 
 typedef struct gamut_overlap_state {
     sixel_mutex_t mutex;

@@ -10,6 +10,7 @@
 #include "tests/data/color-numeric/mpet-storage-png.h"
 #include "tests/data/color-numeric/png-extended-trc.h"
 #include "src/icc-parse.h"
+#include "src/pixelformat.h"
 #include "src/icc-apply.h"
 #include "src/cms.h"
 #include "src/loader-common.h"

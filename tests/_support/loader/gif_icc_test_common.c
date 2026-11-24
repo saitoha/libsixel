@@ -3,9 +3,11 @@
  * The profile generator supplies input bytes, never the expected RGB values. */
 #include <math.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
 #include "tests/_support/loader/builtin/loader_builtin_gif_test_common.h"
 #include "tests/_support/loader/gif_icc_test_common.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/fromgif.h"
 #include "src/loader-common.h"
 
@@ -54,7 +56,7 @@ gifc_capture(sixel_frame_t *frame, void *data)
     SIXELSTATUS status;
 
     probe = data;
-    format = sixel_frame_get_pixelformat(frame);
+    format = sixel_frame_format(frame);
     source_frame = probe->replay ? probe->count % 2 :
         probe->count + probe->start;
     if (source_frame >= probe->frames ||
@@ -439,7 +441,7 @@ gifc_count_frame(sixel_frame_t *frame, void *data)
     gifc_fault_t *fault;
 
     fault = data;
-    if (sixel_frame_get_pixelformat(frame) !=
+    if (sixel_frame_format(frame) !=
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         return SIXEL_BAD_INPUT;
     }

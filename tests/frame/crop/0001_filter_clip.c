@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/filter-clip.h"
 #include "src/filter-factory.h"

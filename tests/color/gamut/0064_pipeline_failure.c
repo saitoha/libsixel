@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /* Failed color conversion precedes any mapping failure, even across tiles. */
 #include "../../_support/processing/gamut/gamut_filter_common.h"
+#include "src/frame.h"
+#include "src/pixelformat.h"
 
 int
 test_gamut_0064_pipeline_failure(int argc, char **argv)
@@ -46,8 +48,8 @@ test_gamut_0064_pipeline_failure(int argc, char **argv)
             ok = SIXEL_FAILED(left_status) && left_status == right_status &&
                 !memcmp(left, right, count * 3 * sizeof(float)) &&
                 !strcmp(detail, sixel_helper_get_additional_message()) &&
-                sixel_frame_get_pixelformat(a.frame) ==
-                    sixel_frame_get_pixelformat(b.frame);
+                sixel_frame_format(a.frame) ==
+                    sixel_frame_format(b.frame);
             sixel_thread_budget_leave(&scope);
         }
         gamut_filter_free(&a);

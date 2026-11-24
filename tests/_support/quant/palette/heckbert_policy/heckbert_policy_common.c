@@ -4,6 +4,7 @@
  * Symbol isolation also supports the amalgamated test runner. */
 #include "src/filter-factory-binning.h"
 #include "src/palette-heckbert.h"
+#include "src/pixelformat.h"
 #include "src/palette-private.h"
 #include "src/palette-common-merge.h"
 #define sixel_palette_heckbert_log_start policy_sixel_palette_heckbert_log_start

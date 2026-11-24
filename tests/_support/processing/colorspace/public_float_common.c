@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/colorspace.h"
 #include "src/options.h"
 #include "src/threading.h"

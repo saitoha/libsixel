@@ -76,7 +76,6 @@ lso2_gpu_fixture_open_device(lso2_gpu_fixture_t *f, int require_gpu)
     if (sixel_frame_init_borrowed(f->source, f->pixels, LSO2_GPU_WIDTH,
             LSO2_GPU_HEIGHT, SIXEL_PIXELFORMAT_RGB888, NULL, -1) != SIXEL_OK)
         return 1;
-    sixel_frame_set_colorspace(f->source, SIXEL_COLORSPACE_GAMMA);
     f->configuration.options.method_for_diffuse = SIXEL_DIFFUSE_LSO2;
     f->configuration.options.ncolors = 5;
     f->configuration.options.keycolor_reserved = 1;

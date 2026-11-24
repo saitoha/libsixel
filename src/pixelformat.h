@@ -27,6 +27,20 @@
 
 #include <sixel.h>
 
+/* Internal sample representations for working buffers. The public frame
+ * layout is RGBFLOAT32 for each of these coordinate systems. */
+#define SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x21)
+#define SIXEL_PIXELFORMAT_OKLABFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x22)
+#define SIXEL_PIXELFORMAT_CIELABFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x23)
+#define SIXEL_PIXELFORMAT_DIN99DFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x24)
+
+#define SIXEL_WORKFORMAT_IS_FLOAT32(fmt) \
+    ((fmt) == SIXEL_PIXELFORMAT_RGBFLOAT32 || \
+     (fmt) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 || \
+     (fmt) == SIXEL_PIXELFORMAT_OKLABFLOAT32 || \
+     (fmt) == SIXEL_PIXELFORMAT_CIELABFLOAT32 || \
+     (fmt) == SIXEL_PIXELFORMAT_DIN99DFLOAT32)
+
 /*
  * Shared upper bound for channel-oriented working buffers in dithering and
  * palette lookup internals.

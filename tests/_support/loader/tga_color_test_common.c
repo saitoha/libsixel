@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 #include "tests/_support/loader/builtin/loader_builtin_tga_test_common.h"
 #include "tests/_support/loader/tga_color_test_common.h"

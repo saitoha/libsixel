@@ -97,7 +97,7 @@ sixel_filter_dither_apply(sixel_filter_t *filter,
     /* The prepared edge carries the application coordinates and precision.
      * Combine them only when binding the legacy dither kernel. */
     pixelformat = filter->input.pixelformat;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         pixelformat = sixel_pixelformat_for_colorspace(
             filter->input.colorspace, 1);
     }

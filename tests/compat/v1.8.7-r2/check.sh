@@ -37,6 +37,10 @@ check_elf_exports()
             exported[FILENAME, $1] = 1
         }
         END {
+            if ((ARGV[3], "sixel_frame_set_colorspace") in exported) {
+                print "Retired frame setter remains an ELF export"
+                missing = 1
+            }
             for (name in public) {
                 if (!((ARGV[2], name) in exported)) continue
                 ++checked

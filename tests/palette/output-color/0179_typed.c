@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Typed exports retain their coordinate scale without native output */
 #include "../../_support/quant/palette/retention/retention_test_common.h"
+#include "src/pixelformat.h"
 
 int
 test_palette_retention_typed(int argc, char **argv)

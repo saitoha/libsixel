@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "frame.h"
 
 #include "filter-encode.h"
 #include "filter.h"
@@ -95,7 +96,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     }
 
     output = config->output;
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     frame_colorspace = sixel_frame_get_colorspace(frame);
     status = sixel_output_set_encoder_format(output,
                                              pixelformat,

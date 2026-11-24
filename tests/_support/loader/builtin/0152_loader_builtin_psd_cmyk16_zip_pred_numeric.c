@@ -1,6 +1,7 @@
 /* Fix representative CMYK16 ZIP-prediction conversion samples. */
 
 #include "loader_builtin_memory_test_common.h"
+#include "src/pixelformat.h"
 
 int
 test_loader_0152_loader_builtin_psd_cmyk16_zip_pred_numeric(int argc,

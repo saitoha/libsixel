@@ -60,6 +60,8 @@
 #endif
 
 #include <sixel.h>
+#include "frame.h"
+#include "pixelformat.h"
 
 #include "assessment.h"
 #include "environment.h"
@@ -1663,7 +1665,7 @@ lsqa_parse_choice_argument(char const *argument,
 static int
 lsqa_precision_from_pixelformat(int pixelformat)
 {
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         return LSQA_COMPARE_PRECISION_FLOAT32;
     }
     return LSQA_COMPARE_PRECISION_8BIT;
@@ -3775,7 +3777,7 @@ main(int argc, char **argv)
     }
     reference_colorspace = sixel_frame_get_colorspace(ref_frame);
     reference_precision = lsqa_precision_from_pixelformat(
-        sixel_frame_get_pixelformat(ref_frame));
+        sixel_frame_format(ref_frame));
     if (opts.compare_colorspace == LSQA_COMPARE_COLORSPACE_REFERENCE) {
         target_colorspace = reference_colorspace;
     } else {

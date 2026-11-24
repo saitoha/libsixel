@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/palette.h"
 #include "src/palette-kcenter.h"
 #include "src/palette-kmeans.h"

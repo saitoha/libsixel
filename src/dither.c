@@ -247,7 +247,7 @@ sixel_dither_promote_palette_rgb888_to_float32(
     if (view.entries == NULL || view.entry_count == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1841,7 +1841,7 @@ sixel_dither_6delta_keep_float(
     int within;
     int n;
 
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) ||
             dither == NULL || !dither->use_rgb101_palette) {
         return 0;
     }
@@ -3368,7 +3368,7 @@ sixel_dither_set_pixelformat(
     /* Keep the float32 preference aligned with the requested pixelformat. */
     dither->pixelformat = pixelformat;
     dither->prefer_float32 =
-        SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ? 1 : 0;
+        SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) ? 1 : 0;
 }
 
 
@@ -4207,7 +4207,7 @@ sixel_dither_freeze_application_precision(sixel_dither_t *dither)
         return SIXEL_OK;
     }
     /* The float palette shares the work samples' gamma coordinates. */
-    pixelformat = SIXEL_PIXELFORMAT_IS_FLOAT32(dither->pixelformat)
+    pixelformat = SIXEL_WORKFORMAT_IS_FLOAT32(dither->pixelformat)
         ? dither->pixelformat : SIXEL_PIXELFORMAT_RGBFLOAT32;
     return sixel_palette_round_to_bytes(dither->palette, pixelformat);
 }
@@ -4540,7 +4540,7 @@ sixel_dither_apply_palette(
     }
 
     pipeline_pixelformat = dither->pixelformat;
-    source_has_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat);
+    source_has_float = SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat);
     float_backend_available =
         sixel_dither_method_supports_float_pipeline(dither);
     /* Palette lookup uses three color coordinates, including after packed
@@ -4587,7 +4587,7 @@ sixel_dither_apply_palette(
     }
     if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
         input_pixels = pixels;
-    } else if (SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)
+    } else if (SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat)
                && prefer_float_pipeline) {
         input_pixels = pixels;
     } else {
@@ -4647,7 +4647,7 @@ sixel_dither_apply_palette(
         pipeline_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
         owns_float_pipeline = 1;
     } else if (prefer_float_pipeline
-               && !SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
+               && !SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
         prefer_float_pipeline = 0;
     }
 
@@ -4656,7 +4656,7 @@ sixel_dither_apply_palette(
      * selected, ensure palette entries are available in float32 too.
      */
     if (prefer_float_pipeline
-            && SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
+            && SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
         float_channels = sixel_helper_compute_depth(pipeline_pixelformat);
         if (float_channels <= 0) {
             status = SIXEL_BAD_ARGUMENT;
@@ -4754,7 +4754,7 @@ sixel_dither_apply_palette(
     if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 ||
             pipeline_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
             (dither->use_rgb101_palette &&
-             SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat))) {
+             SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat))) {
         if (sixel_dither_has_compatible_accumulation_hint(dither,
                                                           width,
                                                           height,

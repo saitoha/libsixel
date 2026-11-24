@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/compat_stub.h"
 #include "src/frame-private.h"
 #include "src/loader.h"

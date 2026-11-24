@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/compat_stub.h"
 #include "src/frame-normalize.h"
 #include "src/encoder.h"
@@ -152,7 +153,7 @@ test_packed_unit(int format, int mode)
                 status != (mode == 6
                     ? SIXEL_BAD_INPUT : SIXEL_BAD_ALLOCATION) ||
                 sixel_frame_get_pixels(frame) != input ||
-                sixel_frame_get_pixelformat(frame) != pa_formats[format] ||
+                sixel_frame_format(frame) != pa_formats[format] ||
                 memcmp(input, saved, sizeof(input)) != 0) {
             goto end;
         }
@@ -167,11 +168,11 @@ test_packed_unit(int format, int mode)
         goto end;
     }
     if (mode == 3) {
-        ok = sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 &&
+        ok = sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888 &&
             memcmp(sixel_frame_get_pixels(frame), pa_rgb, sizeof(pa_rgb)) == 0;
         goto end;
     }
-    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
             SIXEL_FAILED(iface->vtbl->get_transparency(iface,
                 &transparency))) {
         goto end;
@@ -488,7 +489,7 @@ test_packed_wire_run(int space, int mode, int animated)
             pa_fail_after = 0;
             if (status != SIXEL_BAD_ALLOCATION || capture.size != 0 ||
                     sixel_frame_get_pixels(frame) != input ||
-                    sixel_frame_get_pixelformat(frame) !=
+                    sixel_frame_format(frame) !=
                         SIXEL_PIXELFORMAT_RGBA8888) {
                 goto end;
             }

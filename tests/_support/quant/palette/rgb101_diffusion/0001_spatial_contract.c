@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/dither.h"
 #include "dither-policy-private.h"
 #include "src/lookup-policy.h"

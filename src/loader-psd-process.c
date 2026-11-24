@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "allocator.h"
+#include "pixelformat.h"
 #include "cms.h"
 #include "colorspace.h"
 #include "loader-psd-color.h"

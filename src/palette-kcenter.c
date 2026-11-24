@@ -6423,7 +6423,7 @@ sixel_kcenter_build_prepare_and_collect(sixel_kcenter_build_runtime_t *rt)
     rt->export_stop = rt->wall_start;
 
     rt->input_is_float32 = (rt->treat_input_as_float32
-                            && SIXEL_PIXELFORMAT_IS_FLOAT32(rt->pixelformat));
+                            && SIXEL_WORKFORMAT_IS_FLOAT32(rt->pixelformat));
     if (rt->input_is_float32) {
         for (channel = 0u; channel < 3u; ++channel) {
             float_minimum = sixel_pixelformat_float_channel_min(

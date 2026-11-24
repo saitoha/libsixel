@@ -4,6 +4,7 @@
  */
 
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
 #include "src/threading.h"
 
 #include <stdint.h>
@@ -127,7 +128,7 @@ append_frame_digest(sixel_frame_t *frame, uint64_t *hash)
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     ncolors = sixel_frame_get_ncolors(frame);
     depth = sixel_helper_compute_depth(pixelformat);
     if (width <= 0 || height <= 0 || depth <= 0) {

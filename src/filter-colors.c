@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "frame.h"
 
 #include "filter-colors.h"
 #include "filter.h"
@@ -80,7 +81,7 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
     target_colorspace = config->target_colorspace;
 
     if (logger != NULL) {
-        source_pixelformat = sixel_frame_get_pixelformat(frame);
+        source_pixelformat = sixel_frame_format(frame);
         source_colorspace = sixel_frame_get_colorspace(frame);
         target_pixelformat =
             config->target_layout == SIXEL_PIXELFORMAT_RGBFLOAT32
@@ -117,7 +118,7 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
                           sixel_frame_get_width(frame),
                           sixel_frame_get_height(frame),
                           "result=format%d colorspace%d",
-                          sixel_frame_get_pixelformat(frame),
+                          sixel_frame_format(frame),
                           sixel_frame_get_colorspace(frame));
     }
 

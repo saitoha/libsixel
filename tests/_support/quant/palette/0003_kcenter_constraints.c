@@ -20,6 +20,7 @@
 #include <limits.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/dither.h"
 #include "src/palette-kcenter.h"

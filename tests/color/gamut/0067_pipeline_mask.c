@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include "../../_support/processing/gamut/gamut_filter_common.h"
+#include "src/pixelformat.h"
 
 int
 test_gamut_0067_pipeline_mask(int argc, char **argv)

@@ -3,6 +3,8 @@
  * Policy: docs/encoder/output/gamut-mapping.md
  */
 #include "../../_support/processing/gamut/gamut_filter_common.h"
+#include "src/frame.h"
+#include "src/pixelformat.h"
 
 int
 test_gamut_0063_pipeline_bits(int argc, char **argv)
@@ -51,7 +53,7 @@ test_gamut_0063_pipeline_bits(int argc, char **argv)
                 sixel_filter_pipeline_run(b.color, b.gamut,
                     b.allocator, NULL) == SIXEL_OK &&
                 !memcmp(left, right, count * 3 * sizeof(float)) &&
-                sixel_frame_get_pixelformat(b.frame) ==
+                sixel_frame_format(b.frame) ==
                     formats[target];
             sixel_thread_budget_leave(&scope);
         }

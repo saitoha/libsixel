@@ -79,6 +79,20 @@ awk '
 "$CC" -std=c11 -Werror -Wno-deprecated-declarations -I"${current%/*}" \
     -fsyntax-only "$work/declarations.c"
 
+"$CC" -std=c11 -I"${current%/*}" -x c -fsyntax-only - <<'EOF_FLOAT'
+#include <sixel.h>
+#if defined(SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) || \
+    defined(SIXEL_PIXELFORMAT_OKLABFLOAT32) || \
+    defined(SIXEL_PIXELFORMAT_CIELABFLOAT32) || \
+    defined(SIXEL_PIXELFORMAT_DIN99DFLOAT32)
+# error Retired working representations must stay outside the public header.
+#endif
+_Static_assert(SIXEL_PIXELFORMAT_IS_FLOAT32(SIXEL_PIXELFORMAT_RGBFLOAT32),
+               "one public float storage layout");
+_Static_assert(!SIXEL_PIXELFORMAT_IS_FLOAT32(0x21),
+               "private working code is not a public layout");
+EOF_FLOAT
+
 # The allocation limit is a measured compatibility difference. Check each
 # value independently instead of allowing that macro to disappear from CI.
 for version in old current; do

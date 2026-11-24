@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/compat_stub.h"
 #include "src/frame-private.h"
 #include "src/icc-apply.h"
@@ -69,7 +70,7 @@ tiff_icc_capture_lab(sixel_frame_t *frame, void *context)
     calls = context;
     ++*calls;
     if (frame->width != 16 || frame->height != 16 ||
-        sixel_frame_get_pixelformat(frame) !=
+        sixel_frame_format(frame) !=
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
         frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
         frame->transparent_mask != NULL) {

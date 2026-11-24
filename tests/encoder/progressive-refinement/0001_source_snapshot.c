@@ -55,7 +55,7 @@ test_progressive_0001(int argc, char **argv)
     ok = sixel_frame_get_width(frame) == 3 &&
         sixel_frame_get_width(prepared) == 2 &&
         sixel_frame_get_height(prepared) == 1 &&
-        sixel_frame_get_pixelformat(prepared) == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+        sixel_frame_format(prepared) == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
         domain[0] == 1 && domain[1] == 1 &&
         values[0] == 1.0f && values[1] == 0.0f && values[2] == 0.0f &&
         values[3] == 1.0f && values[4] == 1.0f && values[5] == 1.0f;

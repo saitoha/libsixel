@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/allocator.h"
 #include "src/dither.h"
@@ -136,7 +137,6 @@ make_rgb_frame(sixel_allocator_t *allocator,
         goto end;
     }
 
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_GAMMA);
 
 end:
     if (SIXEL_FAILED(status)) {

@@ -6,6 +6,7 @@
 #include "tests/_support/loader/builtin/loader_builtin_memory_test_common.h"
 #include "tests/data/color-numeric/png-samples.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 
 #if HAVE_COREGRAPHICS

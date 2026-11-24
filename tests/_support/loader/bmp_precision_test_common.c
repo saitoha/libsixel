@@ -6,6 +6,7 @@
 #include "tests/_support/loader/builtin/loader_builtin_memory_test_common.h"
 #include "tests/_support/loader/bmp_precision_test_common.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 
 /* D65 Display P3 to linear sRGB, derived from primary chromaticities. */

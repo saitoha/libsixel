@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/loader-common.h"
+#include "src/pixelformat.h"
 #include "src/cms.h"
 #include "src/loader-manager.h"
 #include "tests/_support/loader/builtin/loader_builtin_memory_test_common.h"
@@ -258,7 +259,7 @@ lp_capture(sixel_frame_t *frame, void *data)
                 && bytes[x * 4 + 3] == 0;
         }
         for (c = 0; c < 3; ++c) {
-            if (SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_format(frame))) {
+            if (SIXEL_WORKFORMAT_IS_FLOAT32(sixel_frame_format(frame))) {
                 value = floats[x * 3 + c];
                 if (sixel_frame_format(frame) !=
                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {

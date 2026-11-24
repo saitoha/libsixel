@@ -190,7 +190,7 @@ sixel_palette_reversible_tuple(sample *tuple_values,
         components[plane] = 0.0;
     }
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
             /* Typed histograms use zero-origin, nominal-span scaling. */
             components[plane] = tuple_values[plane] / 255.0
                 * sixel_pixelformat_float_channel_range(
@@ -204,7 +204,7 @@ sixel_palette_reversible_tuple(sample *tuple_values,
                               pixelformat,
                               SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)) {
             tuple_values[plane] = components[plane] * 255.0
                 / sixel_pixelformat_float_channel_range(
                     pixelformat, (int)plane);
@@ -1094,7 +1094,7 @@ sixel_heckbert_axis_weights(int pixelformat, int method,
     }
     maximum = 0.0;
     for (plane = 0U; plane < 3U; ++plane) {
-        ranges[plane] = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ranges[plane] = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
             ? sixel_pixelformat_float_channel_range(pixelformat, (int)plane)
             : 1.0;
         if (options != NULL && options->weights[0] > 0.0) {
@@ -3792,7 +3792,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     colormap.size = 0U;
     colormap.table = NULL;
     origcolors = 0U;
-    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
+    input_is_float32 = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat);
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/compat_stub.h"
 #include "src/encoder.h"
 #include "src/dither.h"
@@ -230,7 +231,7 @@ test_highcolor_png(int mode, char const *directory)
         }
         dither = encoder->diagnostic_dither;
         if (mode <= 1 && (dither == NULL ||
-                (SIXEL_PIXELFORMAT_IS_FLOAT32(dither->pixelformat) !=
+                (SIXEL_WORKFORMAT_IS_FLOAT32(dither->pixelformat) !=
                     (mode == 1)))) {
             goto end;
         }

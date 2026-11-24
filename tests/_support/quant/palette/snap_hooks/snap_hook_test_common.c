@@ -3,6 +3,7 @@
 #include "snap_hook_test_common.h"
 #include "tests/data/color-numeric/snap-native.h"
 #include "src/dither.h"
+#include "src/pixelformat.h"
 #include "src/palette.h"
 #include "src/palette-kmeans.h"
 

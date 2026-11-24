@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/palette.h"
 #include "src/lookup-policy-none.h"

@@ -7,6 +7,8 @@
 #endif
 
 #include <limits.h>
+#include "src/pixelformat.h"
+#include "src/frame.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,7 +90,7 @@ capture_gd_pixel_probe(sixel_frame_t *frame, void *data)
 
     probe = (gd_pixel_probe_t *)data;
     probe->callback_count += 1;
-    probe->pixelformat = sixel_frame_get_pixelformat(frame);
+    probe->pixelformat = sixel_frame_format(frame);
     probe->colorspace = sixel_frame_get_colorspace(frame);
     probe->width = sixel_frame_get_width(frame);
     probe->height = sixel_frame_get_height(frame);

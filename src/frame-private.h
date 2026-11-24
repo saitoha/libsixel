@@ -90,10 +90,7 @@ struct sixel_frame {
 extern "C" {
 #endif
 
-/* Project the storage and coordinates to a historical API format. */
-SIXEL_INTERNAL_API int
-sixel_frame_format(sixel_frame_t const *frame);
-
+/* Assign a freshly produced internal sample representation. */
 SIXEL_INTERNAL_API void
 sixel_frame_assign_format(sixel_frame_t *frame, int pixelformat);
 

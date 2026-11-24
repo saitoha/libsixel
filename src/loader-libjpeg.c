@@ -51,6 +51,7 @@
 #include <jpeglib.h>
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "allocator.h"
 #include "cms.h"
@@ -1505,7 +1506,7 @@ load_with_libjpeg(
             pixelformat,
             -1,
             -1,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+            SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
             ? SIXEL_FRAME_PIXELS_FLOAT32
             : SIXEL_FRAME_PIXELS_U8
         });

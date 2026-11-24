@@ -2,6 +2,8 @@
 /* Measure complete loader calls, excluding the untimed pixel export. */
 #define _POSIX_C_SOURCE 200809L
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include <6cells.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +38,7 @@ observe(sixel_frame_t *frame, void *context)
 
     obs = context;
     ++obs->frames;
-    obs->format = sixel_frame_get_pixelformat(frame);
+    obs->format = sixel_frame_format(frame);
     obs->width = sixel_frame_get_width(frame);
     obs->height = sixel_frame_get_height(frame);
     if (obs->dump == NULL) {

@@ -91,16 +91,9 @@ preserve float data end-to-end:
 2. Opt into the float32 path via the ``SIXEL_PRECISION_POLICY``
    environment variable before creating an encoder instance.  The value
    ``"float32"`` matches ``img2sixel -.float32``.
-3. When you feed your own buffers to ``encode_bytes`` you may keep them
-   in one of the float pixel formats that libsixel exposes:
-
-   * ``SIXEL_PIXELFORMAT_RGBFLOAT32`` for gamma-encoded RGB data.
-   * ``SIXEL_PIXELFORMAT_LINEARRGBFLOAT32`` for linear-light RGB.
-   * ``SIXEL_PIXELFORMAT_OKLABFLOAT32`` for working in OKLab.
-   * ``SIXEL_PIXELFORMAT_CIELABFLOAT32`` for CIELAB intermediates.
-   * ``SIXEL_PIXELFORMAT_DIN99DFLOAT32`` for DIN99d buffers, with all three native coordinates divided by 100.
-
-   The `DIN99d coordinate guide <../docs/concepts/din99d/README.md#coordinates-and-normalization>`_ describes the normalization and compatibility with earlier stored values.
+3. Pass gamma-encoded RGB float input to ``encode_bytes`` using
+   ``SIXEL_PIXELFORMAT_RGBFLOAT32``. Select clustering and dithering
+   spaces through encoder options.
 
    Passing any of these constants to ``encode_bytes`` avoids the
    implicit 8-bit conversion that older releases performed.

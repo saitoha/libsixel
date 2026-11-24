@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/png-chrm-arithmetic.h"
+#include "src/pixelformat.h"
 #include "src/chunk-factory.h"
 #include "src/frame-private.h"
 #include "src/loader.h"

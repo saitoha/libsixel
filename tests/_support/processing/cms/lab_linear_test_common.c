@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/frame-private.h"
 #include "src/loader.h"
 #include "src/loader-manager.h"

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include "src/dither.h"
 #include "src/encoder.h"
 #include "src/encoder-core-private.h"

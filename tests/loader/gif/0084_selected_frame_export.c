@@ -31,7 +31,7 @@ selected_gif_frame(sixel_frame_t *frame, void *context)
     count = context;
     if (sixel_frame_get_width(frame) != 17 ||
         sixel_frame_get_height(frame) != 17 ||
-        sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_PAL8 ||
+        sixel_frame_format(frame) != SIXEL_PIXELFORMAT_PAL8 ||
         sixel_frame_get_ncolors(frame) != 4 ||
         sixel_frame_get_frame_no(frame) != 0) {
         return SIXEL_BAD_INPUT;

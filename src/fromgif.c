@@ -53,6 +53,7 @@
 #endif  /* HAVE_STDINT_H */
 
 #include "fromgif.h"
+#include "pixelformat.h"
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "frame-factory.h"

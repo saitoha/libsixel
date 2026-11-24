@@ -7,6 +7,7 @@
 #include "tests/data/color-numeric/png-samples.h"
 #include "cg_indexed_test_common.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 
 #if HAVE_COREGRAPHICS

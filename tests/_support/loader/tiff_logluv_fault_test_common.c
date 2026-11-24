@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/allocator.h"
+#include "src/pixelformat.h"
 #include "src/chunk.h"
 #include "src/chunk-factory.h"
 #include "src/frame-private.h"

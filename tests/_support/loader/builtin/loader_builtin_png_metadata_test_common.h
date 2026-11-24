@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 #include "tests/data/color-numeric/png-metadata.h"
 #include "loader_builtin_memory_test_common.h"

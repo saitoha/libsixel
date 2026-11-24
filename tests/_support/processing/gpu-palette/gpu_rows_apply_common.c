@@ -80,7 +80,6 @@ gpu_rows_apply_test(int reject)
     ROWS_CHECK(sixel_frame_new(&frame, f.component.allocator) == SIXEL_OK);
     ROWS_CHECK(sixel_frame_init_borrowed(frame, pixels, 512, 512,
         SIXEL_PIXELFORMAT_RGB888, NULL, -1) == SIXEL_OK);
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_GAMMA);
     object = NULL;
     ROWS_CHECK(sixel_dither_policy_none_8bit_new(f.component.allocator,
         &object) == SIXEL_OK);

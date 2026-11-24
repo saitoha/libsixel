@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/dither.h"
 

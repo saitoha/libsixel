@@ -52,6 +52,7 @@
 #endif
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "cms.h"
 #include "cms-hdr.h"

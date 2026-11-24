@@ -231,7 +231,7 @@ test_frame_borrowed_storage_contract(void)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -389,7 +389,7 @@ test_frame_bgr888_storage(int borrowed)
     if (borrowed) {
         if (status != SIXEL_BAD_ALLOCATION ||
                 sixel_frame_get_pixels(frame) != external ||
-                sixel_frame_get_pixelformat(frame) !=
+                sixel_frame_format(frame) !=
                     SIXEL_PIXELFORMAT_BGR888 ||
                 memcmp(external, original, sizeof(external)) != 0) {
             goto end;
@@ -402,7 +402,7 @@ test_frame_bgr888_storage(int borrowed)
     }
     pixels = sixel_frame_get_pixels(frame);
     if (status == SIXEL_OK && pixels != NULL &&
-            sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGB888 &&
+            sixel_frame_format(frame) == SIXEL_PIXELFORMAT_RGB888 &&
             memcmp(pixels, expected, sizeof(expected)) == 0) {
         result = EXIT_SUCCESS;
     }

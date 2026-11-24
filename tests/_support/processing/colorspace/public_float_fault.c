@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/colorspace.h"
 #include "src/options.h"

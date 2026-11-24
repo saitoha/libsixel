@@ -93,7 +93,6 @@ sub attach_all {
     $ffi->attach(['sixel_frame_get_pixelformat' => 'Image::LibSIXEL::sixel_frame_get_pixelformat'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_frame_set_pixelformat' => 'Image::LibSIXEL::sixel_frame_set_pixelformat'] => ['opaque', 'int'] => 'int');
     $ffi->attach(['sixel_frame_get_colorspace' => 'Image::LibSIXEL::sixel_frame_get_colorspace'] => ['opaque'] => 'int');
-    $ffi->attach(['sixel_frame_set_colorspace' => 'Image::LibSIXEL::sixel_frame_set_colorspace'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_frame_get_transparent' => 'Image::LibSIXEL::sixel_frame_get_transparent'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_frame_set_transparent' => 'Image::LibSIXEL::sixel_frame_set_transparent'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_frame_get_multiframe' => 'Image::LibSIXEL::sixel_frame_get_multiframe'] => ['opaque'] => 'int');

@@ -1843,7 +1843,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     channels = depth;
     pixel_stride = depth;
     input_is_float32 = (treat_input_as_float32
-                           && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
+                           && SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat));
     if (input_is_float32) {
         for (channel = 0U; channel < 3U; ++channel) {
             float_minimum = sixel_pixelformat_float_channel_min(

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/compat_stub.h"
+#include "src/pixelformat.h"
 #include "src/cms.h"
 #include "src/icc-apply.h"
 #include "src/frame-private.h"
@@ -1293,7 +1294,7 @@ ts_legacy_capture(sixel_frame_t *frame, void *context)
     (void)context;
     ++ts.calls;
     bytes = (size_t)frame->width * (size_t)frame->height *
-        (SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_format(frame)) ?
+        (SIXEL_WORKFORMAT_IS_FLOAT32(sixel_frame_format(frame)) ?
          3u * sizeof(float) :
          (size_t)sixel_helper_compute_depth(sixel_frame_format(frame)));
     if (ts.baseline) {

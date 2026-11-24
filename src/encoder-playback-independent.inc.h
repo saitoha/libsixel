@@ -252,7 +252,7 @@ sixel_playback_independent_prepare(void *context)
         sixel_mutex_unlock(&c->gate);
         if (sixel_encoder_frame_pipeline_take(c->pipeline, 1,
                 &r->slot.frame, &r->slot.metadata) != 1) break;
-        if (sixel_frame_get_pixelformat(r->slot.frame) !=
+        if (sixel_frame_format(r->slot.frame) !=
                 SIXEL_PIXELFORMAT_RGB888 ||
                 sixel_encoder_frame_working_colorspace(encoder,
                     r->slot.frame) != SIXEL_COLORSPACE_GAMMA) {

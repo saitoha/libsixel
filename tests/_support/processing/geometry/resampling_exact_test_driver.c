@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include <sixel.h>
+#include "src/frame.h"
 
 #include "compat_stub.h"
 
@@ -48,7 +49,7 @@ resampling_exact_capture(sixel_frame_t *frame, void *private_data)
     }
     image->width = sixel_frame_get_width(frame);
     image->height = sixel_frame_get_height(frame);
-    image->pixelformat = sixel_frame_get_pixelformat(frame);
+    image->pixelformat = sixel_frame_format(frame);
     image->stride = image->width * 3;
     pixels = sixel_frame_get_pixels(frame);
     if (image->width <= 0 || image->height <= 0 || pixels == NULL ||

@@ -48,6 +48,7 @@
 #include <ImageIO/ImageIO.h>
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "chunk-view.h"
 #include "cms.h"

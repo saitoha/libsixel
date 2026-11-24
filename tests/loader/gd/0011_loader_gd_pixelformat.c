@@ -3,6 +3,7 @@
  */
 
 #include <string.h>
+#include "src/pixelformat.h"
 
 #include "tests/_support/loader/pixelformat_test_common.h"
 

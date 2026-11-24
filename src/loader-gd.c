@@ -73,6 +73,7 @@ SIXEL_PTHREAD_ONCE_DECLARE(g_sixel_loader_gd_support_once);
 #include <gd.h>
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "chunk-view.h"
 #include "frame-private.h"

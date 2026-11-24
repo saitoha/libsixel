@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/encoder.h"
+#include "src/pixelformat.h"
 #include "src/dither.h"
 #include "src/gpu-program.h"
 #include "src/lookup-policy-gpu.h"

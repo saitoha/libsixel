@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 #include <math.h>
+#include "src/pixelformat.h"
 #include <stdlib.h>
 #include "assessment/assessment.h"
 

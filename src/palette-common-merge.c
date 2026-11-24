@@ -40,6 +40,7 @@
 #include <string.h>
 
 #include "allocator.h"
+#include "pixelformat.h"
 #include "loader-common.h"
 #include "options.h"
 #include "palette-common-merge.h"

@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include <sixel.h>
+#include "src/pixelformat.h"
 
 #include "src/filter-colors.h"
 #include "src/filter-factory.h"

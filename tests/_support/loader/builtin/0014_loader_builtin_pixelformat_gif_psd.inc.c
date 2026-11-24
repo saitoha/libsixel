@@ -623,7 +623,7 @@ capture_psd_decode_parity_probe(sixel_frame_t *frame, void *data)
         return SIXEL_BAD_INPUT;
     }
     context->callback_count = 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->pixelformat = sixel_frame_format(frame);
     context->width = sixel_frame_get_width(frame);
     context->height = sixel_frame_get_height(frame);
     context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;

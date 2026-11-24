@@ -3,6 +3,8 @@
 #include "config.h"
 #endif
 #include <errno.h>
+#include "pixelformat.h"
+#include "frame.h"
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -494,7 +496,7 @@ lsqa_video_measure(sixel_frame_t *reference, lsqa_video_state_t *v,
     qa->signal_space = v->options->signal_space < 0
         ? sixel_frame_get_colorspace(reference) : v->options->signal_space;
     qa->signal_bytes = v->options->signal_bytes < 0
-        ? !SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_get_pixelformat(reference))
+        ? !SIXEL_WORKFORMAT_IS_FLOAT32(sixel_frame_format(reference))
         : v->options->signal_bytes;
     qa->scielab_map = v->errors;
     qa->scielab_map_capacity = v->pixels;

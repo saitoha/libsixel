@@ -3,6 +3,7 @@
  * Policy: docs/encoder/output/gamut-mapping.md
  */
 #include "../../_support/processing/gamut/gamut_filter_common.h"
+#include "src/pixelformat.h"
 
 int
 test_gamut_0062_filter_standalone(int argc, char **argv)

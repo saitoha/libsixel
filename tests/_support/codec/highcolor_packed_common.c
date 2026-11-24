@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
 #include "src/encoder.h"
 #include "src/sixel_decode_pixels.h"
 
@@ -266,7 +267,7 @@ test_highcolor_packed(int scenario)
             status = sixel_encoder_encode_frame(encoder, frame, output);
             if (status != SIXEL_BAD_ALLOCATION || stream.size != 0 ||
                     sixel_frame_get_pixels(frame) != input ||
-                    sixel_frame_get_pixelformat(frame) != formats[layout] ||
+                    sixel_frame_format(frame) != formats[layout] ||
                     SIXEL_FAILED(iface->vtbl->get_transparency(iface,
                         &transparency)) ||
                     transparency.transparent_mask != NULL ||
@@ -280,7 +281,7 @@ test_highcolor_packed(int scenario)
             goto end;
         }
         if (layout <= 1 && scenario != 77 && scenario != 78) {
-            if (sixel_frame_get_pixelformat(frame) != (want_float ?
+            if (sixel_frame_format(frame) != (want_float ?
                     SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888)) {
                 fprintf(stderr, "packed %d: unexpected normalized format\n",
                     scenario);

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "loader_builtin_memory_test_common.h"
 #include "psd_process_test_common.h"
 #include "tests/data/color-numeric/cmyk.h"

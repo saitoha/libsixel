@@ -6,7 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gpu_kmeans_contract.h"
+#include "src/frame.h"
 #include "src/palette.h"
+#include "src/pixelformat.h"
 #include "src/palette-kmeans.h"
 #include "src/palette-kmeans-gpu.h"
 #include "src/palette-kmeans-assign.h"
@@ -461,7 +463,7 @@ km_contract_image_frame(sixel_frame_t *frame, void *context)
         return SIXEL_BAD_INPUT;
     count = (unsigned int)sixel_frame_get_width(frame) *
         (unsigned int)sixel_frame_get_height(frame);
-    format = sixel_frame_get_pixelformat(frame);
+    format = sixel_frame_format(frame);
     if (format != SIXEL_PIXELFORMAT_RGB888 &&
             format != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
             format != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)

@@ -4,8 +4,10 @@
  * declaration, never the P3 reference values. */
 #include <math.h>
 #include "tests/_support/loader/png_hdr_expected.h"
+#include "src/frame.h"
 #include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/cms.h"
+#include "src/pixelformat.h"
 #include "src/loader-common.h"
 #include "tests/_support/loader/png_cicp_test_common.h"
 
@@ -91,7 +93,7 @@ cicp_capture(sixel_frame_t *frame, void *context)
         return SIXEL_BAD_INPUT;
     }
     ++probe->count;
-    probe->format = sixel_frame_get_pixelformat(frame);
+    probe->format = sixel_frame_format(frame);
     probe->colorspace = sixel_frame_get_colorspace(frame);
     probe->palette = (probe->format & SIXEL_FORMATTYPE_PALETTE) != 0;
     if (probe->palette && sixel_frame_get_transparent(frame) >= 0) {
@@ -109,7 +111,7 @@ cicp_capture(sixel_frame_t *frame, void *context)
         memcpy(probe->values, sixel_frame_get_pixels(frame),
                sizeof(probe->values));
     } else {
-        if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8) {
+        if (sixel_frame_format(frame) == SIXEL_PIXELFORMAT_G8) {
             return SIXEL_BAD_INPUT;
         }
         memcpy(probe->bytes, sixel_frame_get_pixels(frame),

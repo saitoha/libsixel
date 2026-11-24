@@ -4,6 +4,8 @@
  */
 
 #include "tests/_support/loader/pixelformat_test_common.h"
+#include "src/frame.h"
+#include "src/pixelformat.h"
 
 #if HAVE_WEBP
 typedef struct animated_probe_context {
@@ -22,7 +24,7 @@ capture_first_rgb_sample(sixel_frame_t *frame, int rgb[3])
     int channel;
     float channel_value;
 
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     pixels_u8 = NULL;
     pixels_f32 = NULL;
     memset(&view, 0, sizeof(view));

@@ -84,6 +84,7 @@
 #endif
 
 #include <sixel.h>
+#include "pixelformat.h"
 
 #include "allocator.h"
 #include "chunk-view.h"

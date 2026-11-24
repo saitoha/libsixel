@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include <sixel.h>
+#include "src/frame.h"
 
 #include "src/fromgif.h"
 #include "src/loader-common.h"
@@ -55,7 +56,7 @@ gif_canvas_probe_capture(sixel_frame_t *frame, void *context)
     probe = (gif_canvas_probe_t *)context;
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    pixelformat = sixel_frame_get_pixelformat(frame);
+    pixelformat = sixel_frame_format(frame);
     if (width <= 0 || height <= 0) {
         return SIXEL_BAD_INPUT;
     }

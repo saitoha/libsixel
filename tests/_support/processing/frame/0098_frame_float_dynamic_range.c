@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/pixelformat.h"
 #include <6cells.h>
 #include "src/scale.h"
 

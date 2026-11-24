@@ -3,6 +3,7 @@
 #include "config.h"
 #endif
 #include <stdio.h>
+#include "src/pixelformat.h"
 #include <stdlib.h>
 #include <string.h>
 #include "../../_support/planner/pipeline/playback_test_common.h"

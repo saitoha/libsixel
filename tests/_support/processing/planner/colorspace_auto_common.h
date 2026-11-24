@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/frame.h"
+#include "src/pixelformat.h"
 #include "src/encoder.h"
 #include "src/planner.h"
 
@@ -137,7 +139,7 @@ colorspace_auto_check(int mode)
         if (SIXEL_FAILED(status) || count == 0 ||
                 encoder->working_colorspace != expected ||
                 encoder->clustering_colorspace != clustering ||
-                sixel_frame_get_pixelformat(frame) != format ||
+                sixel_frame_format(frame) != format ||
                 (expected == spaces[i] &&
                  memcmp(sixel_frame_get_pixels(frame),
                     formats[i] == SIXEL_PIXELFORMAT_RGB888
