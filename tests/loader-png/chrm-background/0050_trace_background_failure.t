@@ -18,8 +18,9 @@ test "$result" -eq 0 || {
     printf '\n%s\n' "not ok 1 - source TAP did not exit normally"
     exit 0
 }
-# Compare only stdout; shell source tracing on stderr is not TAP evidence.
+# Match the plan, blank line and verdict exactly on stdout.
 test "$trace" = "$plan
+
 not ok 1 - ICC apply 2 fields differ" || {
     printf '\n%s\n' "not ok 1 - trace checker background failure"
     exit 0
