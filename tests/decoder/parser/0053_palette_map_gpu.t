@@ -8,7 +8,8 @@ echo "1..1"
 set -v
 
 status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+# Validate the GPU bindings while comparing the mapped RGBA pixels.
+MTL_DEBUG_LAYER=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "decoder/0051_palette_map_gpu" || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 - 0051_palette_map_gpu # SKIP GPU dequant unavailable"

@@ -16,6 +16,10 @@ CoreGraphics color management, Metal output, Quick Look integration, and clipboa
 
 Abort-trace signal context requires both `__APPLE__` and the `__MACH__` environment. Executable-path discovery uses dyld APIs; neither rule should be generalized to all Unix-like targets.
 
+Metal validates the buffer arguments of a compute kernel even when a dispatch takes a branch that skips the corresponding loads or stores. The SIXEL body span count pass binds a placeholder for each write-pass output until the counts determine its required size. Grouped span ordering requires the compiled pipeline to fit the device’s threadgroup memory and thread-count limits. Shader validation can increase the memory requirement. The serial Metal ordering kernel handles all bands when grouped ordering is unavailable.
+
+The GPU body equivalence test exercises shader validation. The single-slot playback, Eytzinger wire, and GPU decoder palette map tests enable Metal API Validation for their dispatches and check the resulting bytes or pixels. On failed macOS CI jobs, the artifacts include available Darwin crash reports for `test_runner` under `test-runner-crashes/`.
+
 ## Maintenance checklist
 
 - Define Darwin feature-test macros before any affected system header.

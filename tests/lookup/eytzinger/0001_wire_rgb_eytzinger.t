@@ -12,10 +12,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# Keep capability initialization and real dispatch in one timed process.
+# Validate the Eytzinger lookup buffers during the real GPU dispatch.
+# Keep capability initialization and dispatch in the same process.
 status=0
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup eytzinger gpu-palette/0007_wire_rgb_eytzinger || status=$?
+MTL_DEBUG_LAYER=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup eytzinger gpu-palette/0007_wire_rgb_eytzinger || status=$?
 test "$status" -ne 77 || {
     echo "ok 1 # SKIP GPU palette backend is unavailable"
     exit 0

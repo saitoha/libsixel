@@ -198,7 +198,7 @@ kernel void body_order(device const uint4 *nodes [[buffer(0)]],
                        uint b [[thread_position_in_grid]]) {
   if (b >= p.bands) return;
   uint first = band_first[b]; uint end = band_first[b + 1];
-  if (end - first <= p.group_limit) return;
+  if (p.group_limit != 0 && end - first <= p.group_limit) return;
   uint width = p.encoded_width;
   device uint *head = columns + (ulong)b * (2 * width + 1);
   device uint *stop = head + width + 1;

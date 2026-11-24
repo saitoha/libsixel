@@ -2043,6 +2043,18 @@ runs:
           head -n20 coverage.cobertura.xml
         fi
 
+    - name: Collect macOS test runner crash reports
+      if: ${{ failure() && runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        shopt -s nullglob
+        reports=("$HOME"/Library/Logs/DiagnosticReports/test_runner*.{ips,crash}
+                 /Library/Logs/DiagnosticReports/test_runner*.{ips,crash})
+        if (( ${#reports[@]} )); then
+          mkdir -p test-runner-crashes
+          cp "${reports[@]}" test-runner-crashes/
+        fi
+
     - name: Upload artifacts
       if: ${{ always() }}
       continue-on-error: true
@@ -2052,6 +2064,7 @@ runs:
         path: |
           **/*.log
           **/*.trs
+          test-runner-crashes/
           **/_artifacts/**
           coverage.info
           coverage.cobertura.xml

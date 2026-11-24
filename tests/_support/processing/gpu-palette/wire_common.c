@@ -102,12 +102,17 @@ test_gpupal_wire(int method, int hls, int lookup)
         sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
             history, sizeof(history), valid, sizeof(valid),
             5, 1, 0, 0, 5, 1, 2, 1, 0, SIXEL_6DELTA_ERROR_SKIP);
+        /* A native abort bypasses the common failure diagnostic. Record
+         * which encoder was active in the per-test stderr transcript. */
+        fprintf(stderr, "wire encode: %s lookup=%d diffusion=%d hls=%d\n",
+            pass ? "GPU" : "CPU", lookup, method, hls);
         if (SIXEL_FAILED(sixel_encode(source, 5, 1, 1, dither, output)) ||
                 dither->pipeline_6delta_rgb101 ||
                 dither->pipeline_6delta_hls_bytes != NULL ||
                 SIXEL_FAILED(dither->palette->vtbl->get_entries(
                     dither->palette, &view)) ||
                 memcmp(view.entries, palette, sizeof(palette))) goto end;
+        fprintf(stderr, "wire encode completed: %zu bytes\n", stream.size);
         mask = sixel_dither_get_pipeline_accumulation_result_mask(dither,
             &size);
         if (mask == NULL || size != 5 || memcmp(mask, expected, 5)) {
@@ -142,6 +147,7 @@ end:
     }
     sixel_output_unref(output);
     sixel_dither_unref(dither);
+    if (ok) fprintf(stderr, "wire comparison and cleanup completed\n");
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
