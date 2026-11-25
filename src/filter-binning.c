@@ -538,7 +538,7 @@ sixel_lut_build_histogram(unsigned char const *data,
     }
 
     channel_stride = pixel_stride / depth;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) || channel_stride != 1U) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) || channel_stride != 1U) {
         sixel_helper_set_additional_message(
             "sixel_lut_build_histogram: requires byte input.");
         return SIXEL_BAD_ARGUMENT;
@@ -816,7 +816,7 @@ sixel_heckbert_native_histogram(unsigned char const *data,
     sixel_heckbert_tuple_t *entry;
 
     histogram->preserve_extended = 1;
-    if (data == NULL || !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ||
+    if (data == NULL || !SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat) ||
             sixel_helper_compute_depth(pixelformat) != 3 * sizeof(float) ||
             length == 0U || length % (3U * sizeof(float)) != 0U) {
         return SIXEL_BAD_ARGUMENT;
@@ -902,7 +902,7 @@ sixel_filter_binning_apply_heckbert(sixel_filter_t *filter,
             request->depth > SIXEL_HECKBERT_MAX_CHANNELS ||
             request->pixel_stride == 0u)
         return SIXEL_BAD_ARGUMENT;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
+    if (SIXEL_WORKFORMAT_IS_FLOAT32(request->pixelformat)) {
         status = sixel_heckbert_native_histogram(request->data, request->length,
             request->pixelformat, histogram, allocator);
     } else {

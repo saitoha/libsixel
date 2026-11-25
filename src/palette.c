@@ -357,7 +357,7 @@ sixel_palette_build_heckbert_dispatch(sixel_palette_t *palette,
     if (work_allocator == NULL)
         return SIXEL_BAD_ARGUMENT;
     pixel_stride = sixel_helper_compute_depth(pixelformat);
-    bytes_per_channel = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+    bytes_per_channel = SIXEL_WORKFORMAT_IS_FLOAT32(pixelformat)
         ? (unsigned int)sizeof(float) : 1u;
     if (pixel_stride <= 0) {
         sixel_helper_set_additional_message(
