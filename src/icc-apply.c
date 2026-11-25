@@ -32,7 +32,7 @@
 #if HAVE_MATH_H
 #include <math.h>
 #endif
-#if !HAVE_WORKING_FMA && HAVE_ICC_FMA3
+#if !HAVE_WORKING_FMA && HAVE_ICC_FMA3 && HAVE_BUILTIN_CPU_SUPPORTS
 #include <immintrin.h>
 #endif
 
@@ -161,7 +161,7 @@ sixel_icc_add_compensated(double *sum, double *residual, double term)
     *sum = next;
 }
 
-#if !HAVE_WORKING_FMA && HAVE_ICC_FMA3
+#if !HAVE_WORKING_FMA && HAVE_ICC_FMA3 && HAVE_BUILTIN_CPU_SUPPORTS
 /* Keep AVX and FMA instructions out of the baseline code path. */
 /* Accel: ICC-PRODUCT-RESIDUAL sse2 */
 __attribute__((target("avx,fma")))
@@ -193,7 +193,7 @@ sixel_icc_add_product(double *sum, double *residual, double a, double b)
 #if HAVE_WORKING_FMA
     *residual += fma(a, b, -product);
 #else
-# if HAVE_ICC_FMA3
+# if HAVE_ICC_FMA3 && HAVE_BUILTIN_CPU_SUPPORTS
     /* AVX availability includes the OS support for saving its registers. */
     if (__builtin_cpu_supports("avx") && __builtin_cpu_supports("fma")) {
         *residual += sixel_icc_fma3_residual(a, b, product);

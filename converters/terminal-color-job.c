@@ -33,7 +33,7 @@ typedef struct img2sixel_color_key {
     int initial;
 } img2sixel_color_key_t;
 
-#if defined(__GNUC__) || defined(__clang__)
+#if HAVE_BUILTIN_TYPES_COMPATIBLE_P
 # define IMG2SIXEL_COLOR_INT_OFFSET(field_) \
     (offsetof(img2sixel_color_job_t, field_) + \
      0u * sizeof(char[__builtin_types_compatible_p( \

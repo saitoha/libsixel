@@ -392,6 +392,7 @@ srcs = [
   'decoder-columns.h',
   'decoder-simd.h',
   'simd-config.h',
+  'bit-scan.h',
   'options.c',
   'options-registry.c',
   'options-registry.h',

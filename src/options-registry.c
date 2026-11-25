@@ -91,7 +91,7 @@
  * compare C types.  The portable fallback still rejects width mismatches;
  * runtime registry validation additionally checks storage and range rules.
  */
-#if defined(__GNUC__) || defined(__clang__)
+#if HAVE_BUILTIN_TYPES_COMPATIBLE_P
 # define SIXEL_REGISTRY_MEMBER_TYPE_MATCHES(type_, field_, value_type_) \
     __builtin_types_compatible_p( \
         __typeof__(((type_ *)0)->field_), value_type_)

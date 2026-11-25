@@ -199,7 +199,7 @@ typedef struct img2sixel_completion_policy_key {
     char const *binding;
 } img2sixel_completion_policy_key_t;
 
-#if defined(__GNUC__) || defined(__clang__)
+#if HAVE_BUILTIN_TYPES_COMPATIBLE_P
 # define IMG2SIXEL_MEMBER_TYPE_MATCHES(type_, field_, value_type_) \
     __builtin_types_compatible_p( \
         __typeof__(((type_ *)0)->field_), value_type_)

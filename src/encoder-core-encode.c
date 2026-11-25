@@ -45,6 +45,7 @@
 #include "config.h"
 #include "simd-config.h"
 #endif
+#include "bit-scan.h"
 
 /* STDC_HEADERS */
 #include <stdio.h>
@@ -2569,41 +2570,6 @@ sixel_output_emit_literal(sixel_output_t *output,
     }
 }
 
-/* Only nonzero words reach this helper. The portable branch keeps the bit-mask
- * iterators available on compilers without a trailing-zero builtin. */
-static int
-sixel_encode_trailing_zeros(uint64_t bits)
-{
-#if defined(__GNUC__) || defined(__clang__)
-    return __builtin_ctzll((unsigned long long)bits);
-#else
-    int shift;
-
-    shift = 0;
-    if ((bits & UINT64_C(0xffffffff)) == 0) {
-        bits >>= 32;
-        shift += 32;
-    }
-    if ((bits & UINT64_C(0xffff)) == 0) {
-        bits >>= 16;
-        shift += 16;
-    }
-    if ((bits & UINT64_C(0xff)) == 0) {
-        bits >>= 8;
-        shift += 8;
-    }
-    if ((bits & UINT64_C(0xf)) == 0) {
-        bits >>= 4;
-        shift += 4;
-    }
-    if ((bits & UINT64_C(3)) == 0) {
-        bits >>= 2;
-        shift += 2;
-    }
-    return shift + ((bits & UINT64_C(1)) == 0);
-#endif
-}
-
 /* Consume each occupied column once, loading a new 64-column word only
  * after exhausting the current one. Padding bits stay zero because classify
  * records only source-backed columns inside the encoded width. */
@@ -2621,7 +2587,7 @@ sixel_compose_next_column(uint64_t const *occupancy, size_t words,
         *bits = occupancy[*word_index];
     }
     column = (int)(*word_index * 64U) +
-        sixel_encode_trailing_zeros(*bits);
+        sixel_bit_scan_forward64(*bits);
     *bits &= *bits - UINT64_C(1);
     return column;
 }
@@ -2995,7 +2961,7 @@ sixel_put_node(
                 i += skip;
                 continue;
             }
-            skip = sixel_encode_trailing_zeros(lanes) / 4;
+            skip = sixel_bit_scan_forward64(lanes) / 4;
             p += skip;
             i += skip;
             /* Cells i..i+3 match; find where the run ends. */
@@ -3006,7 +2972,7 @@ sixel_put_node(
                     vreinterpretq_u16_u8(vmvnq_u8(vceqq_u8(
                         vld1q_u8(row + end), vdupq_n_u8(value)))), 4)), 0);
                 if (lanes != 0) {
-                    end += sixel_encode_trailing_zeros(lanes) / 4;
+                    end += sixel_bit_scan_forward64(lanes) / 4;
                     break;
                 }
                 end += 16;
@@ -3048,7 +3014,7 @@ sixel_put_node(
                 i += skip;
                 continue;
             }
-            skip = sixel_encode_trailing_zeros(lanes);
+            skip = sixel_bit_scan_forward64(lanes);
             p += skip;
             i += skip;
             /* Cells i..i+3 match; find where the run ends. */
@@ -3059,7 +3025,7 @@ sixel_put_node(
                     _mm_loadu_si128((__m128i const *)(row + end)),
                     _mm_set1_epi8((char)value))) ^ 0xffffu;
                 if (lanes != 0u) {
-                    end += sixel_encode_trailing_zeros(lanes);
+                    end += sixel_bit_scan_forward64(lanes);
                     break;
                 }
                 end += 16;
@@ -3999,7 +3965,7 @@ sixel_band_classify(sixel_encode_work_t *work,
                     state->fillable = 0;
                     while (paint_lanes != 0) {
                         selected_x = x +
-                            (sixel_encode_trailing_zeros(paint_lanes) >>
+                            (sixel_bit_scan_forward64(paint_lanes) >>
                              SIXEL_ENCODE_PAINT_SHIFT);
                         paint_lanes &= paint_lanes - 1;
                         pix = source[selected_x];
@@ -4075,7 +4041,7 @@ sixel_band_classify(sixel_encode_work_t *work,
         rows = (unsigned int)(word >> 48);
         target_x = offset_left + x;
         while (rows != 0) {
-            row_bit = sixel_encode_trailing_zeros(rows);
+            row_bit = sixel_bit_scan_forward64(rows);
             pix = (int)((word >> (8 * row_bit)) & UINT64_C(0xff));
             color_rows = sixel_band_color_mask(word, (unsigned int)pix) & rows;
             map[pix * map_width + target_x] = (char)color_rows;
@@ -4220,7 +4186,7 @@ sixel_band_next_start(sixel_encode_work_t const *work, int first, int width)
         if (++word >= work->occupancy_words) return width;
         bits = work->column_starts[word];
     }
-    return (int)(word * 64U) + sixel_encode_trailing_zeros(bits);
+    return (int)(word * 64U) + sixel_bit_scan_forward64(bits);
 }
 
 static SIXELSTATUS

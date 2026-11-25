@@ -27,8 +27,17 @@
 /* Define to 1 if you have the 'backtrace_symbols_fd' function. */
 #undef HAVE_BACKTRACE_SYMBOLS_FD
 
+/* Define if _BitScanForward64 is available. */
+#undef HAVE_BITSCAN_FORWARD64
+
+/* Define if _BitScanReverse64 is available. */
+#undef HAVE_BITSCAN_REVERSE64
+
 /* define 1 if linker supports -Wl,-Bsymbolic */
 #undef HAVE_BSYMBOLIC
+
+/* Define if __builtin_clzll is available. */
+#undef HAVE_BUILTIN_CLZLL
 
 /* Define if __builtin_cpu_init is available */
 #undef HAVE_BUILTIN_CPU_INIT
@@ -36,8 +45,14 @@
 /* Define if __builtin_cpu_supports is available */
 #undef HAVE_BUILTIN_CPU_SUPPORTS
 
+/* Define if __builtin_ctzll is available. */
+#undef HAVE_BUILTIN_CTZLL
+
 /* Define if __builtin_prefetch is available */
 #undef HAVE_BUILTIN_PREFETCH
+
+/* Define if __builtin_types_compatible_p with __typeof__ works. */
+#undef HAVE_BUILTIN_TYPES_COMPATIBLE_P
 
 /* Define to 1 if you have the `calloc' function. */
 #undef HAVE_CALLOC

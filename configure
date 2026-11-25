@@ -21741,6 +21741,245 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
+# Link a call on a runtime operand so an undeclared intrinsic cannot pass
+# as an implicit external function declaration.
+
+
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_ctzll" >&5
+printf %s "checking for __builtin_ctzll... " >&6; }
+if test ${sixel_cv_have___builtin_ctzll+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  volatile unsigned long long bits = 16;
+  return __builtin_ctzll(bits);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_have___builtin_ctzll=yes
+else case e in #(
+  e) sixel_cv_have___builtin_ctzll=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_have___builtin_ctzll" >&5
+printf "%s\n" "$sixel_cv_have___builtin_ctzll" >&6; }
+  if test "x$sixel_cv_have___builtin_ctzll" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_BUILTIN_CTZLL 1" >>confdefs.h
+
+
+fi
+
+
+
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_clzll" >&5
+printf %s "checking for __builtin_clzll... " >&6; }
+if test ${sixel_cv_have___builtin_clzll+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  volatile unsigned long long bits = 16;
+  return __builtin_clzll(bits);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_have___builtin_clzll=yes
+else case e in #(
+  e) sixel_cv_have___builtin_clzll=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_have___builtin_clzll" >&5
+printf "%s\n" "$sixel_cv_have___builtin_clzll" >&6; }
+  if test "x$sixel_cv_have___builtin_clzll" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_BUILTIN_CLZLL 1" >>confdefs.h
+
+
+fi
+
+
+
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for _BitScanForward64" >&5
+printf %s "checking for _BitScanForward64... " >&6; }
+if test ${sixel_cv_have__BitScanForward64+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <intrin.h>
+int
+main (void)
+{
+
+  volatile unsigned long long bits = 16;
+  unsigned long index = 0;
+  return _BitScanForward64(&index, bits) ? (int)index : 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_have__BitScanForward64=yes
+else case e in #(
+  e) sixel_cv_have__BitScanForward64=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_have__BitScanForward64" >&5
+printf "%s\n" "$sixel_cv_have__BitScanForward64" >&6; }
+  if test "x$sixel_cv_have__BitScanForward64" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_BITSCAN_FORWARD64 1" >>confdefs.h
+
+
+fi
+
+
+
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for _BitScanReverse64" >&5
+printf %s "checking for _BitScanReverse64... " >&6; }
+if test ${sixel_cv_have__BitScanReverse64+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <intrin.h>
+int
+main (void)
+{
+
+  volatile unsigned long long bits = 16;
+  unsigned long index = 0;
+  return _BitScanReverse64(&index, bits) ? (int)index : 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_cv_have__BitScanReverse64=yes
+else case e in #(
+  e) sixel_cv_have__BitScanReverse64=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_have__BitScanReverse64" >&5
+printf "%s\n" "$sixel_cv_have__BitScanReverse64" >&6; }
+  if test "x$sixel_cv_have__BitScanReverse64" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_BITSCAN_REVERSE64 1" >>confdefs.h
+
+
+fi
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_types_compatible_p with __typeof__" >&5
+printf %s "checking for __builtin_types_compatible_p with __typeof__... " >&6; }
+if test ${sixel_cv_builtin_types_compatible_p+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+    int value = 0;
+    typedef char match[__builtin_types_compatible_p(__typeof__(value), int)
+                       && !__builtin_types_compatible_p(__typeof__(value), long)
+                       ? 1 : -1];
+    return (int)sizeof(match);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  sixel_cv_builtin_types_compatible_p=yes
+else case e in #(
+  e) sixel_cv_builtin_types_compatible_p=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_cv_builtin_types_compatible_p" >&5
+printf "%s\n" "$sixel_cv_builtin_types_compatible_p" >&6; }
+if test "x$sixel_cv_builtin_types_compatible_p" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_BUILTIN_TYPES_COMPATIBLE_P 1" >>confdefs.h
+
+
+fi
+
 # Checks for typedefs, structures, and compiler characteristics.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
 printf %s "checking for inline... " >&6; }

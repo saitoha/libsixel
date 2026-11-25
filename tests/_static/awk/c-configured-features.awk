@@ -37,8 +37,7 @@ function strip(line,    code, pattern, token) {
     }
     return code
 }
-function decision(line,    code, words, count, i) {
-    code = strip(line)
+function decision(code,    words, count, i) {
     if (code !~ /^[[:space:]]*#[[:space:]]*(if|ifdef|ifndef|elif|elifdef|elifndef|define)([^[:alnum:]_]|$)/)
         return ""
     sub(/^[[:space:]]*#[[:space:]]*/, "", code)
@@ -54,33 +53,126 @@ function decision(line,    code, words, count, i) {
     }
     return ""
 }
+# A guard must guarantee availability. An alternative arm of || is only
+# sufficient when it also guarantees the same capability.
+function requires_feature(expr, macro,    i, depth, first_close, and_at,
+                           left, right) {
+    gsub(/[[:space:]]/, "", expr)
+    if (expr ~ /[?:]/) return 0
+    if (expr == macro || expr == "defined(" macro ")" ||
+        expr == "defined" macro) return 1
+    for (i = 1; i <= length(expr); i++) {
+        if (substr(expr, i, 1) == "(") depth++
+        else if (substr(expr, i, 1) == ")") {
+            depth--
+            if (!depth && !first_close) first_close = i
+        } else if (!depth && substr(expr, i, 2) == "||") {
+            left = substr(expr, 1, i - 1)
+            right = substr(expr, i + 2)
+            return requires_feature(left, macro) &&
+                requires_feature(right, macro)
+        } else if (!depth && !and_at && substr(expr, i, 2) == "&&") {
+            and_at = i
+        }
+    }
+    if (and_at)
+        return requires_feature(substr(expr, 1, and_at - 1), macro) ||
+            requires_feature(substr(expr, and_at + 2), macro)
+    if (substr(expr, 1, 1) == "(" && first_close == length(expr))
+        return requires_feature(substr(expr, 2, length(expr) - 2), macro)
+    return 0
+}
+function builtin_guarded(name,    expected, legacy, i) {
+    expected = "HAVE_" toupper(substr(name, 3))
+    legacy = "HAVE_" toupper(name)
+    for (i = 1; i <= branch_depth; i++)
+        if (requires_feature(branch[i], expected) ||
+            requires_feature(branch[i], legacy)) return 1
+    return 0
+}
+function builtin_violation(code,    directive, expr, words, count, i) {
+    if (code ~ /^[[:space:]]*#/) {
+        directive = code
+        sub(/^[[:space:]]*#[[:space:]]*/, "", directive)
+        expr = directive
+        sub(/^[[:alpha:]]+[[:space:]]*/, "", expr)
+        sub(/[^[:alpha:]].*$/, "", directive)
+        if (directive == "if" || directive == "ifdef" ||
+            directive == "ifndef") {
+            branch_depth++
+        } else if (directive == "endif") {
+            branch_depth--
+            return ""
+        }
+        if (directive ~ /^(if|elif|ifdef|elifdef)$/) {
+            branch[branch_depth] = expr
+        } else if (directive ~ /^(else|ifndef|elifndef)$/) {
+            branch[branch_depth] = ""
+        }
+        if (directive ~ /^(if|elif|ifdef|elifdef|ifndef|elifndef|else)$/)
+            return ""
+    }
+    if (code !~ /__builtin_/) return ""
+    count = split(code, words, /[^[:alnum:]_]+/)
+    for (i = 1; i <= count; i++)
+        if (words[i] ~ /^__builtin_[[:alnum:]_]+$/ &&
+            !builtin_guarded(words[i])) return words[i]
+    return ""
+}
+function classify(line) {
+    return decision(strip(line))
+}
 BEGIN {
-    if (!decision("#ifdef _WIN32") ||
-        !decision("#if defined(__GNUC__) && __GNUC__ >= 10") ||
-        !decision("#if __has_builtin(__builtin_fma)") ||
-        !decision("#define LOCAL_FMA FP_FAST_FMA") ||
-        !decision("#if FP_FAST_FMA") ||
-        !decision("#if(FP_FAST_FMA)") ||
-        !decision("#if!defined(__CYGWIN__)") ||
-        !decision("#if FLT_EVAL_METHOD == 0") ||
-        !decision("#if __STDC_IEC_559__") ||
-        !decision("#if __STDC_WANT_LIB_EXT1__") ||
-        decision("#if HAVE_WORKING_FMA") ||
-        decision("#if __STDC_VERSION__ >= 199901L") ||
-        decision("#if !defined(__STDC_NO_THREADS__)") ||
-        decision("#if __STDC_LIB_EXT1__ >= 201112L") ||
-        decision("#if __STDC_VERSION_MATH_H__ >= 202311L") ||
-        decision("#if __has_include(<threads.h>)") ||
-        decision("#ifdef __cplusplus") ||
-        decision("/* #if FP_FAST_FMA */") ||
-        decision("char *s = \"#if __GNUC__\";")) {
+    if (!classify("#ifdef _WIN32") ||
+        !classify("#if defined(__GNUC__) && __GNUC__ >= 10") ||
+        !classify("#if __has_builtin(__builtin_fma)") ||
+        !classify("#define LOCAL_FMA FP_FAST_FMA") ||
+        !classify("#if FP_FAST_FMA") ||
+        !classify("#if(FP_FAST_FMA)") ||
+        !classify("#if!defined(__CYGWIN__)") ||
+        !classify("#if FLT_EVAL_METHOD == 0") ||
+        !classify("#if __STDC_IEC_559__") ||
+        !classify("#if __STDC_WANT_LIB_EXT1__") ||
+        classify("#if HAVE_WORKING_FMA") ||
+        classify("#if __STDC_VERSION__ >= 199901L") ||
+        classify("#if !defined(__STDC_NO_THREADS__)") ||
+        classify("#if __STDC_LIB_EXT1__ >= 201112L") ||
+        classify("#if __STDC_VERSION_MATH_H__ >= 202311L") ||
+        classify("#if __has_include(<threads.h>)") ||
+        classify("#ifdef __cplusplus") ||
+        classify("/* #if FP_FAST_FMA */") ||
+        classify("char *s = \"#if __GNUC__\";")) {
         print "configured-feature scanner controls failed" > "/dev/stderr"
+        failed = 1; exit 1
+    }
+    if (!builtin_violation("x = __builtin_ctzll(bits);") ||
+        builtin_violation("#if (defined(HAVE_BUILTIN_CTZLL) && FOO)") ||
+        builtin_violation("x = __builtin_ctzll(bits);") ||
+        !builtin_violation("x = __builtin_clzll(bits);") ||
+        builtin_violation("#if OTHER_FEATURE") ||
+        builtin_violation("#else") ||
+        builtin_violation("x = __builtin_ctzll(bits);") ||
+        builtin_violation("#endif") ||
+        builtin_violation("#elif HAVE_BUILTIN_CLZLL") ||
+        builtin_violation("x = __builtin_clzll(bits);") ||
+        builtin_violation("#else") ||
+        !builtin_violation("x = __builtin_clzll(bits);") ||
+        builtin_violation("#endif") ||
+        builtin_violation("#if HAVE_BUILTIN_CTZLL || OTHER_FEATURE") ||
+        !builtin_violation("x = __builtin_ctzll(bits);") ||
+        builtin_violation("#endif") ||
+        builtin_violation("#if !HAVE_BUILTIN_CTZLL") ||
+        !builtin_violation("x = __builtin_ctzll(bits);") ||
+        builtin_violation("#endif") ||
+        builtin_violation(strip("/* __builtin_ctzll(bits) */")) ||
+        builtin_violation(strip("char *s = \"__builtin_ctzll(bits)\";"))) {
+        print "builtin capability guard controls failed" > "/dev/stderr"
         failed = 1; exit 1
     }
     block_comment = 0
 }
 FNR == 1 {
-    block_comment = 0; pending = ""
+    block_comment = 0; pending = ""; branch_depth = 0
     path = FILENAME
     if (index(path, root "/") == 1) path = substr(path, length(root) + 2)
 }
@@ -91,7 +183,14 @@ FNR == 1 {
     pending = pending line
     # C joins escaped physical lines before stripping comments.
     if (sub(/\\$/, "", pending)) next
-    expression = decision(pending)
+    code = strip(pending)
+    builtin = builtin_violation(code)
+    if (builtin != "") {
+        print path ":" first_line ": " builtin \
+            " requires its configured HAVE_BUILTIN guard" > "/dev/stderr"
+        failed = 1
+    }
+    expression = decision(code)
     if (expression != "") print path "\t" first_line "\t" expression
     pending = ""
 }

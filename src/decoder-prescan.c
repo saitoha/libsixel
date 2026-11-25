@@ -7,6 +7,7 @@
 
 #include "decoder-prescan.h"
 #include "sixel_atomic.h"
+#include "bit-scan.h"
 #include "simd-config.h"
 
 #if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
@@ -127,7 +128,7 @@ prescan_run(unsigned char const *data, size_t size)
         v = vsubq_u8(vld1q_u8(data + p), vdupq_n_u8(0x20));
         hits = prescan_lane_mask(vcgtq_u8(v, vdupq_n_u8(0x5e)));
         while (hits != 0) {
-            bit = (unsigned int)__builtin_ctzll(hits) & ~3u;
+            bit = sixel_bit_scan_forward64(hits) & ~3u;
             hits &= ~(UINT64_C(15) << bit);
             i = p + (bit >> 2);
             if (!prescan_payload_byte(data[i]))
@@ -179,7 +180,7 @@ sixel_decode_prescan_scan(sixel_decode_prescan_t *plan,
             vsubq_u8(v, vdupq_n_u8(0x20)), vdupq_n_u8(0x5e)));
         hits = prescan_lane_mask(special);
         while (hits != 0) {
-            bit = (unsigned int)__builtin_ctzll(hits) & ~3u;
+            bit = sixel_bit_scan_forward64(hits) & ~3u;
             hits &= ~(UINT64_C(15) << bit);
             i = p + (bit >> 2);
             ch = data[i];
@@ -200,7 +201,7 @@ sixel_decode_prescan_scan(sixel_decode_prescan_t *plan,
             graphics = prescan_lane_mask(vcgeq_u8(v, vdupq_n_u8('?')));
             if (graphics != 0) {
                 i = base + p +
-                    ((63u - (unsigned int)__builtin_clzll(graphics)) >> 2);
+                    (sixel_bit_scan_reverse64(graphics) >> 2);
                 if (i >= plan->start)
                     prescan_record_cut(plan, i + 1u,
                                        SIXEL_PRESCAN_CUT_GRAPHIC);

@@ -20,7 +20,7 @@ sh "$src_root/tests/_static/sh/list-source-files.sh" \
     --exclude-name 'stb_image.h' --exclude-name 'stb_image_write.h' \
     --exec awk -v root="$src_root" \
     -f "$src_root/tests/_static/awk/c-configured-features.awk" > "$observed" || {
-    echo 'not ok 1 - cannot inspect C capability decisions'
+    echo 'not ok 1 - C capability detection or builtin guard check failed'
     exit 0
 }
 awk -F '\t' '

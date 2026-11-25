@@ -5,6 +5,7 @@
 #if defined(HAVE_METAL)
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
+#include "bit-scan.h"
 #include "simd-config.h"
 #if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
 # include <arm_neon.h>
@@ -183,7 +184,7 @@ decoder_gpu_split(unsigned char const *body, uint32_t length,
             vreinterpretq_u16_u8(vorrq_u8(vorrq_u8(vceqq_u8(v, dollar),
                 vceqq_u8(v, dash)), vceqq_u8(v, escape))), 4)), 0);
         while (hits != 0u) {
-            i = p + ((uint32_t)__builtin_ctzll(hits) >> 2);
+            i = p + (sixel_bit_scan_forward64(hits) >> 2);
             hits &= ~(UINT64_C(0xf) << ((i - p) * 4u));
             ch = body[i];
             if (ch == 0x1b) {
@@ -203,7 +204,7 @@ decoder_gpu_split(unsigned char const *body, uint32_t length,
                 vreinterpretq_u16_u8(vandq_u8(vcgeq_u8(v, low),
                     vcleq_u8(v, high))), 4)), 0);
             if (data != 0u) {
-                i = p + ((63u - (uint32_t)__builtin_clzll(data)) >> 2);
+                i = p + (sixel_bit_scan_reverse64(data) >> 2);
                 if (i >= start) {
                     if (count + 1u >= capacity)
                         return 0u;

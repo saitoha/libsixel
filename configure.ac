@@ -3206,6 +3206,56 @@ AC_COMPILE_IFELSE([
      AC_MSG_RESULT([yes])],
     [AC_MSG_RESULT([no])])
 
+# Link a call on a runtime operand so an undeclared intrinsic cannot pass
+# as an implicit external function declaration.
+AC_DEFUN([LS_CHECK_BIT_SCAN], [
+  AS_VAR_PUSHDEF([sixel_bit_scan_cache], [sixel_cv_have_$1])
+  AC_CACHE_CHECK([for $1], [sixel_bit_scan_cache], [
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([$3], [$4])],
+      [AS_VAR_SET([sixel_bit_scan_cache], [yes])],
+      [AS_VAR_SET([sixel_bit_scan_cache], [no])])
+  ])
+  AS_VAR_IF([sixel_bit_scan_cache], [yes], [
+    AC_DEFINE([$2], [1], [Define if $1 is available.])
+  ])
+  AS_VAR_POPDEF([sixel_bit_scan_cache])
+])
+LS_CHECK_BIT_SCAN([__builtin_ctzll], [HAVE_BUILTIN_CTZLL], [], [[
+  volatile unsigned long long bits = 16;
+  return __builtin_ctzll(bits);
+]])
+LS_CHECK_BIT_SCAN([__builtin_clzll], [HAVE_BUILTIN_CLZLL], [], [[
+  volatile unsigned long long bits = 16;
+  return __builtin_clzll(bits);
+]])
+LS_CHECK_BIT_SCAN([_BitScanForward64], [HAVE_BITSCAN_FORWARD64],
+  [[#include <intrin.h>]], [[
+  volatile unsigned long long bits = 16;
+  unsigned long index = 0;
+  return _BitScanForward64(&index, bits) ? (int)index : 0;
+]])
+LS_CHECK_BIT_SCAN([_BitScanReverse64], [HAVE_BITSCAN_REVERSE64],
+  [[#include <intrin.h>]], [[
+  volatile unsigned long long bits = 16;
+  unsigned long index = 0;
+  return _BitScanReverse64(&index, bits) ? (int)index : 0;
+]])
+AC_CACHE_CHECK([for __builtin_types_compatible_p with __typeof__],
+               [sixel_cv_builtin_types_compatible_p], [
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[
+    int value = 0;
+    typedef char match[__builtin_types_compatible_p(__typeof__(value), int)
+                       && !__builtin_types_compatible_p(__typeof__(value), long)
+                       ? 1 : -1];
+    return (int)sizeof(match);
+  ]])], [sixel_cv_builtin_types_compatible_p=yes],
+        [sixel_cv_builtin_types_compatible_p=no])
+])
+AS_IF([test "x$sixel_cv_builtin_types_compatible_p" = xyes], [
+  AC_DEFINE([HAVE_BUILTIN_TYPES_COMPATIBLE_P], [1],
+            [Define if __builtin_types_compatible_p with __typeof__ works.])
+])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_INT16_T

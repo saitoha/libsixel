@@ -531,6 +531,57 @@ if have_unreachable
   conf.set('HAVE___BUILTIN_UNREACHABLE', 1)
 endif
 
+# Keep the bit scans available when cross-compiling and reject implicit
+# external calls on compilers without the intrinsic.
+foreach scan : [['__builtin_ctzll', 'HAVE_BUILTIN_CTZLL'],
+                ['__builtin_clzll', 'HAVE_BUILTIN_CLZLL']]
+  if cc.links('''
+    int main(void)
+    {
+      volatile unsigned long long bits = 16;
+      return ''' + scan[0] + '''(bits);
+    }
+    ''', name: scan[0])
+    conf.set(scan[1], 1)
+  endif
+endforeach
+foreach scan : [['_BitScanForward64', 'HAVE_BITSCAN_FORWARD64'],
+                ['_BitScanReverse64', 'HAVE_BITSCAN_REVERSE64']]
+  if cc.links('''
+    #include <intrin.h>
+    int main(void)
+    {
+      volatile unsigned long long bits = 16;
+      unsigned long index = 0;
+      return ''' + scan[0] + '''(&index, bits) ? (int)index : 0;
+    }
+    ''', name: scan[0])
+    conf.set(scan[1], 1)
+  endif
+endforeach
+if cc.compiles('''
+  int main(void)
+  {
+    int value = 0;
+    typedef char match[__builtin_types_compatible_p(__typeof__(value), int)
+                       && !__builtin_types_compatible_p(__typeof__(value), long)
+                       ? 1 : -1];
+    return (int)sizeof(match);
+  }
+  ''', name: '__builtin_types_compatible_p with __typeof__')
+  conf.set('HAVE_BUILTIN_TYPES_COMPATIBLE_P', 1)
+endif
+if cc.links('''
+  int main(void)
+  {
+    int value = 0;
+    __builtin_prefetch(&value, 0, 3);
+    return value;
+  }
+  ''', name: '__builtin_prefetch')
+  conf.set('HAVE_BUILTIN_PREFETCH', 1)
+endif
+
 if cc.has_function_attribute('always_inline')
   conf.set('HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE', 1)
 endif

@@ -528,7 +528,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/decoder-image.h $(srcdir)/fromsixel-internal.h \
 	$(srcdir)/decoder-ormode.h $(srcdir)/decoder-columns.h \
 	$(srcdir)/decoder-simd.h $(srcdir)/simd-config.h \
-	$(srcdir)/options.c $(srcdir)/options.h \
+	$(srcdir)/bit-scan.h $(srcdir)/options.c $(srcdir)/options.h \
 	$(srcdir)/options-registry.c $(srcdir)/options-registry.h \
 	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
@@ -2180,6 +2180,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-columns.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-simd.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/simd-config.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/bit-scan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options-registry.c \
