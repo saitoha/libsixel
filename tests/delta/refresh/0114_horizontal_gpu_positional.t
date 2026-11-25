@@ -16,7 +16,7 @@ test "$status" -eq 0 || {
     exit 0
 }
 case "$trace" in
-    *"LSXGPU2|consumer=palette-apply|kernel="*) true ;;
+    *"LSXGPU2|consumer=palette-apply|kernel=ordered"*) true ;;
     *) false ;;
 esac || {
     printf '\n%s\n' "not ok 1 - horizontal gpu positional dispatch"

@@ -258,6 +258,8 @@ test_refresh_horizontal_output(int mode)
     sixel_frame_t *frame;
     sixel_output_t *output;
     h8_capture_t out[2];
+    size_t frame_start;
+    uint32_t sample;
     unsigned char rgb[16 * 16 * 3];
     unsigned char retained[sizeof(rgb)];
     unsigned int n, i, p;
@@ -271,6 +273,12 @@ test_refresh_horizontal_output(int mode)
     for (i = 0; i < 2; ++i) {
         H8_REQUIRE(sixel_encoder_new(&e[i], NULL) == SIXEL_OK);
         H8_REQUIRE(sixel_encoder_setopt(e[i], 'p', "16") == SIXEL_OK);
+        if (mode == 0) {
+            /* Compare ordered application with the same host solver.
+             * The GPU SSE splitter uses FP32 and can choose other cuts. */
+            H8_REQUIRE(sixel_encoder_setopt(e[i], 'Q',
+                "heckbert:cut=median") == SIXEL_OK);
+        }
         H8_REQUIRE(sixel_encoder_setopt(e[i], 'd',
             mode == 5 ? "lso2" : mode == 3 ? "fs" : "bluenoise")
             == SIXEL_OK);
@@ -289,8 +297,21 @@ test_refresh_horizontal_output(int mode)
             H8_REQUIRE(sixel_encoder_diffuse_on_gpu(e[i]));
     }
     for (n = 0; n < 5; ++n) {
-        for (p = 0; p < sizeof(rgb); ++p)
-            rgb[p] = (unsigned char)(60 + p % 80 + n * 2);
+        frame_start = out[0].size;
+        for (p = 0; p < sizeof(rgb); ++p) {
+            sample = p;
+            if (mode == 0) {
+                /* This fixed distribution separates CPU and GPU SSE
+                 * palettes on the first frame without the host cut. */
+                sample = (p + 1234u) ^ 1u;
+                sample ^= sample >> 16;
+                sample *= 0x7feb352du;
+                sample ^= sample >> 15;
+                sample *= 0x846ca68bu;
+                sample ^= sample >> 16;
+            }
+            rgb[p] = (unsigned char)(60 + sample % 80 + n * 2);
+        }
         for (i = 0; i < 2; ++i) {
             H8_REQUIRE(sixel_frame_new(&frame, NULL) == SIXEL_OK);
             H8_REQUIRE(sixel_frame_init_borrowed(frame, rgb, 16, 16,
@@ -302,13 +323,21 @@ test_refresh_horizontal_output(int mode)
                 == SIXEL_OK);
             sixel_output_unref(output);
             sixel_frame_unref(frame);
-
+        }
+        if (mode == 0) {
+            H8_REQUIRE(out[0].size == out[1].size);
+            H8_REQUIRE(!memcmp(out[0].data + frame_start,
+                out[1].data + frame_start, out[0].size - frame_start));
+            H8_REQUIRE(!memcmp(e[0]->accumulation_pixels,
+                e[1]->accumulation_pixels, sizeof(rgb)));
         }
     }
     H8_REQUIRE(out[0].size && out[0].size == out[1].size);
-    H8_REQUIRE(!memcmp(out[0].data, out[1].data, out[0].size));
-    H8_REQUIRE(!memcmp(e[0]->accumulation_pixels,
-        e[1]->accumulation_pixels, sizeof(rgb)));
+    if (mode != 0) {
+        H8_REQUIRE(!memcmp(out[0].data, out[1].data, out[0].size));
+        H8_REQUIRE(!memcmp(e[0]->accumulation_pixels,
+            e[1]->accumulation_pixels, sizeof(rgb)));
+    }
     if (mode == 2) {
         age = e[0]->residual_state.refresh_frame;
         memcpy(retained, e[0]->accumulation_pixels, sizeof(retained));
