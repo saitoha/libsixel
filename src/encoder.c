@@ -5480,7 +5480,9 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
             context->palette.sampling.effective !=
                 SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID ||
             context->current_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            context->target_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+            context->planner == NULL ||
+            context->planner->working_pixelformat !=
+                SIXEL_PIXELFORMAT_RGB888 ||
             context->current_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
