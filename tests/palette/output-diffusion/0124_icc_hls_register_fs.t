@@ -10,8 +10,8 @@ SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/icc_output/0001_icc_output register-feedback 2 \
     "${TOP_SRCDIR}/tests/data/color-numeric" || {
-    echo 'not ok 1 - Diffuse error from the RGB colors represented by the emitted HLS fields'
+    printf '\n%s\n' 'not ok 1 - Diffuse error from the RGB colors represented by the emitted HLS fields'
     exit 0
 }
-echo 'ok 1 - Diffuse error from the RGB colors represented by the emitted HLS fields'
+printf '\n%s\n' 'ok 1 - Diffuse error from the RGB colors represented by the emitted HLS fields'
 exit 0

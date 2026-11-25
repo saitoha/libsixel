@@ -11,16 +11,16 @@ SIXEL_LOADER_CMS_RENDERING_INTENT=relative! \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" icc/red_alpha builtin:Ebuiltin! \
     "${TOP_SRCDIR}/tests/data/color-numeric/red-alpha-p3.apng" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required backend unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP required backend unavailable'
     exit 0
 }
 test "$status" -ne 42 || {
-    echo 'not ok 1 - builtin drops ICC history across two APNG plays # TODO known result'
+    printf '\n%s\n' 'not ok 1 - builtin drops ICC history across two APNG plays # TODO known result'
     exit 0
 }
 test "$status" -ne 0 || {
-    echo 'not ok 1 - expected behavior now works; promote this test'
+    printf '\n%s\n' 'not ok 1 - expected behavior now works; promote this test'
     exit 0
 }
-echo 'not ok 1 - unexpected fixture, execution or pixel result'
+printf '\n%s\n' 'not ok 1 - unexpected fixture, execution or pixel result'
 exit 0

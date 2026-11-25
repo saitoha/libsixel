@@ -6,8 +6,8 @@ echo '1..1'
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" planner/0003_default_colorspace_auto gamma-p3-resize || {
-    echo 'not ok 1 - A preserve resize resolves Display P3 coordinates before gamma palette lookup'
+    printf '\n%s\n' 'not ok 1 - A preserve resize resolves Display P3 coordinates before gamma palette lookup'
     exit 0
 }
-echo 'ok 1 - A preserve resize resolves Display P3 coordinates before gamma palette lookup'
+printf '\n%s\n' 'ok 1 - A preserve resize resolves Display P3 coordinates before gamma palette lookup'
 exit 0

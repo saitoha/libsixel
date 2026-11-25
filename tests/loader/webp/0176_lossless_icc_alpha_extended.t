@@ -10,7 +10,7 @@ SIXEL_LOADER_CMS_RENDERING_INTENT=relative! SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" icc/red_alpha libwebp:Ebuiltin! \
     "${TOP_SRCDIR}/tests/data/color-numeric/red-alpha-p3.webp" 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required backend unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP required backend unavailable'
     exit 0
 }
 printf '%s\n' "$trace" >&2
@@ -21,12 +21,12 @@ printf '%s\n' "$trace" >&2
 case "$status:$trace" in
     42:*'LSXCMS2|event=apply|engine=builtin|path=bounded-device|src=2|dst=2|ok=1'*|\
     42:*'LSXCMS2|event=apply|engine=builtin|path=bounded-device|src=3|dst=3|ok=1'*)
-        echo 'not ok 1 - WebP clips Display P3 red before alpha composition # TODO known result'
+        printf '\n%s\n' 'not ok 1 - WebP clips Display P3 red before alpha composition # TODO known result'
         exit 0 ;;
 esac
 test "$status" -ne 0 || {
-    echo 'not ok 1 - expected behavior now works; promote this test'
+    printf '\n%s\n' 'not ok 1 - expected behavior now works; promote this test'
     exit 0
 }
-echo 'not ok 1 - unexpected fixture, execution or pixel result'
+printf '\n%s\n' 'not ok 1 - unexpected fixture, execution or pixel result'
 exit 0

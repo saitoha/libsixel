@@ -18,16 +18,16 @@ SIXEL_PALETTE_TARGET=output SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     palette/icc_output/0001_icc_output output-target fs \
     "${TOP_SRCDIR}/tests/data/color-numeric" || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required backend unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP required backend unavailable'
     exit 0
 }
 test "$status" -ne 42 || {
-    echo 'not ok 1 - FS still compares the unrendered source # TODO known result'
+    printf '\n%s\n' 'not ok 1 - FS still compares the unrendered source # TODO known result'
     exit 0
 }
 test "$status" -ne 0 || {
-    echo 'not ok 1 - expected behavior now works; promote this test'
+    printf '\n%s\n' 'not ok 1 - expected behavior now works; promote this test'
     exit 0
 }
-echo 'not ok 1 - unexpected fixture, execution or pixel result'
+printf '\n%s\n' 'not ok 1 - unexpected fixture, execution or pixel result'
 exit 0

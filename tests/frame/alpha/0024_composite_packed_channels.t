@@ -6,8 +6,8 @@ echo '1..1'
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" frame/0014_clone_float_canonical composite-channels || {
-    echo 'not ok 1 - Packed alpha composition preserves channel order and both endpoints'
+    printf '\n%s\n' 'not ok 1 - Packed alpha composition preserves channel order and both endpoints'
     exit 0
 }
-echo 'ok 1 - Packed alpha composition preserves channel order and both endpoints'
+printf '\n%s\n' 'ok 1 - Packed alpha composition preserves channel order and both endpoints'
 exit 0

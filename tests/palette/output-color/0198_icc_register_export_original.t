@@ -6,7 +6,7 @@ echo '1..1'
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo 'ok 1 # SKIP img2sixel unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP img2sixel unavailable'
     exit 0
 }
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -21,7 +21,7 @@ P3
 51992 61688 54940
 PPM
 ) || {
-    echo 'not ok 1 - explicit ICC palette export'
+    printf '\n%s\n' 'not ok 1 - explicit ICC palette export'
     exit 0
 }
 actual=$(printf '%s' "$actual" | tr -d '\015')
@@ -29,8 +29,8 @@ test "$actual" = 'JASC-PAL
 0100
 1
 202 240 214' || {
-    echo 'not ok 1 - export preserves original sRGB8 colors'
+    printf '\n%s\n' 'not ok 1 - export preserves original sRGB8 colors'
     exit 0
 }
-echo 'ok 1 - export preserves original sRGB8 colors'
+printf '\n%s\n' 'ok 1 - export preserves original sRGB8 colors'
 exit 0

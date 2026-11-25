@@ -11,7 +11,7 @@ SIXEL_LOADER_CMS_RENDERING_INTENT=relative! SIXEL_TRACE_TOPIC=apng_decode \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" icc/red_alpha libpng:Ebuiltin! \
     "${TOP_SRCDIR}/tests/data/color-numeric/red-alpha-p3.apng" 2>&1) || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP required backend unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP required backend unavailable'
     exit 0
 }
 printf '%s\n' "$trace" >&2
@@ -19,16 +19,16 @@ case "$trace" in
     *'stop loop_no=2 frames_in_loop=2 num_plays=2 (cache)'*) true ;;
     *) false ;;
 esac || {
-    echo 'not ok 1 - libpng did not replay the second APNG play from cache'
+    printf '\n%s\n' 'not ok 1 - libpng did not replay the second APNG play from cache'
     exit 0
 }
 test "$status" -ne 42 || {
-    echo 'not ok 1 - libpng drops ICC history across two APNG plays # TODO known result'
+    printf '\n%s\n' 'not ok 1 - libpng drops ICC history across two APNG plays # TODO known result'
     exit 0
 }
 test "$status" -ne 0 || {
-    echo 'not ok 1 - expected behavior now works; promote this test'
+    printf '\n%s\n' 'not ok 1 - expected behavior now works; promote this test'
     exit 0
 }
-echo 'not ok 1 - unexpected fixture, execution or pixel result'
+printf '\n%s\n' 'not ok 1 - unexpected fixture, execution or pixel result'
 exit 0

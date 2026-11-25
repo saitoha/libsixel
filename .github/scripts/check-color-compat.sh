@@ -166,9 +166,9 @@ set -- \
     encoder/pipeline/0129_encode_frame_g1_levels.t \
     encoder/pipeline/0130_encode_frame_g2_levels.t \
     encoder/pipeline/0131_encode_frame_g4_levels.t \
-    encoder/planning/0194_default_display_p3_pixels.t \
-    encoder/planning/0195_gamma_display_p3_pixels.t \
-    encoder/planning/0196_gamma_display_p3_preserve_resize.t \
+    encoder/planning/0197_default_display_p3_pixels.t \
+    encoder/planning/0198_gamma_display_p3_pixels.t \
+    encoder/planning/0199_gamma_display_p3_preserve_resize.t \
     encoder/playback-palette/0025_palette_source_different_primaries.t \
     encoder/playback-palette/0026_palette_source_explicit_srgb.t \
     encoder/playback-palette/0027_palette_source_implicit_srgb.t \

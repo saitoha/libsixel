@@ -9,7 +9,7 @@ echo '1..1'
 set -v
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    echo 'ok 1 # SKIP img2sixel unavailable'
+    printf '\n%s\n' 'ok 1 # SKIP img2sixel unavailable'
     exit 0
 }
 # Use a fixture so the test does not depend on binary stdin pipe transport.
@@ -22,19 +22,19 @@ trace=$(
     -U "icc:P${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" \
     -_nearest -~none -aoff -Fnone -0none -trgb -Qkmeans:seed=1 -p2 \
     -dfs:scan=raster "$input" 2>&1) || {
-    echo 'not ok 1 - generated ICC palette encode failed'
+    printf '\n%s\n' 'not ok 1 - generated ICC palette encode failed'
     exit 0
 }
 status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/icc_output/0001_icc_output \
     exact-target "$trace" || status=$?
 test "$status" -ne 42 || {
-    echo 'not ok 1 - two source colors skip FS despite a register residual # TODO known result'
+    printf '\n%s\n' 'not ok 1 - two source colors skip FS despite a register residual # TODO known result'
     exit 0
 }
 test "$status" -ne 0 || {
-    echo 'not ok 1 - expected behavior now works; promote this test'
+    printf '\n%s\n' 'not ok 1 - expected behavior now works; promote this test'
     exit 0
 }
-echo 'not ok 1 - unexpected fixture, execution or pixel result'
+printf '\n%s\n' 'not ok 1 - unexpected fixture, execution or pixel result'
 exit 0

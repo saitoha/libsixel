@@ -10,8 +10,8 @@ echo '1..1'
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/0022_loader_libpng_indexed_png_reqcolors_fallback mirror || {
-    echo 'not ok 1 - Libpng reflects packed palette indices in display order'
+    printf '\n%s\n' 'not ok 1 - Libpng reflects packed palette indices in display order'
     exit 0
 }
-echo 'ok 1 - Libpng reflects packed palette indices in display order'
+printf '\n%s\n' 'ok 1 - Libpng reflects packed palette indices in display order'
 exit 0
