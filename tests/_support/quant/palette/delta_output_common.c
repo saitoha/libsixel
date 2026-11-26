@@ -843,7 +843,7 @@ test_delta_output_frames(int space, int target, int workers)
 }
 
 /* Encode successive fixed-palette frames through one encoder. A profile
- * switch keeps the palette source but changes the lookup coordinates. */
+ * switch keeps the palette source and invalidates the lookup grid. */
 int
 test_icc_work_fhedt_reuse(int argc, char **argv)
 {
@@ -858,6 +858,7 @@ test_icc_work_fhedt_reuse(int argc, char **argv)
     sixel_frame_t *frame;
     pd_stream_t stream;
     unsigned char pixels[12];
+    int equivalent_profile;
     int pass;
     int x;
     int ok;
@@ -866,7 +867,9 @@ test_icc_work_fhedt_reuse(int argc, char **argv)
     output = NULL;
     frame = NULL;
     ok = 0;
-    if (argc != 3 || !pd_encoder(&encoder, &output, &stream, 1) ||
+    equivalent_profile = argc == 4 && strcmp(argv[3], "equivalent") == 0;
+    if ((argc != 3 && !equivalent_profile) ||
+            !pd_encoder(&encoder, &output, &stream, 1) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
@@ -894,7 +897,8 @@ test_icc_work_fhedt_reuse(int argc, char **argv)
         stream.size = 0;
         fprintf(stderr, "icc-fhedt-frame %d\n", pass);
         if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
-                !pd_decode(encoder, &stream, 4, 1, 0, expected[pass])) {
+                !pd_decode(encoder, &stream, 4, 1, 0,
+                    expected[equivalent_profile && pass == 2 ? 0 : pass])) {
             goto end;
         }
         sixel_frame_unref(frame);
@@ -929,6 +933,8 @@ test_icc_work_parallel_fs(int argc, char **argv)
     sixel_dither_t const *dither;
     pd_stream_t stream;
     unsigned char pixels[12 * sizeof(row)];
+    int pipeline;
+    int expected_mode;
     int y;
     int ok;
 
@@ -940,12 +946,17 @@ test_icc_work_parallel_fs(int argc, char **argv)
     output = NULL;
     frame = NULL;
     ok = 0;
-    if (argc != 2 || !pd_encoder(&encoder, &output, &stream, 1) ||
+    pipeline = argc == 3 && strcmp(argv[2], "pipeline") == 0;
+    expected_mode = pipeline ? SIXEL_DITHER_ENCODE_PIPELINE
+        : SIXEL_DITHER_ENCODE_STAGED;
+    if ((argc != 2 && !pipeline) ||
+            !pd_encoder(&encoder, &output, &stream, 1) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B2")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
+                pipeline ? "greedy:B4:dither=2:encode=2" : "greedy:B2")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
                 "fs:scan=raster:band_width=6:band_overwrap=0")) ||
@@ -962,10 +973,12 @@ test_icc_work_parallel_fs(int argc, char **argv)
         goto end;
     }
     dither = encoder->diagnostic_dither;
-    if (dither == NULL || dither->pipeline_last_dither_threads != 2 ||
+    if (dither == NULL || dither->pipeline_last_mode != expected_mode ||
+            dither->pipeline_last_dither_threads != 2 ||
             dither->pipeline_last_band_height != 6 ||
             dither->pipeline_last_band_overlap != 0) {
-        fputs("ICC FS: expected two independent 6-row bands\n", stderr);
+        fprintf(stderr, "ICC FS: expected two 6-row bands in %s mode\n",
+            pipeline ? "pipeline" : "staged");
         goto end;
     }
     ok = pd_decode_pattern(encoder, &stream, 2, 12, 0, expected, 12);
@@ -1035,6 +1048,67 @@ test_icc_work_delta_fs(int argc, char **argv)
             fprintf(stderr, "ICC delta FS: %s\n", policies[pass]);
             goto end;
         }
+    }
+    ok = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* At T0, compare the emitted candidate and history in both geometries.
+ * Independent matrix/TRC evaluation gives squared distances
+ * (history minus candidate) of -.104775 in wire RGB and +.314307 in
+ * Display P3 for case 0. It must repaint xterm16 green. In case 1,
+ * both differences are negative (-.014917 and -.02940), so keep. */
+int
+test_icc_work_delta_threshold(int argc, char **argv)
+{
+    static unsigned char const samples[2][3] = {
+        {167, 251, 29}, {38, 140, 209}
+    };
+    static unsigned char const history[2][3] = {
+        {123, 112, 3}, {115, 165, 234}
+    };
+    static unsigned char const green[3] = {0, 255, 0};
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    pd_stream_t stream;
+    unsigned char pixel[3];
+    int pass;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    if (argc != 2 || !pd_encoder(&encoder, &output, &stream, 1) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "delta:T0")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1]))) {
+        goto end;
+    }
+    for (pass = 0; pass < 2; ++pass) {
+        memcpy(pixel, samples[pass], sizeof(pixel));
+        stream.size = 0;
+        if (SIXEL_FAILED(sixel_encoder_set_accumulation_buffer(encoder,
+                history[pass], 1, 1, SIXEL_PIXELFORMAT_RGB888)) ||
+                SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixel, 1, 1,
+                    SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
+                SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
+                    output)) ||
+                !pd_decode(encoder, &stream, 1, 1, pass, green)) {
+            fprintf(stderr, "ICC delta at T0: expected %s\n",
+                pass ? "keep" : "green repaint");
+            goto end;
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
     }
     ok = 1;
 end:

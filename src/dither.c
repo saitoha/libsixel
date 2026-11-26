@@ -5066,13 +5066,17 @@ sixel_dither_apply_palette(
         int adjusted_overlap;
         int adjusted_height;
 
+        /* The shared table and its workers must index the same paintable
+         * entries. An omission-only slot changes the grid signature. */
+        memset(&plan, 0, sizeof(plan));
+        plan.reqcolor = sixel_dither_lookup_ncolors(dither);
         status = sixel_dither_prepare_lookup_policy(
             &dither->lookup_policy,
             entries_view.entries,
             float32_view.entries,
             entries_view.depth,
             float32_view.depth,
-            dither->ncolors,
+            plan.reqcolor,
             dither->optimized,
             dither->lut_policy,
             shared_lut,
@@ -5101,7 +5105,6 @@ sixel_dither_apply_palette(
             adjusted_overlap = adjusted_height / 2;
         }
 
-        memset(&plan, 0, sizeof(plan));
         plan.dest = dest;
         plan.pixels = input_pixels;
         plan.palette = palette;
@@ -5114,7 +5117,6 @@ sixel_dither_apply_palette(
         plan.method_for_scan = method_for_scan;
         plan.lut_policy = dither->lut_policy;
         plan.lookup_shared_instance_enabled = shared_lut;
-        plan.reqcolor = sixel_dither_lookup_ncolors(dither);
         plan.pixelformat = pipeline_pixelformat;
         plan.dither_policy = dither_policy;
         /* Carry the pipeline pinning preference as a strict 0/1 flag. */

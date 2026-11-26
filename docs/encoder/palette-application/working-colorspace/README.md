@@ -269,6 +269,11 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-44 | Fixed-palette frames reuse the ICC FHEDT grid while the profile and lookup settings match. Changing the working ICC rebuilds the grid. | [tests/palette/working-space/0180_icc_work_fhedt_reuse.t](../../../../tests/palette/working-space/0180_icc_work_fhedt_reuse.t) |
 | WC-45 | Parallel raster Floyd–Steinberg propagates ICC residuals within each independent band. | [tests/palette/working-space/0181_icc_work_parallel_fs.t](../../../../tests/palette/working-space/0181_icc_work_parallel_fs.t) |
 | WC-46 | Delta Floyd–Steinberg converts the retained color back to ICC before diffuse mode, while skip mode omits the first residual. | [tests/palette/working-space/0182_icc_work_delta_fs.t](../../../../tests/palette/working-space/0182_icc_work_delta_fs.t) |
+| WC-47 | Parallel fixed-palette frames share one ICC FHEDT grid across bands and frames when the palette has an omission-only slot. | [tests/palette/working-space/0183_icc_work_fhedt_reserved_key.t](../../../../tests/palette/working-space/0183_icc_work_fhedt_reserved_key.t) |
+| WC-48 | Two independently diffused ICC bands supply the encoded rows through the pipeline. | [tests/palette/working-space/0184_icc_work_pipeline_fs.t](../../../../tests/palette/working-space/0184_icc_work_pipeline_fs.t) |
+| WC-49 | Delta compares the emitted candidate and history in ICC working coordinates outside the output threshold. | [tests/palette/working-space/0185_icc_work_delta_threshold.t](../../../../tests/palette/working-space/0185_icc_work_delta_threshold.t) |
+| WC-50 | Switching to an ICC profile with identical working coordinates rebuilds the fixed-palette FHEDT grid. | [tests/palette/working-space/0186_icc_work_fhedt_equivalent_profile.t](../../../../tests/palette/working-space/0186_icc_work_fhedt_equivalent_profile.t) |
+| WC-51 | Distinct clustering and working ICC profiles produce the same independently verified colors in either option order. | [tests/palette/working-space/0187_icc_cluster_work_option_order.t](../../../../tests/palette/working-space/0187_icc_cluster_work_option_order.t) |
 
 ### Coverage boundary
 
