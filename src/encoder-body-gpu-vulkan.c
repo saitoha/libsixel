@@ -4,6 +4,7 @@
 #include "config.h"
 #endif
 #if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,7 @@
 #include "encoder-body-gpu.h"
 #include "gpu-compute-vulkan.h"
 #include "gpu-palette-vulkan.h"
+#include "palette-resident-vulkan.h"
 
 static char const *const body_source[] = {
 #include "generated-vulkan/encoder-body-gpu-shader.inc.h"
@@ -21,13 +23,14 @@ static char const *const emit_source[] = {
 static char const *const copy_source[] = {
 #include "generated-vulkan/encoder-body-copy-gpu-shader.inc.h"
 };
+enum {
+    BR_CLASSIFY, BR_SPANS, BR_LOCAL, BR_PREFIX, BR_OFFSETS, BR_LENGTHS,
+    BR_ORDER, BR_GROUP, BR_BASES, BR_WRITE, BR_COPY, BR_STAGE_COUNT
+};
+
 static sixel_vk_compute_t body_classify_stage;
 static sixel_vk_compute_t body_spans_stage;
-static sixel_vk_compute_t body_lengths_stage;
-static sixel_vk_compute_t body_order_stage;
-static sixel_vk_compute_t body_order_group_stage;
-static sixel_vk_compute_t body_bases_stage;
-static sixel_vk_compute_t body_write_stage;
+static sixel_vk_compute_t body_emit_stages[BR_STAGE_COUNT];
 static sixel_vk_compute_t body_copy_stage;
 static sixel_vk_submission_t body_submission =
     SIXEL_VK_SUBMISSION_INITIALIZER;
@@ -77,6 +80,11 @@ static int const body_copy_slots[] = {
 };
 #define BODY_COPY_BINDINGS (sizeof(body_copy_slots) / \
                             sizeof(body_copy_slots[0]))
+
+enum { BODY_MAP_BANDS = BODY_BINDINGS, BODY_GRID, BODY_RES_SLOTS };
+
+static sixel_vk_compute_t body_resident_stages[BR_STAGE_COUNT];
+static sixel_vk_buffer_t body_resident_buffers[BODY_RES_SLOTS];
 
 struct sixel_body_gpu {
     sixel_vk_buffer_t buffers[BODY_BINDINGS];
@@ -140,27 +148,27 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
             "body_spans", BODY_SPAN_BINDINGS);
     if (status == SIXEL_OK)
         status = sixel_vk_compute_create_local(runtime,
-            &body_lengths_stage,
+            &body_emit_stages[BR_LENGTHS],
             emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
             "body_emit_lengths", BODY_EMIT_BINDINGS, 256);
     if (status == SIXEL_OK)
         status = sixel_vk_compute_create_local(runtime,
-            &body_order_stage,
+            &body_emit_stages[BR_ORDER],
             emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
             "body_emit_order", BODY_EMIT_BINDINGS, 1);
     if (status == SIXEL_OK)
         status = sixel_vk_compute_create_local(runtime,
-            &body_order_group_stage,
+            &body_emit_stages[BR_GROUP],
             emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
             "body_emit_order_group", BODY_EMIT_BINDINGS, 256);
     if (status == SIXEL_OK)
         status = sixel_vk_compute_create_local(runtime,
-            &body_bases_stage,
+            &body_emit_stages[BR_BASES],
             emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
             "body_emit_bases", BODY_EMIT_BINDINGS, 256);
     if (status == SIXEL_OK)
         status = sixel_vk_compute_create_local(runtime,
-            &body_write_stage,
+            &body_emit_stages[BR_WRITE],
             emit_source, sizeof(emit_source) / sizeof(emit_source[0]),
             "body_emit_write", BODY_EMIT_BINDINGS, 256);
     if (status == SIXEL_OK)
@@ -219,16 +227,20 @@ sixel_body_gpu_bind_emit(sixel_vk_runtime_t *runtime,
 
     for (i = 0; i < BODY_EMIT_BINDINGS; ++i)
         bound[i] = &context->buffers[body_emit_slots[i]];
-    status = sixel_vk_compute_bind(runtime, &body_lengths_stage, bound);
+    status = sixel_vk_compute_bind(runtime,
+            &body_emit_stages[BR_LENGTHS], bound);
     if (status == SIXEL_OK)
-        status = sixel_vk_compute_bind(runtime, &body_order_stage, bound);
+        status = sixel_vk_compute_bind(runtime,
+            &body_emit_stages[BR_ORDER], bound);
     if (status == SIXEL_OK)
-        status = sixel_vk_compute_bind(runtime, &body_order_group_stage,
+        status = sixel_vk_compute_bind(runtime, &body_emit_stages[BR_GROUP],
             bound);
     if (status == SIXEL_OK)
-        status = sixel_vk_compute_bind(runtime, &body_bases_stage, bound);
+        status = sixel_vk_compute_bind(runtime,
+            &body_emit_stages[BR_BASES], bound);
     if (status == SIXEL_OK)
-        status = sixel_vk_compute_bind(runtime, &body_write_stage, bound);
+        status = sixel_vk_compute_bind(runtime,
+            &body_emit_stages[BR_WRITE], bound);
     return status;
 }
 
@@ -248,6 +260,36 @@ static uint32_t
 sixel_body_gpu_groups(size_t threads)
 {
     return (uint32_t)((threads + 255U) / 256U);
+}
+
+/* Span lengths, band ordering and spelling use one schedule. Descriptor
+ * instances differ only because in-flight submissions own their bindings. */
+static void
+body_record_emission(VkCommandBuffer command,
+    sixel_vk_compute_t const *stages, uint32_t bands, int grouped,
+    uint32_t groups, VkBuffer grid)
+{
+    if (grid == VK_NULL_HANDLE) {
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &stages[BR_LENGTHS], groups);
+    } else {
+        sixel_vk_compute_dispatch_indirect(command, &stages[BR_LENGTHS],
+            grid, 0);
+    }
+    sixel_vk_compute_barrier(command);
+    sixel_vk_compute_dispatch(command, &stages[BR_ORDER], bands);
+    if (grouped) {
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &stages[BR_GROUP], bands);
+    }
+    sixel_vk_compute_barrier(command);
+    sixel_vk_compute_dispatch(command, &stages[BR_BASES], 1u);
+    if (grid == VK_NULL_HANDLE) {
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &stages[BR_WRITE], groups);
+    } else {
+        sixel_vk_compute_dispatch_indirect(command, &stages[BR_WRITE], grid, 0);
+    }
 }
 
 static SIXELSTATUS
@@ -494,22 +536,9 @@ sixel_body_gpu_run_locked(sixel_vk_runtime_t *runtime,
          * them; each barrier makes the preceding shader writes visible. */
         status = sixel_body_gpu_bind_emit(runtime, context);
         if (status != SIXEL_OK) return status;
-        sixel_vk_compute_barrier(command);
-        sixel_vk_compute_dispatch(command, &body_lengths_stage,
-            sixel_body_gpu_groups(nodes_total));
-        sixel_vk_compute_barrier(command);
-        sixel_vk_compute_dispatch(command, &body_order_stage,
-            params->bands);
-        sixel_vk_compute_barrier(command);
-        if (emit.group_limit != 0) {
-            sixel_vk_compute_dispatch(command, &body_order_group_stage,
-                params->bands);
-            sixel_vk_compute_barrier(command);
-        }
-        sixel_vk_compute_dispatch(command, &body_bases_stage, 1);
-        sixel_vk_compute_barrier(command);
-        sixel_vk_compute_dispatch(command, &body_write_stage,
-            sixel_body_gpu_groups(nodes_total));
+        body_record_emission(command, body_emit_stages, params->bands,
+            emit.group_limit != 0, sixel_body_gpu_groups(nodes_total),
+            VK_NULL_HANDLE);
         sixel_vk_compute_download_barrier(command);
         sixel_vk_buffer_record_download(command, &buffers[BODY_BAND_BYTES],
             ((size_t)params->bands + 1U) * 4U);
@@ -632,5 +661,209 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
     sixel_vk_unlock();
     sixel_vk_submission_leave(&body_submission);
     return status;
+}
+
+/* The legacy body submission may wait with the runtime unlocked. Keep
+ * distinct descriptors for the resident graph, owned by the palette gate. */
+static SIXELSTATUS
+body_resident_bind(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t const *indices, sixel_vk_buffer_t const *palette)
+{
+    static char const *const names[BR_STAGE_COUNT] = {
+        "body_classify", "body_spans", "body_resident_local",
+        "body_resident_prefix", "body_resident_offsets", "body_emit_lengths",
+        "body_emit_order", "body_emit_order_group", "body_resident_bases",
+        "body_emit_write", "body_resident_copy"
+    };
+    static int const tail[] = { BODY_BAND_FIRST, BODY_MAP_BANDS,
+        BODY_EMIT_PARAMS, BODY_GRID, BODY_REGISTERS };
+    sixel_vk_buffer_t const *bound[SIXEL_VK_COMPUTE_BINDINGS];
+    char const *const *source;
+    unsigned int stage, bindings, i;
+    uint32_t local;
+    size_t chunks;
+    SIXELSTATUS status;
+
+    for (stage = 0; stage < BR_STAGE_COUNT; ++stage) {
+        local = 0;
+        if (stage <= BR_OFFSETS) {
+            source = body_source;
+            chunks = sizeof(body_source) / sizeof(body_source[0]);
+            bindings = BODY_SPAN_BINDINGS;
+            for (i = 0; i < bindings; ++i)
+                bound[i] = &body_resident_buffers[i];
+            bound[BODY_INDEXES] = indices;
+            if (stage >= BR_LOCAL) {
+                for (i = 0; i < sizeof(tail) / sizeof(tail[0]); ++i)
+                    bound[bindings + i] = &body_resident_buffers[tail[i]];
+                bindings += sizeof(tail) / sizeof(tail[0]);
+            }
+        } else if (stage == BR_COPY) {
+            source = copy_source;
+            chunks = sizeof(copy_source) / sizeof(copy_source[0]);
+            bindings = BODY_COPY_BINDINGS;
+            for (i = 0; i < bindings; ++i)
+                bound[i] = &body_resident_buffers[body_copy_slots[i]];
+        } else {
+            source = emit_source;
+            chunks = sizeof(emit_source) / sizeof(emit_source[0]);
+            bindings = BODY_EMIT_BINDINGS;
+            local = stage == BR_ORDER || stage == BR_BASES ? 1u : 256u;
+            for (i = 0; i < bindings; ++i)
+                bound[i] = &body_resident_buffers[body_emit_slots[i]];
+            if (stage == BR_BASES) {
+                bound[bindings++] = palette;
+                bound[bindings++] = &body_resident_buffers[BODY_GRID];
+            }
+        }
+        status = sixel_vk_compute_create_local(runtime,
+            &body_resident_stages[stage], source, chunks, names[stage],
+            bindings, local);
+        if (status == SIXEL_OK)
+            status = sixel_vk_compute_bind(runtime,
+                &body_resident_stages[stage], bound);
+        if (status != SIXEL_OK)
+            return status;
+    }
+    return SIXEL_OK;
+}
+
+static void
+body_resident_dispatch(VkCommandBuffer command, int stage, uint32_t groups)
+{
+    sixel_vk_compute_barrier(command);
+    sixel_vk_compute_dispatch(command, &body_resident_stages[stage], groups);
+}
+
+static void
+body_resident_indirect(VkCommandBuffer command, int stage, VkDeviceSize offset)
+{
+    sixel_vk_compute_dispatch_indirect(command, &body_resident_stages[stage],
+        body_resident_buffers[BODY_GRID].buffer, offset);
+}
+
+SIXELSTATUS
+sixel_vk_body_record_resident(sixel_vk_runtime_t *runtime,
+    VkCommandBuffer command, sixel_vk_buffer_t const *indices,
+    sixel_vk_buffer_t const *palette, uint32_t width, uint32_t height,
+    int limited, VkQueryPool timestamps)
+{
+    sixel_body_gpu_params_t p;
+    sixel_body_gpu_emit_params_t emit;
+    sixel_vk_buffer_t *buffers;
+    size_t lengths[BODY_RES_SLOTS];
+    size_t pixels, pairs, bound, gap, t;
+    VkBufferUsageFlags usage;
+    unsigned int i;
+    SIXELSTATUS status;
+
+    if (!width || !height || width > 2048u || height > 2048u ||
+            width * height > 1024u * 1024u)
+        return SIXEL_FALSE;
+    p = (sixel_body_gpu_params_t){width, height, width, height, 0u, 0u,
+        SIXEL_PALETTE_MAX, -1, (width + 31u) / 32u, (height + 5u) / 6u,
+        0u, 0u};
+    emit = (sixel_body_gpu_emit_params_t){width, p.words, p.ncolors,
+        p.bands, 1u, limited != 0, 0u, SIXEL_BODY_GROUP_NODES};
+    pixels = (size_t)width * height;
+    pairs = (size_t)p.bands * p.ncolors;
+    gap = limited ? 5u * (width / 255u) + 2u : 2u;
+    for (t = width; t; t /= 10u) ++gap;
+    /* One occupied column per possible span. Joining adds up to nine
+     * empty columns per further occupied column, so map <= 10*pixels. */
+    bound = p.bands + pixels * (15u + gap) + 18u * p.ncolors;
+    bound = (bound + 3u) & ~(size_t)3u;
+    memcpy(lengths, (size_t[BODY_RES_SLOTS]){
+        [BODY_OCCUPANCY] = pairs * p.words * 4u,
+        [BODY_COUNTS] = pairs * 4u, [BODY_WIDTHS] = pairs * 4u,
+        [BODY_NODE_FIRST] = pairs * 4u, [BODY_MAP_FIRST] = pairs * 4u,
+        [BODY_NODES] = pixels * sizeof(sixel_body_gpu_node_t),
+        [BODY_MAP] = 10u * pixels, [BODY_MASK] = 16u,
+        [BODY_PARAMS] = sizeof(p), [BODY_FIRST_SEEN] = pairs * 4u,
+        [BODY_BAND_FIRST] = 4u * (p.bands + 1u),
+        [BODY_LENGTHS] = pixels * 4u, [BODY_REGISTERS] = 4u * p.ncolors,
+        [BODY_COLUMNS] = p.bands * (2u * width + 1u) * 4u,
+        [BODY_BITS] = p.bands * p.words * 4u, [BODY_SORTED] = pixels * 4u,
+        [BODY_ENTRIES] = pixels * 16u, [BODY_BAND_SIZE] = 4u * p.bands,
+        [BODY_BAND_BYTES] = 4u * (p.bands + 1u), [BODY_BYTES] = bound,
+        [BODY_EMIT_PARAMS] = sizeof(emit), [BODY_BYTES_HOST] = bound + 4u,
+        [BODY_MAP_BANDS] = 4u * p.bands, [BODY_GRID] = 6u * sizeof(uint32_t)
+    }, sizeof(lengths));
+    buffers = body_resident_buffers;
+    for (i = 0; i < BODY_RES_SLOTS; ++i) {
+        if (lengths[i] == 0)
+            continue;
+        if (lengths[i] > runtime->properties.limits.maxStorageBufferRange)
+            return SIXEL_FALSE;
+        if (i == BODY_BYTES_HOST) {
+            status = sixel_vk_buffer_reserve_host_cached(runtime,
+                &buffers[i], lengths[i]);
+            if (status != SIXEL_OK)
+                return SIXEL_FALSE;
+        } else if (i == BODY_PARAMS || i == BODY_EMIT_PARAMS) {
+            status = sixel_vk_buffer_reserve(runtime, &buffers[i],
+                lengths[i], 1);
+        } else {
+            usage = i == BODY_OCCUPANCY ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 0;
+            if (i == BODY_GRID) usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+            status = sixel_vk_buffer_reserve_device_usage(runtime,
+                &buffers[i], lengths[i], usage);
+        }
+        if (status != SIXEL_OK)
+            return status;
+    }
+
+    status = body_resident_bind(runtime, indices, palette);
+    if (status != SIXEL_OK)
+        return status;
+    memcpy(buffers[BODY_PARAMS].mapped, &p, sizeof(p));
+    memcpy(buffers[BODY_EMIT_PARAMS].mapped, &emit, sizeof(emit));
+    sixel_vk_buffer_record_upload(command, &buffers[BODY_PARAMS], sizeof(p));
+    sixel_vk_buffer_record_upload(command, &buffers[BODY_EMIT_PARAMS],
+        sizeof(emit));
+    vkCmdFillBuffer(command, buffers[BODY_OCCUPANCY].buffer, 0,
+        lengths[BODY_OCCUPANCY], 0u);
+    body_resident_dispatch(command, BR_CLASSIFY, sixel_body_gpu_groups(pixels));
+    body_resident_dispatch(command, BR_SPANS, sixel_body_gpu_groups(pairs));
+    body_resident_dispatch(command, BR_LOCAL, sixel_body_gpu_groups(p.bands));
+    body_resident_dispatch(command, BR_PREFIX, 1u);
+    body_resident_dispatch(command, BR_OFFSETS, sixel_body_gpu_groups(pairs));
+    body_resident_dispatch(command, BR_SPANS, sixel_body_gpu_groups(pairs));
+    body_record_emission(command, body_resident_stages, p.bands,
+        emit.group_limit != 0, 0, buffers[BODY_GRID].buffer);
+    if (timestamps != VK_NULL_HANDLE)
+        vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            timestamps, 1u);
+    body_resident_indirect(command, BR_COPY, 3u * sizeof(uint32_t));
+    sixel_vk_compute_download_barrier(command);
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_body_read_resident(sixel_vk_runtime_t *runtime, unsigned char **bytes,
+    int *size)
+{
+    sixel_vk_buffer_t *output;
+    uint32_t count;
+    SIXELSTATUS status;
+
+    output = &body_resident_buffers[BODY_BYTES_HOST];
+    status = sixel_vk_buffer_invalidate(runtime, output, sizeof(count));
+    if (status != SIXEL_OK)
+        return status;
+    count = *(uint32_t const *)output->mapped;
+    if (!count || count > INT_MAX ||
+            (VkDeviceSize)count + sizeof(count) > output->capacity)
+        return SIXEL_FALSE;
+    status = sixel_vk_buffer_invalidate(runtime, output, count + sizeof(count));
+    if (status != SIXEL_OK)
+        return status;
+    *bytes = malloc(count);
+    if (*bytes == NULL)
+        return SIXEL_BAD_ALLOCATION;
+    memcpy(*bytes, (unsigned char const *)output->mapped + sizeof(count),
+        count);
+    *size = (int)count;
+    return SIXEL_OK;
 }
 #endif

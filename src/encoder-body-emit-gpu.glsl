@@ -11,6 +11,7 @@ layout(local_size_x_id = 0) in;
  * Bindings are shared by all four stages; the host rebinding after growth
  * makes their offsets valid for the entire spelling submission.
  * vulkan-stages: body_emit_lengths body_emit_order body_emit_order_group body_emit_bases body_emit_write
+ * vulkan-stages: body_resident_bases
  */
 struct EmitParams {
     uint width, words, ncolors, bands;
@@ -404,4 +405,51 @@ void body_emit_write()
         pos = emit_run(pos, 63u + value, end - i);
         i = end;
     }
+}
+
+
+layout(std430, binding = 14) readonly buffer Palette {
+    uint colors, failed;
+    uint8_t rgb[];
+};
+layout(std430, binding = 15) writeonly buffer Indirect { uint groups[]; };
+
+/* Accel: BODY-RESIDENT vulkan */
+void body_resident_bases()
+{
+    bool valid = failed == 0u && colors > 0u && colors <= e.ncolors;
+    uint total = 0u, selected_register = 0xffffffffu;
+    if (valid) {
+        for (uint i = 0u; i < colors; ++i) {
+            body_bytes[total++] = uint8_t(35u);
+            total = emit_number(total, i);
+            body_bytes[total++] = uint8_t(59u);
+            body_bytes[total++] = uint8_t(50u);
+            for (uint c = 0u; c < 3u; ++c) {
+                body_bytes[total++] = uint8_t(59u);
+                uint value = (uint(rgb[3u * i + c]) * 100u + 127u) / 255u;
+                total = emit_number(total, value);
+            }
+        }
+    }
+    for (uint b = 0u; b < e.bands; ++b) {
+        uint first = band_first[b], end = band_first[b + 1u], trim = 0u;
+        if (first < end) {
+            uint reg = spans[entries[first].x].x;
+            if (reg == selected_register) {
+                // Match the serial writer's register across band separators.
+                trim = 1u + emit_digits(reg);
+                entries[first].y += trim;
+                entries[first].w &= ~2u;
+            }
+            selected_register = spans[entries[end - 1u].x].x;
+        }
+        band_bytes[b] = total - trim;
+        if (b > 0u)
+            body_bytes[total] = uint8_t(45u);
+        total += band_size[b] - trim;
+    }
+    band_bytes[e.bands] = valid ? total : 0u;
+    groups[3] = valid ? max(1u, (total + 1023u) / 1024u) : 1u;
+    groups[4] = groups[5] = 1u;
 }

@@ -11,6 +11,7 @@
 #include "filter-sample.h"
 #include "gpu-compute-vulkan.h"
 #include "palette-common-cover.h"
+#include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmeans-gpu.h"
 #include "palette-resident-vulkan.h"
@@ -34,7 +35,8 @@ enum resident_slot {
     RES_HB_ORDER, RES_HB_BOXES, RES_HB_RESULT, RES_AUX, RES_RESULT, RES_LUT,
     RES_INDICES, RES_INDIRECT, RES_STATE,
     RES_MEMBERSHIP, RES_DISTANCES, RES_PARTIALS, RES_SUMS, RES_MAXIMA,
-    RES_HB_SCRATCH, RES_BUFFER_COUNT
+    RES_HB_SCRATCH, WD_WORK, WD_MEANS, WD_ROWS, WD_PARAMS, WD_PAIRS,
+    RES_BUFFER_COUNT
 };
 
 enum resident_stage {
@@ -48,11 +50,18 @@ enum resident_stage {
     RES_APPLY, RES_STAGE_COUNT
 };
 
+enum ward_stage {
+    WD_KM_POINTS, WD_KM_INIT, WD_KM_COLLECT, WD_KM_CLUSTERS,
+    WD_HB_POINTS, WD_HB_CLUSTERS, WD_SEED, WD_SCAN, WD_MERGE,
+    WD_REPLAY, WD_CLEAR, WD_ASSIGN, WD_UPDATE, WD_PACK, WD_STAGE_COUNT
+};
+
 typedef struct resident_geometry {
     uint32_t width, height, stride, samples, colors, min_iterations;
     float threshold;
     uint32_t cover, soft, grow;
     uint32_t snap[256], tones[256], anchors[SIXEL_PALETTE_COVER_ANCHOR_MAX];
+    uint32_t target, heckbert, representative;
 } resident_geometry_t;
 
 typedef struct resident_binning {
@@ -72,7 +81,20 @@ static char const *const resident_heckbert_source[] = {
 #include "generated-vulkan/palette-heckbert-gpu-shader.inc.h"
 };
 
+static char const *const ward_refine_source[] = {
+#include "generated-vulkan/palette-ward-resident-shader.inc.h"
+};
+static char const *const ward_pairs_source[] = {
+#include "generated-vulkan/palette-ward-shader.inc.h"
+};
+
+#define WARD_WORK_BYTES \
+    (24u * SAMPLE_LIMIT + 128u * SIXEL_WARD_MAX_CLUSTERS + 32u)
+
 static sixel_vk_compute_t resident_pipelines[RES_STAGE_COUNT];
+static sixel_vk_compute_t ward_pipelines[WD_STAGE_COUNT];
+static sixel_vk_compute_t ward_heckbert_pipeline;
+static sixel_vk_compute_t ward_merge_pipelines[6];
 static sixel_vk_buffer_t resident_buffers[RES_BUFFER_COUNT];
 static sixel_vk_submission_t resident_submission =
     SIXEL_VK_SUBMISSION_INITIALIZER;
@@ -87,7 +109,8 @@ resident_groups(uint32_t items, uint32_t width)
  * pipelines consume the resident buffers directly without a host adapter. */
 static SIXELSTATUS
 resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
-    uint32_t solve_width, int heckbert, int snap, int cover, int soft)
+    uint32_t solve_width, int heckbert, int snap, int cover, int soft,
+    int ward)
 {
     static char const *const entries[RES_STAGE_COUNT] = {
         "resident_histogram", "resident_count", "resident_prefix",
@@ -112,8 +135,9 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
     sixel_vk_buffer_t const *bound[SIXEL_VK_COMPUTE_BINDINGS];
     char const *const *source;
     unsigned char const *map;
+    sixel_vk_compute_t *pipeline;
     unsigned int stage, num_bound, i, slot;
-    uint32_t width;
+    uint32_t width, capacity;
     size_t chunks;
     SIXELSTATUS status;
 
@@ -121,12 +145,16 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
          stage < RES_STAGE_COUNT;
          ++stage) {
         if ((!heckbert && stage >= RES_HB_FIRST && stage <= RES_HB_REP) ||
+                (ward && (stage == RES_HB_REP ||
+                    (stage >= RES_SCORE && stage <= RES_PACK))) ||
                 (stage == RES_SNAP && !snap) ||
                 ((stage == RES_COVER_HIST ||
                   stage == RES_COVER_GAPS) && !soft) ||
                 (stage == RES_COVER_REPAIR && !cover))
             continue;
         map = NULL;
+        capacity = 0;
+        pipeline = &resident_pipelines[stage];
         if (stage >= RES_ASSIGN && stage <= RES_UPDATE) {
             source = resident_lloyd_source;
             chunks = sizeof(resident_lloyd_source) /
@@ -141,6 +169,10 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
             map = hb_map;
             num_bound = sizeof(hb_map);
             width = solve_width;
+            if (ward) {
+                capacity = SIXEL_WARD_MAX_CLUSTERS;
+                pipeline = &ward_heckbert_pipeline;
+            }
         } else {
             source = resident_source;
             chunks = sizeof(resident_source) / sizeof(resident_source[0]);
@@ -152,21 +184,96 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
             if (stage == RES_COVER_REPAIR)
                 width = 256u;
         }
-        status = sixel_vk_compute_create_local(runtime,
-            &resident_pipelines[stage], source, chunks, entries[stage],
-            num_bound, width);
+        status = sixel_vk_compute_create_specialized(runtime,
+            pipeline, source, chunks, entries[stage], num_bound, width,
+            capacity);
         if (status != SIXEL_OK)
             return status;
         for (i = 0; i < num_bound; ++i) {
             slot = map == NULL ? i : map[i];
             bound[i] = &resident_buffers[length[slot] ? slot : RES_AUX];
         }
-        status = sixel_vk_compute_bind(runtime, &resident_pipelines[stage],
-            bound);
+        status = sixel_vk_compute_bind(runtime, pipeline, bound);
         if (status != SIXEL_OK)
             return status;
     }
     return SIXEL_OK;
+}
+
+/* Keep the reusable pair shader's four bindings and workgroup geometry. */
+static SIXELSTATUS
+resident_prepare_ward(sixel_vk_runtime_t *runtime, size_t const *length,
+    uint32_t subgroup, uint32_t colors, int heckbert)
+{
+    static char const *const names[WD_STAGE_COUNT] = {
+        "ward_km_points", "ward_km_init", "ward_km_collect",
+        "ward_km_clusters", "ward_hb_points", "ward_hb_clusters",
+        "ward_seed", "ward_rows", "ward_merge", "ward_replay",
+        "ward_lloyd_clear", "ward_lloyd_assign", "ward_lloyd_update",
+        "ward_pack"
+    };
+    static unsigned char const refine[] = {
+        RES_GEOMETRY, RES_POINTS, RES_PARAMS, RES_HB_PARAMS, RES_HB_ORDER,
+        RES_HB_BOXES, RES_HB_RESULT, RES_AUX, RES_RESULT, RES_STATE,
+        RES_MEMBERSHIP, RES_CENTERS, WD_WORK, WD_MEANS, WD_PARAMS, WD_PAIRS
+    };
+    static unsigned char const pairs[] = { WD_MEANS, WD_ROWS, WD_PARAMS,
+        WD_PAIRS };
+    sixel_vk_buffer_t const *bound[SIXEL_VK_COMPUTE_BINDINGS];
+    sixel_vk_compute_t *pipeline;
+    unsigned char const *slots;
+    char const *const *source;
+    unsigned int stage, i, bindings, lane_groups, slot;
+    uint32_t width;
+    size_t chunks;
+    SIXELSTATUS status;
+
+    lane_groups = resident_groups(colors, 128u);
+    for (stage = 0; stage < WD_STAGE_COUNT; ++stage) {
+        if ((heckbert && stage <= WD_KM_CLUSTERS) ||
+                (!heckbert && stage >= WD_HB_POINTS &&
+                    stage <= WD_HB_CLUSTERS))
+            continue;
+        pipeline = &ward_pipelines[stage];
+        if (stage == WD_SCAN || stage == WD_MERGE) {
+            source = ward_pairs_source;
+            chunks = sizeof(ward_pairs_source) / sizeof(ward_pairs_source[0]);
+            slots = pairs;
+            bindings = sizeof(pairs);
+            width = subgroup;
+            if (stage == WD_MERGE) {
+                width = 128u * lane_groups;
+                pipeline = &ward_merge_pipelines[lane_groups - 1u];
+            }
+        } else {
+            source = ward_refine_source;
+            chunks = sizeof(ward_refine_source) /
+                sizeof(ward_refine_source[0]);
+            slots = refine;
+            bindings = sizeof(refine);
+            width = stage == WD_REPLAY || stage == WD_UPDATE ? 1u : GRID_TILE;
+        }
+        status = sixel_vk_compute_create_local(runtime, pipeline, source,
+            chunks, names[stage], bindings, width);
+        if (status != SIXEL_OK)
+            return status;
+        for (i = 0; i < bindings; ++i) {
+            slot = slots[i];
+            bound[i] = &resident_buffers[length[slot] ? slot : RES_AUX];
+        }
+        status = sixel_vk_compute_bind(runtime, pipeline, bound);
+        if (status != SIXEL_OK)
+            return status;
+    }
+    return SIXEL_OK;
+}
+
+static void
+resident_ward_dispatch(VkCommandBuffer command, enum ward_stage stage,
+                       uint32_t groups)
+{
+    sixel_vk_compute_barrier(command);
+    sixel_vk_compute_dispatch(command, &ward_pipelines[stage], groups);
 }
 
 static void
@@ -181,16 +288,8 @@ static void
 resident_dispatch_indirect(VkCommandBuffer command, enum resident_stage stage,
     VkDeviceSize offset)
 {
-    sixel_vk_compute_t const *pipeline;
-
-    pipeline = &resident_pipelines[stage];
-    sixel_vk_compute_barrier(command);
-    vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE,
-        pipeline->pipeline);
-    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
-        pipeline->layout, 0, 1, &pipeline->set, 0, NULL);
-    vkCmdDispatchIndirect(command, resident_buffers[RES_INDIRECT].buffer,
-        offset);
+    sixel_vk_compute_dispatch_indirect(command, &resident_pipelines[stage],
+        resident_buffers[RES_INDIRECT].buffer, offset);
 }
 
 static SIXELSTATUS
@@ -240,7 +339,7 @@ resident_record_sort_control(VkCommandBuffer command, uint32_t run,
 
 static void
 resident_record_lloyd(VkCommandBuffer command, uint32_t samples,
-    uint32_t colors, uint32_t iterations)
+    uint32_t colors, uint32_t iterations, int ward)
 {
     uint32_t i, run, reverse;
 
@@ -262,14 +361,50 @@ resident_record_lloyd(VkCommandBuffer command, uint32_t samples,
         resident_dispatch(command, RES_REDUCE, resident_groups(colors, 256u));
         resident_dispatch(command, RES_UPDATE, 1u);
     }
+    if (ward)
+        return;
     resident_dispatch_indirect(command, RES_SCORE, 0);
     resident_dispatch(command, RES_OBJECTIVE, 1u);
     resident_dispatch(command, RES_PACK, resident_groups(colors, GRID_TILE));
 }
 
+static void
+resident_record_ward(VkCommandBuffer command,
+    sixel_palette_resident_request_t const *request, int heckbert)
+{
+    uint32_t batches, samples, centers, i;
+
+    centers = request->ward_colors;
+    batches = resident_groups(centers, GRID_TILE);
+    samples = resident_groups((uint32_t)request->grid->count, GRID_TILE);
+    if (heckbert) {
+        resident_ward_dispatch(command, WD_HB_POINTS, samples);
+        resident_ward_dispatch(command, WD_HB_CLUSTERS, batches);
+    } else {
+        resident_ward_dispatch(command, WD_KM_INIT, batches);
+        resident_dispatch_indirect(command, RES_ASSIGN, INDIRECT_LLOYD);
+        resident_ward_dispatch(command, WD_KM_COLLECT, samples);
+        resident_ward_dispatch(command, WD_KM_CLUSTERS, batches);
+    }
+    resident_ward_dispatch(command, WD_SEED, batches);
+    resident_ward_dispatch(command, WD_SCAN, centers);
+    sixel_vk_compute_barrier(command);
+    sixel_vk_compute_dispatch(command,
+        &ward_merge_pipelines[batches - 1u], 1u);
+    resident_ward_dispatch(command, WD_REPLAY, 1u);
+    batches = resident_groups(request->colors, GRID_TILE);
+    for (i = 0; i < request->ward_iterations; ++i) {
+        resident_ward_dispatch(command, WD_CLEAR, batches);
+        resident_ward_dispatch(command, WD_ASSIGN, samples);
+        resident_ward_dispatch(command, WD_UPDATE, 1u);
+    }
+    resident_ward_dispatch(command, WD_PACK, batches);
+}
+
 static SIXELSTATUS
 resident_reserve_buffers(sixel_vk_runtime_t *runtime, size_t *length,
-    int heckbert, uint32_t samples, size_t pixels, uint32_t colors)
+    int heckbert, uint32_t samples, size_t pixels, uint32_t colors, int ward,
+    int spell)
 {
     static size_t const fixed[RES_BUFFER_COUNT] = {
         [RES_GEOMETRY] = sizeof(resident_geometry_t),
@@ -303,6 +438,13 @@ resident_reserve_buffers(sixel_vk_runtime_t *runtime, size_t *length,
         length[RES_STATE] = 5u * sizeof(uint32_t);
         length[RES_INDIRECT] = MERGE_CONTROL + 2u * sizeof(uint32_t);
     }
+    if (ward) {
+        length[WD_WORK] = WARD_WORK_BYTES;
+        length[WD_MEANS] = 16u * colors;
+        length[WD_ROWS] = 8u * colors;
+        length[WD_PARAMS] = 8u;
+        length[WD_PAIRS] = 4u * colors;
+    }
     for (slot = 0; slot < RES_BUFFER_COUNT; ++slot) {
         if (length[slot] > runtime->properties.limits.maxStorageBufferRange)
             return SIXEL_FALSE;
@@ -314,8 +456,17 @@ resident_reserve_buffers(sixel_vk_runtime_t *runtime, size_t *length,
             status = sixel_vk_buffer_reserve(runtime, &resident_buffers[slot],
                 length[slot], 1);
         } else if (slot == RES_RESULT || slot == RES_INDICES) {
-            status = sixel_vk_buffer_reserve_readback(runtime,
-                &resident_buffers[slot], length[slot]);
+            if (resident_buffers[slot].buffer != VK_NULL_HANDLE &&
+                    (resident_buffers[slot].mapped != NULL) == spell)
+                sixel_vk_buffer_release(runtime, &resident_buffers[slot]);
+            if (spell) {
+                status = sixel_vk_buffer_reserve_device_usage(runtime,
+                    &resident_buffers[slot], length[slot],
+                    slot == RES_RESULT ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 0);
+            } else {
+                status = sixel_vk_buffer_reserve_readback(runtime,
+                   &resident_buffers[slot], length[slot]);
+            }
         } else {
             usage = 0;
             if (slot == RES_AUX || slot == RES_STATE)
@@ -347,7 +498,10 @@ resident_stage_geometry(resident_geometry_t *dst,
     dst->height = grid->height;
     dst->stride = grid->stride;
     dst->samples = (uint32_t)grid->count;
-    dst->colors = request->colors;
+    dst->colors = request->ward_colors ? request->ward_colors : request->colors;
+    dst->target = request->colors;
+    dst->heckbert = request->quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+    dst->representative = request->representative;
     dst->min_iterations = request->min_iterations;
     dst->threshold = request->threshold;
     dst->cover = request->cover;
@@ -399,7 +553,8 @@ resident_clear_histograms(VkCommandBuffer command, uint32_t samples,
 SIXELSTATUS
 sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
-    unsigned char *palette, unsigned int *colors)
+    unsigned char *palette, unsigned int *colors,
+    sixel_palette_resident_body_t *body)
 {
     sixel_vk_runtime_t *runtime;
     VkPhysicalDeviceSubgroupProperties subgroup;
@@ -411,13 +566,14 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     resident_binning_t record;
     VkCommandBuffer command;
     size_t length[RES_BUFFER_COUNT];
-    uint32_t samples, pixels, solve_width;
+    uint32_t samples, pixels, solve_width, colors_work, ward_lanes;
     uint32_t const *result;
     unsigned char *input;
-    int heckbert, soft;
+    int heckbert, soft, ward;
     SIXELSTATUS status;
 
-    if (!request || !rgb || !indices || !palette || !colors ||
+    if (!request || !rgb ||
+            (!body && (!indices || !palette || !colors)) ||
             !request->colors || request->colors > SIXEL_PALETTE_MAX)
         return SIXEL_BAD_ARGUMENT;
     grid = request->grid;
@@ -429,6 +585,13 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     if (!heckbert &&
             (!request->max_iterations || request->max_iterations > 116u))
         return SIXEL_BAD_ARGUMENT;
+    ward = request->ward_colors != 0;
+    colors_work = ward ? request->ward_colors : request->colors;
+    if (ward && (colors_work <= request->colors ||
+            colors_work > SIXEL_WARD_MAX_CLUSTERS ||
+            request->ward_iterations > 30u))
+        return SIXEL_BAD_ARGUMENT;
+    ward_lanes = resident_groups(colors_work, 128u) * 128u;
     soft = request->cover && request->soft;
     samples = (uint32_t)grid->count;
     pixels = grid->width * grid->height;
@@ -456,22 +619,35 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
               VK_SUBGROUP_FEATURE_ARITHMETIC_BIT) ||
             !subgroup.subgroupSize || GRID_TILE % subgroup.subgroupSize)
         goto end;
+    if (ward && (!runtime->shader_int64 || subgroup.subgroupSize < 8u ||
+            limits->maxComputeSharedMemorySize <
+                (heckbert ? 49152u : 32768u) ||
+            limits->maxComputeWorkGroupSize[0] < ward_lanes ||
+            limits->maxComputeWorkGroupInvocations < ward_lanes))
+        goto end;
     solve_width = heckbert ? sixel_vk_heckbert_threads(runtime) : 0u;
     if (heckbert && !solve_width)
         goto end;
     status = resident_reserve_buffers(runtime, length, heckbert, samples,
-        pixels, request->colors);
+        pixels, colors_work, ward, body != NULL);
     if (status != SIXEL_OK)
         goto end;
     status = resident_prepare_pipelines(runtime, length, solve_width, heckbert,
-        request->snap, request->cover != 0, soft);
+        request->snap, request->cover != 0, soft, ward);
     if (status != SIXEL_OK)
         goto end;
+    if (ward) {
+        status = resident_prepare_ward(runtime, length, subgroup.subgroupSize,
+            colors_work, heckbert);
+        if (status != SIXEL_OK)
+            goto end;
+    }
     input = resident_buffers[RES_RGB].mapped;
     memcpy(input, rgb, 3u * (size_t)pixels);
     memset(input + 3u * (size_t)pixels, 0,
         length[RES_RGB] - 3u * (size_t)pixels);
     resident_stage_geometry(resident_buffers[RES_GEOMETRY].mapped, request);
+    resident_submission.scoped_timestamps = 1;
     status = sixel_vk_submission_begin(runtime, &resident_submission, &command);
     if (status != SIXEL_OK)
         goto end;
@@ -480,6 +656,10 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     sixel_vk_buffer_record_upload(command, &resident_buffers[RES_GEOMETRY],
         length[RES_GEOMETRY]);
     resident_clear_histograms(command, samples, heckbert, soft);
+    sixel_vk_compute_barrier(command);
+    if (resident_submission.timestamps != VK_NULL_HANDLE)
+        vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            resident_submission.timestamps, 0u);
 
     memset(&binning, 0, sizeof(binning));
     record.command = command;
@@ -496,14 +676,21 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     sixel_filter_teardown(&filter);
     if (status != SIXEL_OK)
         goto end;
-    if (heckbert) {
+    if (heckbert && ward) {
+        sixel_vk_compute_barrier(command);
+        sixel_vk_compute_dispatch(command, &ward_heckbert_pipeline, 1u);
+    } else if (heckbert) {
         resident_dispatch(command, RES_HB_SOLVE, 1u);
         resident_dispatch(command, RES_HB_REP,
-            resident_groups(request->colors, GRID_TILE));
+            resident_groups(colors_work, GRID_TILE));
     } else {
-        resident_record_lloyd(command, samples, request->colors,
-            request->max_iterations);
+        if (ward)
+            resident_ward_dispatch(command, WD_KM_POINTS, 2u);
+        resident_record_lloyd(command, samples, colors_work,
+            request->max_iterations, ward);
     }
+    if (ward)
+        resident_record_ward(command, request, heckbert);
     if (request->snap)
         resident_dispatch(command, RES_SNAP,
             resident_groups(request->colors, GRID_TILE));
@@ -517,7 +704,25 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     resident_dispatch(command, RES_BUILD_LUT, HB_CELLS / GRID_TILE);
     resident_dispatch(command, RES_APPLY, resident_groups(pixels, GRID_TILE));
 
-    /* The only readback consists of the final indexed frame and palette. */
+    if (body != NULL) {
+        status = sixel_vk_body_record_resident(runtime, command,
+            &resident_buffers[RES_INDICES], &resident_buffers[RES_RESULT],
+            grid->width, grid->height, request->body_gri_limit,
+            resident_submission.timestamps);
+        if (status != SIXEL_OK)
+            goto end;
+        status = sixel_vk_submission_submit_and_wait(runtime,
+            &resident_submission, command);
+        if (status == SIXEL_OK)
+            status = sixel_vk_body_read_resident(runtime, &body->bytes,
+                &body->size);
+        goto end;
+    }
+
+    /* The indexed consumer borrows only the final palette and indices. */
+    if (resident_submission.timestamps != VK_NULL_HANDLE)
+        vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            resident_submission.timestamps, 1u);
     sixel_vk_compute_download_barrier(command);
     sixel_vk_buffer_record_download(command, &resident_buffers[RES_RESULT],
         length[RES_RESULT]);
@@ -536,8 +741,11 @@ sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
         goto end;
     result = resident_buffers[RES_RESULT].mapped;
     status = SIXEL_RUNTIME_ERROR;
-    if (result[1] || !result[0] || result[0] > SIXEL_PALETTE_MAX)
+    if (result[1] || !result[0] || result[0] > SIXEL_PALETTE_MAX) {
+        if (ward)
+            status = SIXEL_FALSE;
         goto end;
+    }
     status = sixel_vk_buffer_invalidate(runtime, &resident_buffers[RES_INDICES],
         length[RES_INDICES]);
     if (status != SIXEL_OK)

@@ -25,7 +25,8 @@ layout(std430, binding = 4) readonly buffer Parameters {
 };
 layout(std430, binding = 5) buffer Result { uint result[]; };
 
-#define HB_BOXES 256u
+/* Resident Ward oversplits before merging back to the wire palette. */
+layout(constant_id = 1) const uint HB_BOXES = 256u;
 #define HB_BINS 256u
 #define HB_GROUPS 128u
 #define HB_SLOTS 6u

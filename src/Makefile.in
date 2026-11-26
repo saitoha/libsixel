@@ -1600,6 +1600,7 @@ SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
     $(srcdir)/palette-ward.glsl \
     $(srcdir)/palette-kmeans-resident.glsl \
+    $(srcdir)/palette-ward-resident.glsl \
     $(srcdir)/palette-heckbert-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
     $(srcdir)/encoder-body-gpu.glsl \

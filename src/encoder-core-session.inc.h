@@ -464,34 +464,36 @@ sixel_output_is_resolve_only(sixel_output_t const *output)
 }
 
 static SIXELSTATUS
-sixel_output_emit_serialized(sixel_output_t *output,
+sixel_output_write_body(sixel_output_t *output,
     sixel_output_resolved_t const *resolved)
 {
-    sixel_writer_t *writer;
     int offset, length;
     SIXELSTATUS status;
 
-    writer = output->writer;
-    status = writer->vtbl->begin_image(writer, &resolved->header, NULL);
-    if (status != SIXEL_OK)
-        return status;
-    /* Keep the existing packet-size bound for callback-backed streams. */
+    if (resolved->image != NULL) {
+        status = output->core->vtbl->consume(output->core,
+            resolved->image->description.height);
+        return status == SIXEL_OK
+            ? output->core->vtbl->finish(output->core) : status;
+    }
+
+    /* A body already serialized by a component uses the same writer and
+     * packet-size bound as bytes spelled during core consumption. */
     for (offset = 0; offset < resolved->serialized_size; offset += length) {
         length = resolved->serialized_size - offset;
         if (length > SIXEL_OUTPUT_PACKET_SIZE)
             length = SIXEL_OUTPUT_PACKET_SIZE;
-        status = writer->vtbl->write(writer,
-            (char const *)resolved->serialized + offset, length);
-        if (status != SIXEL_OK) {
-            (void)writer->vtbl->abort_image(writer);
+        status = sixel_session_write(
+            (char const *)resolved->serialized + offset, (size_t)length,
+            output->writer);
+        if (status != SIXEL_OK)
             return status;
-        }
     }
-    return writer->vtbl->end_image(writer, NULL);
+    return SIXEL_OK;
 }
 
-/* E owns only this complete image and its private packet writer. Passing a
- * null identity avoids allocating an acceptance receipt that R never uses. */
+/* A completed indexed image or pre-spelled body has the same ownership,
+ * terminal framing and failure handling at both output entry points. */
 SIXELSTATUS
 sixel_output_encode_resolved(sixel_output_t *output,
     sixel_output_resolved_t const *resolved)
@@ -500,65 +502,80 @@ sixel_output_encode_resolved(sixel_output_t *output,
     SIXELSTATUS status;
     int opened;
 
-    if (output == NULL || resolved == NULL) return SIXEL_BAD_ARGUMENT;
-    if (resolved->serialized != NULL && resolved->serialized_size > 0)
-        return sixel_output_emit_serialized(output, resolved);
-    if (resolved->image == NULL ||
-            sixel_indexed_frame_get_state(resolved->image) !=
-                SIXEL_INDEXED_COMPLETE) return SIXEL_BAD_ARGUMENT;
-    opened = 0;
-    if (output->core == NULL) {
-        status = sixel_encoder_core_create_interface_from_factory(
-            output->allocator, &output->core);
-        if (status != SIXEL_OK) return status;
+    if (output == NULL || resolved == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    if (resolved->image == NULL) {
+        if (resolved->serialized == NULL || resolved->serialized_size <= 0)
+            return SIXEL_BAD_ARGUMENT;
+    } else {
+        if (sixel_indexed_frame_get_state(resolved->image) !=
+                SIXEL_INDEXED_COMPLETE)
+            return SIXEL_BAD_ARGUMENT;
+        if (output->core == NULL) {
+            status = sixel_encoder_core_create_interface_from_factory(
+                output->allocator, &output->core);
+            if (status != SIXEL_OK)
+                return status;
+        }
+        sixel_encoder_core_set_gpu_body(output->core, resolved->gpu_body);
+        memset(&body, 0, sizeof(body));
+        body.image = resolved->image;
+        body.options = resolved->options;
+        body.threads = resolved->threads;
+        body.worker_capacity = body.threads;
+        body.queue_bands = body.threads * 3;
+        body.sink.write = sixel_session_write;
+        body.sink.context = output->writer;
+        status = output->core->vtbl->prepare(output->core, &body);
+        if (status != SIXEL_OK)
+            return status;
     }
-    sixel_encoder_core_set_gpu_body(output->core, resolved->gpu_body);
-    memset(&body, 0, sizeof(body));
-    body.image = resolved->image;
-    body.options = resolved->options;
-    body.threads = resolved->threads;
-    body.worker_capacity = body.threads;
-    body.queue_bands = body.threads * 3;
-    body.sink.write = sixel_session_write;
-    body.sink.context = output->writer;
-    status = output->core->vtbl->prepare(output->core, &body);
-    if (status != SIXEL_OK) return status;
     status = output->writer->vtbl->begin_image(output->writer,
         &resolved->header, NULL);
-    if (status != SIXEL_OK) goto end;
-    opened = 1;
-    status = output->core->vtbl->consume(output->core,
-        resolved->image->description.height);
+    opened = status == SIXEL_OK;
+    if (opened)
+        status = sixel_output_write_body(output, resolved);
     if (status == SIXEL_OK)
-        status = output->core->vtbl->finish(output->core);
-    if (status == SIXEL_OK) {
-        status = output->writer->vtbl->end_image(output->writer, NULL);
-        opened = 0;
-    }
-end:
-    if (status != SIXEL_OK) (void)output->core->vtbl->abort(output->core);
-    if (opened) (void)output->writer->vtbl->abort_image(output->writer);
+        return output->writer->vtbl->end_image(output->writer, NULL);
+    if (resolved->image != NULL)
+        (void)output->core->vtbl->abort(output->core);
+    if (opened)
+        (void)output->writer->vtbl->abort_image(output->writer);
     return status;
 }
 
-SIXELSTATUS
-sixel_output_resident_body(sixel_output_t *output,
-    sixel_output_resolved_t *body, sixel_output_resolved_t *capture)
+static SIXELSTATUS
+sixel_output_publish_resolved(sixel_output_t *output,
+    sixel_output_resolved_t *resolved)
 {
     SIXELSTATUS status;
 
-    body->header.parameter_count = output->require_keep_header ? 2 : 0;
-    body->header.parameter1 = output->require_keep_header;
     status = SIXEL_OK;
-    if (capture != NULL) {
-        *capture = *body;
-        body->serialized = NULL;
+    if (sixel_output_is_resolve_only(output)) {
+        *output->deferred->capture = *resolved;
+        resolved->image = NULL;
+        resolved->serialized = NULL;
     } else {
-        status = sixel_output_emit_serialized(output, body);
+        status = sixel_output_encode_resolved(output, resolved);
     }
     if (status == SIXEL_OK)
         ++output->indexed_count;
     return status;
+}
+
+SIXELSTATUS
+sixel_output_publish_prepared(sixel_output_t *output, int *published)
+{
+    sixel_output_resolved_t *result;
+
+    *published = output != NULL && output->deferred != NULL &&
+        output->deferred->ready != NULL;
+    if (!*published)
+        return SIXEL_OK;
+    result = output->deferred->ready;
+    result->header.parameter_count = output->require_keep_header ? 2 : 0;
+    result->header.parameter1 = output->require_keep_header;
+    return sixel_output_publish_resolved(output, result);
 }
 
 /* A resident solver supplies complete PAL8 indexes. Borrow the result only
@@ -615,14 +632,7 @@ sixel_encode_resident_indexed(sixel_legacy_encode_request_t const *request)
     result.header.use_raster_attributes = 1;
     result.threads = sixel_threads_resolve();
     result.gpu_body = request->dither->gpu_policy != SIXEL_GPU_POLICY_OFF;
-    if (sixel_output_is_resolve_only(output)) {
-        *output->deferred->capture = result;
-        result.image = NULL;
-    } else {
-        status = sixel_output_encode_resolved(output, &result);
-    }
-    if (status == SIXEL_OK)
-        ++output->indexed_count;
+    status = sixel_output_publish_resolved(output, &result);
 end:
     sixel_indexed_frame_unref(result.image);
     sixel_allocator_free(allocator, take.indexes);

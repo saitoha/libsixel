@@ -53,6 +53,7 @@ vulkan_stages = [
   '../palette-kmeans-gpu.glsl',
   '../palette-ward.glsl',
   '../palette-kmeans-resident.glsl',
+  '../palette-ward-resident.glsl',
   '../palette-heckbert-gpu.glsl',
   '../retained-plane-gpu.glsl',
   '../encoder-body-gpu.glsl',

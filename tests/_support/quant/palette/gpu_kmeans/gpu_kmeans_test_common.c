@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/palette-kmeans-gpu.h"
+#include "src/palette-resident-vulkan.h"
 
 int
 test_kmgpu_available(int argc, char **argv)
@@ -18,6 +19,33 @@ int
 test_kmgpu_resident_available(int argc, char **argv)
 {
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+#if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
+    sixel_vk_runtime_t *runtime;
+    sixel_vk_buffer_t staging;
+    SIXELSTATUS status;
+    int ready;
+
+    if (argc > 1 && strcmp(argv[1], "ward") == 0) {
+        memset(&staging, 0, sizeof(staging));
+        sixel_vk_lock();
+        runtime = sixel_vk_runtime_get_locked();
+        ready = runtime != NULL && runtime->shader_int64 &&
+            runtime->properties.limits.maxComputeSharedMemorySize >= 49152u &&
+            runtime->properties.limits.maxPerStageDescriptorStorageBuffers
+                >= 16u &&
+            runtime->properties.limits.maxDescriptorSetStorageBuffers >= 16u &&
+            sixel_vk_heckbert_threads(runtime) != 0u;
+        if (ready) {
+            status = sixel_vk_buffer_reserve_host_cached(runtime,
+                &staging, 4096u);
+            sixel_vk_buffer_release(runtime, &staging);
+            ready = status == SIXEL_OK;
+        }
+        sixel_vk_unlock();
+        if (!ready)
+            return 77;
+    }
+#endif
     return test_kmgpu_available(argc, argv);
 #else
     (void)argc;

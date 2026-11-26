@@ -100,7 +100,8 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
-    unsigned char *palette, unsigned int *colors);
+    unsigned char *palette, unsigned int *colors,
+    sixel_palette_resident_body_t *body);
 #endif
 
 #ifdef __cplusplus

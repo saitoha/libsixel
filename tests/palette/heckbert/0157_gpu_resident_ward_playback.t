@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eux
 probe_status=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/resident-available || probe_status=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/resident-available ward || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo '1..0 # SKIP requires Metal'
+    echo '1..0 # SKIP requires native GPU Ward and SIXEL support'
     exit 0
 }
 echo '1..1'

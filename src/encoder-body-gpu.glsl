@@ -23,11 +23,11 @@ layout(std430, binding = 2) buffer B2
 {
     uint widths[];
 };
-layout(std430, binding = 3) readonly buffer B3
+layout(std430, binding = 3) buffer B3
 {
     uint node_first[];
 };
-layout(std430, binding = 4) readonly buffer B4
+layout(std430, binding = 4) buffer B4
 {
     uint map_first[];
 };
@@ -47,7 +47,7 @@ layout(std430, binding = 8) readonly buffer B8
 {
     uint8_t mask[];
 };
-layout(std430, binding = 9) readonly buffer B9
+layout(std430, binding = 9) buffer B9
 {
     Params p;
 };
@@ -65,6 +65,7 @@ uint body_invocation()
 /* Both stages declare the same eleven bindings so one layout serves the
  * pair; the same algorithm as encoder-body-gpu-metal.m.
  * vulkan-stages: body_classify body_spans
+ * vulkan-stages: body_resident_local body_resident_prefix body_resident_offsets
  */
 
 /* Mark each painted source pixel in its (band, register) column bitmap. */
@@ -149,4 +150,63 @@ void body_spans()
     } else {
         first_seen[t] = first;
     }
+}
+
+
+/* Accel: BODY-RESIDENT vulkan */
+layout(std430, binding = 11) buffer BandFirst { uint band_first[]; };
+layout(std430, binding = 12) buffer MapBands { uint map_bands[]; };
+layout(std430, binding = 13) buffer EmitShape {
+    uint width, words, ncolors, bands;
+    uint selectors, limited, nodes, group_limit;
+} emit;
+layout(std430, binding = 14) buffer Indirect { uint groups[]; };
+layout(std430, binding = 15) writeonly buffer Registers { uint registers[]; };
+
+/* Scan registers within each band and then scan the short band totals. */
+void body_resident_local()
+{
+    uint b = body_invocation();
+    if (b >= p.bands)
+        return;
+    uint n = 0u, m = 0u;
+    for (uint i = b * p.ncolors; i < (b + 1u) * p.ncolors; ++i) {
+        node_first[i] = n;
+        map_first[i] = m;
+        n += counts[i];
+        m += widths[i];
+    }
+    band_first[b] = n;
+    map_bands[b] = m;
+}
+
+void body_resident_prefix()
+{
+    if (body_invocation() != 0u)
+        return;
+    uint n = 0u, m = 0u;
+    for (uint b = 0u; b < p.bands; ++b) {
+        uint count = band_first[b], length = map_bands[b];
+        band_first[b] = n;
+        map_bands[b] = m;
+        n += count;
+        m += length;
+    }
+    band_first[p.bands] = n;
+    emit.nodes = n;
+    groups[0] = max(1u, (n + 255u) / 256u);
+    groups[1] = groups[2] = 1u;
+    p.write_pass = 1u;
+}
+
+void body_resident_offsets()
+{
+    uint i = body_invocation();
+    if (i >= p.bands * p.ncolors)
+        return;
+    uint b = i / p.ncolors;
+    node_first[i] += band_first[b];
+    map_first[i] += map_bands[b];
+    if (i < p.ncolors)
+        registers[i] = i;
 }

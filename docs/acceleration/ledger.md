@@ -11,7 +11,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | ID | Operation | Scalar | NEON | SSE2 | AVX2 | WASM | Metal | Vulkan | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | BODY-COMPOSE | Build occupancy, spans, cell values, and first-seen register order for SIXEL body bands on the GPU | done | n/a | n/a | n/a | n/a | done | done | |
-| BODY-RESIDENT | Scan span offsets and spell RGB palette definitions before the resident SIXEL body | done | n/a | n/a | n/a | n/a | done | planned | |
+| BODY-RESIDENT | Scan span offsets and spell RGB palette definitions before the resident SIXEL body | done | n/a | n/a | n/a | n/a | done | done | |
 | BODY-SPELL | Spell composed SIXEL spans into body bytes on the GPU, so encode workers only copy bands | done | n/a | n/a | n/a | n/a | done | done | The grouped order stage looks up the next span start from a column table when the encoded width is at most 2048. Vulkan starts on the CPU and uses the shared measured GPU headroom rule: windows of at least 8 frames and 20 ms, averaged load below 0.50 to enter GPU spelling and above 0.70 to return to CPU emission. GPU policy off keeps CPU emission. |
 | DECODE-BAND-PARSE | Parse kept band-column bodies in chunks on the GPU under the decoder GPU policy | done | n/a | n/a | n/a | n/a | done | planned | |
 | DECODE-BAND-WORDS | Band-word decoder helpers: load sixels, run extents, plane updates, gathers and RGBA blends | done | done | planned | planned | planned | n/a | n/a | The NEON helpers need AArch64 table lookups. |
@@ -34,7 +34,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | KMEANS-RESIDENT-PCA | Compute the principal axis and seed centers from weighted projection buckets | done | n/a | n/a | n/a | n/a | done | done | |
 | KMEANS-RESIDENT-SNAP | Apply the final byte snap map before RGB888 cover repair | done | n/a | n/a | n/a | n/a | done | done | |
 | PALETTE-WARD | Select ordered Ward merge pairs for byte RGB palette construction | done | n/a | n/a | n/a | n/a | done | done | Native GPU backends return the ordered pairs for FP64 centroid and representative-statistics updates. |
-| PALETTE-WARD-RESIDENT | Apply byte Ward merges, refine integer moments and export representatives on Metal | done | n/a | n/a | n/a | n/a | done | planned | |
+| PALETTE-WARD-RESIDENT | Apply byte Ward merges, refine integer moments and export resident representatives | done | n/a | n/a | n/a | n/a | done | done | |
 | PUBLISH-INDEX-SCAN | Check published index rows for bytes that need correction | done | done | done | planned | planned | n/a | n/a | |
 | REFRESH-COARSE | Reduce the activity map to 4x4 tiles | done | planned | planned | done | planned | n/a | n/a | |
 | REFRESH-LUMA | Compute luma for spatial refresh | done | planned | planned | done | planned | n/a | n/a | |

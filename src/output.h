@@ -77,6 +77,7 @@ typedef struct sixel_output_deferred {
     void (*resolved)(void *context);
     void *resolved_context;
     sixel_output_resolved_t *capture;
+    sixel_output_resolved_t *ready;  /* Borrowed completed output. */
     double history_seconds;
 } sixel_output_deferred_t;
 
@@ -89,8 +90,7 @@ sixel_output_encode_resolved(sixel_output_t *output,
     sixel_output_resolved_t const *resolved);
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_output_resident_body(sixel_output_t *output,
-    sixel_output_resolved_t *body, sixel_output_resolved_t *capture);
+sixel_output_publish_prepared(sixel_output_t *output, int *published);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_prepare_deferred(sixel_legacy_encode_request_t const *request,

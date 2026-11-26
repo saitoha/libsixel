@@ -274,9 +274,10 @@ sixel_vk_compute_destroy(sixel_vk_runtime_t *runtime,
 }
 
 SIXELSTATUS
-sixel_vk_compute_create_local(sixel_vk_runtime_t *runtime,
+sixel_vk_compute_create_specialized(sixel_vk_runtime_t *runtime,
     sixel_vk_compute_t *stage, char const *const *chunks, size_t count,
-    char const *entry, unsigned int bindings, uint32_t local_size_x)
+    char const *entry, unsigned int bindings, uint32_t local_size_x,
+    uint32_t stage_capacity)
 {
     VkPhysicalDeviceLimits const *limits;
     VkDescriptorSetLayoutBinding slots[SIXEL_VK_COMPUTE_BINDINGS];
@@ -286,7 +287,8 @@ sixel_vk_compute_create_local(sixel_vk_runtime_t *runtime,
     VkDescriptorPoolCreateInfo pool_info;
     VkDescriptorSetAllocateInfo allocate;
     VkComputePipelineCreateInfo pipeline;
-    VkSpecializationMapEntry map;
+    VkSpecializationMapEntry map[2];
+    uint32_t constants[2];
     VkSpecializationInfo specialization;
     VkShaderModule module;
     sixel_vk_source_part_t parts[2];
@@ -360,14 +362,20 @@ sixel_vk_compute_create_local(sixel_vk_runtime_t *runtime,
     pipeline.stage.module = module;
     pipeline.stage.pName = "main";
     if (local_size_x != 0) {
-        memset(&map, 0, sizeof(map));
-        map.constantID = 0;
-        map.size = sizeof(local_size_x);
+        memset(map, 0, sizeof(map));
+        map[0].constantID = 0;
+        map[0].size = sizeof(constants[0]);
+        map[1].constantID = 1;
+        map[1].offset = sizeof(constants[0]);
+        map[1].size = sizeof(constants[1]);
+        constants[0] = local_size_x;
+        constants[1] = stage_capacity;
         memset(&specialization, 0, sizeof(specialization));
-        specialization.mapEntryCount = 1;
-        specialization.pMapEntries = &map;
-        specialization.dataSize = sizeof(local_size_x);
-        specialization.pData = &local_size_x;
+        specialization.mapEntryCount = stage_capacity ? 2u : 1u;
+        specialization.pMapEntries = map;
+        specialization.dataSize =
+            specialization.mapEntryCount * sizeof(constants[0]);
+        specialization.pData = constants;
         pipeline.stage.pSpecializationInfo = &specialization;
     }
     pipeline.layout = stage->layout;
@@ -379,6 +387,15 @@ end:
     vkDestroyShaderModule(runtime->device, module, NULL);
     if (status != SIXEL_OK) sixel_vk_compute_destroy(runtime, stage);
     return status;
+}
+
+SIXELSTATUS
+sixel_vk_compute_create_local(sixel_vk_runtime_t *runtime,
+    sixel_vk_compute_t *stage, char const *const *chunks, size_t count,
+    char const *entry, unsigned int bindings, uint32_t local_size_x)
+{
+    return sixel_vk_compute_create_specialized(runtime, stage, chunks,
+        count, entry, bindings, local_size_x, 0);
 }
 
 SIXELSTATUS
@@ -447,4 +464,19 @@ sixel_vk_compute_dispatch(VkCommandBuffer command,
     vkCmdDispatch(command, groups > 65535u ? 65535u : groups,
         (groups + 65534u) / 65535u, 1);
 }
+/* Indirect argument reads occur before the compute stage. */
+void
+sixel_vk_compute_dispatch_indirect(VkCommandBuffer command,
+    sixel_vk_compute_t const *stage, VkBuffer args, VkDeviceSize offset)
+{
+    sixel_vk_record_barrier(command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        VK_ACCESS_MEMORY_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT |
+        VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT, VK_ACCESS_SHADER_READ_BIT |
+        VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT);
+    vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_COMPUTE, stage->pipeline);
+    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_COMPUTE,
+        stage->layout, 0, 1, &stage->set, 0, NULL);
+    vkCmdDispatchIndirect(command, args, offset);
+}
+
 #endif
