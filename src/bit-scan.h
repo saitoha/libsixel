@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include "simd-config.h"
+
 #if HAVE_BITSCAN_FORWARD64 || HAVE_BITSCAN_REVERSE64
 # include <intrin.h>
 #endif
@@ -48,7 +50,10 @@ sixel_bit_scan_forward64(uint64_t bits)
 #endif
 }
 
-/* Same precondition as the forward scan, counting from the same end. */
+#if SIXEL_SIMD_NEON_A64 && SIXEL_SIMD_LITTLE_ENDIAN
+/* Only the AArch64 NEON decoders use the reverse scan. Keep it out of
+ * other amalgamations, where Clang can diagnose unused inline functions.
+ * Like the forward scan, it requires a nonzero word. */
 static inline unsigned int
 sixel_bit_scan_reverse64(uint64_t bits)
 {
@@ -87,5 +92,6 @@ sixel_bit_scan_reverse64(uint64_t bits)
     return shift + (unsigned int)(bits >> 1);
 #endif
 }
+#endif
 
 #endif /* LIBSIXEL_BIT_SCAN_H */

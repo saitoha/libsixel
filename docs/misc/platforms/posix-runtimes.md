@@ -14,6 +14,8 @@ These macros are declaration controls, not capability proof. Continue to gate ca
 
 The builds probe the libfetch header for `fetchIO`. NetBSD and MINIX use the `fetchIO_read` and `fetchIO_close` operations on that stream type. The `FILE *` interface uses `fread` and `fclose`. FreeBSD and DragonFly retain their `gettimeofday` declaration accommodation and avoid the `posix_spawnp` thumbnailer path because the shared-library link cannot rely on an exported `environ` under the project's no-undefined policy.
 
+In the FreeBSD x86-64 amalgamation, Clang can diagnose inline helpers as unused when the generator places them directly in the translation unit. The reverse bit scan follows the same little-endian AArch64 NEON guard as its decoder callers.
+
 OpenBSD needs the BSD namespace for sysctl types and avoids assumptions around generic prototypes and x86 intrinsic headers. DragonFly x86 AVX selection retains the operating-system-state guard before using AVX state. Linux uses `_GNU_SOURCE` where GNU pthread affinity or the GNU `strerror_r` result contract is selected. Android participates in the signal-context branch used by abort tracing but must not be assumed to provide every glibc extension.
 
 `_SC_NPROCESSORS_ONLN` and `_POSIX_VERSION` are runtime-capability markers used for fallback selection. Preserve fallback ordering instead of turning one libc's preferred query into a universal requirement.
