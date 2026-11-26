@@ -92,6 +92,9 @@ _img2sixel()
     elif [[ $cur == ${opt_short_uninstall}=* ]]; then
         prev=${opt_short_uninstall}
         cur=${cur#*=}
+    elif [[ $cur == --clustering-colorspace=* ]]; then
+        prev=--clustering-colorspace
+        cur=${cur#*=}
     elif [[ $cur == ${opt_threads}=* ]]; then
         prev=${opt_threads}
         cur=${cur#*=}
@@ -1033,7 +1036,13 @@ _img2sixel()
         return 0
         ;;
     -X|--clustering-colorspace)
-        COMPREPLY=( $( compgen -W 'gamma \
+        if [[ $cur == icc:* ]]; then
+            cur=${cur#icc:}
+            _img2sixel_filedir
+            COMPREPLY=( "${COMPREPLY[@]/#/icc:}" )
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'auto icc: gamma \
                                    linear \
                                    oklab \
                                    cielab \

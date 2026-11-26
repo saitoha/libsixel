@@ -235,9 +235,16 @@ _loaders() {
 }
 
 _clusteringcolorspace() {
+  if [[ $PREFIX = icc:* ]]; then
+    compset -P 'icc:'
+    _files
+    return
+  fi
   _values \
     'COLORSPACE' \
-    'gamma[keep gamma encoded pixels (default)]' \
+    'auto[follow the resolved working color space (default)]' \
+    'icc:[matrix/TRC RGB ICC profile]' \
+    'gamma[keep gamma encoded pixels]' \
     'linear[use linear RGB for palette clustering]' \
     'oklab[cluster in OKLab uniform color space]' \
     'cielab[cluster in CIELAB uniform color space]' \

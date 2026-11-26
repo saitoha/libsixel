@@ -1989,13 +1989,19 @@ end:
  * A profile can have independent forward and reverse LUTs. */
 static int
 sixel_palette_icc_code_color(sixel_palette_t const *palette,
-    unsigned char const code[3], int space, double rgb[3])
+    unsigned char const code[3], int space,
+    sixel_color_def_t const *cluster_icc, double rgb[3])
 {
     double device[3];
 
     device[0] = code[0] / 100.0;
     device[1] = code[1] / 100.0;
     device[2] = code[2] / 100.0;
+    if (cluster_icc != NULL) {
+        return sixel_cdef_relative(
+            SIXEL_PALETTE_STORAGE_CONST(palette)->output_device,
+            cluster_icc, device, rgb);
+    }
     return sixel_palette_from_output(palette, rgb, device, space);
 }
 
@@ -2016,7 +2022,8 @@ sixel_palette_icc_distance(double const a[3], double const b[3])
  * Keep the initial tuple on ties, particularly with a many-to-one LUT. */
 static int
 sixel_palette_select_icc_code(sixel_palette_t const *palette,
-    unsigned char code[3], double const target[3], int space)
+    unsigned char code[3], double const target[3], int space,
+    sixel_color_def_t const *cluster_icc)
 {
     unsigned char candidate[3];
     unsigned char selected[3];
@@ -2027,7 +2034,8 @@ sixel_palette_select_icc_code(sixel_palette_t const *palette,
     int direction;
     int component;
 
-    if (!sixel_palette_icc_code_color(palette, code, space, actual)) {
+    if (!sixel_palette_icc_code_color(palette, code, space, cluster_icc,
+                                      actual)) {
         return 0;
     }
     best = sixel_palette_icc_distance(target, actual);
@@ -2041,7 +2049,7 @@ sixel_palette_select_icc_code(sixel_palette_t const *palette,
             }
             candidate[channel] = (unsigned char)component;
             if (sixel_palette_icc_code_color(palette, candidate, space,
-                                             actual)) {
+                                             cluster_icc, actual)) {
                 distance = sixel_palette_icc_distance(target, actual);
                 /* Interpolating equal LUT entries can leave a few ulps. */
                 if (distance < best - 64 * DBL_EPSILON * fmax(1.0, best)) {
@@ -2057,7 +2065,8 @@ sixel_palette_select_icc_code(sixel_palette_t const *palette,
 
 SIXELSTATUS
 sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
-    int clustering, int palette_type, unsigned int first, unsigned int end)
+    int clustering, struct sixel_color_def const *cluster_icc,
+    int palette_type, unsigned int first, unsigned int end)
 {
     sixel_palette_storage_t *storage;
     sixel_palette_icc_source_t *original;
@@ -2100,14 +2109,24 @@ sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
             for (channel = 0; channel < 3; ++channel) {
                 source[channel] = storage->entries_float32[offset + channel];
             }
-            if (!sixel_color_convert(target, source, workspace, clustering) ||
-                    !sixel_palette_select_icc_code(palette, codes + offset,
-                                                   target, clustering)) {
+            if (cluster_icc != NULL) {
+                if (!sixel_color_convert(working, source, workspace,
+                        SIXEL_COLORSPACE_GAMMA) ||
+                        !sixel_cdef_relative(storage->output_srgb, cluster_icc,
+                                             working, target)) {
+                    return SIXEL_BAD_INPUT;
+                }
+            } else if (!sixel_color_convert(target, source, workspace,
+                                             clustering)) {
+                return SIXEL_BAD_INPUT;
+            }
+            if (!sixel_palette_select_icc_code(palette, codes + offset,
+                    target, clustering, cluster_icc)) {
                 return SIXEL_BAD_INPUT;
             }
         }
         if (!sixel_palette_icc_code_color(palette, wire + offset, workspace,
-                                           working)) {
+                                           NULL, working)) {
             return SIXEL_BAD_INPUT;
         }
         for (channel = 0; channel < 3; ++channel) {

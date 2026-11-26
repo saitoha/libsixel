@@ -436,6 +436,7 @@ struct sixel_encoder {
     int encode_policy;
     /* NULL follows the current frame's resolved working coordinates. */
     sixel_color_geometry_t const *clustering_override;
+    sixel_color_def_t *clustering_icc;
     int working_colorspace;
     /* Zero selects AUTO; coordinate fields hold the last resolved values. */
     int working_colorspace_set;

@@ -415,6 +415,18 @@ SIXEL_INTERNAL_API int
 sixel_cdef_from_xyz(sixel_color_def_t const *definition,
                      double const xyz[3], double rgb[3], int intent);
 
+/* Cross a relative D50 PCS boundary between two borrowed RGB definitions. */
+static inline int
+sixel_cdef_relative(sixel_color_def_t const *source,
+                    sixel_color_def_t const *destination,
+                    double const input[3], double output[3])
+{
+    double xyz[3];
+
+    return sixel_cdef_to_xyz(source, input, xyz, 1) &&
+        sixel_cdef_from_xyz(destination, xyz, output, 1);
+}
+
 /* Evaluate RGB device zero in relative PCS and return its usable Y. */
 SIXEL_INTERNAL_API int
 sixel_cdef_black_y(sixel_color_def_t const *definition, double *black);

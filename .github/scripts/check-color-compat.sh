@@ -309,7 +309,14 @@ set -- \
     palette/working-space/0152_oklab_cluster_linear_fs_rgb.t \
     palette/working-space/0153_oklab_cluster_linear_fs_xyz.t \
     palette/working-space/0154_worker_oklab_linear_fs_rgb.t \
-    palette/working-space/0155_worker_oklab_linear_fs_xyz.t
+    palette/working-space/0155_worker_oklab_linear_fs_xyz.t \
+    palette/working-space/0156_matrix_icc_cluster_linear.t \
+    palette/working-space/0157_worker_matrix_icc_cluster_oklab.t \
+    palette/working-space/0158_cluster_rejects_lut_icc.t \
+    palette/working-space/0159_cluster_icc_wire_unsnapped.t \
+    palette/working-space/0160_cluster_icc_wire_reversible.t \
+    palette/working-space/0161_matrix_icc_auto_binning.t \
+    palette/working-space/0162_matrix_icc_reset_auto.t
 
 # Only the precise observed legacy behavior is an expected failure. Promote
 # each witness to the PASS group when its corresponding work is complete.

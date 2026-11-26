@@ -10,7 +10,7 @@ palette is constructed:
 --clustering-colorspace=COLORSPACE
 ```
 
-The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, and `din99d`. The default `auto` follows the resolved `-W` working space. An explicit non-auto `-X` remains authoritative regardless of its position relative to `-W`; `-Xauto` restores tracking. The [working-space default and option coupling](../../palette-application/working-colorspace/README.md#default-and-option-coupling) owns per-input auto resolution and its precision constraint.
+The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE`. With `icc:FILE` the builtin CMS converts samples to the encoded device RGB coordinates of a matrix/TRC RGB profile using relative colorimetry. The solver computes distances and representatives in those coordinates. The generated representatives then pass back through the profile to the resolved `-W` space for palette lookup and dithering. The default `auto` follows the resolved `-W` working space. An explicit non-auto `-X` remains authoritative regardless of its position relative to `-W`; `-Xauto` restores tracking. The [working-space default and option coupling](../../palette-application/working-colorspace/README.md#default-and-option-coupling) owns per-input auto resolution and its precision constraint.
 
 This option changes the geometry seen by the quantizer. It does not declare
 the source image profile, change the terminal's interpretation of SIXEL

@@ -78,6 +78,8 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
 static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;
 static SIXEL_SNAP_TLS int g_snap_output_definition;
 static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_output_icc;
+static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_cluster;
+static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_linear;
 static SIXEL_SNAP_TLS int g_snap_grid_policy;
 static SIXEL_SNAP_TLS sixel_snap_grid_t *g_snap_grid;
 static SIXEL_SNAP_TLS SIXELSTATUS g_snap_status;
@@ -99,6 +101,8 @@ sixel_set_palette_snap_override(
         memset(&g_snap_options, 0, sizeof(g_snap_options));
         g_snap_output_definition = 0;
         g_snap_output_icc = NULL;
+        g_snap_cluster = NULL;
+        g_snap_linear = NULL;
         g_snap_grid_policy = SIXEL_SNAP_GRID_AUTO;
         return;
     }
@@ -344,9 +348,43 @@ sixel_palette_snap_set_output(int definition, int grid_override,
 }
 
 void
-sixel_palette_snap_set_icc(sixel_color_def_t const *definition)
+sixel_palette_snap_set_icc(sixel_color_def_t const *definition,
+                           sixel_color_def_t const *cluster,
+                           sixel_color_def_t const *linear)
 {
+    g_snap_cluster = cluster;
+    g_snap_linear = linear;
     g_snap_output_icc = definition;
+}
+
+/* Snapping and automatic bin-range recovery project the same safe tones.
+ * Use the active construction profile on both sides of that projection. */
+int
+sixel_palette_cluster_to_gamma(double gamma[3], double const point[3],
+                             int space)
+{
+    double linear[3];
+
+    if (g_snap_cluster == NULL) {
+        return sixel_color_convert(gamma, point, space, SIXEL_COLORSPACE_GAMMA);
+    }
+    return sixel_cdef_relative(g_snap_cluster, g_snap_linear, point, linear) &&
+        sixel_color_convert(gamma, linear, SIXEL_COLORSPACE_LINEAR,
+                            SIXEL_COLORSPACE_GAMMA);
+}
+
+int
+sixel_palette_gamma_to_cluster(double point[3], double const gamma[3],
+                             int space)
+{
+    double linear[3];
+
+    if (g_snap_cluster == NULL) {
+        return sixel_color_convert(point, gamma, SIXEL_COLORSPACE_GAMMA, space);
+    }
+    return sixel_color_convert(linear, gamma, SIXEL_COLORSPACE_GAMMA,
+                               SIXEL_COLORSPACE_LINEAR) &&
+        sixel_cdef_relative(g_snap_linear, g_snap_cluster, linear, point);
 }
 
 int
@@ -382,9 +420,9 @@ sixel_palette_snap_begin(int pixelformat, int quantizer,
         g_snap_status = SIXEL_BAD_ALLOCATION;
         return g_snap_status;
     }
-    g_snap_status = sixel_snap_grid_new(&g_snap_grid, g_snap_grid_policy,
-        sixel_pixelformat_get_colorspace(pixelformat), destination,
-        allocator);
+    g_snap_status = sixel_snap_grid_new_cluster(&g_snap_grid,
+        g_snap_grid_policy, sixel_pixelformat_get_colorspace(pixelformat),
+        destination, g_snap_cluster, allocator);
     sixel_cdef_free(destination);
     return g_snap_status;
 }
@@ -640,8 +678,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
         }
         goto blend;
     }
-    if (!sixel_color_convert(gamma, source, space,
-            SIXEL_COLORSPACE_GAMMA)) {
+    if (!sixel_palette_cluster_to_gamma(gamma, source, space)) {
         return SIXEL_BAD_INPUT;
     }
     for (channel = 0; channel < 3; ++channel) {
@@ -678,8 +715,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
                 candidate[0] = corners[0][c0];
                 candidate[1] = corners[1][c1];
                 candidate[2] = corners[2][c2];
-                if (!sixel_color_convert(target, candidate,
-                        SIXEL_COLORSPACE_GAMMA, space)) {
+                if (!sixel_palette_gamma_to_cluster(target, candidate, space)) {
                     return SIXEL_BAD_INPUT;
                 }
                 distance = 0.0;

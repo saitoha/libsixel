@@ -140,7 +140,8 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
  * Score RGB register candidates only in the generated entry range. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
-    int clustering, int palette_type, unsigned int first, unsigned int end);
+    int clustering, struct sixel_color_def const *cluster_icc,
+    int palette_type, unsigned int first, unsigned int end);
 
 /* Copy preserved codes without forwarding already evaluated working colors. */
 SIXEL_INTERNAL_API SIXELSTATUS

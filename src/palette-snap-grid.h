@@ -23,6 +23,11 @@ sixel_snap_grid_new(sixel_snap_grid_t **grid, int policy, int colorspace,
                      sixel_color_def_t const *destination,
                      sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_snap_grid_new_cluster(sixel_snap_grid_t **grid, int policy,
+    int colorspace, sixel_color_def_t const *destination,
+    sixel_color_def_t const *cluster_icc, sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API void
 sixel_snap_grid_destroy(sixel_snap_grid_t *grid);
 

@@ -1028,6 +1028,289 @@
       ]
     },
     {
+      "name": "pnm-cluster-icc-linear",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "cluster_members": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "wire": [
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          58,
+          24,
+          71
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-icc-oklab",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "cluster_members": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "wire": [
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          58,
+          24,
+          71
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-device-unsnapped",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "wire": [
+        [
+          70,
+          76,
+          75
+        ],
+        [
+          70,
+          76,
+          75
+        ],
+        [
+          54,
+          26,
+          68
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-device-reversible",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "wire": [
+        [
+          70,
+          76,
+          75
+        ],
+        [
+          70,
+          76,
+          75
+        ],
+        [
+          54,
+          26,
+          68
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-icc-binning",
+      "source": "inline PNM",
+      "samples": [
+        [
+          223,
+          31,
+          25
+        ],
+        [
+          72,
+          57,
+          29
+        ],
+        [
+          16,
+          169,
+          221
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "wire": [
+        [
+          58,
+          19,
+          11
+        ],
+        [
+          58,
+          19,
+          11
+        ],
+        [
+          6,
+          66,
+          87
+        ]
+      ]
+    },
+    {
       "name": "pnm-lookup-gamma",
       "source": "inline PNM",
       "samples": [

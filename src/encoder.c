@@ -641,6 +641,8 @@ struct sixel_palette_build_request {
     sixel_palette_frame_state_t initial_state;
     sixel_palette_quantizer_selection_t quantizer;
     sixel_color_geometry_t const *clustering;
+    sixel_color_def_t *clustering_icc;
+    sixel_color_def_t *linear_srgb;
     int cover_policy;
     int cover_policy_grow;
     int cover_policy_grow_override;
@@ -3967,6 +3969,35 @@ sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
     return status;
 }
 
+/* Both buffers are private construction state: a failure discards the
+ * sample copy or unfinished palette. The solver consumes device RGB floats
+ * directly; only its numeric RGB layout is shared with linear sRGB. */
+static SIXELSTATUS
+sixel_encoder_transform_cluster(float *pixels, size_t count,
+    sixel_color_def_t const *source, sixel_color_def_t const *destination)
+{
+    double input[3];
+    double output[3];
+    size_t i;
+    int c;
+
+    for (i = 0; i < count; ++i, pixels += 3) {
+        for (c = 0; c < 3; ++c) {
+            input[c] = pixels[c];
+        }
+        if (!sixel_cdef_relative(source, destination, input, output)) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (fabs(output[c]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            pixels[c] = (float)output[c];
+        }
+    }
+    return SIXEL_OK;
+}
+
 /*
  * Recolor the generated palette into the working colorspace so dithering and
  * LUT builders share the same color interpretation. Legacy serialization
@@ -3975,10 +4006,11 @@ sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
  */
 static SIXELSTATUS
 sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
-                                         int source_colorspace,
-                                         int target_colorspace)
+    int source_colorspace, int target_colorspace,
+    sixel_palette_build_request_t const *request)
 {
     SIXELSTATUS status;
+    float triplet[3];
     size_t palette_count;
     size_t palette_channels;
     size_t palette_bytes;
@@ -3993,7 +4025,7 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (source_colorspace == target_colorspace) {
+    if (source_colorspace == target_colorspace && request == NULL) {
         return SIXEL_OK;
     }
 
@@ -4035,6 +4067,13 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         }
         /* Float coordinates have one arithmetic contract, independently
          * of output preparation, snap timing or palette solver selection. */
+        if (request != NULL) {
+            status = sixel_encoder_transform_cluster(float32_view.entries,
+                palette_count, request->clustering_icc, request->linear_srgb);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
         status = sixel_color_convert_rgbf32(float32_view.entries,
             palette_count, source_colorspace, target_colorspace);
         if (SIXEL_FAILED(status)) {
@@ -4063,6 +4102,31 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         return SIXEL_OK;
     }
 
+    if (request != NULL) {
+        float_pixelformat = sixel_pixelformat_for_colorspace(target_colorspace,
+                                                             1);
+        for (index = 0; index < palette_channels; index += 3) {
+            for (channel = 0; channel < 3; ++channel) {
+                triplet[channel] = entries_view.entries[index + channel]
+                    / 255.0f;
+            }
+            status = sixel_encoder_transform_cluster(triplet, 1,
+                request->clustering_icc, request->linear_srgb);
+            if (SIXEL_SUCCEEDED(status)) {
+                status = sixel_color_convert_rgbf32(triplet, 1,
+                    SIXEL_COLORSPACE_LINEAR, target_colorspace);
+            }
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            for (channel = 0; channel < 3; ++channel) {
+                entries_view.entries[index + channel] =
+                    sixel_pixelformat_float_channel_to_byte(float_pixelformat,
+                        channel, triplet[channel]);
+            }
+        }
+        return SIXEL_OK;
+    }
     palette_bytes = palette_channels;
     status = sixel_helper_convert_colorspace(entries_view.entries,
                                              palette_bytes,
@@ -7097,7 +7161,9 @@ sixel_encoder_palette_job_build_impl(sixel_palette_async_job_t *job,
     clustering_pixelformat = sixel_geometry_format(
         job->request->clustering, job->request->prefer_float32 ||
         SIXEL_WORKFORMAT_IS_FLOAT32(job->samples.pixelformat));
-    if (!preserve_alpha_key &&
+    /* ICC construction needs a private linear staging frame even when the
+     * sample already has that layout. Let the build prepare it once. */
+    if (job->request->clustering_icc == NULL && !preserve_alpha_key &&
         (job->samples.pixelformat != clustering_pixelformat ||
          job->samples.colorspace != job->request->clustering->space)) {
         memset(&colors, 0, sizeof(colors));
@@ -7411,7 +7477,7 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
         return status;
     }
     return sixel_encoder_convert_palette_colorspace(dither->palette,
-        SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace);
+        SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace, NULL);
 }
 
 /* Create a palette from a structured file or an image mapfile. */
@@ -8932,13 +8998,13 @@ sixel_encoder_copy_fixed_palette(sixel_encoder_t *encoder,
                                                            &request);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_convert_palette_colorspace(copy->palette,
-                source_colorspace, encoder->working_colorspace);
+                source_colorspace, encoder->working_colorspace, NULL);
         }
     } else if (source_colorspace == SIXEL_COLORSPACE_GAMMA) {
         status = sixel_encoder_import_srgb_palette(encoder, copy, native);
     } else {
         status = sixel_encoder_convert_palette_colorspace(copy->palette,
-            source_colorspace, encoder->working_colorspace);
+            source_colorspace, encoder->working_colorspace, NULL);
     }
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(copy);
@@ -9021,6 +9087,8 @@ sixel_palette_build_request_free(sixel_palette_build_request_t *request)
     }
     allocator = request->allocator;
     sixel_gamut_free(request->gamut_mapper);
+    sixel_cdef_free(request->clustering_icc);
+    sixel_cdef_free(request->linear_srgb);
     sixel_cdef_free(request->output_icc);
     sixel_allocator_free(allocator, request);
     sixel_allocator_unref(allocator);
@@ -9057,6 +9125,14 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->native_candidate = sixel_encoder_rgb101_candidate(encoder, frame);
     request->consumer_pixelformat = consumer_pixelformat;
     request->clustering = encoder->clustering_override;
+    if (encoder->clustering_icc != NULL) {
+        request->linear_srgb = sixel_color_def_new_named("linear-srgb");
+        request->clustering_icc = sixel_cdef_clone(encoder->clustering_icc);
+        if (!request->linear_srgb || !request->clustering_icc) {
+            sixel_palette_build_request_free(request);
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
     if (request->clustering == NULL) {
         request->clustering = sixel_color_geometry(encoder->working_colorspace);
     }
@@ -9718,7 +9794,8 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
      * including CMS output when the base preference is auto or 8bit. */
     prefer_float32 = request->prefer_float32 ||
         SIXEL_WORKFORMAT_IS_FLOAT32(sixel_frame_format(frame));
-    if (reserve_alpha_key && !(*dither)->use_rgb101_palette) {
+    if (!request->clustering_icc && reserve_alpha_key &&
+            !(*dither)->use_rgb101_palette) {
         clustering_colorspace = sixel_frame_get_colorspace(frame);
         palette_target_pixelformat = sixel_frame_format(frame);
     } else {
@@ -9733,12 +9810,13 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     colors_config.convert =
         sixel_frame_format(frame) != palette_target_pixelformat ||
         sixel_frame_get_colorspace(frame) != clustering_colorspace;
-    colors_config.copy_payload = request->gamut_mapper != NULL &&
-        (!reserve_alpha_key || (*dither)->use_rgb101_palette);
+    colors_config.copy_payload = request->clustering_icc != NULL ||
+        (request->gamut_mapper != NULL &&
+         (!reserve_alpha_key || (*dither)->use_rgb101_palette));
     /* Collect only stable RGB populations here. Alpha adaptation, gamut
      * mapping and solver fallbacks can change the retained coordinates;
      * their adapters request fresh observations after those operations. */
-    colors_config.collect_statistics =
+    colors_config.collect_statistics = request->clustering_icc == NULL &&
         requested_binning == SIXEL_PALETTE_BINNING_AUTO &&
         (request->palette_range_strength_override
             ? request->palette_range_strength != 0u
@@ -9827,7 +9905,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
      * candidates. Excluded legacy paths retain their existing preparation. */
     if (reserve_alpha_key &&
             sixel_encoder_frame_has_transparent_mask(palette_frame) &&
-            ((*dither)->use_rgb101_palette ||
+            (request->clustering_icc != NULL || (*dither)->use_rgb101_palette ||
              (palette_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
               request->native_candidate))) {
         status = sixel_encoder_visible_palette_pixels(palette_frame,
@@ -9837,6 +9915,14 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         }
         palette_pixels = visible_pixels;
         palette_height = 1;
+    }
+    if (request->clustering_icc != NULL) {
+        status = sixel_encoder_transform_cluster((float *)palette_pixels,
+            (size_t)palette_width * palette_height, request->linear_srgb,
+            request->clustering_icc);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
     quantize_override_lock_acquired =
         sixel_encoder_quantize_override_lock_acquire();
@@ -9990,7 +10076,8 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
             ? SIXEL_PALETTE_OUTPUT_LEGACY : request->output_color_definition,
             request->snap_policy_grid_override, request->snap_policy_grid);
         sixel_palette_snap_set_icc(
-            request->from_map_image ? NULL : request->output_icc);
+            request->from_map_image ? NULL : request->output_icc,
+            request->clustering_icc, request->linear_srgb);
     }
     sixel_set_kcenter_algo_override(
         request->quantize_model_kcenter_algo_override,
@@ -10208,11 +10295,12 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         (*dither)->quantize_model = build_attempt.quantize_model;
     }
 
-    if (clustering_colorspace != working_colorspace) {
+    if (request->clustering_icc != NULL ||
+            clustering_colorspace != working_colorspace) {
         status = sixel_encoder_convert_palette_colorspace(
             (*dither)->palette,
-            clustering_colorspace,
-            working_colorspace);
+            clustering_colorspace, working_colorspace,
+            request->clustering_icc ? request : NULL);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -10296,8 +10384,8 @@ end:
                 : (unsigned int)sixel_dither_lookup_ncolors(*dither);
             status = sixel_palette_apply_icc_registers((*dither)->palette,
                 request->working_colorspace, clustering_colorspace,
-                request->output_palette_type, request->reserved_palette_count,
-                icc_score_end);
+                request->clustering_icc, request->output_palette_type,
+                request->reserved_palette_count, icc_score_end);
         }
         sixel_dither_set_optimize_palette(*dither, 0);
     }
@@ -10610,7 +10698,7 @@ end:
         if (SIXEL_SUCCEEDED(status) && encoder->output_icc != NULL) {
             status = sixel_palette_apply_icc_registers((*dither)->palette,
                 encoder->working_colorspace, encoder->working_colorspace,
-                encoder->palette_type, 0U, 0U);
+                NULL, encoder->palette_type, 0U, 0U);
         }
         sixel_dither_set_optimize_palette(*dither, 0);
     }
@@ -13106,6 +13194,7 @@ sixel_encoder_new(
     (*ppencoder)->penetrate_multiplexer = 0;
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
     (*ppencoder)->clustering_override = NULL;
+    (*ppencoder)->clustering_icc = NULL;
     (*ppencoder)->working_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->working_colorspace_set = 0;
     (*ppencoder)->force_float32_colorspace = 0;
@@ -13465,6 +13554,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
     if (encoder) {
         allocator = encoder->allocator;
         sixel_refresh_spatial_free(encoder->refresh_spatial_state);
+        sixel_cdef_free(encoder->clustering_icc);
         sixel_cdef_free(encoder->output_icc);
         sixel_gamut_free(encoder->gamut_mapper);
         sixel_allocator_free(allocator, encoder->mapfile);
@@ -14160,6 +14250,36 @@ sixel_encoder_apply_quantize_resolution(
         return status;
     }
     sixel_encoder_apply_heckbert_profile_defaults(encoder);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_set_cluster_icc(sixel_encoder_t *encoder, char const *path)
+{
+    static double const neutral[3] = {0.5, 0.5, 0.5};
+    sixel_color_def_t *profile;
+    double encoded[3];
+    SIXELSTATUS status;
+
+    status = sixel_color_read_icc(path, &profile);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    /* Independent device curves require an invertible colorant matrix and
+     * a separable relative transform in both directions. */
+    if (!sixel_cdef_transfer(profile, neutral, encoded, 1)) {
+        sixel_cdef_free(profile);
+        sixel_helper_set_additional_message(
+            "-X icc requires a matrix/TRC RGB profile.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    encoder->clustering_icc = profile;
+    /* Stage the frame in linear sRGB float storage. The request applies
+     * the profile only to its private palette samples, never to the frame
+     * used later for lookup and error diffusion. */
+    encoder->clustering_override =
+        sixel_color_geometry(SIXEL_COLORSPACE_LINEAR);
+    sixel_encoder_clear_dither_cache(encoder);
     return SIXEL_OK;
 }
 
@@ -15709,6 +15829,11 @@ sixel_encoder_option_release_replaced(sixel_encoder_t *old,
                                       sixel_encoder_t const *next, int arg)
 {
     switch (arg) {
+    case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:
+        if (old->clustering_icc != next->clustering_icc) {
+            sixel_cdef_free(old->clustering_icc);
+        }
+        break;
     case SIXEL_OPTFLAG_MAPFILE:
         if (old->mapfile != next->mapfile) {
             sixel_allocator_free(old->allocator, old->mapfile);
@@ -16351,6 +16476,11 @@ sixel_encoder_setopt_owned(
                 "clustering-colorspace requires an argument.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
+        } else if (strncmp(value, "icc:", 4) == 0) {
+            status = sixel_encoder_set_cluster_icc(encoder, value + 4);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         } else {
             len = strlen(value);
 
@@ -16370,6 +16500,10 @@ sixel_encoder_setopt_owned(
                 &match_value);
             if (SIXEL_FAILED(status)) {
                 goto end;
+            }
+            if (encoder->clustering_icc != NULL) {
+                encoder->clustering_icc = NULL;
+                sixel_encoder_clear_dither_cache(encoder);
             }
             encoder->clustering_override = sixel_color_geometry(match_value);
             /*

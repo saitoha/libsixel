@@ -28,6 +28,10 @@
 #include "cms.h"
 #include "options.h"
 
+/* On success the caller owns the validated RGB profile. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_color_read_icc(char const *path, sixel_color_def_t **definition);
+
 /* Parse converter syntax and load an owned ICC endpoint transactionally.
  * Common CMS receives bytes only; file I/O and option grammar stay here. */
 SIXEL_INTERNAL_API SIXELSTATUS

@@ -799,6 +799,7 @@ typedef int SIXELSTATUS;
     /*   oklab  -> OKLab color space */
     /*   cielab -> CIELAB color space */
     /*   din99d -> DIN99d color space */
+    /*   icc:FILE -> encoded matrix/TRC ICC RGB coordinates */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE    ('W')
     /* -W COLORSPACE */
     /* --working-colorspace=COLORSPACE */

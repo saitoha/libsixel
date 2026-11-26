@@ -78,7 +78,7 @@ The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize i
 
 | Option | Boundary controlled | Default | Accepted values |
 | --- | --- | --- | --- |
-| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
+| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
 | `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
 | `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `gamma` | `gamma`, `linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
 

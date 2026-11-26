@@ -75,7 +75,7 @@ def p3_wire_color(linear):
     return wire_color([D(x.numerator) / D(x.denominator) for x in output])
 
 
-def cli_space_cases():
+def cli_space_cases(profile):
     def coordinates(rgb, linear):
         encoded = [D(component) / 255 for component in rgb]
         if not linear:
@@ -115,6 +115,79 @@ def cli_space_cases():
             wire = [[int(100*x + D('.5')) for x in center] for center in centers]
         yield case('pnm-cluster-' + space, samples, cluster_distance_margins=margins,
                    wire=[wire[i] for i in owners])
+
+    # Solve the two-center problem directly: for three equal-weight samples
+    # the minimum SSE pairs the two closest points. Read the actual colorants
+    # and parametric TRCs from the file, including fixed-point rounding.
+    from generate_color_fixtures import opponents
+    samples = [[241, 168, 181], [88, 220, 201], [147, 61, 180]]
+    tags = reference.tags(profile)
+    matrix = list(zip(*[[reference.F(v, 65536) for v in
+                         struct.unpack_from('>3i', tags[k], 8)]
+                        for k in (b'rXYZ', b'gXYZ', b'bXYZ')]))
+    to_linear = reference.matmul(reference.D, matrix)
+    to_device = reference.inv(to_linear)
+
+    def decimal(x):
+        return D(x.numerator) / D(x.denominator)
+
+    def encode_device(tag, value):
+        assert tag[:4] == b'para' and struct.unpack_from('>H', tag, 8) == (4,)
+        g, a, b, c, d, e, f = [D(n) / 65536
+                               for n in struct.unpack_from('>7i', tag, 12)]
+        if value < c * d + f:
+            return (value - f) / c
+        return ((value - e) ** (1 / g) - b) / a
+
+    def closest(points):
+        return min((sum((x-y)**2 for x, y in zip(points[i], points[j])), i, j)
+                   for i in range(3) for j in range(i+1, 3))[1:]
+
+    def profile_centroids(samples):
+        linear = [coordinates(rgb, True) for rgb in samples]
+        curves = [tags[k] for k in (b'rTRC', b'gTRC', b'bTRC')]
+        device = [[encode_device(tag, decimal(x)) for tag, x in zip(curves,
+                   reference.mv(to_device, list(map(reference.F, rgb))))]
+                  for rgb in linear]
+        assert closest(device) == (0, 1)
+        centers = [[(x+y)/2 for x, y in zip(device[0], device[1])], device[2]]
+        palette = [[decimal(v) for v in reference.mv(to_linear, [
+            reference.curve(tag, x) for tag, x in zip(curves, center)])]
+            for center in centers]
+        wire = [wire_color(rgb) for rgb in palette]
+        return linear, centers, palette, wire
+
+    linear, centers, palette, wire = profile_centroids(samples)
+    assert closest(linear) != (0, 1)
+    for name, working in [('linear', lambda rgb: rgb),
+                          ('oklab', lambda rgb: opponents(rgb)[0])]:
+        owners = [nearest(working(rgb), list(map(working, palette)))[0]
+                  for rgb in linear]
+        assert owners == [0, 0, 1]
+        yield case('pnm-cluster-icc-' + name, samples, owners=owners,
+                   cluster_members=[[0, 1], [2]], wire=[wire[i] for i in owners])
+
+    # With the same device as destination, nearest wire registers minimize
+    # RGB distance componentwise. Reversible snap rounds through RGB8 first.
+    def register(x, mode):
+        if mode == 'reversible':
+            byte = int(x * 255 + D('.5'))
+            return (byte * 100 + 127) // 255
+        return int(x * 100 + D('.5'))
+
+    for mode in ('unsnapped', 'reversible'):
+        codes = [[register(x, mode) for x in center] for center in centers]
+        yield case('pnm-cluster-device-' + mode, samples, owners=owners,
+                   wire=[codes[i] for i in owners])
+
+    # Separated warm and cyan groups keep the optimum stable when automatic
+    # binning changes point order and the solver initializes from bins.
+    samples = [[223, 31, 25], [72, 57, 29], [16, 169, 221]]
+    linear, centers, palette, wire = profile_centroids(samples)
+    owners = [nearest(rgb, palette)[0] for rgb in linear]
+    assert owners == [0, 0, 1]
+    yield case('pnm-cluster-icc-binning', samples, owners=owners,
+               wire=[wire[i] for i in owners])
 
     # The same first color wins in both spaces. Its residual is encoded in
     # different coordinates. In a one-row raster, only the 7/16 right tap
@@ -447,7 +520,7 @@ def build(inputs):
                           linear=source['linear'],
                           wire=[wire_color(rgb) for rgb in source['linear']]))
         cli_space_first = len(cases)
-        cases.extend(cli_space_cases())
+        cases.extend(cli_space_cases(inputs['display-p3.icc']))
         mixed_cases, mixed_fixtures = mixed_spaces_cases()
         cases.extend(mixed_cases)
         icc_cases, icc_fixtures = icc_register_cases()

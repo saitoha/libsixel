@@ -33,62 +33,28 @@
 #include "options-registry.h"
 
 SIXELSTATUS
-sixel_color_option_parse(char const *text, int decoder, int *base,
-                         sixel_color_def_t **definition, int *gamut,
-                         int *bpc)
+sixel_color_read_icc(char const *path, sixel_color_def_t **definition)
 {
-    sixel_option_argument_schema_t const *schema;
-    sixel_option_argument_resolution_t resolution;
-    sixel_color_file_options_t options;
     sixel_color_def_t *candidate;
     unsigned char *bytes;
-    unsigned int scope;
-    sixel_suboption_target_class_t target;
     FILE *file;
     long length;
     SIXELSTATUS status;
 
-    if (base == NULL || definition == NULL || (decoder != 0 && decoder != 1)) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    schema = sixel_option_registry_get(decoder
-        ? SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE
-        : SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE);
-    scope = decoder ? SIXEL_OPTION_SCOPE_DECODER : SIXEL_OPTION_SCOPE_ENCODER;
-    target = decoder ? SIXEL_SUBOPTION_TARGET_INPUT_COLOR_FILE
-        : SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE;
-    memset(&resolution, 0, sizeof(resolution));
-    memset(&options, 0, sizeof(options));
     candidate = NULL;
     bytes = NULL;
     file = NULL;
-    status = sixel_option_parse_argument_with_suboptions(text, schema, scope,
-        &resolution, NULL, 0u);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    sixel_option_apply_suboption_environment(schema, resolution.base_def,
-        scope, &options, target);
-    if (!sixel_option_apply_suboption_assignments(&resolution, &options,
-            target)) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-    if (resolution.resolved_base_value != (decoder
-            ? SIXEL_NAMED_COLOR_COUNT : -SIXEL_NAMED_COLOR_COUNT)) {
-        goto publish;
-    }
     status = SIXEL_BAD_ARGUMENT;
-    if (options.path == NULL || options.path[0] == '\0' ||
-            strcmp(options.path, "-") == 0) {
+    if (path == NULL || path[0] == '\0' ||
+            strcmp(path, "-") == 0) {
         sixel_helper_set_additional_message(
-            "icc requires path=FILE (PFILE) or its ICC_PATH environment.");
+            "ICC endpoint requires a profile file path.");
         goto end;
     }
     /* Bound allocation before reading. Never consume image stdin as ICC.
      * Keep a private copy so later path/environment changes cannot alter
      * a running conversion or its PNG snapshot. */
-    file = sixel_compat_fopen(options.path, "rb");
+    file = sixel_compat_fopen(path, "rb");
     if (file == NULL || fseek(file, 0, SEEK_END) != 0 ||
             (length = ftell(file)) < 128L || length > 16L * 1024L * 1024L ||
             fseek(file, 0, SEEK_SET) != 0) {
@@ -124,6 +90,70 @@ sixel_color_option_parse(char const *text, int decoder, int *base,
             "in both directions.");
         goto end;
     }
+    *definition = candidate;
+    candidate = NULL;
+    status = SIXEL_OK;
+end:
+    if (file != NULL) {
+        fclose(file);
+    }
+    free(bytes);
+    sixel_cdef_free(candidate);
+    return status;
+}
+
+SIXELSTATUS
+sixel_color_option_parse(char const *text, int decoder, int *base,
+                         sixel_color_def_t **definition, int *gamut,
+                         int *bpc)
+{
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+    sixel_color_file_options_t options;
+    sixel_color_def_t *candidate;
+    unsigned int scope;
+    sixel_suboption_target_class_t target;
+    SIXELSTATUS status;
+
+    if (base == NULL || definition == NULL || (decoder != 0 && decoder != 1)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    schema = sixel_option_registry_get(decoder
+        ? SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE
+        : SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE);
+    scope = decoder ? SIXEL_OPTION_SCOPE_DECODER : SIXEL_OPTION_SCOPE_ENCODER;
+    target = decoder ? SIXEL_SUBOPTION_TARGET_INPUT_COLOR_FILE
+        : SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE;
+    memset(&resolution, 0, sizeof(resolution));
+    memset(&options, 0, sizeof(options));
+    candidate = NULL;
+    status = sixel_option_parse_argument_with_suboptions(text, schema, scope,
+        &resolution, NULL, 0u);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    sixel_option_apply_suboption_environment(schema, resolution.base_def,
+        scope, &options, target);
+    if (!sixel_option_apply_suboption_assignments(&resolution, &options,
+            target)) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (resolution.resolved_base_value != (decoder
+            ? SIXEL_NAMED_COLOR_COUNT : -SIXEL_NAMED_COLOR_COUNT)) {
+        goto publish;
+    }
+    if (options.path == NULL || options.path[0] == '\0' ||
+            strcmp(options.path, "-") == 0) {
+        sixel_helper_set_additional_message(
+            "icc requires path=FILE (PFILE) or its ICC_PATH environment.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    status = sixel_color_read_icc(options.path, &candidate);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 publish:
     if (gamut != NULL) {
         *gamut = options.gamut;
@@ -136,10 +166,6 @@ publish:
     candidate = NULL;
     status = SIXEL_OK;
 end:
-    if (file != NULL) {
-        fclose(file);
-    }
-    free(bytes);
     sixel_cdef_free(candidate);
     sixel_option_free_argument_resolution(&resolution);
     return status;

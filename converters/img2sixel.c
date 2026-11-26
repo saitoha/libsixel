@@ -1283,6 +1283,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      oklab  -> OKLab color space\n"
         "      cielab -> CIELAB color space\n"
         "      din99d -> DIN99d color space\n"
+        "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
     {
         'W',
