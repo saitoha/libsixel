@@ -698,11 +698,11 @@ sixel_final_merge_ward_join(sixel_final_merge_cluster_t *clusters,
     clusters[best_j].b = 0.0;
 }
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 /* Only pair selection uses FP32. Validate the entire tree before replaying
  * it in FP64 with the same statistics as the CPU solver. */
 static int
-sixel_final_merge_ward_metal(sixel_final_merge_cluster_t *clusters,
+sixel_final_merge_ward_gpu(sixel_final_merge_cluster_t *clusters,
     int count, int target, int pixelformat, int gpu_policy)
 {
     float inputs[4u * SIXEL_WARD_MAX_CLUSTERS];
@@ -710,8 +710,13 @@ sixel_final_merge_ward_metal(sixel_final_merge_cluster_t *clusters,
     unsigned char active[SIXEL_WARD_MAX_CLUSTERS];
     sixel_final_merge_cluster_t const *cluster;
     double weight;
-    int i, merges, occupied;
+    int i, merges, occupied, ok;
     uint16_t kept, removed;
+#if defined(HAVE_METAL)
+    static char const backend[] = "metal";
+#else
+    static char const backend[] = "vulkan";
+#endif
 
     if (gpu_policy == SIXEL_GPU_POLICY_OFF ||
             pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
@@ -720,9 +725,16 @@ sixel_final_merge_ward_metal(sixel_final_merge_cluster_t *clusters,
             (unsigned int)count > SIXEL_WARD_MAX_CLUSTERS)
         return 0;
     /* A cold pipeline or a small matrix does not amortize this submission. */
-    if (gpu_policy == SIXEL_GPU_POLICY_AUTO &&
-            (count < 384 || !sixel_ward_metal_is_ready()))
-        return 0;
+    if (gpu_policy == SIXEL_GPU_POLICY_AUTO) {
+        if (count < 384)
+            return 0;
+#if defined(HAVE_METAL)
+        if (!sixel_ward_metal_is_ready())
+#else
+        if (!sixel_ward_vulkan_is_ready((unsigned int)count))
+#endif
+            return 0;
+    }
     occupied = 0;
     weight = 0.0;
     memset(inputs, 0, 4u * (size_t)count * sizeof(*inputs));
@@ -749,8 +761,14 @@ sixel_final_merge_ward_metal(sixel_final_merge_cluster_t *clusters,
     merges = occupied - target;
     if (merges <= 0 || (gpu_policy == SIXEL_GPU_POLICY_AUTO && merges < 64))
         return 0;
-    if (!sixel_ward_metal_pairs(inputs, (unsigned int)count,
-            (unsigned int)merges, pairs))
+#if defined(HAVE_METAL)
+    ok = sixel_ward_metal_pairs(inputs, (unsigned int)count,
+        (unsigned int)merges, pairs);
+#else
+    ok = sixel_ward_vulkan_pairs(inputs, (unsigned int)count,
+        (unsigned int)merges, pairs);
+#endif
+    if (!ok)
         return 0;
     for (i = 0; i < merges; ++i) {
         kept = pairs[i].kept;
@@ -765,8 +783,8 @@ sixel_final_merge_ward_metal(sixel_final_merge_cluster_t *clusters,
             pairs[i].removed, pixelformat);
     }
     sixel_trace_topic_message("palette_contract",
-        "LSXWARD1|backend=metal|clusters=%d|target=%d|merges=%d",
-        count, target, merges);
+        "LSXWARD1|backend=%s|clusters=%d|target=%d|merges=%d",
+        backend, count, target, merges);
     return 1;
 }
 #endif
@@ -782,7 +800,7 @@ sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
 {
     int index;
 
-#if !defined(HAVE_METAL)
+#if !defined(HAVE_METAL) && !defined(HAVE_VULKAN)
     (void)gpu_policy;
 #endif
 
@@ -797,8 +815,8 @@ sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
     }
     switch (merge_mode) {
     case SIXEL_FINAL_MERGE_DISPATCH_WARD:
-#if defined(HAVE_METAL)
-        if (sixel_final_merge_ward_metal(clusters, nclusters, target_k,
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+        if (sixel_final_merge_ward_gpu(clusters, nclusters, target_k,
                 pixelformat, gpu_policy))
             break;
 #endif

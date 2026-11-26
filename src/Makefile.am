@@ -113,6 +113,7 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
 SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/filter-sample-gpu.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
+    $(srcdir)/palette-ward.glsl \
     $(srcdir)/palette-kmeans-resident.glsl \
     $(srcdir)/palette-heckbert-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
@@ -192,6 +193,7 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-gpu-dequant-vulkan.lo \
     libsixel_la-palette-kmeans-vulkan.lo \
+    libsixel_la-palette-ward-vulkan.lo \
     libsixel_la-palette-resident-vulkan.lo \
     libsixel_la-palette-heckbert-gpu-vulkan.lo \
     libsixel_la-filter-sample-vulkan.lo \
@@ -830,6 +832,7 @@ $(srcdir)/gpu-runtime-vulkan.c \
 $(srcdir)/gpu-compute-vulkan.c \
 $(srcdir)/gpu-dequant-vulkan.c \
 $(srcdir)/palette-kmeans-vulkan.c \
+$(srcdir)/palette-ward-vulkan.c \
 $(srcdir)/palette-resident-vulkan.c \
 $(srcdir)/palette-resident-vulkan.h \
 $(srcdir)/palette-heckbert-gpu-vulkan.c \

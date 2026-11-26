@@ -76,6 +76,7 @@ amalgamation_units = files(
   '../src/palette-kmeans-build.c',
   '../src/palette-kmeans-gpu.c',
   '../src/palette-kmeans-vulkan.c',
+  '../src/palette-ward-vulkan.c',
   '../src/palette-resident-vulkan.c',
   '../src/palette-kmeans-metal.m',
   '../src/palette-heckbert-gpu.c',

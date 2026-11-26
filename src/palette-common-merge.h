@@ -75,19 +75,28 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode);
 SIXEL_INTERNAL_API int
 sixel_resolve_final_merge_mode(int final_merge_mode);
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 /* Byte palettes have at most 256 entries and oversplit by at most 3. */
 #define SIXEL_WARD_MAX_CLUSTERS (3u * SIXEL_PALETTE_MAX)
 typedef struct sixel_ward_pair {
     uint16_t kept, removed;
 } sixel_ward_pair_t;
 
+#if defined(HAVE_METAL)
 SIXEL_INTERNAL_API int
 sixel_ward_metal_is_ready(void);
 
 SIXEL_INTERNAL_API int
 sixel_ward_metal_pairs(float const *input, unsigned int count,
     unsigned int merges, sixel_ward_pair_t *pairs);
+#else
+SIXEL_INTERNAL_API int
+sixel_ward_vulkan_is_ready(unsigned int count);
+
+SIXEL_INTERNAL_API int
+sixel_ward_vulkan_pairs(float const *input, unsigned int count,
+    unsigned int merges, sixel_ward_pair_t *pairs);
+#endif
 #endif
 
 /* Optional representative statistics follow Ward membership without affecting

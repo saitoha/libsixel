@@ -77,6 +77,7 @@ srcs = [
   'palette-kmeans-build.h',
   'palette-kmeans-gpu.c',
   'palette-kmeans-vulkan.c',
+  'palette-ward-vulkan.c',
   'palette-resident-vulkan.c',
   'palette-kmeans-gpu.h',
   'palette-resident-vulkan.h',

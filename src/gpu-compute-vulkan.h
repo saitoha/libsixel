@@ -15,6 +15,8 @@ typedef struct sixel_vk_submission {
     VkFence fence;
     VkQueryPool timestamps;
     double last_busy_ms;
+    /* Opt in to a caller-recorded timestamp pair amid uploads/downloads. */
+    int scoped_timestamps;
 } sixel_vk_submission_t;
 /* Vulkan handles and timing fields start at zero until first use. */
 #define SIXEL_VK_SUBMISSION_INITIALIZER { .gate = PTHREAD_MUTEX_INITIALIZER }

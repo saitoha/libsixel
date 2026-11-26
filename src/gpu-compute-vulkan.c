@@ -94,8 +94,9 @@ sixel_vk_submission_begin(sixel_vk_runtime_t *runtime,
     *command = stage->command;
     if (stage->timestamps != VK_NULL_HANDLE) {
         vkCmdResetQueryPool(*command, stage->timestamps, 0, 2);
-        vkCmdWriteTimestamp(*command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-            stage->timestamps, 0);
+        if (!stage->scoped_timestamps)
+            vkCmdWriteTimestamp(*command, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                stage->timestamps, 0);
     }
     return SIXEL_OK;
 }
@@ -110,7 +111,7 @@ sixel_vk_submission_submit_and_wait(sixel_vk_runtime_t *runtime,
     unsigned long long busy;
     double started;
 
-    if (stage->timestamps != VK_NULL_HANDLE)
+    if (stage->timestamps != VK_NULL_HANDLE && !stage->scoped_timestamps)
         vkCmdWriteTimestamp(command, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
             stage->timestamps, 1);
     if (vkEndCommandBuffer(command) != VK_SUCCESS ||

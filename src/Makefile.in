@@ -108,6 +108,7 @@ host_triplet = @host@
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-compute-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-dequant-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-vulkan.c \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-ward-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-resident-vulkan.c \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-resident-vulkan.h \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-heckbert-gpu-vulkan.c \
@@ -552,6 +553,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/gpu-runtime-vulkan.c $(srcdir)/gpu-compute-vulkan.c \
 	$(srcdir)/gpu-dequant-vulkan.c \
 	$(srcdir)/palette-kmeans-vulkan.c \
+	$(srcdir)/palette-ward-vulkan.c \
 	$(srcdir)/palette-resident-vulkan.c \
 	$(srcdir)/palette-resident-vulkan.h \
 	$(srcdir)/palette-heckbert-gpu-vulkan.c \
@@ -596,6 +598,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-compute-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-vulkan.lo \
+@HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-ward-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-resident-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert-gpu-vulkan.lo \
 @HAVE_VULKAN_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample-vulkan.lo \
@@ -1109,6 +1112,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-sample.Plo \
 	./$(DEPDIR)/libsixel_la-palette-snap-grid.Plo \
 	./$(DEPDIR)/libsixel_la-palette-ward-metal.Plo \
+	./$(DEPDIR)/libsixel_la-palette-ward-vulkan.Plo \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
 	./$(DEPDIR)/libsixel_la-path.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
@@ -1592,6 +1596,7 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
 SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/filter-sample-gpu.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
+    $(srcdir)/palette-ward.glsl \
     $(srcdir)/palette-kmeans-resident.glsl \
     $(srcdir)/palette-heckbert-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
@@ -1657,6 +1662,7 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-gpu-dequant-vulkan.lo \
     libsixel_la-palette-kmeans-vulkan.lo \
+    libsixel_la-palette-ward-vulkan.lo \
     libsixel_la-palette-resident-vulkan.lo \
     libsixel_la-palette-heckbert-gpu-vulkan.lo \
     libsixel_la-filter-sample-vulkan.lo \
@@ -2795,6 +2801,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-snap-grid.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-ward-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-ward-vulkan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-path.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
@@ -4428,6 +4435,13 @@ libsixel_la-palette-kmeans-vulkan.lo: palette-kmeans-vulkan.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-vulkan.lo `test -f 'palette-kmeans-vulkan.c' || echo '$(srcdir)/'`palette-kmeans-vulkan.c
 
+libsixel_la-palette-ward-vulkan.lo: palette-ward-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-ward-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-ward-vulkan.Tpo -c -o libsixel_la-palette-ward-vulkan.lo `test -f 'palette-ward-vulkan.c' || echo '$(srcdir)/'`palette-ward-vulkan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-ward-vulkan.Tpo $(DEPDIR)/libsixel_la-palette-ward-vulkan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-ward-vulkan.c' object='libsixel_la-palette-ward-vulkan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-ward-vulkan.lo `test -f 'palette-ward-vulkan.c' || echo '$(srcdir)/'`palette-ward-vulkan.c
+
 libsixel_la-palette-resident-vulkan.lo: palette-resident-vulkan.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-resident-vulkan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-resident-vulkan.Tpo -c -o libsixel_la-palette-resident-vulkan.lo `test -f 'palette-resident-vulkan.c' || echo '$(srcdir)/'`palette-resident-vulkan.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-resident-vulkan.Tpo $(DEPDIR)/libsixel_la-palette-resident-vulkan.Plo
@@ -5158,6 +5172,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-snap-grid.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-ward-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-ward-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-path.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
@@ -5468,6 +5483,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-snap-grid.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-ward-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-ward-vulkan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-path.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
