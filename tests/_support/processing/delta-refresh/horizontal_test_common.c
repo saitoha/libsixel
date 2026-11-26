@@ -273,9 +273,10 @@ test_refresh_horizontal_output(int mode)
     for (i = 0; i < 2; ++i) {
         H8_REQUIRE(sixel_encoder_new(&e[i], NULL) == SIXEL_OK);
         H8_REQUIRE(sixel_encoder_setopt(e[i], 'p', "16") == SIXEL_OK);
-        if (mode == 0) {
-            /* Compare ordered application with the same host solver.
-             * The GPU SSE splitter uses FP32 and can choose other cuts. */
+        if (mode == 0 || mode == 3 || mode == 5) {
+            /* Keep palette solving identical in application comparisons.
+             * The GPU SSE splitter can choose different cuts or decline;
+             * FORCE can then retry with a different sample population. */
             H8_REQUIRE(sixel_encoder_setopt(e[i], 'Q',
                 "heckbert:cut=median") == SIXEL_OK);
         }
