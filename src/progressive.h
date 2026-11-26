@@ -170,6 +170,8 @@ SIXEL_INTERNAL_API sixel_encoder_t *
 sixel_repair_context_detach_owned(sixel_repair_context_t *context);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_repair_validate_output(sixel_encoder_t const *encoder);
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_repair_config_init(sixel_repair_config_t *config, size_t size);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_repair_context_new(sixel_repair_context_t **context,

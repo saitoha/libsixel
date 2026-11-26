@@ -8780,10 +8780,16 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     char message[256];
     sixel_color_def_t *linear;
 
-    if (encoder->working_icc != NULL && encoder->progressive_enabled) {
-        sixel_helper_set_additional_message(
-            "Progressive repair does not support ICC working coordinates.");
-        return SIXEL_BAD_ARGUMENT;
+    if (encoder->progressive_enabled) {
+        /* The final endpoint is known here, after option overrides. */
+        if (sixel_repair_validate_output(encoder) != SIXEL_OK) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (encoder->working_icc != NULL) {
+            sixel_helper_set_additional_message(
+                "Progressive repair does not support ICC working coordinates.");
+            return SIXEL_BAD_ARGUMENT;
+        }
     }
     if (encoder->output_bpc &&
             encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
@@ -14402,11 +14408,14 @@ sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
     if (candidate != NULL || encoder->output_icc != NULL ||
             gamut != encoder->output_gamut) {
         sixel_encoder_clear_dither_cache(encoder);
-        (void)sixel_encoder_invalidate_6delta_plane(encoder);
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
     }
-    sixel_cdef_free(encoder->output_icc);
+    /* A staged option borrows the old endpoint until the commit. */
+    if (!encoder->option_staging) {
+        sixel_cdef_free(encoder->output_icc);
+        sixel_gamut_free(encoder->gamut_mapper);
+    }
     encoder->output_icc = candidate;
-    sixel_gamut_free(encoder->gamut_mapper);
     encoder->gamut_mapper = mapper;
     encoder->output_gamut = gamut;
     encoder->output_bpc = bpc;
@@ -15944,6 +15953,14 @@ sixel_encoder_option_release_replaced(sixel_encoder_t *old,
             sixel_cdef_free(old->clustering_icc);
         }
         break;
+    case SIXEL_OPTFLAG_OUTPUT_COLORSPACE:
+        if (old->output_icc != next->output_icc) {
+            sixel_cdef_free(old->output_icc);
+        }
+        if (old->gamut_mapper != next->gamut_mapper) {
+            sixel_gamut_free(old->gamut_mapper);
+        }
+        break;
     case SIXEL_OPTFLAG_MAPFILE:
         if (old->mapfile != next->mapfile) {
             sixel_allocator_free(old->allocator, old->mapfile);
@@ -16684,6 +16701,12 @@ sixel_encoder_setopt_owned(
     status = sixel_presentation_validate(encoder);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+    if (destination->progressive_context != NULL) {
+        status = sixel_repair_validate_output(encoder);
+        if (status != SIXEL_OK) {
+            goto end;
+        }
     }
     status = sixel_encoder_validate_residual(encoder,
         destination->progressive_context != NULL);
