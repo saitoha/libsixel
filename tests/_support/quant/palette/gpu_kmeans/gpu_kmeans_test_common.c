@@ -49,7 +49,7 @@ resident_write(char *bytes, int length, void *context)
 #endif
 
 static int
-test_resident_playback(int heckbert)
+test_resident_playback(int heckbert, int ward)
 {
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     static struct {
@@ -82,6 +82,7 @@ test_resident_playback(int heckbert)
 #endif
 
     (void)heckbert;
+    (void)ward;
 #if !defined(HAVE_METAL) && !defined(HAVE_VULKAN)
     return 77;
 #else
@@ -116,7 +117,11 @@ test_resident_playback(int heckbert)
                                         heckbert ? "auto" : "hard"));
     if (heckbert) {
         RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SELECT_COLOR,
-                                            "histogram"));
+                                            ward ? "center" : "histogram"));
+    }
+    if (ward) {
+        RESIDENT_CHECK(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_MERGE_POLICY,
+                                            "ward"));
     }
     for (i = 0; i < sizeof(options)/sizeof(options[0]); ++i)
         RESIDENT_CHECK(sixel_encoder_setopt(encoder, options[i].option,
@@ -167,15 +172,13 @@ end:
 int
 test_kmgpu_resident_playback(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
-    return test_resident_playback(0);
+    return test_resident_playback(0, argc > 1 &&
+        strcmp(argv[1], "ward") == 0);
 }
 
 int
 test_heckbert_resident_playback(int argc, char **argv)
 {
-    (void)argc;
-    (void)argv;
-    return test_resident_playback(1);
+    return test_resident_playback(1, argc > 1 &&
+        strcmp(argv[1], "ward") == 0);
 }

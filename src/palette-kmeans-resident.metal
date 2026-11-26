@@ -2,6 +2,7 @@
 struct Geometry {
     uint width, height, stride, colors, min_iterations;
     float threshold;
+    uint target, heckbert, representative;
 };
 /* These are the byte-cover contract from palette-common-cover.h. */
 #define COVER_SHARE 1024u

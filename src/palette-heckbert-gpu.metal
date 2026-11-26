@@ -25,7 +25,11 @@ struct HeckbertBox {
     float priority;
 };
 
+#if defined(SIXEL_HECKBERT_WARD_RESIDENT)
+#define HB_BOXES 768u
+#else
 #define HB_BOXES 256u
+#endif
 #define HB_BINS 256u
 #define HB_GROUPS 32u
 /* Keep at most six rank-sort entries per lane on each device. */

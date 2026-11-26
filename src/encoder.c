@@ -5500,10 +5500,11 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
 #else
     static char const backend[] = "vulkan";
 #endif
-    int width, height, prune, option_lock, heckbert;
+    int width, height, prune, option_lock, heckbert, merge_mode;
     SIXELSTATUS status;
 
     encoder = context->encoder;
+    merge_mode = sixel_resolve_final_merge_mode(encoder->final_merge_mode);
     if (context->latest || context->palette_source != NULL ||
             context->clip_active ||
             context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
@@ -5519,8 +5520,8 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->output_icc != NULL || encoder->gamut_mapper != NULL ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_FORCE ||
-            sixel_resolve_final_merge_mode(encoder->final_merge_mode) !=
-                SIXEL_FINAL_MERGE_NONE ||
+            (merge_mode != SIXEL_FINAL_MERGE_NONE &&
+             merge_mode != SIXEL_FINAL_MERGE_WARD) ||
             encoder->palette_sample_solid || encoder->force_palette ||
             encoder->reserved_palette_count || encoder->palette_output ||
             encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT ||
@@ -5552,8 +5553,12 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
                 encoder->heckbert_weights_override ||
                 (encoder->method_for_largest != SIXEL_LARGE_AUTO &&
                  encoder->method_for_largest != SIXEL_LARGE_NORM) ||
-                (encoder->method_for_rep != SIXEL_REP_AUTO &&
+                (merge_mode != SIXEL_FINAL_MERGE_WARD &&
+                 encoder->method_for_rep != SIXEL_REP_AUTO &&
                  encoder->method_for_rep != SIXEL_REP_AVERAGE_PIXELS) ||
+                (merge_mode == SIXEL_FINAL_MERGE_WARD &&
+                 encoder->quantize_model_heckbert_profile ==
+                    SIXEL_HECKBERT_PROFILE_QUALITY) ||
                 !encoder->snap_policy_override ||
                 encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE ||
                 (context->palette.binning.policy.requested !=
@@ -5665,6 +5670,23 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
                                         snap_policy_approach_rate_override),
             &request.snap_rate);
     }
+    if (merge_mode == SIXEL_FINAL_MERGE_WARD) {
+        sixel_set_final_merge_target_factor_override(
+            encoder->merge_policy_oversplit_override,
+            encoder->merge_policy_oversplit);
+        sixel_set_final_merge_lloyd_iterations_override(
+            encoder->merge_policy_lloyd_override, encoder->merge_policy_lloyd);
+        request.ward_colors = sixel_final_merge_target(
+            (unsigned int)encoder->reqcolors, merge_mode);
+        request.ward_iterations =
+            sixel_final_merge_lloyd_iterations(merge_mode);
+        sixel_set_final_merge_target_factor_override(0, 0.0);
+        sixel_set_final_merge_lloyd_iterations_override(0, 0u);
+        if (encoder->method_for_rep == SIXEL_REP_CENTER_BOX)
+            request.representative = 1u;
+        else if (encoder->method_for_rep == SIXEL_REP_AVERAGE_COLORS)
+            request.representative = 2u;
+    }
     sixel_encoder_quantize_override_lock_release(option_lock);
     /* Reversible input buckets are the numeric contract of the Heckbert
      * representative shader. A zero approach rate disables that histogram. */
@@ -5685,6 +5707,9 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
     count = (size_t)width * (unsigned int)height;
     if (sixel_encoder_is_cancel_requested(encoder))
         return SIXEL_INTERRUPTED;
+    if (request.ward_colors && (request.ward_colors <= request.colors ||
+            request.ward_colors > SIXEL_WARD_MAX_CLUSTERS))
+        return SIXEL_FALSE;
     if (encoder->palette_sample_override && !encoder->palette_sample_target)
         return SIXEL_FALSE;
     memset(&sampling, 0, sizeof(sampling));
@@ -5801,6 +5826,10 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
     context->resident_indexed = 1;
     indexed = NULL;
     dither = NULL;
+    if (request.ward_colors)
+        sixel_trace_topic_message("palette_contract",
+            "LSXWARDRESIDENT1|backend=%s|provisional=%u|target=%u|lloyd=%u",
+            backend, request.ward_colors, request.colors, request.ward_iterations);
     if (heckbert)
         sixel_trace_topic_message("palette_contract",
             "LSXHBRESIDENT1|backend=%s|colors=%u|snap=%u|cover=%u|soft=%u"

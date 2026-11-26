@@ -22,6 +22,7 @@
 #include "timer.h"
 #include "gpu-runtime-metal.h"
 #include "palette-common-cover.h"
+#include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "pixelformat.h"
 
@@ -714,12 +715,20 @@ static char const *const sixel_km_resident_sources[] = {
 #include <generated-metal/palette-kmeans-resident-shader.inc.h>
 };
 
+static char const *const sixel_ward_resident_sources[] = {
+#include <generated-metal/palette-ward-shader.inc.h>
+#include <generated-metal/palette-ward-resident-shader.inc.h>
+};
+
 enum {
     KM_HISTOGRAM, KM_COUNT, KM_PREFIX, KM_COMPACT, KM_MOMENTS, KM_AXIS,
     KM_TILES, KM_MERGE, KM_SEED, KM_ASSIGN, KM_PARTIAL, KM_REDUCE, KM_UPDATE,
     KM_SCORE, KM_OBJECTIVE, KM_PACK, KM_SNAP, KM_COVER_HIST, KM_COVER_GAPS,
     KM_COVER, KM_LUT, KM_APPLY, HB_FIRST, HB_ACCUMULATE, HB_PREFIX, HB_COMPACT,
-    HB_SOLVE, HB_REP, KM_STAGE_COUNT
+    HB_SOLVE, HB_REP, HB_WARD_SOLVE,
+    WD_KM_POINTS, WD_KM_INIT, WD_KM_COLLECT, WD_KM_CLUSTERS,
+    WD_HB_POINTS, WD_HB_CLUSTERS, WD_SEED, WD_ROWS, WD_MERGE, WD_REPLAY,
+    WD_LLOYD_CLEAR, WD_LLOYD_ASSIGN, WD_LLOYD_UPDATE, WD_PACK, KM_STAGE_COUNT
 };
 
 enum {
@@ -742,6 +751,8 @@ enum {
     HB_GRID_TILE = 128, HB_GRID_CELLS = 64 * 64 * 64
 };
 static id<MTLBuffer> sixel_hb_resident_buffers[HB_BUFFER_COUNT];
+enum { WD_WORK, WD_MEANS, WD_CACHE, WD_PARAMS, WD_PAIRS, WD_BUFFERS };
+static id<MTLBuffer> sixel_ward_resident_buffers[WD_BUFFERS];
 
 typedef struct sixel_hb_resident_params {
     uint32_t count, colors, total;
@@ -751,10 +762,11 @@ typedef struct sixel_hb_resident_params {
 typedef struct sixel_km_geometry {
     uint32_t width, height, stride, colors, min_iterations;
     float threshold;
+    uint32_t target, heckbert, representative;
 } sixel_km_geometry_t;
 
 static SIXELSTATUS
-sixel_km_resident_prepare(int heckbert)
+sixel_km_resident_prepare(int heckbert, int ward)
 {
     static char const *const names[] = {
         "histogram", "count_bins", "prefix", "compact", "moments", "axis",
@@ -764,16 +776,27 @@ sixel_km_resident_prepare(int heckbert)
         "apply_palette", "heckbert_histogram_first",
         "heckbert_histogram_accumulate", "heckbert_histogram_prefix",
         "heckbert_histogram_compact", "heckbert_solve",
-        "heckbert_representatives"
+        "heckbert_representatives", "heckbert_solve",
+        "resident_ward_km_points", "resident_ward_km_init",
+        "resident_ward_km_collect", "resident_ward_km_clusters",
+        "resident_ward_hb_points", "resident_ward_hb_clusters",
+        "resident_ward_seed", "ward_rows", "ward_merge", "resident_ward_replay",
+        "resident_ward_lloyd_clear", "resident_ward_lloyd_assign",
+        "resident_ward_lloyd_update", "resident_ward_pack"
     };
     NSMutableString *source;
     MTLCompileOptions *options;
     id<MTLLibrary> library;
     id<MTLFunction> function;
+    NSError *error;
     unsigned int i;
 
     if (sixel_km_resident_stages[KM_APPLY] != nil &&
-            sixel_km_resident_stages[heckbert ? HB_REP : KM_PACK] != nil)
+            sixel_km_resident_stages[heckbert ? HB_REP : KM_PACK] != nil &&
+            (!heckbert || sixel_km_resident_stages[ward ? HB_WARD_SOLVE
+                                                         : HB_SOLVE]) &&
+            (!ward || sixel_km_resident_stages[heckbert ? WD_HB_CLUSTERS
+                                                        : WD_KM_CLUSTERS]))
         return SIXEL_OK;
     if (sixel_km_resident_device == nil)
         sixel_km_resident_device = MTLCreateSystemDefaultDevice();
@@ -789,6 +812,8 @@ sixel_km_resident_prepare(int heckbert)
         [source appendString:@(sixel_km_metal_source[i])];
     if (heckbert) {
         [source appendString:@"\n#define SIXEL_HECKBERT_RESIDENT 1\n"];
+        if (ward)
+            [source appendString:@"#define SIXEL_HECKBERT_WARD_RESIDENT 1\n"];
         for (i = 0; i < sizeof(sixel_hb_resident_source) /
                         sizeof(sixel_hb_resident_source[0]); ++i)
             [source appendString:@(sixel_hb_resident_source[i])];
@@ -796,19 +821,31 @@ sixel_km_resident_prepare(int heckbert)
     for (i = 0; i < sizeof(sixel_km_resident_sources) /
                     sizeof(sixel_km_resident_sources[0]); ++i)
         [source appendString:@(sixel_km_resident_sources[i])];
+    if (ward) {
+        for (i = 0; i < sizeof(sixel_ward_resident_sources) /
+                         sizeof(sixel_ward_resident_sources[0]); ++i)
+            [source appendString:@(sixel_ward_resident_sources[i])];
+    }
     options = [[MTLCompileOptions alloc] init];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     options.fastMathEnabled = NO;
 #pragma clang diagnostic pop
     library = [sixel_km_resident_device newLibraryWithSource:source
-                                                   options:options error:nil];
+                                                 options:options error:&error];
     [options release];
-    if (library == nil)
+    if (library == nil) {
+        NSLog(@"Resident Metal palette: %@", error);
         return SIXEL_FEATURE_ERROR;
+    }
     for (i = 0; i < KM_STAGE_COUNT; ++i) {
         if (sixel_km_resident_stages[i] != nil ||
-                (heckbert && i < KM_SNAP) || (!heckbert && i >= HB_FIRST))
+                (heckbert && i < KM_SNAP) ||
+                (!heckbert && i >= HB_FIRST && i <= HB_WARD_SOLVE) ||
+                (ward && i == HB_SOLVE) ||
+                (!ward && i >= HB_WARD_SOLVE) ||
+                (heckbert && i >= WD_KM_POINTS && i <= WD_KM_CLUSTERS) ||
+                (!heckbert && i >= WD_HB_POINTS && i <= WD_HB_CLUSTERS))
             continue;
         function = [library newFunctionWithName:@(names[i])];
         sixel_km_resident_stages[i] = function == nil ? nil :
@@ -816,6 +853,7 @@ sixel_km_resident_prepare(int heckbert)
                 function error:nil];
         [function release];
         if (sixel_km_resident_stages[i] == nil) {
+            NSLog(@"Resident Metal palette stage %s is unavailable", names[i]);
             [library release];
             return SIXEL_FEATURE_ERROR;
         }
@@ -849,11 +887,18 @@ sixel_resident_buffers_allocate(id<MTLBuffer> *buffers,
 
 static int
 sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
-                          int heckbert)
+                          unsigned int colors, int heckbert, int ward)
 {
     NSUInteger padded, groups;
     NSUInteger lengths[KM_BUFFER_COUNT];
     NSUInteger hb_lengths[HB_BUFFER_COUNT];
+    /* WardWork contains fixed byte-grid storage and integer cluster
+     * moments. The trailing pad covers its aligned control words. */
+    static NSUInteger const ward_lengths[WD_BUFFERS] = {
+        24u*32768u + 128u*SIXEL_WARD_MAX_CLUSTERS + 32u,
+        16u*SIXEL_WARD_MAX_CLUSTERS, 8u*SIXEL_WARD_MAX_CLUSTERS, 8u,
+        4u*SIXEL_WARD_MAX_CLUSTERS
+    };
     uint32_t shared;
 
     padded = (samples + 127u) & ~127u;
@@ -861,8 +906,8 @@ sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
     shared = (1u << KM_RGB) | (1u << KM_INDICES) | (1u << KM_SNAP_TABLE) |
              (1u << KM_ANCHORS) | (1u << KM_RESULT);
     memcpy(lengths, (NSUInteger[]){
-        12*padded, 4*padded, 3072, 4*padded, 4*padded,
-        16*256*groups, 16*256, 20, 68*groups, 24,
+        12*padded, 4*padded, 12*colors, 4*padded, 4*padded,
+        16*colors*groups, 16*colors, 20, 68*groups, 24,
         3*(NSUInteger)pixels, 16*32768, 0, 4*256, 24,
         48*((padded+63)/64), 16, 8*padded, 8*padded, 0, 4,
         768, 262144, pixels, 0, 256, 16*4096, 4*4096, 78, 776
@@ -874,7 +919,7 @@ sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
             [HB_POINTS] = 16*samples,
             [HB_ORDER] = 4*samples,
             [HB_SCRATCH] = 4*samples,
-            [HB_BOXES] = 16*SIXEL_PALETTE_MAX,
+            [HB_BOXES] = 16*colors,
             [HB_PARAMS] = sizeof(sixel_hb_resident_params_t),
             [HB_SOLVED] = 4,
             [HB_FIRST_INDEX] = 4*HB_GRID_CELLS,
@@ -891,6 +936,9 @@ sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
                 hb_lengths, HB_BUFFER_COUNT, 0u))
             return 0;
     }
+    if (ward && !sixel_resident_buffers_allocate(sixel_ward_resident_buffers,
+            ward_lengths, WD_BUFFERS, 0u))
+        return 0;
     return sixel_resident_buffers_allocate(sixel_km_resident_buffers,
         lengths, KM_BUFFER_COUNT, shared);
 }
@@ -916,7 +964,8 @@ sixel_km_resident_dispatch(id<MTLCommandBuffer> command, unsigned int stage,
         if (buffers[i] != nil)
             [encoder setBuffer:buffers[i] offset:0 atIndex:i];
     }
-    if (stage >= HB_FIRST) {
+    if ((stage >= HB_FIRST && stage <= HB_WARD_SOLVE) ||
+            stage == WD_HB_POINTS || stage == WD_HB_CLUSTERS) {
         slots = stage < HB_SOLVE ? HB_BUFFER_COUNT : HB_FIRST_INDEX;
         for (i = 0; i < slots; ++i)
             [encoder setBuffer:sixel_hb_resident_buffers[i] offset:0
@@ -924,6 +973,29 @@ sixel_km_resident_dispatch(id<MTLCommandBuffer> command, unsigned int stage,
         if (stage == HB_FIRST || stage == HB_COMPACT)
             [encoder setBytes:sixel_safe_tones length:sizeof(sixel_safe_tones)
                       atIndex:HB_TONES];
+    }
+    if (stage >= WD_KM_POINTS) {
+        [encoder setBuffer:sixel_ward_resident_buffers[WD_WORK] offset:0
+                    atIndex:30];
+        [encoder setBuffer:sixel_ward_resident_buffers[WD_MEANS] offset:0
+                    atIndex:29];
+        [encoder setBuffer:sixel_ward_resident_buffers[WD_PARAMS] offset:0
+                    atIndex:28];
+        [encoder setBuffer:sixel_ward_resident_buffers[WD_PAIRS] offset:0
+                    atIndex:27];
+        if (stage == WD_PACK)
+            [encoder setBytes:sixel_safe_tones length:sizeof(sixel_safe_tones)
+                      atIndex:HB_TONES];
+        if (stage == WD_ROWS || stage == WD_MERGE) {
+            [encoder setBuffer:sixel_ward_resident_buffers[WD_MEANS] offset:0
+                        atIndex:0];
+            [encoder setBuffer:sixel_ward_resident_buffers[WD_CACHE] offset:0
+                        atIndex:1];
+            [encoder setBuffer:sixel_ward_resident_buffers[WD_PARAMS] offset:0
+                        atIndex:2];
+            [encoder setBuffer:sixel_ward_resident_buffers[WD_PAIRS] offset:0
+                        atIndex:3];
+        }
     }
     if (reverse) {
         [encoder setBuffer:buffers[KM_SECOND_KEYS] offset:0
@@ -1008,8 +1080,8 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     NSUInteger simd, lanes;
     uint32_t policy[4];
     uint32_t const *result;
-    unsigned int samples, pixels, i, run, tiles;
-    int reverse, heckbert;
+    unsigned int samples, pixels, i, run, tiles, split_stage;
+    int reverse, heckbert, ward;
     SIXELSTATUS status;
     id<MTLBuffer> *buffers;
     id<MTLCommandBuffer> command;
@@ -1023,6 +1095,11 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
         return SIXEL_BAD_ARGUMENT;
     }
     heckbert = request->quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+    ward = request->ward_colors != 0;
+    if (ward && (request->ward_colors <= request->colors ||
+            request->ward_colors > SIXEL_WARD_MAX_CLUSTERS ||
+            request->ward_iterations > 30u))
+        return SIXEL_BAD_ARGUMENT;
     if (!heckbert &&
             (request->max_iterations == 0 || request->max_iterations > 116u))
         return SIXEL_BAD_ARGUMENT;
@@ -1034,7 +1111,8 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     pixels = grid->width * grid->height;
     samples = (unsigned int)grid->count;
     geometry = (sixel_km_geometry_t){grid->width, grid->height, grid->stride,
-        request->colors, request->min_iterations, request->threshold};
+        ward ? request->ward_colors : request->colors, request->min_iterations,
+        request->threshold, request->colors, heckbert, request->representative};
     tiles = (samples + HB_GRID_TILE - 1u) / HB_GRID_TILE;
     policy[0] = request->snap;
     policy[1] = request->cover;
@@ -1043,11 +1121,24 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     buffers = sixel_km_resident_buffers;
     pthread_mutex_lock(&sixel_km_resident_lock);
     @autoreleasepool {
-        status = sixel_km_resident_prepare(heckbert);
+        status = sixel_km_resident_prepare(heckbert, ward);
+        if (ward && status == SIXEL_FEATURE_ERROR)
+            status = SIXEL_FALSE;
         if (status != SIXEL_OK)
             goto end;
+        if (ward && (sixel_km_resident_stages[WD_ROWS].threadExecutionWidth
+                != 32u ||
+                sixel_km_resident_stages[WD_MERGE].threadExecutionWidth
+                != 32u ||
+                ((geometry.colors + 31u) & ~31u) >
+                sixel_km_resident_stages[WD_MERGE]
+                    .maxTotalThreadsPerThreadgroup)) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
         status = SIXEL_BAD_ALLOCATION;
-        if (!sixel_km_resident_storage(samples, pixels, heckbert))
+        if (!sixel_km_resident_storage(samples, pixels, geometry.colors,
+                heckbert, ward))
             goto end;
         memcpy(buffers[KM_RGB].contents, rgb, 3*(size_t)pixels);
         if (request->snap) {
@@ -1112,8 +1203,9 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
         if (!sixel_km_resident_dispatch(command, stage, count, lanes, \
                  indirect, arg, reverse, &geometry, policy)) goto end
         if (heckbert) {
-            simd = sixel_km_resident_stages[HB_SOLVE].threadExecutionWidth;
-            lanes = sixel_km_resident_stages[HB_SOLVE]
+            split_stage = ward ? HB_WARD_SOLVE : HB_SOLVE;
+            simd = sixel_km_resident_stages[split_stage].threadExecutionWidth;
+            lanes = sixel_km_resident_stages[split_stage]
                 .maxTotalThreadsPerThreadgroup;
             if (!simd || 256u % simd != 0u)
                 goto end;
@@ -1124,10 +1216,17 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
             lanes -= lanes % simd;
             if (lanes < 256u)
                 goto end;
-            RUN(HB_SOLVE, (unsigned int)lanes, (unsigned int)lanes,
+            RUN(split_stage, (unsigned int)lanes, (unsigned int)lanes,
                 -1, 0, 0);
-            RUN(HB_REP, request->colors, 128, -1, 0, 0);
+            if (ward) {
+                RUN(WD_HB_POINTS, samples, 128, -1, 0, 0);
+                RUN(WD_HB_CLUSTERS, geometry.colors, 128, -1, 0, 0);
+            } else {
+                RUN(HB_REP, request->colors, 128, -1, 0, 0);
+            }
         } else {
+            if (ward)
+                RUN(WD_KM_POINTS, 256, 64, -1, 0, 0);
             RUN(KM_MOMENTS, (samples+63)/64, 32, -1, 0, 0);
             RUN(KM_AXIS, 1, 1, -1, 0, 0);
             RUN(KM_TILES, 0, 128, 0, 0, 0);
@@ -1140,12 +1239,32 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
             for (i = 0; i < request->max_iterations; ++i) {
                 RUN(KM_ASSIGN, 0, 128, 0, 0, 0);
                 RUN(KM_PARTIAL, 0, 128, 12, 0, 0);
-                RUN(KM_REDUCE, request->colors, 128, -1, 0, 0);
+                RUN(KM_REDUCE, geometry.colors, 128, -1, 0, 0);
                 RUN(KM_UPDATE, 1, 1, -1, 0, 0);
             }
-            RUN(KM_SCORE, 0, 128, 0, 0, 0);
-            RUN(KM_OBJECTIVE, 1, 1, -1, 0, 0);
-            RUN(KM_PACK, request->colors, 128, -1, 0, 0);
+            if (ward) {
+                RUN(WD_KM_INIT, geometry.colors, 128, -1, 0, 0);
+                RUN(KM_ASSIGN, 0, 128, 0, 0, 0);
+                RUN(WD_KM_COLLECT, 0, 128, 0, 0, 0);
+                RUN(WD_KM_CLUSTERS, geometry.colors, 128, -1, 0, 0);
+            } else {
+                RUN(KM_SCORE, 0, 128, 0, 0, 0);
+                RUN(KM_OBJECTIVE, 1, 1, -1, 0, 0);
+                RUN(KM_PACK, request->colors, 128, -1, 0, 0);
+            }
+        }
+        if (ward) {
+            lanes = (geometry.colors + 31u) & ~31u;
+            RUN(WD_SEED, geometry.colors, 128, -1, 0, 0);
+            RUN(WD_ROWS, geometry.colors * 32u, 32, -1, 0, 0);
+            RUN(WD_MERGE, (unsigned int)lanes, (unsigned int)lanes, -1, 0, 0);
+            RUN(WD_REPLAY, 1, 1, -1, 0, 0);
+            for (i = 0; i < request->ward_iterations; ++i) {
+                RUN(WD_LLOYD_CLEAR, request->colors, 128, -1, 0, 0);
+                RUN(WD_LLOYD_ASSIGN, samples, 128, -1, 0, 0);
+                RUN(WD_LLOYD_UPDATE, 1, 1, -1, 0, 0);
+            }
+            RUN(WD_PACK, request->colors, 128, -1, 0, 0);
         }
         if (request->snap) {
             RUN(KM_SNAP, request->colors, 128, -1, 0, 0);
@@ -1177,8 +1296,11 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
         if (command.status != MTLCommandBufferStatusCompleted)
             goto end;
         result = buffers[KM_RESULT].contents;
-        if (result[1] || result[0] == 0 || result[0] > 256)
+        if (result[1] || result[0] == 0 || result[0] > 256) {
+            if (ward)
+                status = SIXEL_FALSE;
             goto end;
+        }
         *colors = result[0];
         memcpy(palette, result+2, 3*result[0]);
         memcpy(indices, buffers[KM_INDICES].contents, pixels);

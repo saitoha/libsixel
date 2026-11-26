@@ -80,6 +80,7 @@ typedef struct sixel_palette_resident_request {
     unsigned int min_iterations, max_iterations;
     float threshold;
     unsigned int snap, cover, soft, grow;
+    unsigned int ward_colors, ward_iterations, representative;
     double snap_rate;
 } sixel_palette_resident_request_t;
 
