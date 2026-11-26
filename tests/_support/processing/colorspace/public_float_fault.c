@@ -165,6 +165,17 @@ static void float_fault_free(void *memory)
 #define sixel_helper_convert_colorspace fault_convert_colorspace
 #define sixel_color_decode_srgb fault_color_decode_srgb
 #define sixel_color_encode_srgb fault_color_encode_srgb
+#define sixel_geometries cff_geometries
+#define sixel_geometry_convert cff_geometry_convert
+#define sixel_geometry_gamma_to_linear cff_geometry_gamma_to_linear
+#define sixel_geometry_linear_to_gamma cff_geometry_linear_to_gamma
+#define sixel_geometry_oklab_to_linear cff_geometry_oklab_to_linear
+#define sixel_geometry_linear_to_oklab cff_geometry_linear_to_oklab
+#define sixel_geometry_cielab_to_linear cff_geometry_cielab_to_linear
+#define sixel_geometry_linear_to_cielab cff_geometry_linear_to_cielab
+#define sixel_geometry_din99d_to_linear cff_geometry_din99d_to_linear
+#define sixel_geometry_linear_to_din99d cff_geometry_linear_to_din99d
+#define sixel_color_geometry fault_color_geometry
 #define sixel_color_convert fault_color_convert
 #define sixel_color_convert_output fault_color_convert_output
 #define sixel_color_from_output fault_color_from_output
@@ -176,6 +187,7 @@ static void float_fault_free(void *memory)
 #define sixel_components_getservice float_fault_service
 /* The ordinary header can already be guarded in an amalgamated build.
  * Keep its DLL attribute on these renamed declarations as well. */
+SIXEL_INTERNAL_API sixel_color_geometry_t const *sixel_color_geometry(int);
 SIXEL_INTERNAL_API double sixel_color_decode_srgb(double value);
 SIXEL_INTERNAL_API int sixel_color_convert(double out[3], double const in[3],
                                            int source, int target);
@@ -300,6 +312,17 @@ SIXEL_INTERNAL_API int sixel_color_from_output(double out[3],
 #undef sixel_color_decode_srgb
 #undef sixel_color_encode_srgb
 #undef sixel_color_convert
+#undef sixel_geometries
+#undef sixel_geometry_convert
+#undef sixel_geometry_gamma_to_linear
+#undef sixel_geometry_linear_to_gamma
+#undef sixel_geometry_oklab_to_linear
+#undef sixel_geometry_linear_to_oklab
+#undef sixel_geometry_cielab_to_linear
+#undef sixel_geometry_linear_to_cielab
+#undef sixel_geometry_din99d_to_linear
+#undef sixel_geometry_linear_to_din99d
+#undef sixel_color_geometry
 #undef sixel_color_convert_output
 #undef sixel_color_from_output
 #undef sixel_color_convert_rgbf32

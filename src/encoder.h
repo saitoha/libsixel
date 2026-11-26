@@ -31,6 +31,7 @@
 #include "threading.h"
 #include "timeline-logger.h"
 
+#include "colorspace.h"
 #include "planner.h"
 #include "encoder-palette-store.h"
 #include "delta-residual.h"
@@ -433,11 +434,11 @@ struct sixel_encoder {
     int macro_number;
     int penetrate_multiplexer;
     int encode_policy;
-    int clustering_colorspace;
+    /* NULL follows the current frame's resolved working coordinates. */
+    sixel_color_geometry_t const *clustering_override;
     int working_colorspace;
     /* Zero selects AUTO; coordinate fields hold the last resolved values. */
     int working_colorspace_set;
-    int clustering_colorspace_set;
     int force_float32_colorspace;
     int output_colorspace;
     /* Base precision request, independent of float-only colorspaces. */
@@ -572,6 +573,14 @@ struct sixel_encoder {
     /* Keep an explicit byte request distinct from automatic selection. */
     int precision_requested;
 };
+
+static inline int
+sixel_encoder_cluster_space(sixel_encoder_t const *encoder)
+{
+    return encoder->clustering_override ? encoder->clustering_override->space
+                                        : encoder->working_colorspace;
+}
+
 
 enum sixel_encoder_operation_kind {
     SIXEL_ENCODER_OPERATION_NORMAL,

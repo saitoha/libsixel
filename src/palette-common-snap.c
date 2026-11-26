@@ -56,8 +56,6 @@ static double
 sixel_palette_get_snap_approach_rate(void);
 static double
 sixel_palette_get_snap_channel_factor(void);
-static int
-sixel_palette_determine_colorspace(int pixelformat);
 static SIXELSTATUS
 sixel_palette_snap_float_entries(float *entries, unsigned int colors,
                                   int pixelformat);
@@ -385,7 +383,7 @@ sixel_palette_snap_begin(int pixelformat, int quantizer,
         return g_snap_status;
     }
     g_snap_status = sixel_snap_grid_new(&g_snap_grid, g_snap_grid_policy,
-        sixel_palette_determine_colorspace(pixelformat), destination,
+        sixel_pixelformat_get_colorspace(pixelformat), destination,
         allocator);
     sixel_cdef_free(destination);
     return g_snap_status;
@@ -417,23 +415,6 @@ sixel_palette_snap_end(void)
     return status;
 }
 
-static int
-sixel_palette_determine_colorspace(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
 void
 sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
@@ -455,7 +436,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
     color_index = 0U;
     depth = sixel_helper_compute_depth(pixelformat);
     channel = 0;
-    colorspace = sixel_palette_determine_colorspace(pixelformat);
+    colorspace = sixel_pixelformat_get_colorspace(pixelformat);
     approach = sixel_palette_get_snap_approach_rate();
     channels = 0U;
     if (!sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT)) {
@@ -638,7 +619,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
     int c1;
     int c2;
 
-    space = sixel_palette_determine_colorspace(pixelformat);
+    space = sixel_pixelformat_get_colorspace(pixelformat);
     policy = sixel_palette_get_snap_policy();
     rate = sixel_palette_get_snap_approach_rate();
     weights[0] = weights[1] = weights[2] = 1.0;

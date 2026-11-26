@@ -116,10 +116,15 @@ colorspace_auto_check(int mode)
                 i % 2 ? SIXEL_OPTFLAG_WORKING_COLORSPACE :
                         SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "auto");
             if (SIXEL_FAILED(status)) goto end;
-        } else if (mode == 2) {
+        } else if (mode == 2 && i == 0) {
             status = sixel_encoder_setopt(encoder,
-                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "gamma");
+                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "GaM");
             if (SIXEL_FAILED(status)) goto end;
+            /* An invalid selector must preserve this explicit definition
+             * as AUTO follows subsequent frames in different workspaces. */
+            status = sixel_encoder_setopt(encoder,
+                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "smpte-c");
+            if (status != SIXEL_BAD_ARGUMENT) goto end;
         }
         status = sixel_frame_new(&frame, NULL);
         if (SIXEL_FAILED(status)) goto end;
@@ -138,7 +143,7 @@ colorspace_auto_check(int mode)
         status = sixel_encoder_encode_frame(encoder, frame, output);
         if (SIXEL_FAILED(status) || count == 0 ||
                 encoder->working_colorspace != expected ||
-                encoder->clustering_colorspace != clustering ||
+                sixel_encoder_cluster_space(encoder) != clustering ||
                 sixel_frame_format(frame) != format ||
                 (expected == spaces[i] &&
                  memcmp(sixel_frame_get_pixels(frame),

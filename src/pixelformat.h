@@ -26,6 +26,7 @@
 #define LIBSIXEL_PIXELFORMAT_H
 
 #include <sixel.h>
+#include "colorspace.h"
 
 /* Internal sample representations for working buffers. The public frame
  * layout is RGBFLOAT32 for each of these coordinate systems. */
@@ -95,19 +96,14 @@ sixel_pixelformat_get_colorspace(int pixelformat);
 static inline int
 sixel_pixelformat_for_colorspace(int colorspace, int prefer_float32)
 {
-    switch (colorspace) {
-    case SIXEL_COLORSPACE_LINEAR:
-        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    case SIXEL_COLORSPACE_OKLAB:
-        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
-    case SIXEL_COLORSPACE_CIELAB:
-        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
-    case SIXEL_COLORSPACE_DIN99D:
-        return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    default:
-        return prefer_float32 ? SIXEL_PIXELFORMAT_RGBFLOAT32
-                              : SIXEL_PIXELFORMAT_RGB888;
+    sixel_color_geometry_t const *geometry;
+
+    geometry = sixel_color_geometry(colorspace);
+    if (geometry != NULL) {
+        return sixel_geometry_format(geometry, prefer_float32);
     }
+    return prefer_float32 ? SIXEL_PIXELFORMAT_RGBFLOAT32
+                          : SIXEL_PIXELFORMAT_RGB888;
 }
 
 int

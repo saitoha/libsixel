@@ -86,7 +86,7 @@ The names are defined in [spaces used by libsixel](../../concepts/colorspace/REA
 
 ### `-X`: palette-construction geometry
 
-`-X` changes the distances, ranges, centroids, and partitions seen by a generated-palette algorithm. It operates on a palette-building view; specifying it does not by itself convert the main image path. After palette construction, the `K` generated entries are converted from `-X` to `-W` before palette lookup and dithering.
+`-X` changes the distances, ranges, centroids, and partitions seen by a generated-palette algorithm. It operates on a palette-building view; specifying it does not by itself convert the main image path. Each palette build request captures the resolved [coordinate definition](../../../src/colorspace.c), including its float representation, nominal binning bounds and transforms. These bounds describe binning and byte encoding; float distances and centroids use the model coordinates. After palette construction, the `K` generated entries are converted from `-X` to `-W` before palette lookup and dithering.
 
 `-Xauto` follows the resolved working space. An explicit non-auto `-X` is authoritative regardless of whether it appears before or after `-W`. The [working-space coupling policy](../palette-application/working-colorspace/README.md#default-and-option-coupling) defines defaults, repeated options and per-frame resolution. `-X` is ignored by paths that use a fixed palette through `-b`, `-m`, or `-e`, because those paths do not construct a new palette.
 

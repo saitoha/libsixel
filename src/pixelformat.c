@@ -54,16 +54,8 @@
 # define SIZE_MAX ((size_t)-1)
 #endif
 
-#define SIXEL_OKLAB_AB_FLOAT_MIN (-0.5f)
-#define SIXEL_OKLAB_AB_FLOAT_MAX (0.5f)
-#define SIXEL_CIELAB_AB_FLOAT_MIN (-1.5f)
 #define SIXEL_CIELAB_AB_FLOAT_MAX (1.5f)
-#define SIXEL_CIELAB_L_FLOAT_MIN  (0.0f)
-#define SIXEL_CIELAB_L_FLOAT_MAX  (1.0f)
 /* DIN99d stores all three native coordinates divided by the same 100. */
-#define SIXEL_DIN99D_L_FLOAT_MIN  (0.0f)
-#define SIXEL_DIN99D_L_FLOAT_MAX  (1.0f)
-#define SIXEL_DIN99D_AB_FLOAT_MIN (-1.0f)
 #define SIXEL_DIN99D_AB_FLOAT_MAX (1.0f)
 
 /*
@@ -213,108 +205,63 @@ sixel_pixelformat_din99d_ab_to_byte(float value)
     return (unsigned char)(encoded * 255.0f + 0.5f);
 }
 
-static float
-sixel_pixelformat_float_channel_min_internal(int pixelformat,
-                                             int channel)
+/* The legacy range API treats every nonzero channel of opponent spaces
+ * as a chromatic axis, including indices outside the RGB triplet. */
+static int
+sixel_geometry_axis(int channel)
 {
-    (void)channel;
-    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-        if (channel == 0) {
-            return 0.0f;
-        }
-        return SIXEL_OKLAB_AB_FLOAT_MIN;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
-        if (channel == 0) {
-            return SIXEL_CIELAB_L_FLOAT_MIN;
-        }
-        return SIXEL_CIELAB_AB_FLOAT_MIN;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        if (channel == 0) {
-            return SIXEL_DIN99D_L_FLOAT_MIN;
-        }
-        return SIXEL_DIN99D_AB_FLOAT_MIN;
-    }
-    return 0.0f;
+    return channel == 0 ? 0 : channel == 1 ? 1 : 2;
+}
+
+static sixel_color_geometry_t const *
+sixel_pixelformat_geometry(int format)
+{
+    return sixel_color_geometry(sixel_pixelformat_get_colorspace(format));
 }
 
 float
-sixel_pixelformat_float_channel_min(int pixelformat,
-                                    int channel)
+sixel_pixelformat_float_channel_min(int pixelformat, int channel)
 {
-    return sixel_pixelformat_float_channel_min_internal(pixelformat,
-                                                        channel);
-}
-
-static float
-sixel_pixelformat_float_channel_max_internal(int pixelformat,
-                                             int channel)
-{
-    (void)channel;
-    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-        if (channel == 0) {
-            return 1.0f;
-        }
-        return SIXEL_OKLAB_AB_FLOAT_MAX;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
-        if (channel == 0) {
-            return SIXEL_CIELAB_L_FLOAT_MAX;
-        }
-        return SIXEL_CIELAB_AB_FLOAT_MAX;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        if (channel == 0) {
-            return SIXEL_DIN99D_L_FLOAT_MAX;
-        }
-        return SIXEL_DIN99D_AB_FLOAT_MAX;
-    }
-    return 1.0f;
+    return sixel_pixelformat_geometry(pixelformat)->minimum[
+        sixel_geometry_axis(channel)];
 }
 
 float
-sixel_pixelformat_float_channel_max(int pixelformat,
-                                    int channel)
+sixel_pixelformat_float_channel_max(int pixelformat, int channel)
 {
-    return sixel_pixelformat_float_channel_max_internal(pixelformat,
-                                                        channel);
+    return sixel_pixelformat_geometry(pixelformat)->maximum[
+        sixel_geometry_axis(channel)];
 }
 
 float
-sixel_pixelformat_float_channel_range(int pixelformat,
-                                      int channel)
+sixel_pixelformat_float_channel_range(int pixelformat, int channel)
 {
-    /* Every supported channel and the default [0, 1] has positive range. */
-    return sixel_pixelformat_float_channel_max_internal(pixelformat, channel) -
-           sixel_pixelformat_float_channel_min_internal(pixelformat, channel);
+    sixel_color_geometry_t const *geometry;
+
+    geometry = sixel_pixelformat_geometry(pixelformat);
+    channel = sixel_geometry_axis(channel);
+    return geometry->maximum[channel] - geometry->minimum[channel];
 }
 
 float
-sixel_pixelformat_float_channel_clamp(int pixelformat,
-                                      int channel,
-                                      float value)
+sixel_pixelformat_float_channel_clamp(int pixelformat, int channel, float value)
 {
-    float minimum;
-    float maximum;
+    sixel_color_geometry_t const *geometry;
 
 #if HAVE_MATH_H
     if (!isfinite(value)) {
         value = 0.0f;
     }
-#endif  /* HAVE_MATH_H */
+#endif
 
-    minimum = sixel_pixelformat_float_channel_min_internal(pixelformat,
-                                                           channel);
-    maximum = sixel_pixelformat_float_channel_max_internal(pixelformat,
-                                                           channel);
-    if (value < minimum) {
-        return minimum;
+    geometry = sixel_pixelformat_geometry(pixelformat);
+    channel = sixel_geometry_axis(channel);
+    if (value < geometry->minimum[channel]) {
+        return geometry->minimum[channel];
     }
-    if (value > maximum) {
-        return maximum;
+    if (value > geometry->maximum[channel]) {
+        return geometry->maximum[channel];
     }
-
     return value;
 }
 
@@ -323,31 +270,28 @@ sixel_pixelformat_float_channel_to_byte(int pixelformat,
                                         int channel,
                                         float value)
 {
-    float clamped;
-
-    clamped = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                    channel,
-                                                    value);
+    /* Each byte encoder already bounds its own axis and maps nonfinite
+     * input to zero before encoding. Avoid a geometry lookup per channel. */
     if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
         if (channel == 0) {
-            return sixel_pixelformat_oklab_L_to_byte(clamped);
+            return sixel_pixelformat_oklab_L_to_byte(value);
         }
-        return sixel_pixelformat_oklab_ab_to_byte(clamped);
+        return sixel_pixelformat_oklab_ab_to_byte(value);
     }
     if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
         if (channel == 0) {
-            return sixel_pixelformat_cielab_L_to_byte(clamped);
+            return sixel_pixelformat_cielab_L_to_byte(value);
         }
-        return sixel_pixelformat_cielab_ab_to_byte(clamped);
+        return sixel_pixelformat_cielab_ab_to_byte(value);
     }
     if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
         if (channel == 0) {
-            return sixel_pixelformat_din99d_L_to_byte(clamped);
+            return sixel_pixelformat_din99d_L_to_byte(value);
         }
-        return sixel_pixelformat_din99d_ab_to_byte(clamped);
+        return sixel_pixelformat_din99d_ab_to_byte(value);
     }
     (void)channel;
-    return sixel_pixelformat_float_to_byte(clamped);
+    return sixel_pixelformat_float_to_byte(value);
 }
 
 float
