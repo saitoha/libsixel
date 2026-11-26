@@ -89,4 +89,5 @@ int icc_numeric_mpet_png_storage_fallback_test(void);
 
 int icc_numeric_parametric_trc_inverse_test(void);
 int icc_numeric_sampled_trc_inverse_test(void);
+int icc_numeric_extended_trc_roundtrip_test(void);
 #endif

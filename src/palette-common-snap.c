@@ -368,7 +368,8 @@ sixel_palette_cluster_to_gamma(double gamma[3], double const point[3],
     if (g_snap_cluster == NULL) {
         return sixel_color_convert(gamma, point, space, SIXEL_COLORSPACE_GAMMA);
     }
-    return sixel_cdef_relative(g_snap_cluster, g_snap_linear, point, linear) &&
+    return sixel_cdef_convert_intermediate(g_snap_cluster, g_snap_linear,
+                                           point, linear) &&
         sixel_color_convert(gamma, linear, SIXEL_COLORSPACE_LINEAR,
                             SIXEL_COLORSPACE_GAMMA);
 }
@@ -384,7 +385,8 @@ sixel_palette_gamma_to_cluster(double point[3], double const gamma[3],
     }
     return sixel_color_convert(linear, gamma, SIXEL_COLORSPACE_GAMMA,
                                SIXEL_COLORSPACE_LINEAR) &&
-        sixel_cdef_relative(g_snap_linear, g_snap_cluster, linear, point);
+        sixel_cdef_convert_intermediate(g_snap_linear, g_snap_cluster,
+                                        linear, point);
 }
 
 int

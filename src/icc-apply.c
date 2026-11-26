@@ -2713,6 +2713,50 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
     return 1;
 }
 
+/* Extend the measured device curve linearly at both ends. The full
+ * secant is positive even when the first or last segment is flat. Use
+ * the same slope and anchors in both directions. */
+int
+sixel_icc_curve_intermediate(sixel_icc_curve_t const *curve, double value,
+                             int inverse, double *out)
+{
+    double first;
+    double last;
+    double slope;
+    double anchor;
+    double endpoint;
+    double result;
+
+    if (curve == NULL || out == NULL || !isfinite(value)) {
+        return 0;
+    }
+    if (curve->kind == SIXEL_ICC_CURVE_IDENTITY ||
+            curve->kind == SIXEL_ICC_CURVE_GAMMA) {
+        first = 0.0;
+        last = 1.0;
+    } else {
+        first = curve->inverse_first;
+        last = curve->inverse_last;
+    }
+    slope = last - first;
+    if (slope <= 0.0) {
+        return 0;
+    }
+    if (value >= (inverse ? first : 0.0) &&
+            value <= (inverse ? last : 1.0)) {
+        return sixel_icc_curve_device(curve, value, inverse, out);
+    }
+    endpoint = value < (inverse ? first : 0.0) ? 0.0 : 1.0;
+    anchor = endpoint == 0.0 ? first : last;
+    result = inverse ? endpoint + (value - anchor) / slope :
+        anchor + (value - endpoint) * slope;
+    if (!isfinite(result)) {
+        return 0;
+    }
+    *out = result;
+    return 1;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

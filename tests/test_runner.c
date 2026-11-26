@@ -534,6 +534,7 @@ int test_icc_0133(int argc, char **argv);
 int test_icc_0134(int argc, char **argv);
 int test_icc_0139(int argc, char **argv);
 int test_icc_0140(int argc, char **argv);
+int test_icc_0141(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -10800,6 +10801,7 @@ static test_entry_t const test_entries[] = {
     { "icc/0134_mpet_nonrelative_gamut", test_icc_0134 },
     { "icc/0139_parametric_trc_inverse", test_icc_0139 },
     { "icc/0140_sampled_trc_inverse", test_icc_0140 },
+    { "icc/0141_extended_trc_roundtrip", test_icc_0141 },
     { "icc/latest_feedback", test_latest_icc_feedback },
     { "icc/red_alpha", test_icc_red_alpha },
     { "icc/png_extended_trc", test_icc_png_extended_trc },

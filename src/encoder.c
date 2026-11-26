@@ -9931,8 +9931,8 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         build_attempt.cover_icc = request->clustering_icc;
         build_attempt.cover_linear = request->linear_srgb;
         if (sixel_palette_cover_mode() == SIXEL_PALETTE_COVER_MODE_SOFT) {
-            /* Soft cover needs the visible source colors before the
-             * construction ICC clips them to its device domain. */
+            /* Retain exact source colors and their coverage before
+             * converting the solver's private sample copy. */
             if (source_point_count > SIZE_MAX / (3u * sizeof(float))) {
                 status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto end;

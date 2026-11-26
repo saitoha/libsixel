@@ -5009,3 +5009,48 @@ icc_numeric_sampled_trc_inverse_test(void)
     }
     return EXIT_SUCCESS;
 }
+
+int
+icc_numeric_extended_trc_roundtrip_test(void)
+{
+    static unsigned int const table[] = {16384u, 16384u, 49152u, 49152u};
+    static double const encoded[] = {-0.25, 0.0, 0.5, 1.0, 1.5};
+    static double const decoded[] = {
+        8192.0 / 65535.0, 16384.0 / 65535.0, 32768.0 / 65535.0,
+        49152.0 / 65535.0, 65536.0 / 65535.0
+    };
+    static double const bounded[] = {0.0, 0.0, 0.5, 1.0, 1.0};
+    unsigned char bytes[260];
+    unsigned char *tag;
+    sixel_icc_profile_t profile;
+    double value;
+    size_t i;
+    int ok;
+
+    iccn_inverse_trc_header(bytes, 20u);
+    tag = bytes + 188u;
+    memcpy(tag, "curv", 4u);
+    iccn_be32(tag + 8u, 4u);
+    for (i = 0u; i < 4u; ++i) {
+        tag[12u + i * 2u] = (unsigned char)(table[i] >> 8);
+        tag[13u + i * 2u] = (unsigned char)table[i];
+    }
+    if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
+        return EXIT_FAILURE;
+    }
+    ok = 1;
+    /* Flat ends still have a positive slope between the two anchors. */
+    for (i = 0u; ok && i < sizeof(encoded) / sizeof(encoded[0]); ++i) {
+        ok = sixel_icc_curve_intermediate(&profile.curves[0], encoded[i],
+                0, &value) && fabs(value - decoded[i]) < 1e-13 &&
+            sixel_icc_curve_intermediate(&profile.curves[0], decoded[i],
+                1, &value) && fabs(value - encoded[i]) < 1e-13 &&
+            sixel_icc_curve_device(&profile.curves[0], decoded[i],
+                1, &value) && fabs(value - bounded[i]) < 1e-13;
+        if (!ok) {
+            fprintf(stderr, "extended TRC sample %u failed\n", (unsigned int)i);
+        }
+    }
+    sixel_icc_profile_destroy(&profile);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}

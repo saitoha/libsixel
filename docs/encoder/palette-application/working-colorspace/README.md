@@ -253,6 +253,7 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-30 | Raster Floyd–Steinberg uses the unrounded linear sRGB values of the ICC Heckbert representatives, including feedback into the second row. Substituting RGB101 or sRGB8 palette values for the unrounded representatives changes the expected pixel assignments. | [tests/palette/working-space/0166_icc_heckbert_linear_fs.t](../../../../tests/palette/working-space/0166_icc_heckbert_linear_fs.t) |
 | WC-31 | PAL export writes both ICC Heckbert representatives as sRGB8 with a Display P3 output destination. | [tests/palette/export/0007_matrix_icc_heckbert_srgb8.t](../../../../tests/palette/export/0007_matrix_icc_heckbert_srgb8.t) |
 | WC-32 | ICC clustering ignores hidden PNG samples and preserves both painted colors and omitted pixels during serial and worker palette construction. | [tests/palette/working-space/0167_icc_alpha_serial.t](../../../../tests/palette/working-space/0167_icc_alpha_serial.t), [tests/palette/working-space/0168_icc_alpha_worker.t](../../../../tests/palette/working-space/0168_icc_alpha_worker.t) |
+| WC-33 | ICC clustering preserves sRGB primaries outside the clustering gamut and exports the original colors after returning the representatives to linear RGB. | [tests/palette/working-space/0169_icc_extended_roundtrip.t](../../../../tests/palette/working-space/0169_icc_extended_roundtrip.t) |
 
 ### Coverage boundary
 

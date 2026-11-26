@@ -7339,21 +7339,23 @@ sixel_cdef_linearized(sixel_color_def_t const *definition)
     return linear;
 }
 
-int
-sixel_cdef_transfer(sixel_color_def_t const *definition,
-                     double const input[3], double output[3], int encode)
+static int
+sixel_cdef_transfer_matrix(sixel_color_def_t const *definition,
+                           double const input[3], double output[3],
+                           int encode, int extended)
 {
     double result[3];
     double exponent;
     int i;
 
-    if (!sixel_cdef_separable(definition) || output == NULL ||
+    if (output == NULL ||
             !sixel_cdef_finite(input) || (encode != 0 && encode != 1)) {
         return 0;
     }
     for (i = 0; i < 3; ++i) {
         if (definition->bytes != NULL) {
-            if (!sixel_icc_curve_device(&definition->icc.curves[i],
+            if (!(extended ? sixel_icc_curve_intermediate
+                           : sixel_icc_curve_device)(&definition->icc.curves[i],
                     input[i], encode, &result[i])) {
                 return 0;
             }
@@ -7371,6 +7373,43 @@ sixel_cdef_transfer(sixel_color_def_t const *definition,
     }
     memcpy(output, result, sizeof(result));
     return 1;
+}
+
+int
+sixel_cdef_transfer(sixel_color_def_t const *definition,
+                     double const input[3], double output[3], int encode)
+{
+    return sixel_cdef_separable(definition) &&
+        sixel_cdef_transfer_matrix(definition, input, output, encode, 0);
+}
+
+int
+sixel_cdef_from_xyz_intermediate(sixel_color_def_t const *definition,
+    double const xyz[3], double output[3])
+{
+    double linear[3];
+
+    if (!sixel_cdef_separable(definition) || !sixel_cdef_finite(xyz)) {
+        return 0;
+    }
+    sixel_cdef_matrix(definition->from_xyz, xyz, linear);
+    return sixel_cdef_transfer_matrix(definition, linear, output, 1, 1);
+}
+
+int
+sixel_cdef_convert_intermediate(sixel_color_def_t const *source,
+    sixel_color_def_t const *destination, double const input[3],
+    double output[3])
+{
+    double linear[3];
+    double xyz[3];
+
+    if (!sixel_cdef_separable(source) ||
+            !sixel_cdef_transfer_matrix(source, input, linear, 0, 1)) {
+        return 0;
+    }
+    sixel_cdef_matrix(source->to_xyz, linear, xyz);
+    return sixel_cdef_from_xyz_intermediate(destination, xyz, output);
 }
 
 /* Absolute evaluation tries the relative and perceptual slots in order.

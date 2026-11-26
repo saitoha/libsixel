@@ -156,6 +156,7 @@ set -- \
     color/icc/0136_libpng_png_extended_trc.t \
     color/icc/0139_parametric_trc_inverse.t \
     color/icc/0140_sampled_trc_inverse.t \
+    color/icc/0141_extended_trc_roundtrip.t \
     color/gamut/0063_pipeline_minde_linear_b2.t \
     color/gamut/0064_pipeline_failure.t \
     color/gamut/0067_pipeline_mask.t \
@@ -325,6 +326,7 @@ set -- \
     palette/working-space/0166_icc_heckbert_linear_fs.t \
     palette/working-space/0167_icc_alpha_serial.t \
     palette/working-space/0168_icc_alpha_worker.t \
+    palette/working-space/0169_icc_extended_roundtrip.t \
     palette/cover/0146_hard_icc_srgb_anchors.t \
     palette/cover/0147_soft_icc_srgb_anchors.t \
     palette/cover/0148_icc_cover_apply_snap.t \

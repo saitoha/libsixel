@@ -1238,7 +1238,8 @@ sixel_palette_convert_icc_rgbf32(float *pixels, size_t count,
         for (c = 0; c < 3; ++c) {
             input[c] = pixels[c];
         }
-        if (!sixel_cdef_relative(source, destination, input, output)) {
+        if (!sixel_cdef_convert_intermediate(source, destination,
+                                             input, output)) {
             return SIXEL_BAD_INPUT;
         }
         for (c = 0; c < 3; ++c) {
@@ -2035,14 +2036,16 @@ sixel_palette_icc_code_color(sixel_palette_t const *palette,
     sixel_color_def_t const *cluster_icc, double rgb[3])
 {
     double device[3];
+    double xyz[3];
 
     device[0] = code[0] / 100.0;
     device[1] = code[1] / 100.0;
     device[2] = code[2] / 100.0;
     if (cluster_icc != NULL) {
-        return sixel_cdef_relative(
+        return sixel_cdef_to_xyz(
             SIXEL_PALETTE_STORAGE_CONST(palette)->output_device,
-            cluster_icc, device, rgb);
+            device, xyz, SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
+            sixel_cdef_from_xyz_intermediate(cluster_icc, xyz, rgb);
     }
     return sixel_palette_from_output(palette, rgb, device, space);
 }
@@ -2154,8 +2157,8 @@ sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
             if (cluster_icc != NULL) {
                 if (!sixel_color_convert(working, source, workspace,
                         SIXEL_COLORSPACE_GAMMA) ||
-                        !sixel_cdef_relative(storage->output_srgb, cluster_icc,
-                                             working, target)) {
+                        !sixel_cdef_convert_intermediate(storage->output_srgb,
+                            cluster_icc, working, target)) {
                     return SIXEL_BAD_INPUT;
                 }
             } else if (!sixel_color_convert(target, source, workspace,

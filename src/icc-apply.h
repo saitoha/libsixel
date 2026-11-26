@@ -146,6 +146,10 @@ SIXEL_INTERNAL_API int
 sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
                           int inverse, double *out);
 
+SIXEL_INTERNAL_API int
+sixel_icc_curve_intermediate(sixel_icc_curve_t const *curve, double value,
+                             int inverse, double *out);
+
 /* Evaluate one parsed cvst element. Discard output on failure. */
 SIXEL_INTERNAL_API int
 sixel_icc_apply_mpe_curves(double *out, double const *in, size_t channels,

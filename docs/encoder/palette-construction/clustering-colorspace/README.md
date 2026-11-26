@@ -12,6 +12,8 @@ palette is constructed:
 
 The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE`. With `icc:FILE` the builtin CMS converts samples to the encoded device RGB coordinates of a matrix/TRC RGB profile using relative colorimetry. The solver computes distances and representatives in those coordinates. The generated representatives then pass back through the profile to the resolved `-W` space for palette lookup and dithering. The default `auto` follows the resolved `-W` working space. An explicit non-auto `-X` remains authoritative regardless of its position relative to `-W`; `-Xauto` restores tracking. The [working-space default and option coupling](../../palette-application/working-colorspace/README.md#default-and-option-coupling) owns per-input auto resolution and its precision constraint.
 
+Float ICC clustering coordinates can be negative or greater than one. Outside the nominal TRC range each channel uses a linear extension anchored at the corresponding endpoint, with slope equal to the difference between the decoded values at one and zero. Conversion back to the working space uses the same extension in reverse. Within the nominal range the profile TRC governs the conversion. The final output conversion still follows the selected `-U` policy.
+
 This option changes the geometry seen by the quantizer. It does not declare
 the source image profile, change the terminal's interpretation of SIXEL
 palette values, or choose the space used by all later image processing.

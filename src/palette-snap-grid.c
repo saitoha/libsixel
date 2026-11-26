@@ -30,8 +30,8 @@ struct sixel_snap_grid {
     sixel_allocator_t *allocator;
     sixel_color_xform_t *to_linear;
     sixel_color_def_t *destination;
-    sixel_color_xform_t *to_cluster;
-    sixel_color_xform_t *from_cluster;
+    sixel_color_def_t *cluster;
+    sixel_color_def_t *cluster_linear;
     int colorspace;
     int policy;
     double tones[101];
@@ -50,8 +50,9 @@ static int
 sixel_snap_grid_coordinates(sixel_snap_grid_t *grid, double const linear[3],
                             double target[3])
 {
-    if (grid->to_cluster != NULL) {
-        return sixel_cxform_apply(grid->to_cluster, linear, target);
+    if (grid->cluster != NULL) {
+        return sixel_cdef_convert_intermediate(grid->cluster_linear,
+            grid->cluster, linear, target);
     }
     return sixel_color_convert(target, linear, SIXEL_COLORSPACE_LINEAR,
                                grid->colorspace);
@@ -145,8 +146,8 @@ sixel_snap_grid_destroy(sixel_snap_grid_t *grid)
         "LSXSG1|strategy=%d|queries=%lu|hits=%lu|conversions=%lu",
         grid->policy, grid->queries, grid->hits, grid->conversions);
     allocator = grid->allocator;
-    sixel_cxform_free(grid->to_cluster);
-    sixel_cxform_free(grid->from_cluster);
+    sixel_cdef_free(grid->cluster);
+    sixel_cdef_free(grid->cluster_linear);
     sixel_cxform_free(grid->to_linear);
     sixel_cdef_free(grid->destination);
     sixel_allocator_free(allocator, grid->cache);
@@ -227,15 +228,16 @@ sixel_snap_grid_new_cluster(sixel_snap_grid_t **result, int policy,
     forward = sixel_cxform_new(srgb, destination_linear, 1);
     grid->to_linear = sixel_cxform_new(destination, srgb, 1);
     if (cluster_icc != NULL) {
-        grid->to_cluster = sixel_cxform_new(srgb, cluster_icc, 1);
-        grid->from_cluster = sixel_cxform_new(cluster_icc, srgb, 1);
+        grid->cluster = sixel_cdef_clone(cluster_icc);
+        grid->cluster_linear = srgb;
+        srgb = NULL;
     }
     sixel_cdef_free(destination_linear);
     sixel_cdef_free(srgb);
     status = SIXEL_BAD_ALLOCATION;
     if (forward == NULL || grid->to_linear == NULL ||
             grid->destination == NULL || (cluster_icc != NULL &&
-            (grid->to_cluster == NULL || grid->from_cluster == NULL))) {
+            (grid->cluster == NULL || grid->cluster_linear == NULL))) {
         goto end;
     }
     status = SIXEL_BAD_INPUT;
@@ -358,8 +360,9 @@ sixel_snap_grid_project(sixel_snap_grid_t *grid, double const source[3],
             lightness_weight > 1.0) {
         return SIXEL_BAD_INPUT;
     }
-    if (grid->from_cluster != NULL
-            ? !sixel_cxform_apply(grid->from_cluster, source, linear)
+    if (grid->cluster != NULL
+            ? !sixel_cdef_convert_intermediate(grid->cluster,
+                grid->cluster_linear, source, linear)
             : !sixel_color_convert(linear, source, grid->colorspace,
                                    SIXEL_COLORSPACE_LINEAR)) {
         return SIXEL_BAD_INPUT;

@@ -285,6 +285,9 @@ af_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define sixel_cdef_linearized af_local_linearized
 #define sixel_cdef_separable af_local_linearized_separable
 #define sixel_cdef_transfer af_local_transfer
+#define sixel_cdef_transfer_matrix af_local_transfer_matrix
+#define sixel_cdef_from_xyz_intermediate af_local_from_xyz_intermediate
+#define sixel_cdef_convert_intermediate af_local_convert_intermediate
 #define sixel_cdef_export_icc af_local_13_export
 #define sixel_cdef_put32 af_local_export_put32
 #define sixel_cdef_fixed af_local_export_fixed
@@ -798,6 +801,9 @@ af_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_separable
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
+#undef sixel_cdef_transfer_matrix
+#undef sixel_cdef_from_xyz_intermediate
+#undef sixel_cdef_convert_intermediate
 #undef sixel_cdef_export_icc
 #undef sixel_cdef_put32
 #undef sixel_cdef_fixed

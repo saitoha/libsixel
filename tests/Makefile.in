@@ -8565,6 +8565,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0134_MPET_NONRELATIVE_GAMUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0139_PARAMETRIC_TRC_INVERSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0140_SAMPLED_TRC_INVERSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0141_EXTENDED_TRC_ROUNDTRIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -14916,7 +14917,8 @@ batch_color_icc_0126 = \
     color/icc/0133_mpet_nonrelative_snap.c \
     color/icc/0134_mpet_nonrelative_gamut.c \
     color/icc/0139_parametric_trc_inverse.c \
-    color/icc/0140_sampled_trc_inverse.c
+    color/icc/0140_sampled_trc_inverse.c \
+    color/icc/0141_extended_trc_roundtrip.c
 
 batch_color_lcms2_0011 = \
     color/lcms2/0011_lcms_cmyk_linear.c \
