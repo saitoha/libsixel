@@ -3246,9 +3246,7 @@ mediancut(tupletable2 const colorfreqtable,
     struct sixel_pca_sort_entry *pca_workspace;
     unsigned int pca_workspace_capacity;
     unsigned char *axis_keys;
-#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     int gpu_policy;
-#endif
 
     status = SIXEL_FALSE;
     bv = NULL;
@@ -3313,13 +3311,13 @@ mediancut(tupletable2 const colorfreqtable,
     }
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
-    /* An absent GPU solver leaves median cut on the CPU without disabling
-     * any of the later GPU palette stages. */
-#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     /* Policy tests drive mediancut without a palette object. */
     gpu_policy = request->palette != NULL
         ? SIXEL_PALETTE_CONTEXT(request->palette)->gpu_policy
         : SIXEL_GPU_POLICY_OFF;
+    /* An absent GPU solver leaves median cut on the CPU without disabling
+     * any of the later GPU palette stages. */
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     if (gpu_policy != SIXEL_GPU_POLICY_OFF && multicolorBoxesExist &&
             depth == 3U && !colorfreqtable.preserve_extended &&
             !apply_merge && !use_reversible &&
@@ -3490,6 +3488,7 @@ mediancut(tupletable2 const colorfreqtable,
         cluster_total = sixel_palette_merge_representatives(cluster_weight,
                                                   cluster_sums,
                                                   depth,
+                                                  gpu_policy,
                                                   (int)boxes,
                                                   (int)newcolors,
                                                   resolved_merge,

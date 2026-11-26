@@ -10,6 +10,7 @@
 #include <string.h>
 #include "palette-heckbert-gpu.h"
 #include "gpu-compute-vulkan.h"
+#include "palette-resident-vulkan.h"
 
 static char const *const heckbert_source[] = {
 #include "generated-vulkan/palette-heckbert-gpu-shader.inc.h"
@@ -110,8 +111,8 @@ sixel_palette_heckbert_gpu_vulkan_choose(int gpu_policy)
 }
 
 /* The 256-bin scan needs complete subgroups and at least 256 lanes. */
-static uint32_t
-heckbert_threads(sixel_vk_runtime_t *runtime)
+uint32_t
+sixel_vk_heckbert_threads(sixel_vk_runtime_t *runtime)
 {
     VkPhysicalDeviceSubgroupProperties subgroup;
     VkPhysicalDeviceProperties2 properties;
@@ -268,7 +269,7 @@ sixel_palette_heckbert_gpu_vulkan_solve(
     runtime = sixel_vk_runtime_get_locked();
     status = SIXEL_FEATURE_ERROR;
     if (runtime == NULL) goto end;
-    threads = heckbert_threads(runtime);
+    threads = sixel_vk_heckbert_threads(runtime);
     if (threads == 0u) goto end;
     status = sixel_vk_compute_create_local(runtime, &heckbert_stage,
         heckbert_source, sizeof(heckbert_source) /

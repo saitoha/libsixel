@@ -109,8 +109,10 @@ sixel_body_gpu_reserve(sixel_vk_runtime_t *runtime, sixel_body_gpu_t *context,
     length += length / 2;
     if (sixel_body_gpu_host_written(slot))
         return sixel_vk_buffer_reserve(runtime, buffer, length, 1);
-    if (slot == BODY_OCCUPANCY ||
-            (slot >= BODY_LENGTHS && slot <= BODY_BAND_SIZE))
+    if (slot == BODY_OCCUPANCY)
+        return sixel_vk_buffer_reserve_device_usage(runtime, buffer, length,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    if (slot >= BODY_LENGTHS && slot <= BODY_BAND_SIZE)
         return sixel_vk_buffer_reserve_device(runtime, buffer, length);
     /* Emission reads nodes and maps in place, so they need cached memory. */
     return sixel_vk_buffer_reserve_readback(runtime, buffer, length);

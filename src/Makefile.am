@@ -39,6 +39,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
     $(srcdir)/lookup-policy-certlut-gpu.metal \
     $(srcdir)/palette-heckbert-gpu.metal \
+    $(srcdir)/palette-ward.metal \
     $(srcdir)/palette-kmeans-resident.metal \
     $(srcdir)/gpu-palette-legacy-types.metal \
     $(srcdir)/gpu-palette-legacy-query.metal \
@@ -112,6 +113,8 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
 SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
     $(srcdir)/filter-sample-gpu.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
+    $(srcdir)/palette-ward.glsl \
+    $(srcdir)/palette-kmeans-resident.glsl \
     $(srcdir)/palette-heckbert-gpu.glsl \
     $(srcdir)/retained-plane-gpu.glsl \
     $(srcdir)/encoder-body-gpu.glsl \
@@ -190,6 +193,8 @@ SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-gpu-dequant-vulkan.lo \
     libsixel_la-palette-kmeans-vulkan.lo \
+    libsixel_la-palette-ward-vulkan.lo \
+    libsixel_la-palette-resident-vulkan.lo \
     libsixel_la-palette-heckbert-gpu-vulkan.lo \
     libsixel_la-filter-sample-vulkan.lo \
     libsixel_la-retained-plane-vulkan.lo \
@@ -230,6 +235,7 @@ generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
+    libsixel_la-palette-ward-metal.lo \
     libsixel_la-palette-kmeans-metal.lo \
     libsixel_la-dither-policy-lso2-gpu-metal.lo \
     libsixel_la-dither-policy-none-gpu.lo \
@@ -826,6 +832,9 @@ $(srcdir)/gpu-runtime-vulkan.c \
 $(srcdir)/gpu-compute-vulkan.c \
 $(srcdir)/gpu-dequant-vulkan.c \
 $(srcdir)/palette-kmeans-vulkan.c \
+$(srcdir)/palette-ward-vulkan.c \
+$(srcdir)/palette-resident-vulkan.c \
+$(srcdir)/palette-resident-vulkan.h \
 $(srcdir)/palette-heckbert-gpu-vulkan.c \
 $(srcdir)/filter-sample-vulkan.c \
 $(srcdir)/retained-plane-vulkan.c \
@@ -860,6 +869,7 @@ $(srcdir)/filter-sample-metal.m \
 $(srcdir)/decoder-gpu-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/palette-heckbert-gpu-metal.m \
+$(srcdir)/palette-ward-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif
 if HAVE_CLIPBOARD_MACOS_APPKIT

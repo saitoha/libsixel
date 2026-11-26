@@ -35,6 +35,7 @@
 
 #include <float.h>
 #include <limits.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -304,7 +305,8 @@ static void sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                                        int target_k,
                                        int merge_mode,
                                        int use_reversible,
-                                       int pixelformat);
+                                       int pixelformat,
+                                       int gpu_policy);
 static double sixel_final_merge_ward_pair_cost(
     sixel_final_merge_cluster_t const *lhs,
     sixel_final_merge_cluster_t const *rhs,
@@ -666,14 +668,141 @@ sixel_final_merge_snap_cluster(sixel_final_merge_cluster_t *cluster,
 }
 
 static void
+sixel_final_merge_ward_join(sixel_final_merge_cluster_t *clusters,
+    int best_i, int best_j, int pixelformat)
+{
+    double wi, wj, merged_weight;
+    sixel_final_merge_cluster_t merged;
+
+    wi = clusters[best_i].count;
+    wj = clusters[best_j].count;
+    merged_weight = wi + wj;
+    if (merged_weight <= 0.0) {
+        merged_weight = 1.0;
+    }
+    merged.count = merged_weight;
+    merged.r = (clusters[best_i].r * wi + clusters[best_j].r * wj)
+        / merged_weight;
+    merged.g = (clusters[best_i].g * wi + clusters[best_j].g * wj)
+        / merged_weight;
+    merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
+        / merged_weight;
+    sixel_final_merge_snap_cluster(&merged, pixelformat,
+        SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
+    merged.stats = clusters[best_i].stats;
+    sixel_final_merge_rep_stats(merged.stats, clusters[best_j].stats);
+    clusters[best_i] = merged;
+    clusters[best_j].count = 0.0;
+    clusters[best_j].r = 0.0;
+    clusters[best_j].g = 0.0;
+    clusters[best_j].b = 0.0;
+}
+
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+/* Only pair selection uses FP32. Validate the entire tree before replaying
+ * it in FP64 with the same statistics as the CPU solver. */
+static int
+sixel_final_merge_ward_gpu(sixel_final_merge_cluster_t *clusters,
+    int count, int target, int pixelformat, int gpu_policy)
+{
+    float inputs[4u * SIXEL_WARD_MAX_CLUSTERS];
+    sixel_ward_pair_t pairs[SIXEL_WARD_MAX_CLUSTERS];
+    unsigned char active[SIXEL_WARD_MAX_CLUSTERS];
+    sixel_final_merge_cluster_t const *cluster;
+    double weight;
+    int i, merges, occupied, ok;
+    uint16_t kept, removed;
+#if defined(HAVE_METAL)
+    static char const backend[] = "metal";
+#else
+    static char const backend[] = "vulkan";
+#endif
+
+    if (gpu_policy == SIXEL_GPU_POLICY_OFF ||
+            pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+            sixel_palette_snap_destination_active() ||
+            target < 1 || count <= target ||
+            (unsigned int)count > SIXEL_WARD_MAX_CLUSTERS)
+        return 0;
+    /* A cold pipeline or a small matrix does not amortize this submission. */
+    if (gpu_policy == SIXEL_GPU_POLICY_AUTO) {
+        if (count < 384)
+            return 0;
+#if defined(HAVE_METAL)
+        if (!sixel_ward_metal_is_ready())
+#else
+        if (!sixel_ward_vulkan_is_ready((unsigned int)count))
+#endif
+            return 0;
+    }
+    occupied = 0;
+    weight = 0.0;
+    memset(inputs, 0, 4u * (size_t)count * sizeof(*inputs));
+    for (i = 0; i < count; ++i) {
+        cluster = clusters + i;
+        active[i] = cluster->count > 0.0;
+        if (!active[i])
+            continue;
+        /* Byte weights are exact integers in this range; tiny fractional
+         * weights and other numeric domains belong to the CPU contract. */
+        weight += cluster->count;
+        if (!isfinite(weight) || weight > 16777216.0 ||
+                floor(cluster->count) != cluster->count ||
+                !(cluster->r >= 0.0 && cluster->r <= 255.0) ||
+                !(cluster->g >= 0.0 && cluster->g <= 255.0) ||
+                !(cluster->b >= 0.0 && cluster->b <= 255.0))
+            return 0;
+        inputs[4 * i] = (float)cluster->r;
+        inputs[4 * i + 1] = (float)cluster->g;
+        inputs[4 * i + 2] = (float)cluster->b;
+        inputs[4 * i + 3] = (float)cluster->count;
+        ++occupied;
+    }
+    merges = occupied - target;
+    if (merges <= 0 || (gpu_policy == SIXEL_GPU_POLICY_AUTO && merges < 64))
+        return 0;
+#if defined(HAVE_METAL)
+    ok = sixel_ward_metal_pairs(inputs, (unsigned int)count,
+        (unsigned int)merges, pairs);
+#else
+    ok = sixel_ward_vulkan_pairs(inputs, (unsigned int)count,
+        (unsigned int)merges, pairs);
+#endif
+    if (!ok)
+        return 0;
+    for (i = 0; i < merges; ++i) {
+        kept = pairs[i].kept;
+        removed = pairs[i].removed;
+        if (kept >= removed || removed >= (unsigned int)count ||
+                !active[kept] || !active[removed])
+            return 0;
+        active[removed] = 0;
+    }
+    for (i = 0; i < merges; ++i) {
+        sixel_final_merge_ward_join(clusters, pairs[i].kept,
+            pairs[i].removed, pixelformat);
+    }
+    sixel_trace_topic_message("palette_contract",
+        "LSXWARD1|backend=%s|clusters=%d|target=%d|merges=%d",
+        backend, count, target, merges);
+    return 1;
+}
+#endif
+
+static void
 sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                            int nclusters,
                            int target_k,
                            int merge_mode,
                            int use_reversible,
-                           int pixelformat)
+                           int pixelformat,
+                           int gpu_policy)
 {
     int index;
+
+#if !defined(HAVE_METAL) && !defined(HAVE_VULKAN)
+    (void)gpu_policy;
+#endif
 
     if (clusters == NULL || nclusters <= 0) {
         return;
@@ -686,6 +815,11 @@ sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
     }
     switch (merge_mode) {
     case SIXEL_FINAL_MERGE_DISPATCH_WARD:
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+        if (sixel_final_merge_ward_gpu(clusters, nclusters, target_k,
+                pixelformat, gpu_policy))
+            break;
+#endif
         sixel_final_merge_ward(
             clusters, nclusters, target_k, use_reversible, pixelformat);
         break;
@@ -714,7 +848,6 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
     double merged_weight;
     double cost;
     double distance_sq;
-    sixel_final_merge_cluster_t merged;
 
     (void)use_reversible;
     desired = target_k;
@@ -729,10 +862,6 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
     merged_weight = 0.0;
     cost = 0.0;
     distance_sq = 0.0;
-    merged.r = 0.0;
-    merged.g = 0.0;
-    merged.b = 0.0;
-    merged.count = 0.0;
     if (clusters == NULL || nclusters <= 0) {
         return;
     }
@@ -784,28 +913,7 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
         if (best_i < 0 || best_j < 0) {
             break;
         }
-        wi = clusters[best_i].count;
-        wj = clusters[best_j].count;
-        merged_weight = wi + wj;
-        if (merged_weight <= 0.0) {
-            merged_weight = 1.0;
-        }
-        merged.count = merged_weight;
-        merged.r = (clusters[best_i].r * wi + clusters[best_j].r * wj)
-            / merged_weight;
-        merged.g = (clusters[best_i].g * wi + clusters[best_j].g * wj)
-            / merged_weight;
-        merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
-            / merged_weight;
-        sixel_final_merge_snap_cluster(&merged, pixelformat,
-            SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
-        merged.stats = clusters[best_i].stats;
-        sixel_final_merge_rep_stats(merged.stats, clusters[best_j].stats);
-        clusters[best_i] = merged;
-        clusters[best_j].count = 0.0;
-        clusters[best_j].r = 0.0;
-        clusters[best_j].g = 0.0;
-        clusters[best_j].b = 0.0;
+        sixel_final_merge_ward_join(clusters, best_i, best_j, pixelformat);
         --active;
     }
     for (k = 0; k < nclusters; ++k) {
@@ -934,10 +1042,6 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     double best_cost;
     double cost;
     double new_cost;
-    double wi;
-    double wj;
-    double merged_weight;
-    sixel_final_merge_cluster_t merged;
     size_t nclusters_u;
     size_t matrix_cells;
     size_t row_base;
@@ -957,13 +1061,6 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     best_cost = DBL_MAX;
     cost = 0.0;
     new_cost = 0.0;
-    wi = 0.0;
-    wj = 0.0;
-    merged_weight = 0.0;
-    merged.r = 0.0;
-    merged.g = 0.0;
-    merged.b = 0.0;
-    merged.count = 0.0;
     nclusters_u = 0U;
     matrix_cells = 0U;
     row_base = 0U;
@@ -1108,28 +1205,7 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             best_j = k;
         }
 
-        wi = clusters[best_i].count;
-        wj = clusters[best_j].count;
-        merged_weight = wi + wj;
-        if (merged_weight <= 0.0) {
-            merged_weight = 1.0;
-        }
-        merged.count = merged_weight;
-        merged.r = (clusters[best_i].r * wi + clusters[best_j].r * wj)
-            / merged_weight;
-        merged.g = (clusters[best_i].g * wi + clusters[best_j].g * wj)
-            / merged_weight;
-        merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
-            / merged_weight;
-        sixel_final_merge_snap_cluster(&merged, pixelformat,
-            SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
-        merged.stats = clusters[best_i].stats;
-        sixel_final_merge_rep_stats(merged.stats, clusters[best_j].stats);
-        clusters[best_i] = merged;
-        clusters[best_j].count = 0.0;
-        clusters[best_j].r = 0.0;
-        clusters[best_j].g = 0.0;
-        clusters[best_j].b = 0.0;
+        sixel_final_merge_ward_join(clusters, best_i, best_j, pixelformat);
         active_map[(size_t)best_j] = 0U;
         row_best_index[(size_t)best_j] = -1;
         row_best_cost[(size_t)best_j] = DBL_MAX;
@@ -1251,6 +1327,7 @@ sixel_palette_merge_impl(unsigned long *weights,
                           double *populations,
                           double *sums,
                           unsigned int depth,
+                          int gpu_policy,
                           int cluster_count,
                           int target,
                           int final_merge_mode,
@@ -1343,7 +1420,9 @@ sixel_palette_merge_impl(unsigned long *weights,
                                target,
                                dispatch_mode,
                                use_reversible,
-                               pixelformat);
+                               pixelformat,
+                               depth == 3u && !preserve_extended
+                                   ? gpu_policy : SIXEL_GPU_POLICY_OFF);
     result = 0;
     limit = target;
     if (limit > cluster_count) {
@@ -1463,14 +1542,15 @@ sixel_palette_apply_merge(unsigned long *weights,
                           sixel_allocator_t *allocator)
 {
     return sixel_palette_merge_impl(weights, NULL, sums, depth,
-        cluster_count, target, final_merge_mode, use_reversible,
-        pixelformat, preserve_extended, NULL, allocator);
+        SIXEL_GPU_POLICY_OFF, cluster_count, target, final_merge_mode,
+        use_reversible, pixelformat, preserve_extended, NULL, allocator);
 }
 
 int
 sixel_palette_merge_representatives(unsigned long *weights,
                                     double *sums,
                                     unsigned int depth,
+                                    int gpu_policy,
                                     int cluster_count,
                                     int target,
                                     int final_merge_mode,
@@ -1481,7 +1561,7 @@ sixel_palette_merge_representatives(unsigned long *weights,
                                     sixel_allocator_t *allocator)
 {
     return sixel_palette_merge_impl(weights, NULL, sums, depth,
-        cluster_count, target, final_merge_mode, use_reversible,
+        gpu_policy, cluster_count, target, final_merge_mode, use_reversible,
         pixelformat, preserve_extended, stats, allocator);
 }
 
@@ -1492,6 +1572,7 @@ int
 sixel_palette_merge_weighted(double *populations,
                              double *sums,
                              unsigned int depth,
+                             int gpu_policy,
                              int cluster_count,
                              int target,
                              int final_merge_mode,
@@ -1501,7 +1582,7 @@ sixel_palette_merge_weighted(double *populations,
                              sixel_allocator_t *allocator)
 {
     return sixel_palette_merge_impl(NULL, populations, sums, depth,
-        cluster_count, target, final_merge_mode, use_reversible,
+        gpu_policy, cluster_count, target, final_merge_mode, use_reversible,
         pixelformat, preserve_extended, NULL, allocator);
 }
 

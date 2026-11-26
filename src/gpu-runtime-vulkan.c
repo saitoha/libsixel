@@ -775,8 +775,8 @@ sixel_vk_buffer_invalidate(sixel_vk_runtime_t *runtime,
 }
 
 SIXELSTATUS
-sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
-    sixel_vk_buffer_t *buffer, VkDeviceSize size)
+sixel_vk_buffer_reserve_device_usage(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size, VkBufferUsageFlags usage)
 {
     VkMemoryPropertyFlags flags;
     SIXELSTATUS status;
@@ -788,7 +788,7 @@ sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
     sixel_vk_buffer_release(runtime, buffer);
     status = sixel_vk_allocate(runtime, size,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | usage,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0, &buffer->buffer,
         &buffer->memory, &flags);
     if (SIXEL_FAILED(status)) {
@@ -796,6 +796,13 @@ sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
     }
     buffer->capacity = size;
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_vk_buffer_reserve_device(sixel_vk_runtime_t *runtime,
+    sixel_vk_buffer_t *buffer, VkDeviceSize size)
+{
+    return sixel_vk_buffer_reserve_device_usage(runtime, buffer, size, 0);
 }
 
 SIXELSTATUS

@@ -1416,11 +1416,12 @@ sixel_gpu_palette_vulkan_apply(sixel_gpu_palette_request_t const *request)
                 goto end;
             }
             if (submitted == 0) {
+                /* Optional slots share one dummy buffer. Upload its
+                 * contents once before dispatch, even if bound repeatedly. */
+                sixel_vk_buffer_record_upload(command, &state->dummy, 4);
                 for (index = 0; index < SIXEL_VK_BINDINGS; ++index) {
-                    if (bound[index] == &state->dummy) {
-                        sixel_vk_buffer_record_upload(command, &state->dummy,
-                            4);
-                    } else if (index != SIXEL_VK_WORKSPACE) {
+                    if (bound[index] != &state->dummy &&
+                            index != SIXEL_VK_WORKSPACE) {
                         sixel_vk_buffer_record_upload(command, bound[index],
                             state->upload[index]);
                     }

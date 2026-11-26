@@ -2885,6 +2885,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         cluster_total = sixel_palette_merge_weighted(merge_weights,
                                                   merge_sums,
                                                   3U,
+                                                  request->gpu_policy,
                                                   (int)k,
                                                   (int)reqcolors,
                                                   resolved_merge,

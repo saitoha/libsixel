@@ -17,11 +17,16 @@ test_kmgpu_available(int argc, char **argv)
 int
 test_kmgpu_resident_available(int argc, char **argv)
 {
-    return strcmp(sixel_kmeans_gpu_backend_name(), "metal") == 0
-        ? test_kmgpu_available(argc, argv) : 77;
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+    return test_kmgpu_available(argc, argv);
+#else
+    (void)argc;
+    (void)argv;
+    return 77;
+#endif
 }
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 typedef struct resident_sink {
     uint64_t hash;
     size_t length;
@@ -46,7 +51,7 @@ resident_write(char *bytes, int length, void *context)
 static int
 test_resident_playback(int heckbert)
 {
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     static struct {
         int option;
         char const *value;
@@ -77,7 +82,7 @@ test_resident_playback(int heckbert)
 #endif
 
     (void)heckbert;
-#if !defined(HAVE_METAL)
+#if !defined(HAVE_METAL) && !defined(HAVE_VULKAN)
     return 77;
 #else
     if (!sixel_kmeans_gpu_is_available())

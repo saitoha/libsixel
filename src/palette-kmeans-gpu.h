@@ -70,7 +70,7 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_kmeans_gpu_refine(sixel_kmeans_gpu_request_t const *request,
                         unsigned int *iterations);
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 struct sixel_filter_sample_grid;
 
 typedef struct sixel_palette_resident_request {
@@ -83,10 +83,14 @@ typedef struct sixel_palette_resident_request {
     double snap_rate;
 } sixel_palette_resident_request_t;
 
-/* A single Metal submission owns every intermediate. Caller storage is
+/* A single GPU submission owns every intermediate. Caller storage is
  * published only after a successful indexed solve. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
+    unsigned char const *rgb, unsigned char *indices,
+    unsigned char *palette, unsigned int *colors);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
     unsigned char *palette, unsigned int *colors);
 #endif

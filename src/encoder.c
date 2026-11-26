@@ -5468,12 +5468,12 @@ sixel_encoder_latest_launch(sixel_encode_dag_context_t *context)
     return SIXEL_OK;
 }
 
-#if defined(HAVE_METAL)
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
 /* Admit only requests whose sampling, numeric space and output semantics
- * match the fused Metal pipeline. LATEST keeps its snapshot selection and
+ * match the fused GPU pipeline. LATEST keeps its snapshot selection and
  * therefore uses the ordinary palette DAG. */
 static SIXELSTATUS
-sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
+sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
 {
     sixel_encoder_t *encoder;
     sixel_palette_resident_request_t request;
@@ -5495,6 +5495,11 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     unsigned char *palette;
     size_t count, samples;
     unsigned int colors;
+#if defined(HAVE_METAL)
+    static char const backend[] = "metal";
+#else
+    static char const backend[] = "vulkan";
+#endif
     int width, height, prune, option_lock, heckbert;
     SIXELSTATUS status;
 
@@ -5743,12 +5748,16 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     status = SIXEL_BAD_ALLOCATION;
     if (pixels == NULL || palette == NULL)
         goto end;
+#if defined(HAVE_METAL)
     status = sixel_palette_metal_resident(&request,
+#else
+    status = sixel_palette_vulkan_resident(&request,
+#endif
         sixel_frame_get_pixels(context->frame), pixels, palette, &colors);
     if (status != SIXEL_OK) {
         if (status != SIXEL_FALSE)
             sixel_helper_set_additional_message(
-                "Metal resident palette failed to produce an indexed frame.");
+                "GPU resident palette failed to produce an indexed frame.");
         goto end;
     }
     if (sixel_encoder_is_cancel_requested(encoder)) {
@@ -5794,13 +5803,14 @@ sixel_encoder_metal_resident(sixel_encode_dag_context_t *context)
     dither = NULL;
     if (heckbert)
         sixel_trace_topic_message("palette_contract",
-            "LSXHBRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u"
-            "|sample_backend=metal|histogram_backend=metal",
-            colors, request.snap, request.cover, request.soft);
+            "LSXHBRESIDENT1|backend=%s|colors=%u|snap=%u|cover=%u|soft=%u"
+            "|sample_backend=%s|histogram_backend=%s",
+            backend, colors, request.snap, request.cover, request.soft,
+            backend, backend);
     else
         sixel_trace_topic_message("kmeans_backend",
-            "LSXKMRESIDENT1|backend=metal|colors=%u|snap=%u|cover=%u|soft=%u",
-            colors, request.snap, request.cover, request.soft);
+            "LSXKMRESIDENT1|backend=%s|colors=%u|snap=%u|cover=%u|soft=%u",
+            backend, colors, request.snap, request.cover, request.soft);
 end:
     sixel_allocator_free(encoder->allocator, pixels);
     sixel_allocator_free(encoder->allocator, palette);
@@ -5822,8 +5832,8 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
         return SIXEL_BAD_ARGUMENT;
     }
 
-#if defined(HAVE_METAL)
-    status = sixel_encoder_metal_resident(context);
+#if defined(HAVE_METAL) || defined(HAVE_VULKAN)
+    status = sixel_encoder_gpu_resident(context);
     if (status != SIXEL_FALSE)
         return status;
 #endif

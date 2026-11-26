@@ -77,7 +77,10 @@ srcs = [
   'palette-kmeans-build.h',
   'palette-kmeans-gpu.c',
   'palette-kmeans-vulkan.c',
+  'palette-ward-vulkan.c',
+  'palette-resident-vulkan.c',
   'palette-kmeans-gpu.h',
+  'palette-resident-vulkan.h',
   'palette-heckbert-gpu.c',
   'palette-heckbert-gpu-vulkan.c',
   'palette-heckbert-gpu.h',
@@ -463,7 +466,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['dither-policy-lso2-gpu-metal.m', 'dither-policy-fs-gpu-metal.m', 'dither-policy-atkinson-gpu-metal.m', 'dither-policy-jajuni-gpu-metal.m', 'dither-policy-stucki-gpu-metal.m', 'dither-policy-burkes-gpu-metal.m', 'dither-policy-sierra1-gpu-metal.m', 'dither-policy-sierra2-gpu-metal.m', 'dither-policy-sierra3-gpu-metal.m', 'retained-plane-metal.m', 'filter-sample-metal.m', 'decoder-gpu-metal.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m', 'palette-heckbert-gpu-metal.m',
+  srcs += ['dither-policy-lso2-gpu-metal.m', 'dither-policy-fs-gpu-metal.m', 'dither-policy-atkinson-gpu-metal.m', 'dither-policy-jajuni-gpu-metal.m', 'dither-policy-stucki-gpu-metal.m', 'dither-policy-burkes-gpu-metal.m', 'dither-policy-sierra1-gpu-metal.m', 'dither-policy-sierra2-gpu-metal.m', 'dither-policy-sierra3-gpu-metal.m', 'retained-plane-metal.m', 'filter-sample-metal.m', 'decoder-gpu-metal.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m', 'palette-heckbert-gpu-metal.m', 'palette-ward-metal.m',
            'encoder-body-gpu-metal.m', 'progressive-gpu-metal.m']
 endif
 

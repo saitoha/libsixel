@@ -28,11 +28,12 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
 }
 case "$trace" in
     *LSXKMRESIDENT1*backend=metal*colors=*snap=1*cover=3*soft=0*) true ;;
+    *LSXKMRESIDENT1*backend=vulkan*colors=*snap=1*cover=3*soft=0*) true ;;
     *) false ;;
 esac || {
-    printf '\n%s\n' 'not ok 1 - snap and hard cover did not use resident Metal'
+    printf '\n%s\n' 'not ok 1 - snap and hard cover did not use resident GPU'
     printf '# %s\n' "$trace"
     exit 0
 }
-printf '\n%s\n' 'ok 1 - Metal snap and hard cover complete before indexed publication'
+printf '\n%s\n' 'ok 1 - GPU snap and hard cover complete before indexed publication'
 exit 0

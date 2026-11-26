@@ -347,7 +347,8 @@ ward_populations(sixel_allocator_t *allocator, int mode)
         memcpy(original, sums, sizeof(sums));
         memcpy(old_weights, weights, sizeof(weights));
         ward_fail = mode == 4;
-        count = sixel_palette_merge_weighted(weights, sums, 3, 4, target,
+        count = sixel_palette_merge_weighted(weights, sums, 3,
+            SIXEL_GPU_POLICY_OFF, 4, target,
             SIXEL_FINAL_MERGE_WARD, 0, SIXEL_PIXELFORMAT_RGBFLOAT32, 1,
             allocator);
         if (mode == 4) {
