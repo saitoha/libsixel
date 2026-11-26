@@ -110,6 +110,7 @@ struct sixel_icc_workspace {
     sixel_color_def_t const *profile;
     sixel_color_def_t const *linear;
     sixel_palette_t *wire_palette;
+    int reuse_fhedt;
 };
 
 /* dither context object */

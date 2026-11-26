@@ -4366,6 +4366,7 @@ sixel_dither_apply_palette(
     float *float_pipeline_pixels = NULL;
     int owns_float_pipeline = 0;
     sixel_palette_t *icc_palette = NULL;
+    int reuse_icc_fhedt = 0;
     size_t float_size;
     int pipeline_pixelformat;
     int source_pixelformat;
@@ -4790,9 +4791,12 @@ sixel_dither_apply_palette(
         if (SIXEL_FAILED(status)) goto end;
         status = sixel_dither_icc_palette(&icc_palette, dither);
         if (SIXEL_FAILED(status)) goto end;
-        /* A cached fixed palette can carry an index from an earlier option
-         * setting. Tree reuse is valid only for identical coordinates. */
-        if (dither->lookup_policy != NULL) {
+        /* Float FHEDT owns its palette coordinates and checks the grid
+         * signature on reuse. Other lookup policies may borrow the ICC
+         * application palette, whose lifetime ends with this frame. */
+        reuse_icc_fhedt = dither->icc_workspace->reuse_fhedt &&
+            dither->lut_policy == SIXEL_LUT_POLICY_FHEDT;
+        if (!reuse_icc_fhedt && dither->lookup_policy != NULL) {
             dither->lookup_policy->vtbl->unref(dither->lookup_policy);
             dither->lookup_policy = NULL;
         }
@@ -5242,7 +5246,7 @@ end:
             sixel_allocator_free(dither->allocator, normalized_pixels);
         }
         if (icc_palette != NULL) {
-            if (dither->lookup_policy != NULL) {
+            if (!reuse_icc_fhedt && dither->lookup_policy != NULL) {
                 dither->lookup_policy->vtbl->unref(dither->lookup_policy);
                 dither->lookup_policy = NULL;
             }

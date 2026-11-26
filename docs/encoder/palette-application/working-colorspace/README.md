@@ -266,6 +266,7 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-41 | Delta frames preserve the emitted surface across repaint, keep and invalidation with ICC lookup. | [tests/palette/working-space/0177_icc_work_delta_frames.t](../../../../tests/palette/working-space/0177_icc_work_delta_frames.t) |
 | WC-42 | The VP-tree indexes the palette in ICC working coordinates. | [tests/palette/working-space/0178_icc_work_vptree.t](../../../../tests/palette/working-space/0178_icc_work_vptree.t) |
 | WC-43 | The Eytzinger search indexes the palette in ICC working coordinates. | [tests/palette/working-space/0179_icc_work_eytzinger.t](../../../../tests/palette/working-space/0179_icc_work_eytzinger.t) |
+| WC-44 | Fixed-palette frames reuse the ICC FHEDT grid while the profile and lookup settings match. Changing the working ICC rebuilds the grid. | [tests/palette/working-space/0180_icc_work_fhedt_reuse.t](../../../../tests/palette/working-space/0180_icc_work_fhedt_reuse.t) |
 
 ### Coverage boundary
 

@@ -11277,6 +11277,7 @@ sixel_encoder_encode_pixels(sixel_encoder_t *encoder, unsigned char *pixels,
     workspace.profile = encoder->working_icc;
     workspace.linear = encoder->working_linear;
     workspace.wire_palette = dither->palette;
+    workspace.reuse_fhedt = dither == encoder->dither_cache;
     dither->icc_workspace = &workspace;
     status = sixel_encode(pixels, width, height, depth, dither, output);
     dither->icc_workspace = NULL;
@@ -16793,6 +16794,13 @@ end:
                     destination->output_colorspace))) {
             memset(&encoder->residual_state, 0,
                    sizeof(encoder->residual_state));
+        }
+        /* The staging geometry can stay linear when the ICC changes.
+         * Drop its application cache while retaining the fixed source. */
+        if (arg == SIXEL_OPTFLAG_WORKING_COLORSPACE &&
+                encoder->working_icc != destination->working_icc) {
+            sixel_dither_unref(destination->dither_cache);
+            encoder->dither_cache = NULL;
         }
         sixel_encoder_option_release_replaced(destination, encoder, arg);
         memcpy((char *)destination + settings_offset,

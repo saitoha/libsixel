@@ -826,6 +826,72 @@ test_delta_output_frames(int space, int target, int workers)
                                          pd_spaces[space]);
 }
 
+/* Encode successive fixed-palette frames through one encoder. A profile
+ * switch keeps the palette source but changes the lookup coordinates. */
+int
+test_icc_work_fhedt_reuse(int argc, char **argv)
+{
+    static unsigned char const expected[3][3] = {
+        {0, 255, 255}, {0, 255, 0}, {0, 128, 128}
+    };
+    static unsigned char const samples[3][3] = {
+        {81, 220, 201}, {76, 190, 42}, {81, 220, 201}
+    };
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    pd_stream_t stream;
+    unsigned char pixels[12];
+    int pass;
+    int x;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    if (argc != 3 || !pd_encoder(&encoder, &output, &stream, 1) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '~',
+                "fhedt:R64:shared=1:refine=1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1]))) {
+        goto end;
+    }
+    for (pass = 0; pass < 3; ++pass) {
+        if (pass == 2 &&
+                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[2]))) {
+            goto end;
+        }
+        for (x = 0; x < 4; ++x) {
+            memcpy(pixels + x * 3, samples[pass], 3);
+        }
+        if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 4, 1,
+                    SIXEL_PIXELFORMAT_RGB888, NULL, -1))) {
+            goto end;
+        }
+        sixel_frame_set_multiframe(frame, 1);
+        sixel_frame_set_frame_no(frame, pass);
+        stream.size = 0;
+        fprintf(stderr, "icc-fhedt-frame %d\n", pass);
+        if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
+                !pd_decode(encoder, &stream, 4, 1, 0, expected[pass])) {
+            goto end;
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int
 test_delta_output_identity(int target)
 {
