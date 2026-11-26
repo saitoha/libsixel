@@ -11,6 +11,8 @@
 #include <string.h>
 #include "encoder-body-gpu.h"
 #include "gpu-runtime-metal.h"
+#include "loader-common.h"
+#include "timer.h"
 
 static char const *const sixel_body_gpu_source[] = {
 #include "generated-metal/encoder-body-gpu-shader.inc.h"
@@ -113,7 +115,11 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
         int i;
 
         error = nil;
+        sixel_trace_topic_message("metal_body", "%.6f device begin",
+            sixel_timer_monotonic());
         device = MTLCreateSystemDefaultDevice();
+        sixel_trace_topic_message("metal_body", "%.6f device end ok=%d",
+            sixel_timer_monotonic(), device != nil);
         if (device == nil) {
             goto end;
         }
@@ -123,18 +129,27 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
             [source appendString:[NSString stringWithUTF8String:
                 sixel_body_gpu_source[chunk]]];
         }
+        sixel_trace_topic_message("metal_body", "%.6f library begin",
+            sixel_timer_monotonic());
         library = [device newLibraryWithSource:source
                                        options:nil
                                          error:&error];
+        sixel_trace_topic_message("metal_body", "%.6f library end ok=%d",
+            sixel_timer_monotonic(), library != nil);
         if (library == nil) {
             goto end;
         }
         context->device = (void *)CFBridgingRetain(device);
         for (i = 0; i < BODY_PIPELINES; ++i) {
+            sixel_trace_topic_message("metal_body", "%.6f pipeline %s begin",
+                sixel_timer_monotonic(), sixel_body_gpu_kernels[i]);
             pipeline = [device newComputePipelineStateWithFunction:
                 [library newFunctionWithName:
                     [NSString stringWithUTF8String:
                         sixel_body_gpu_kernels[i]]] error:&error];
+            sixel_trace_topic_message("metal_body",
+                "%.6f pipeline %s end ok=%d", sixel_timer_monotonic(),
+                sixel_body_gpu_kernels[i], pipeline != nil);
             /* The serial order kernel covers every band when the grouped
              * kernel exceeds this device's limits (including validation
              * instrumentation). Never submit an unsupported threadgroup. */
@@ -151,7 +166,11 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
             }
             context->pipelines[i] = (void *)CFBridgingRetain(pipeline);
         }
+        sixel_trace_topic_message("metal_body", "%.6f queue begin",
+            sixel_timer_monotonic());
         queue = [device newCommandQueue];
+        sixel_trace_topic_message("metal_body", "%.6f queue end ok=%d",
+            sixel_timer_monotonic(), queue != nil);
         if (queue == nil) {
             goto end;
         }
@@ -336,6 +355,20 @@ sixel_body_gpu_encode_emit(id<MTLComputeCommandEncoder> encoder,
         sizeof(write) / sizeof(write[0]), params, params->nodes);
 }
 
+/* A commit can block before the command reaches the completion wait. */
+static void
+sixel_body_gpu_submit(id<MTLCommandBuffer> command, char const *pass)
+{
+    sixel_trace_topic_message("metal_body", "%.6f %s commit begin",
+        sixel_timer_monotonic(), pass);
+    [command commit];
+    sixel_trace_topic_message("metal_body", "%.6f %s wait begin",
+        sixel_timer_monotonic(), pass);
+    [command waitUntilCompleted];
+    sixel_trace_topic_message("metal_body", "%.6f %s wait end status=%d",
+        sixel_timer_monotonic(), pass, (int)[command status]);
+}
+
 SIXELSTATUS
 sixel_body_gpu_run(sixel_body_gpu_t *context,
                    sixel_body_gpu_request_t const *request,
@@ -454,6 +487,8 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         queue = (__bridge id<MTLCommandQueue>)context->queue;
         classify = (__bridge id<MTLComputePipelineState>)
             context->pipelines[BODY_CLASSIFY];
+        sixel_trace_topic_message("metal_body", "%.6f classify-count encode",
+            sixel_timer_monotonic());
         command = [queue commandBuffer];
         blit = [command blitCommandEncoder];
         [blit fillBuffer:(__bridge id<MTLBuffer>)
@@ -472,8 +507,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         sixel_body_gpu_encode_spans(encoder, context, &params, 0U,
             indexes, mask);
         [encoder endEncoding];
-        [command commit];
-        [command waitUntilCompleted];
+        sixel_body_gpu_submit(command, "classify-count");
         sixel_gpu_statistics_record_metal(command);
         if ([command status] != MTLCommandBufferStatusCompleted) {
             return SIXEL_RUNTIME_ERROR;
@@ -586,6 +620,10 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
                 request->registers, (size_t)params.ncolors * 4U);
         }
 
+        sixel_trace_topic_message("metal_body",
+            "%.6f map-emit encode spell=%d group_limit=%u",
+            sixel_timer_monotonic(), spell,
+            spell ? (unsigned int)emit.group_limit : 0U);
         command = [queue commandBuffer];
         encoder = [command computeCommandEncoder];
         sixel_body_gpu_encode_spans(encoder, context, &params, 1U,
@@ -595,8 +633,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             sixel_body_gpu_encode_emit(encoder, context, &emit);
         }
         [encoder endEncoding];
-        [command commit];
-        [command waitUntilCompleted];
+        sixel_body_gpu_submit(command, "map-emit");
         sixel_gpu_statistics_record_metal(command);
         if ([command status] != MTLCommandBufferStatusCompleted) {
             return SIXEL_RUNTIME_ERROR;

@@ -18,7 +18,7 @@ Abort-trace signal context requires both `__APPLE__` and the `__MACH__` environm
 
 Metal validates the buffer arguments of a compute kernel even when a dispatch takes a branch that skips the corresponding loads or stores. The SIXEL body span count pass binds a placeholder for each write-pass output until the counts determine its required size. Grouped span ordering requires the compiled pipeline to fit the device’s threadgroup memory and thread-count limits. Shader validation can increase the memory requirement. The serial Metal ordering kernel handles all bands when grouped ordering is unavailable.
 
-The GPU body equivalence test exercises shader validation. The single-slot playback, Eytzinger wire, and GPU decoder palette map tests enable Metal API Validation for their dispatches and check the resulting bytes or pixels. On failed macOS CI jobs, the artifacts include available Darwin crash reports for `test_runner` under `test-runner-crashes/`.
+The GPU body equivalence test exercises shader validation and records Metal pipeline creation and command submission and completion in the test log. If its native `test_runner` process is still running after 60 seconds, the test uses `sample` to capture all thread stacks in `test_runner.sample.txt` under the test's artifact directory. The single-slot playback, Eytzinger wire, and GPU decoder palette map tests enable Metal API Validation for their dispatches and check the resulting bytes or pixels. On failed macOS CI jobs, the artifacts include available Darwin crash reports for `test_runner` under `test-runner-crashes/`.
 
 ## Maintenance checklist
 
