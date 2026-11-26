@@ -18718,6 +18718,19 @@ sixel_encoder_load_callback_dispatch(
     return status;
 }
 
+static SIXELSTATUS
+sixel_encoder_load_init_presentation(sixel_encoder_load_context_t *context)
+{
+    SIXELSTATUS status;
+
+    status = sixel_presentation_init_owned(&context->presentation,
+        context->encoder, context->output, context->encoder->outfd);
+    if (status == SIXEL_OK) {
+        context->frame_pipeline.presentation = &context->presentation;
+    }
+    return status;
+}
+
 /* called when image loader component load a image frame */
 static SIXELSTATUS
 load_image_callback(sixel_frame_t *frame, void *data)
@@ -18782,10 +18795,24 @@ load_image_callback(sixel_frame_t *frame, void *data)
         if (status != SIXEL_OK) {
             return status;
         }
-        status = sixel_encoder_load_callback_resolve_handoff(pipeline,
-                                                              planner,
-                                                              encoder,
-                                                              frame);
+        if (encoder->defer_sixel_outfile && encoder->outfd < 0 &&
+                encoder->sixel_output_path != NULL) {
+            /* Let the loader and frame-specific checks reject the input
+             * before a named CLI destination can be truncated. Set up the
+             * sink before dispatch so the worker sees the final descriptor. */
+            status = sixel_encoder_validate_output_definition_frame(encoder,
+                                                                    frame);
+            if (status == SIXEL_OK) {
+                status = sixel_encoder_open_sixel_outfile(encoder);
+            }
+            if (status == SIXEL_OK && encoder->progressive_enabled) {
+                status = sixel_encoder_load_init_presentation(context);
+            }
+        }
+        if (status == SIXEL_OK) {
+            status = sixel_encoder_load_callback_resolve_handoff(pipeline,
+                planner, encoder, frame);
+        }
         sixel_encoder_operation_leave(encoder);
     }
     if (SIXEL_FAILED(status)) {
@@ -19701,13 +19728,6 @@ sixel_encoder_encode_owned(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (encoder->defer_sixel_outfile && encoder->outfd < 0 &&
-            encoder->sixel_output_path != NULL) {
-        status = sixel_encoder_open_sixel_outfile(encoder);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
     if (encoder->defer_sixel_outfile && encoder->png_output_path != NULL) {
         status = sixel_encoder_check_outfile_inputs(encoder, -1,
                                                    encoder->png_output_path);
@@ -20013,12 +20033,14 @@ sixel_encoder_encode_owned(
     }
 
     if (encoder->progressive_enabled) {
-        status = sixel_presentation_init_owned(&load_context.presentation,
-            encoder, load_context.output, encoder->outfd);
-        if (status != SIXEL_OK) {
-            goto end;
+        /* A deferred file presentation is initialized with its descriptor
+         * in the first loader callback. */
+        if (encoder->outfd >= 0) {
+            status = sixel_encoder_load_init_presentation(&load_context);
+            if (status != SIXEL_OK) {
+                goto end;
+            }
         }
-        load_context.frame_pipeline.presentation = &load_context.presentation;
         /* A generated baseline and its source snapshot must share the same
          * composed pixels, including originally indexed input. */
         fuse_palette = 0;
