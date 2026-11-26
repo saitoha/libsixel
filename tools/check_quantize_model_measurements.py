@@ -11,6 +11,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import canonical_encoder_arguments
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 CONFIGS: Tuple[Tuple[str, str, str, str], ...] = (
@@ -153,7 +155,7 @@ def validate_command(row: Dict[str, str],
         fail(f"quantize option differs in {path}: {config}")
     field = "timeline_command" if timeline else "command"
     try:
-        tokens = (shlex.split(row.get(field, "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(f"invalid {field} in {path}: {config}") from exc
     required = {
@@ -163,7 +165,7 @@ def validate_command(row: Dict[str, str],
         "--loaders=libpng!",
         f"--quantize-model={option}",
         "-Xoklab",
-        "-Wgamma",
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",

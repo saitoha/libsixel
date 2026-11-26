@@ -13,6 +13,8 @@ from typing import Dict, List, Set, Tuple
 
 from PIL import Image
 
+from measurement_commands import canonical_encoder_arguments
+
 
 RADIAL_BINS = 64
 TONE_COUNT = 15
@@ -131,7 +133,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if row.get("diffusion_option") != options[method]:
         fail(f"method/diffusion mismatch in {path}: {method}")
     try:
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {method}") from exc
     required = {
@@ -140,7 +142,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         "--quality=full",
         "--loaders=builtin!",
         "--builtin-palette=gray4",
-        "-Wgamma",
+        "-Wsrgb",
         f"--diffusion={options[method]}",
         "--gpu-policy=off",
         "--lookup-policy=none",

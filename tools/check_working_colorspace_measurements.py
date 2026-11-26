@@ -11,6 +11,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import COLORSPACE_NAMES, canonical_encoder_arguments
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 DIFFUSIONS = ("none", "fs")
@@ -132,7 +134,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if row.get("label") != label or row.get("work_format") != work_format:
         fail(f"color-space contract differs in {path}: {colorspace}")
     try:
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}") from exc
     required = {
@@ -143,9 +145,9 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         "--sampling-policy=full-frame",
         "--binning-policy=hard",
         "--quantize-model=kmeans:seed=1:binbits=6",
-        "-Xgamma",
-        f"-W{colorspace}",
-        "-Ugamma",
+        "-Xsrgb",
+        "-W" + COLORSPACE_NAMES.get(colorspace, colorspace),
+        "-Usrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
         "--lookup-policy=none",

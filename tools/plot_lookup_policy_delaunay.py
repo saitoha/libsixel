@@ -18,6 +18,8 @@ import statistics
 import subprocess
 from pathlib import Path
 
+from measurement_commands import canonical_encoder_arguments
+
 
 POLICIES = ("vptree", "delaunay", "5bit", "6bit")
 REPRESENTATIONS = ("8bit", "float32")
@@ -221,10 +223,18 @@ def load_validated(directory):
         command = row["command"]
         required = [f"--lookup-policy={policy}", f"--diffusion={diffusion}",
                     "--threading-policy=greedy:global_budget=1", "--gpu-policy=off", "--loaders=libpng!",
-                    "--precision-policy=auto", "--quality=full",
+                    "--quality=full",
                     "--quantize-model=kmeans:seed=1", "--merge-policy=ward", "-Wsrgb"]
         required += ["--cms-engine=none"] if rep == "8bit" else ["-Xoklab"]
-        arguments = shlex.split(command)
+        recorded = shlex.split(command)
+        arguments = canonical_encoder_arguments(recorded)
+        # The archived protocol used this explicit request in both
+        # representations. The separately checked selected class records
+        # the palette lookup representation that actually ran.
+        precision = ("--precision-policy=8bit"
+                     if "-Wgamma" in recorded and "--precision=8bit" in recorded
+                     else "--precision-policy=auto")
+        required.append(precision)
         if any(flag not in arguments for flag in required):
             raise ValueError("command differs from the comparison protocol")
         if "-p" not in arguments or arguments[arguments.index("-p") + 1] != str(colors):

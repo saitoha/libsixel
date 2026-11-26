@@ -18,6 +18,8 @@ from plot_merge_policy_measurements import (
     quantizer_records,
 )
 
+from measurement_commands import canonical_encoder_arguments
+
 
 CSV_NAME = "merge-policy-comparison.csv"
 PLOTS = (
@@ -149,7 +151,7 @@ def validate_command(row: Dict[str, str], timeline: bool) -> None:
         fail("row merge option differs from the manifest")
     field = "timeline_command" if timeline else "command"
     try:
-        tokens = (shlex.split(row.get(field, "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(f"invalid {field}") from exc
     required = {
@@ -164,8 +166,8 @@ def validate_command(row: Dict[str, str], timeline: bool) -> None:
         "--cover-policy=off",
         "--snap-policy=none",
         "-Xoklab",
-        "-Wgamma",
-        "-Ugamma",
+        "-Wsrgb",
+        "-Usrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",

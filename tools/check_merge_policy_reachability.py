@@ -24,6 +24,8 @@ from plot_merge_policy_reachability import (
     STUCK_RATIO,
 )
 
+from measurement_commands import canonical_encoder_arguments
+
 
 SUMMARY_CSV = "merge-policy-reachability-summary.csv"
 PATCH_CSV = "merge-policy-reachability-patch-size.csv"
@@ -77,7 +79,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
 def validate_command(command_text: str, name: str) -> None:
     """Require the controlled palette-build options in one command template."""
     try:
-        tokens = (shlex.split(command_text))
+        tokens = canonical_encoder_arguments(shlex.split(command_text))
     except ValueError as exc:
         raise ValueError(f"invalid command template for {name}") from exc
     merge_option = {
@@ -108,8 +110,8 @@ def validate_command(command_text: str, name: str) -> None:
         "--cover-policy=off",
         "--snap-policy=none",
         "-Xoklab",
-        "-Wgamma",
-        "-Ugamma",
+        "-Wsrgb",
+        "-Usrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",

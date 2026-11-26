@@ -7,10 +7,13 @@ import argparse
 import csv
 import json
 import math
+import shlex
 import statistics
 import sys
 from pathlib import Path
 from typing import Dict, List, Sequence, Set, Tuple
+
+from measurement_commands import COLORSPACE_NAMES, canonical_encoder_arguments
 
 
 BINBITS = (4, 5, 6, 7, 8)
@@ -91,6 +94,7 @@ def validate_command(row: Dict[str, str]) -> None:
     policy = row["binning_policy"]
     binbits = int(row["binbits"])
     command_bits = binbits if policy == "hard" else 6
+    space = row["colorspace"]
     required = (
         "--threading-policy=greedy:global_budget=1",
         "--precision-policy=float32",
@@ -101,15 +105,15 @@ def validate_command(row: Dict[str, str]) -> None:
         f"--quantize-model=kmeans:seed={row['seed']}:binbits={command_bits}",
         "-F none",
         "-a off",
-        f"-X{row['colorspace']}",
-        "-Wgamma",
+        "-X" + COLORSPACE_NAMES.get(space, space),
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",
         "--palette-type=rgb",
         f"-p {row['colors']}",
     )
-    command = row["command"]
+    command = " ".join(canonical_encoder_arguments(shlex.split(row["command"])))
     if not all(token in command for token in required):
         fail(
             "raw command does not match the controlled protocol: "

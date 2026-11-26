@@ -1168,6 +1168,8 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	tools/palette_pipeline_suite.json \
 	tools/plot_lookup_policy_acceleration.py \
 	tools/plot_lookup_policy_delaunay.py \
+	tools/measurement_commands.py \
+	tools/test_measurement_commands.py \
 	tools/plot_clustering_binning_threshold_measurements.py \
 	tools/plot_range_adaptation.py \
 	tools/measure_range_adaptation.c \

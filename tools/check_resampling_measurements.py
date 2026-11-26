@@ -15,6 +15,8 @@ import struct
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
+from measurement_commands import canonical_encoder_arguments
+
 
 PLOTTER = Path(__file__).with_name("plot_resampling_measurements.py")
 NUMERIC_BASELINES = (
@@ -163,7 +165,7 @@ def validate_encoder_command(
     height: int,
 ) -> None:
     """Validate controls shared by measured encoder commands."""
-    command = (shlex.split(command_text))
+    command = canonical_encoder_arguments(shlex.split(command_text))
     required = (
         "{img2sixel}",
         "--threading-policy=greedy:global_budget=1",
@@ -175,9 +177,9 @@ def validate_encoder_command(
         "--quantize-model=kmeans:seed=1:binbits=6",
         "-Fnone",
         "-aoff",
-        "-Xgamma",
-        "-Wgamma",
-        "-Ugamma",
+        "-Xsrgb",
+        "-Wsrgb",
+        "-Usrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",

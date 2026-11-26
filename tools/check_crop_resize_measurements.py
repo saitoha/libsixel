@@ -14,6 +14,8 @@ import struct
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from measurement_commands import canonical_encoder_arguments
+
 
 PLOTTER = Path(__file__).with_name("plot_crop_resize_measurements.py")
 
@@ -157,7 +159,7 @@ def validate_svg(path: Path) -> None:
 
 def validate_command(command_text: str, input_token: str) -> None:
     """Validate controls shared by all measured encoder commands."""
-    command = (shlex.split(command_text))
+    command = canonical_encoder_arguments(shlex.split(command_text))
     required = (
         "{img2sixel}",
         "--threading-policy=greedy:global_budget=1",
@@ -169,9 +171,9 @@ def validate_command(command_text: str, input_token: str) -> None:
         "--quantize-model=kmeans:seed=1:binbits=6",
         "-Fnone",
         "-aoff",
-        "-Xgamma",
-        "-Wgamma",
-        "-Ugamma",
+        "-Xsrgb",
+        "-Wsrgb",
+        "-Usrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",

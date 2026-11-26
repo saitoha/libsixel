@@ -11,6 +11,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Sequence, Set, Tuple
 
+from measurement_commands import COLORSPACE_NAMES, canonical_encoder_arguments
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 HIGH_K_COLORS = tuple(range(200, 257, 2))
@@ -232,7 +234,7 @@ def require_command(
 ) -> None:
     """Validate one recorded command and matched colorspace contract."""
     try:
-        tokens = (shlex.split(row["command"]))
+        tokens = canonical_encoder_arguments(shlex.split(row["command"]))
     except (KeyError, ValueError) as exc:
         raise ValueError(f"invalid command in {context}") from exc
     colorspace = row["colorspace"]
@@ -246,8 +248,8 @@ def require_command(
         "--binning-policy=hard",
         "--quantize-model=kmeans:seed=1:binbits=6",
         "--cover-policy=off",
-        f"-X{colorspace}",
-        f"-W{colorspace}",
+        "-X" + COLORSPACE_NAMES.get(colorspace, colorspace),
+        "-W" + COLORSPACE_NAMES.get(colorspace, colorspace),
         "--diffusion=fs:scan=raster",
         "--gpu-policy=off",
         "--lookup-policy=none",

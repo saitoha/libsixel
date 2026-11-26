@@ -391,7 +391,8 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         color_option = "-Uauto:gamut=ray-trace:T200";
     } else if (color_auto_is(name, "edge")) {
         color_option = "-Uauto:gamut=edge-seeker:T200";
-    } else if (color_auto_is(name, "gamut")) {
+    } else if (color_auto_is(name, "gamut") ||
+               color_auto_is(name, "p3-gamut")) {
         color_option = "-Uauto:gamut=local-minde:T200";
     } else if (color_auto_is(name, "prefix")) {
         color_option = "-UAu:T200";
@@ -433,6 +434,10 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
                     : color_auto_is(name, "ray")
                         ? "-Usrgb:gamut=ray-trace" : "-Usrgb")
             : (char *)color_option;
+    }
+    if (baseline && color_auto_is(name, "p3-gamut")) {
+        arguments[count - 1] = baseline == 1
+            ? "-Udisplay-p3:gamut=local-minde" : "-Udisplay-p3:gamut=clip";
     }
     if (!baseline && color_auto_is(name, "drcs-gamma")) {
         arguments[count - 1] = "-Usrgb";
@@ -997,7 +1002,7 @@ test_cli_0039_color_auto(int argc, char **argv)
         "timeout-env",
         "timeout-cli-over-env",
         "prefix",
-        "gamut", "edge", "ray",
+        "gamut", "edge", "ray", "p3-gamut",
         "bad-zero",
         "bad-limit",
         "bad-signed",
@@ -1072,6 +1077,33 @@ test_cli_0039_color_auto(int argc, char **argv)
             !color_auto_is(argv[1], "restore-mismatch") &&
             !color_auto_is(argv[1], "restore-timeout") &&
             !color_auto_is(argv[1], "restore-sigint");
+    }
+    if (color_auto_is(argv[1], "p3-gamut")) {
+        /* The Rec.2020 input must make gamut mapping observable on the
+         * wire. Check both an explicit match and a clipping control. */
+        if (!color_auto_start(&baseline, argv[1], argv[2], argv[3], 1)) {
+            return 1;
+        }
+        valid = color_auto_frame(&baseline);
+        if (color_auto_finish(&baseline, valid, 0) != 1 ||
+                peer.image_size != baseline.image_size ||
+                memcmp(peer.image, baseline.image, peer.image_size) != 0) {
+            color_auto_error("negotiated P3 differs from explicit mapping");
+            return 1;
+        }
+        if (!color_auto_start(&baseline, argv[1], argv[2], argv[3], 2)) {
+            return 1;
+        }
+        valid = color_auto_frame(&baseline);
+        if (color_auto_finish(&baseline, valid, 0) != 1) {
+            return 1;
+        }
+        if (peer.image_size == baseline.image_size &&
+                memcmp(peer.image, baseline.image, peer.image_size) == 0) {
+            color_auto_error("P3 clipping control did not change the output");
+            return 1;
+        }
+        return 0;
     }
     if (p3 || color_auto_is(argv[1], "srgb-wire")) {
         if (color_auto_is(argv[1], "multiple")) {

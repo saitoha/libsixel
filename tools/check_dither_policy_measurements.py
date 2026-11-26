@@ -11,6 +11,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import canonical_encoder_arguments
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 METHODS: Tuple[Tuple[str, str], ...] = (
@@ -144,7 +146,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if diffusion != options[method]:
         fail(f"method/diffusion mismatch in {path}: {method}")
     try:
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {method}") from exc
     required = {
@@ -153,7 +155,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         "--quality=full",
         "--loaders=libpng!",
         "-Xoklab",
-        "-Wgamma",
+        "-Wsrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
         "--lookup-policy=none",

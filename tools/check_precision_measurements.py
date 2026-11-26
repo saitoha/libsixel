@@ -12,6 +12,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Sequence, Tuple
 
+from measurement_commands import canonical_encoder_arguments
+
 
 PALETTE_COLORS = 64
 PRECISIONS: Tuple[Tuple[str, str, str], ...] = (
@@ -192,14 +194,14 @@ def load_metadata(path: Path,
 
 def require_command_contract(row: Dict[str, str]) -> None:
     """Validate the common controlled command tokens."""
-    command = (shlex.split(row["command"]))
+    command = canonical_encoder_arguments(shlex.split(row["command"]))
     required = (
         "{img2sixel}",
         "--threading-policy=greedy:global_budget=1",
         f"--precision-policy={row['precision']}",
         "--quality=full",
         "--loaders=builtin!",
-        "-Wgamma",
+        "-Wsrgb",
         "--gpu-policy=off",
         "-p",
         str(PALETTE_COLORS),

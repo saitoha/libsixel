@@ -12,6 +12,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import canonical_encoder_arguments
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 DEFAULT_LOADER_ORDER = "libpng!"
@@ -353,7 +355,7 @@ def validate_command(row: Dict[str, str],
         fail(f"quantize option differs in {path}: {config}")
     try:
         colors = int(row.get("colors", ""))
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {config}") from exc
     expected_tokens = [
@@ -366,7 +368,7 @@ def validate_command(row: Dict[str, str],
         f"--binning-policy={binning}",
         f"--quantize-model={QUANTIZE_OPTION}",
         "-Xoklab",
-        "-Wgamma",
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",

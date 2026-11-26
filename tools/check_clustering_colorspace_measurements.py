@@ -11,6 +11,8 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import COLORSPACE_NAMES, canonical_encoder_arguments
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 BINBITS = (4, 5, 6, 7, 8)
@@ -171,7 +173,7 @@ def validate_command(row: Dict[str, str],
         fail(f"color-space label differs in {path}: {colorspace}")
     field = "timeline_command" if timeline else "command"
     try:
-        tokens = (shlex.split(row.get(field, "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(
             f"invalid {field} in {path}: {colorspace}"
@@ -184,8 +186,8 @@ def validate_command(row: Dict[str, str],
         "--sampling-policy=full-frame",
         f"--binning-policy={binning_policy}",
         f"--quantize-model=kmeans:seed=1:binbits={binbits}",
-        f"-X{colorspace}",
-        "-Wgamma",
+        "-X" + COLORSPACE_NAMES.get(colorspace, colorspace),
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",
