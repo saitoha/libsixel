@@ -378,6 +378,9 @@ ts_tiled(TIFF *tif)
 #define sixel_cdef_linearized ts_local_linearized
 #define sixel_cdef_separable ts_local_linearized_separable
 #define sixel_cdef_transfer ts_local_transfer
+#define sixel_cdef_transfer_matrix ts_local_transfer_matrix
+#define sixel_cdef_from_xyz_intermediate ts_local_from_xyz_intermediate
+#define sixel_cdef_convert_intermediate ts_local_convert_intermediate
 #define sixel_cdef_export_icc ts_local_13_export
 #define sixel_cdef_put32 ts_local_export_put32
 #define sixel_cdef_fixed ts_local_export_fixed
@@ -887,6 +890,9 @@ ts_linear(unsigned char *pixels, int width, int height, int format,
 #undef sixel_cdef_separable
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
+#undef sixel_cdef_transfer_matrix
+#undef sixel_cdef_from_xyz_intermediate
+#undef sixel_cdef_convert_intermediate
 #undef sixel_cdef_export_icc
 #undef sixel_cdef_put32
 #undef sixel_cdef_fixed

@@ -212,6 +212,9 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_linearized clf_local_linearized
 #define sixel_cdef_separable clf_local_linearized_separable
 #define sixel_cdef_transfer clf_local_transfer
+#define sixel_cdef_transfer_matrix clf_local_transfer_matrix
+#define sixel_cdef_from_xyz_intermediate clf_local_from_xyz_intermediate
+#define sixel_cdef_convert_intermediate clf_local_convert_intermediate
 #define sixel_cdef_export_icc clf_local_13_export
 #define sixel_cdef_put32 clf_local_export_put32
 #define sixel_cdef_fixed clf_local_export_fixed
@@ -885,6 +888,9 @@ cms_gray_legacy_allocation_test(void)
 #undef sixel_cdef_separable
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
+#undef sixel_cdef_transfer_matrix
+#undef sixel_cdef_from_xyz_intermediate
+#undef sixel_cdef_convert_intermediate
 #undef sixel_cdef_export_icc
 #undef sixel_cdef_put32
 #undef sixel_cdef_fixed

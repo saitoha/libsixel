@@ -1547,8 +1547,8 @@ reducing output size.
 .B \-X \fICOLORSPACE\fP, \-\-clustering\-colorspace=\fICOLORSPACE\fP
 select palette clustering color space
 .br
-ignored when a fixed palette option (\fB\-b\fP, \fB\-m\fP, or \fB\-e\fP)
-is active
+applies to generated palettes, including float image maps.
+Ignored for \fB\-b\fP, \fB\-e\fP, and structured \fB\-m\fP palettes.
 .br
 \fICOLORSPACE\fP is one of them:
 .br
@@ -1563,6 +1563,8 @@ oklab -> cluster in OKLab uniform color space
 cielab -> cluster in CIELAB uniform color space
 .br
 din99d -> cluster in DIN99d uniform color space
+.br
+icc:FILE -> cluster in the encoded RGB coordinates of a matrix/TRC ICC profile
 .br
 .TP 5
 .B \-W \fICOLORSPACE\fP, \-\-working\-colorspace=\fICOLORSPACE\fP
@@ -1581,6 +1583,8 @@ oklab -> operate in OKLab float32 for palette decisions
 cielab -> operate in CIELAB float32 for palette decisions
 .br
 din99d -> operate in DIN99d float32 for palette decisions
+.br
+icc:FILE -> apply the palette in encoded matrix/TRC ICC RGB float32
 .br
 .TP 5
 .B \-U \fICOLORSPACE\fP, \-\-output\-colorspace=\fICOLORSPACE\fP

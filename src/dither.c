@@ -50,6 +50,7 @@
 #include "cms.h"
 #include "palette-common-snap.h"
 #include "palette-factory.h"
+#include "palette.h"
 #include "compat_stub.h"
 #include <6cells.h>
 
@@ -655,7 +656,8 @@ sixel_dither_prepare_lookup_policy(
         ? dither->method_for_diffuse : SIXEL_DIFFUSE_AUTO;
     select_request.pixelformat = pixelformat;
 
-    if (dither != NULL && dither->use_rgb101_palette != 0) {
+    if (dither != NULL && (dither->use_rgb101_palette != 0 ||
+                           dither->icc_workspace != NULL)) {
         /* The typed palette is authoritative even for supplied palettes.
          * Its byte view cannot prove monochrome equivalence: negative and
          * above-range colors can project to black and white. Suppress only
@@ -1090,6 +1092,7 @@ sixel_dither_parallel_worker(sixel_thread_pool_job_t job,
     apply_request.lookup_policy = lookup_policy;
     sixel_dither_policy_capture_execution(plan->dither,
         &apply_request_execution);
+    apply_request_execution.working_palette = plan->palette;
     apply_request.execution = &apply_request_execution;
     status = plan->dither_policy->vtbl->apply(
         plan->dither_policy,
@@ -1419,6 +1422,7 @@ sixel_dither_resolve_indexes(
     apply_request.palette = entries_view.entries;
     apply_request.lookup_policy = dither->lookup_policy;
     sixel_dither_policy_capture_execution(dither, &apply_request_execution);
+    apply_request_execution.working_palette = palette;
     apply_request.execution = &apply_request_execution;
     status = dither_policy->vtbl->apply(dither_policy, &apply_request);
 
@@ -1823,6 +1827,8 @@ sixel_dither_6delta_keep_float(
     float const *rgb, float const *chosen, int chosen_index, int record,
     float *retained)
 {
+    sixel_palette_t *wire_palette;
+    struct sixel_icc_workspace const *icc;
     unsigned char const *pixel;
     unsigned char const *wire;
     unsigned int wire_count;
@@ -1849,27 +1855,33 @@ sixel_dither_6delta_keep_float(
     if (pixel == NULL) {
         return 0;
     }
+    icc = dither->icc_workspace;
+    wire_palette = icc != NULL ? icc->wire_palette : dither->palette;
     wire = NULL;
     wire_count = 0U;
     if (dither->use_rgb101_palette &&
             (SIXEL_FAILED(dither->pipeline_6delta_hls
-                ? sixel_palette_get_hls_rgb101(dither->palette,
+                ? sixel_palette_get_hls_rgb101(wire_palette,
                     &wire, &wire_count)
-                : sixel_palette_get_rgb101(dither->palette,
+                : sixel_palette_get_rgb101(wire_palette,
                     &wire, &wire_count)) || wire == NULL || chosen_index < 0 ||
              (unsigned int)chosen_index >= wire_count)) {
         return 0;
     }
     colorspace = sixel_pixelformat_get_colorspace(pixelformat);
     output_transform = dither->use_rgb101_palette &&
-        !sixel_palette_output_is_gamma(dither->palette);
+        (icc != NULL || !sixel_palette_output_is_gamma(wire_palette));
     for (n = 0; n < 3; ++n) {
         query[n] = rgb[n];
     }
     /* A failed transform cannot establish a safe keep. Repaint the chosen
      * entry instead, without publishing a keep bit or a clipped query. */
+    if (icc != NULL && !sixel_cdef_convert_intermediate(icc->profile,
+            icc->linear, query, query)) {
+        return 0;
+    }
     if (output_transform) {
-        if (!sixel_palette_to_output(dither->palette, query, query,
+        if (!sixel_palette_to_output(wire_palette, query, query,
                 colorspace)) {
             return 0;
         }
@@ -1903,9 +1915,13 @@ sixel_dither_6delta_keep_float(
         return 0;
     }
     if (output_transform || colorspace != SIXEL_COLORSPACE_GAMMA) {
-        if (output_transform ? !sixel_palette_from_output(dither->palette,
+        if (output_transform ? !sixel_palette_from_output(wire_palette,
                 working, history, colorspace) : !sixel_color_convert(working,
                 history, SIXEL_COLORSPACE_GAMMA, colorspace)) {
+            return 0;
+        }
+        if (icc != NULL && !sixel_cdef_convert_intermediate(icc->linear,
+                icc->profile, working, working)) {
             return 0;
         }
         if (!within) {
@@ -1915,9 +1931,13 @@ sixel_dither_6delta_keep_float(
              * Compare both emitted colors in working units too; do not
              * clamp the query or substitute the unrounded centroid. The
              * explicit output threshold remains the approximation gate. */
-            if (output_transform ? !sixel_palette_from_output(dither->palette,
+            if (output_transform ? !sixel_palette_from_output(wire_palette,
                     target, emitted, colorspace) : !sixel_color_convert(target,
                     emitted, SIXEL_COLORSPACE_GAMMA, colorspace)) {
+                return 0;
+            }
+            if (icc != NULL && !sixel_cdef_convert_intermediate(icc->linear,
+                    icc->profile, target, target)) {
                 return 0;
             }
             keep_distance = 0.0;
@@ -2221,6 +2241,7 @@ sixel_dither_new(
 
     (*ppdither)->ref = 1U;
     (*ppdither)->palette = NULL;
+    (*ppdither)->icc_workspace = NULL;
     (*ppdither)->reqcolors = ncolors;
     (*ppdither)->force_palette = 0;
     (*ppdither)->ncolors = ncolors;
@@ -4280,6 +4301,51 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
 
 #include "dither-lookup-preparer.inc.h"
 
+/* A lookup palette has the same slot numbers as the wire palette. Keep
+ * its encoded ICC components private so serialization and map export can
+ * continue to use the original, colorimetrically tagged representatives. */
+static SIXELSTATUS
+sixel_dither_icc_palette(sixel_palette_t **out, sixel_dither_t *dither)
+{
+    sixel_palette_float32_entries_view_t view;
+    sixel_palette_entries_request_t byte_request;
+    sixel_palette_float32_entries_request_t float_request;
+    unsigned char bytes[SIXEL_PALETTE_MAX * 3];
+    float coords[SIXEL_PALETTE_MAX * 3];
+    size_t channels;
+    size_t i;
+    SIXELSTATUS status;
+
+    status = dither->palette->vtbl->get_entries_float32(dither->palette,
+                                                        &view);
+    if (SIXEL_FAILED(status)) return status;
+    channels = (size_t)view.entry_count * 3U;
+    if (view.entries == NULL || view.entry_count > SIXEL_PALETTE_MAX ||
+            view.depth != (int)(3U * sizeof(float)) ||
+            view.entries_size < channels * sizeof(float)) {
+        return SIXEL_BAD_INPUT;
+    }
+    memcpy(coords, view.entries, channels * sizeof(float));
+    status = sixel_palette_convert_icc_rgbf32(coords, view.entry_count,
+        dither->icc_workspace->linear, dither->icc_workspace->profile);
+    if (SIXEL_FAILED(status)) return status;
+    for (i = 0; i < channels; ++i) {
+        bytes[i] = sixel_pixelformat_float_channel_to_byte(
+            SIXEL_PIXELFORMAT_RGBFLOAT32, (int)(i % 3U), coords[i]);
+    }
+    status = sixel_palette_create_from_factory(out, dither->allocator);
+    if (SIXEL_FAILED(status)) return status;
+    byte_request.entries = bytes;
+    byte_request.colors = view.entry_count;
+    byte_request.depth = 3;
+    status = (*out)->vtbl->init_entries(*out, &byte_request);
+    if (SIXEL_FAILED(status)) return status;
+    float_request.entries = coords;
+    float_request.colors = view.entry_count;
+    float_request.depth = view.depth;
+    return (*out)->vtbl->init_entries_float32(*out, &float_request);
+}
+
 /* apply palette */
 SIXEL_INTERNAL_API sixel_index_t *
 sixel_dither_apply_palette(
@@ -4299,6 +4365,9 @@ sixel_dither_apply_palette(
     unsigned char *input_pixels;
     float *float_pipeline_pixels = NULL;
     int owns_float_pipeline = 0;
+    sixel_palette_t *icc_palette = NULL;
+    int reuse_icc_fhedt = 0;
+    size_t float_size;
     int pipeline_pixelformat;
     int source_pixelformat;
     int prefer_float_pipeline;
@@ -4686,6 +4755,57 @@ sixel_dither_apply_palette(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    }
+
+    if (dither->icc_workspace != NULL) {
+        /* The frame is staged as linear sRGB. Workers may share it with
+         * the next palette job, so convert only application-owned storage. */
+        if (!prefer_float_pipeline || float_channels != 3 ||
+                total_pixels > SIZE_MAX / (3U * sizeof(float))) {
+            sixel_helper_set_additional_message(
+                "-W icc requires float32 palette application.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (!owns_float_pipeline) {
+            float_size = total_pixels * 3U * sizeof(float);
+            float_pipeline_pixels = sixel_allocator_malloc(dither->allocator,
+                                                           float_size);
+            if (float_pipeline_pixels == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            memcpy(float_pipeline_pixels, input_pixels, float_size);
+            owns_float_pipeline = 1;
+        }
+        if (sixel_pixelformat_get_colorspace(pipeline_pixelformat) !=
+                SIXEL_COLORSPACE_LINEAR) {
+            status = sixel_color_convert_frame_rgbf32(float_pipeline_pixels,
+                total_pixels, sixel_pixelformat_get_colorspace(
+                    pipeline_pixelformat), SIXEL_COLORSPACE_LINEAR);
+            if (SIXEL_FAILED(status)) goto end;
+        }
+        status = sixel_palette_convert_icc_rgbf32(float_pipeline_pixels,
+            total_pixels, dither->icc_workspace->linear,
+            dither->icc_workspace->profile);
+        if (SIXEL_FAILED(status)) goto end;
+        status = sixel_dither_icc_palette(&icc_palette, dither);
+        if (SIXEL_FAILED(status)) goto end;
+        /* Float FHEDT owns its palette coordinates and checks the grid
+         * signature on reuse. Other lookup policies may borrow the ICC
+         * application palette, whose lifetime ends with this frame. */
+        reuse_icc_fhedt = dither->icc_workspace->reuse_fhedt &&
+            dither->lut_policy == SIXEL_LUT_POLICY_FHEDT;
+        if (!reuse_icc_fhedt && dither->lookup_policy != NULL) {
+            dither->lookup_policy->vtbl->unref(dither->lookup_policy);
+            dither->lookup_policy = NULL;
+        }
+        palette = icc_palette;
+        input_pixels = (unsigned char *)float_pipeline_pixels;
+        /* Use the unit-scale RGB float layout for the three ICC axes.
+         * Delta crosses the actual profile before any wire comparison. */
+        pipeline_pixelformat = sixel_pixelformat_for_colorspace(
+            SIXEL_COLORSPACE_LINEAR, 1);
     }
 
     method_for_scan = dither->method_for_scan;
@@ -5124,6 +5244,13 @@ end:
         }
         if (normalized_pixels != NULL) {
             sixel_allocator_free(dither->allocator, normalized_pixels);
+        }
+        if (icc_palette != NULL) {
+            if (!reuse_icc_fhedt && dither->lookup_policy != NULL) {
+                dither->lookup_policy->vtbl->unref(dither->lookup_policy);
+                dither->lookup_policy = NULL;
+            }
+            icc_palette->vtbl->unref(icc_palette);
         }
         if (float_pipeline_pixels != NULL && owns_float_pipeline) {
             sixel_allocator_free(dither->allocator, float_pipeline_pixels);

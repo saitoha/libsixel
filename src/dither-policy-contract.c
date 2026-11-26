@@ -104,6 +104,7 @@ sixel_dither_policy_capture_execution(sixel_dither_t const *dither,
     sixel_dither_execution_t *execution)
 {
     memset(execution, 0, sizeof(*execution));
+    execution->icc_workspace = dither->icc_workspace;
     execution->working_palette = dither->palette;
     execution->allocator = dither->allocator;
     execution->indexes = dither->pipeline_index_buffer;
@@ -200,6 +201,7 @@ sixel_dither_policy_bind(sixel_dither_policy_object_t const *policy,
     sixel_dither_policy_apply_options(dither, &policy->options);
     dither->pixelformat = policy->pixelformat;
     dither->lookup_policy = request->lookup_policy;
+    dither->icc_workspace = execution->icc_workspace;
     dither->palette = execution->working_palette;
     dither->allocator = execution->allocator;
     dither->pipeline_index_buffer = execution->indexes;

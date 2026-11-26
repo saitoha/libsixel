@@ -239,3 +239,79 @@ end:
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+
+int
+test_map_cluster_icc_transition(char const *path)
+{
+    static struct { int flag; char const *value; } const options[] = {
+        { '=', "greedy:B1" }, { 'm', "pal:-" }, { '.', "float32" },
+        { 'W', "linear" }, { 'd', "none" }, { 't', "rgb" }, { '7', NULL }
+    };
+    unsigned char pixels[] = {255, 0, 0, 0, 0, 255};
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_dither_t *fixed;
+    map_cluster_capture_t capture;
+    char *argument;
+    size_t length;
+    size_t i;
+    int pass;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    fixed = NULL;
+    memset(&capture, 0, sizeof(capture));
+    length = strlen(path) + sizeof("icc:");
+    argument = malloc(length);
+    ok = 0;
+    if (argument == NULL ||
+            SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+            SIXEL_FAILED(sixel_output_new(&output, map_cluster_write,
+                &capture, NULL))) {
+        goto end;
+    }
+    memcpy(argument, "icc:", 4u);
+    memcpy(argument + 4u, path, length - 4u);
+    for (i = 0; i < sizeof(options) / sizeof(options[0]); ++i) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, options[i].flag,
+                                             options[i].value))) {
+            goto end;
+        }
+    }
+    encoder->fignore_delay = 1;
+    for (pass = 0; pass < 3; ++pass) {
+        memset(&capture, 0, sizeof(capture));
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
+                pass == 0 ? "gamma" : pass == 1 ? argument : "auto")) ||
+                SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+                SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
+                    SIXEL_PIXELFORMAT_RGB888, NULL, -1))) {
+            goto end;
+        }
+        sixel_frame_set_multiframe(frame, 1);
+        sixel_frame_set_frame_no(frame, pass);
+        if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
+                encoder->fixed_palette_source == NULL ||
+                (pass > 0 && encoder->fixed_palette_source != fixed) ||
+                strstr(capture.data, "#0;2;100;0;0") == NULL ||
+                strstr(capture.data, "#1;2;0;0;100") == NULL) {
+            fprintf(stderr, "fixed palette frame %d: %s\n", pass,
+                    sixel_helper_get_additional_message());
+            goto end;
+        }
+        fixed = encoder->fixed_palette_source;
+        sixel_frame_unref(frame);
+        frame = NULL;
+    }
+    ok = 1;
+end:
+    free(argument);
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}

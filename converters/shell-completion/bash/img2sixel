@@ -92,6 +92,9 @@ _img2sixel()
     elif [[ $cur == ${opt_short_uninstall}=* ]]; then
         prev=${opt_short_uninstall}
         cur=${cur#*=}
+    elif [[ $cur == --clustering-colorspace=* || $cur == --working-colorspace=* ]]; then
+        prev=${cur%%=*}
+        cur=${cur#*=}
     elif [[ $cur == ${opt_threads}=* ]]; then
         prev=${opt_threads}
         cur=${cur#*=}
@@ -1032,16 +1035,19 @@ _img2sixel()
                                    colorsync' -- "$cur" ) )
         return 0
         ;;
-    -X|--clustering-colorspace)
-        COMPREPLY=( $( compgen -W 'gamma \
-                                   linear \
-                                   oklab \
-                                   cielab \
-                                   din99d' -- "$cur" ) )
-        return 0
-        ;;
-    -W|--working-colorspace)
-        COMPREPLY=( $( compgen -W 'gamma \
+    -X|--clustering-colorspace|-W|--working-colorspace)
+        if [[ $cur == icc:* ]]; then
+            cur=${cur#icc:}
+            _img2sixel_filedir
+            # Bash replaces only the text after a Readline word break.
+            # bash-completion restores the prefix in cur, but Readline
+            # still leaves it in the buffer.
+            if [[ $COMP_WORDBREAKS != *:* ]]; then
+                COMPREPLY=( "${COMPREPLY[@]/#/icc:}" )
+            fi
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'auto icc: gamma \
                                    linear \
                                    oklab \
                                    cielab \

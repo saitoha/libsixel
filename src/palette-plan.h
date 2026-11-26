@@ -157,6 +157,11 @@ typedef struct sixel_palette_build_attempt {
     /* Slots appended by the caller after construction, outside RGB geometry.
      * Zero preserves the ordinary 256-color growth ceiling. */
     unsigned int reserved_colors;
+    /* Active ICC cover publishes linear sRGB entries in the float RGB
+     * carrier. Soft mode borrows the original linear sample population. */
+    struct sixel_color_def const *cover_icc;
+    struct sixel_color_def const *cover_linear;
+    float const *cover_samples;
 } sixel_palette_build_attempt_t;
 
 /* Per-frame palette policy state owned by the existing encode DAG context. */

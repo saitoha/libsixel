@@ -789,23 +789,6 @@ sixel_kmeans_binning_grid_from_mapping(sixel_kmeans_mapping_mode mode)
     return SIXEL_PALETTE_BINNING_GRID_UNIFORM;
 }
 
-static int
-sixel_kmeans_colorspace_from_pixelformat(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
 static SIXELSTATUS
 sixel_kmeans_build_point_set(
     double *samples,
@@ -873,7 +856,7 @@ sixel_kmeans_build_point_set(
     sixel_weighted_point_set_init(&raw_points);
     memset(&config, 0, sizeof(config));
     filter = NULL;
-    colorspace = sixel_kmeans_colorspace_from_pixelformat(pixelformat);
+    colorspace = sixel_pixelformat_get_colorspace(pixelformat);
     if (samples == NULL || sample_count == 0u || allocator == NULL ||
             output == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1997,7 +1980,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                 SIXEL_PALETTE_BINNING_AUTO) &&
             sixel_palette_bin_range_get_strength() != 0u) {
         status = sixel_palette_prepare_sample_statistics(data, length,
-            pixelformat, sixel_kmeans_colorspace_from_pixelformat(pixelformat),
+            pixelformat, sixel_pixelformat_get_colorspace(pixelformat),
             1, &statistics, allocator, logger);
         if (SIXEL_FAILED(status)) {
             goto end;

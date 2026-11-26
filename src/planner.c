@@ -658,6 +658,7 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     int source_height;
     int colorspace_before_scale;
     int colorspace_after_scale;
+    sixel_color_geometry_t const *working;
     int working_colorspace_effective;
     int resize_mode;
     int effective_reqcolors;
@@ -668,8 +669,11 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
 
     resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
     colorspace_before_scale = 0;
-    working_colorspace_effective =
-        sixel_encoder_frame_working_colorspace(encoder, frame);
+    working = sixel_encoder_frame_working_geometry(encoder, frame);
+    if (working == NULL) {
+        return;
+    }
+    working_colorspace_effective = working->space;
     source_pixelformat = sixel_frame_format(frame);
     source_is_float32 = SIXEL_WORKFORMAT_IS_FLOAT32(source_pixelformat);
     source_ncolors = sixel_frame_get_ncolors(frame);
@@ -731,9 +735,8 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
         prefer_float32_effective = 1;
     }
 
-    target_pixelformat = sixel_pixelformat_for_colorspace(
-        working_colorspace_effective,
-        prefer_float32_effective);
+    target_pixelformat = sixel_geometry_format(working,
+                                                prefer_float32_effective);
 
     /* A forced GPU consumer needs RGB888 at the application boundary.
      * Resize can still use the source or a temporary linear float buffer. */

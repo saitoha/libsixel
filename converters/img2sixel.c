@@ -1276,13 +1276,15 @@ static cli_option_help_t const g_option_help_table[] = {
         "clustering-colorspace",
         "-X COLORSPACE, --clustering-colorspace=COLORSPACE\n"
         "    choose palette clustering color space\n"
-        "    ignored when a fixed palette option (-b, -m, or -e) is active\n"
+        "    applies to generated palettes, including float image maps\n"
+        "    ignored for -b, -e, and structured -m palettes\n"
         "      auto   -> follow the working color space (default)\n"
         "      gamma  -> sRGB gamma\n"
         "      linear -> linear RGB color space\n"
         "      oklab  -> OKLab color space\n"
         "      cielab -> CIELAB color space\n"
         "      din99d -> DIN99d color space\n"
+        "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
     {
         'W',
@@ -1295,6 +1297,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      oklab  -> OKLab in float32\n"
         "      cielab -> CIELAB in float32\n"
         "      din99d -> DIN99d in float32\n"
+        "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
     {
         'U',

@@ -11,7 +11,11 @@
     "tiff-ycbcr.json": "d0c977b71454d675e63ac1592a38c122ef6383509ab9fafc4fb214ffa9f502ff",
     "png-p3-8-rgb.png": "91c3f5a924fcef6befbac6603d7a189bd109e4a0187859fa3751efca6cc91d48",
     "png-p3-16-rgb.png": "41c8dddddd060219f4b3151437efc056a7d80283a25914c880ce1587fdf7a7fe",
-    "png-raw-8-rgb.png": "63c9197cd1cd9ffc8a53ef69d386036903aa5f4b5e1c02aa9680fdb434c64dda"
+    "png-raw-8-rgb.png": "63c9197cd1cd9ffc8a53ef69d386036903aa5f4b5e1c02aa9680fdb434c64dda",
+    "icc-center-samples.ppm": "c63fcae53601df52ea364de42af01c7029c1f7d941b9c3b572cb29974c0264ce",
+    "icc-medoids-samples.ppm": "72ec6613a6c765d921bb2873199af35d0ef5e84c166cf69efe05f2200e77236f",
+    "icc-heckbert-samples.ppm": "71e6ad875b57e6acba3e6321fa5ccb1af7b59b5122b00db92eae10c722f05c5c",
+    "icc-heckbert-fs-samples.ppm": "faf2a526e0f600a9c7a714cfc8d9add69766a13a889bbd687b9d22ee2c6f829b"
   },
   "cases": [
     {
@@ -1028,6 +1032,644 @@
       ]
     },
     {
+      "name": "pnm-cluster-icc-linear",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "cluster_members": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "wire": [
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          58,
+          24,
+          71
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-icc-oklab",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "cluster_members": [
+        [
+          0,
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "wire": [
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          68,
+          76,
+          75
+        ],
+        [
+          58,
+          24,
+          71
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-device-reversible",
+      "source": "inline PNM",
+      "samples": [
+        [
+          241,
+          168,
+          181
+        ],
+        [
+          88,
+          220,
+          201
+        ],
+        [
+          147,
+          61,
+          180
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "owners": [
+        0,
+        0,
+        1
+      ],
+      "wire": [
+        [
+          70,
+          76,
+          75
+        ],
+        [
+          70,
+          76,
+          75
+        ],
+        [
+          54,
+          26,
+          68
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-device-unsnapped",
+      "source": "inline PNM",
+      "samples": [
+        [
+          215,
+          215,
+          173
+        ]
+      ],
+      "width": 1,
+      "height": 1,
+      "source_width": 1,
+      "scale": 1,
+      "hidden": [
+        0
+      ],
+      "p2": 0,
+      "wire": [
+        [
+          84,
+          84,
+          70
+        ]
+      ]
+    },
+    {
+      "name": "pnm-cluster-icc-binning",
+      "source": "inline PNM",
+      "samples": [
+        [
+          243,
+          243,
+          243
+        ],
+        [
+          245,
+          245,
+          245
+        ],
+        [
+          247,
+          247,
+          247
+        ]
+      ],
+      "width": 3,
+      "height": 1,
+      "source_width": 3,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "wire": [
+        [
+          96,
+          96,
+          96
+        ],
+        [
+          96,
+          96,
+          96
+        ],
+        [
+          97,
+          97,
+          97
+        ]
+      ]
+    },
+    {
+      "name": "icc-cluster-alpha",
+      "source": "icc-cluster-alpha.png",
+      "width": 4,
+      "height": 1,
+      "source_width": 4,
+      "scale": 1,
+      "p2": 1,
+      "hidden": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "wire": [
+        [
+          16,
+          31,
+          47
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          75,
+          67,
+          39
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "source": "icc-center-samples.ppm",
+      "width": 4,
+      "height": 2,
+      "source_width": 4,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "representative_samples": [
+        [
+          2
+        ],
+        [
+          5
+        ]
+      ],
+      "name": "icc-center-linear",
+      "owners": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "wire": [
+        [
+          40,
+          62,
+          46
+        ],
+        [
+          40,
+          62,
+          46
+        ],
+        [
+          40,
+          62,
+          46
+        ],
+        [
+          40,
+          62,
+          46
+        ],
+        [
+          40,
+          62,
+          46
+        ],
+        [
+          15,
+          14,
+          16
+        ],
+        [
+          40,
+          62,
+          46
+        ],
+        [
+          40,
+          62,
+          46
+        ]
+      ]
+    },
+    {
+      "source": "icc-medoids-samples.ppm",
+      "width": 4,
+      "height": 2,
+      "source_width": 4,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "representative_samples": [
+        [
+          3
+        ],
+        [
+          5
+        ]
+      ],
+      "name": "icc-medoids-linear",
+      "owners": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "wire": [
+        [
+          78,
+          21,
+          71
+        ],
+        [
+          78,
+          21,
+          71
+        ],
+        [
+          28,
+          87,
+          35
+        ],
+        [
+          78,
+          21,
+          71
+        ],
+        [
+          78,
+          21,
+          71
+        ],
+        [
+          28,
+          87,
+          35
+        ],
+        [
+          28,
+          87,
+          35
+        ],
+        [
+          28,
+          87,
+          35
+        ]
+      ]
+    },
+    {
+      "source": "icc-heckbert-samples.ppm",
+      "width": 4,
+      "height": 2,
+      "source_width": 4,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "representative_samples": [
+        [
+          0,
+          3,
+          6,
+          7
+        ],
+        [
+          1,
+          2,
+          4,
+          5
+        ]
+      ],
+      "name": "icc-heckbert-linear",
+      "owners": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "wire": [
+        [
+          46,
+          59,
+          67
+        ],
+        [
+          40,
+          28,
+          48
+        ],
+        [
+          46,
+          59,
+          67
+        ],
+        [
+          40,
+          28,
+          48
+        ],
+        [
+          46,
+          59,
+          67
+        ],
+        [
+          46,
+          59,
+          67
+        ],
+        [
+          40,
+          28,
+          48
+        ],
+        [
+          40,
+          28,
+          48
+        ]
+      ],
+      "export_srgb8": [
+        [
+          103,
+          71,
+          122
+        ],
+        [
+          117,
+          150,
+          170
+        ]
+      ]
+    },
+    {
+      "source": "icc-heckbert-fs-samples.ppm",
+      "width": 4,
+      "height": 2,
+      "source_width": 4,
+      "scale": 1,
+      "hidden": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "p2": 0,
+      "representative_samples": [
+        [
+          0,
+          3,
+          6,
+          7
+        ],
+        [
+          1,
+          2,
+          4,
+          5
+        ]
+      ],
+      "name": "icc-heckbert-linear-fs",
+      "owners": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "fs_lookup_distance_margins": [
+        "0.0055329691946472813411769975403272394034766393088440319155298",
+        "0.0840152006251887798302127238914766010622228887722345685608587",
+        "0.189937389339564929109880673243640334921726732332085829810713",
+        "0.0840182569366880382500122537582215208965201994359533466376927",
+        "0.213058989464701990406204369426017638523599173716775389317895",
+        "0.197737392908572513055626609042209497650933614483627880552658",
+        "0.000831886463157277826214350357902223310816735222853417519352",
+        "0.243664645403746609511893467709962528681789872144289870940341"
+      ],
+      "wire": [
+        [
+          45,
+          61,
+          68
+        ],
+        [
+          41,
+          28,
+          49
+        ],
+        [
+          45,
+          61,
+          68
+        ],
+        [
+          41,
+          28,
+          49
+        ],
+        [
+          45,
+          61,
+          68
+        ],
+        [
+          45,
+          61,
+          68
+        ],
+        [
+          45,
+          61,
+          68
+        ],
+        [
+          41,
+          28,
+          49
+        ]
+      ]
+    },
+    {
       "name": "pnm-lookup-gamma",
       "source": "inline PNM",
       "samples": [
@@ -1202,6 +1844,120 @@
           0,
           50,
           50
+        ]
+      ]
+    },
+    {
+      "name": "pnm-lookup-icc",
+      "source": "inline PNM",
+      "samples": [
+        [
+          76,
+          190,
+          42
+        ],
+        [
+          75,
+          218,
+          173
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "wire": [
+        [
+          0,
+          100,
+          0
+        ],
+        [
+          75,
+          75,
+          75
+        ]
+      ]
+    },
+    {
+      "name": "pnm-fs-icc",
+      "source": "inline PNM",
+      "samples": [
+        [
+          76,
+          190,
+          42
+        ],
+        [
+          75,
+          218,
+          173
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "wire": [
+        [
+          0,
+          100,
+          0
+        ],
+        [
+          50,
+          50,
+          50
+        ]
+      ]
+    },
+    {
+      "name": "pnm-lookup-icc-extended",
+      "source": "inline PNM",
+      "samples": [
+        [
+          81,
+          220,
+          201
+        ],
+        [
+          127,
+          250,
+          142
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "wire": [
+        [
+          0,
+          50,
+          50
+        ],
+        [
+          75,
+          75,
+          75
         ]
       ]
     },

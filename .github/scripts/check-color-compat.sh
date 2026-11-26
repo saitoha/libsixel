@@ -154,6 +154,9 @@ set -- \
     color/icc/0134_mpet_nonrelative_gamut.t \
     color/icc/0135_builtin_png_extended_trc.t \
     color/icc/0136_libpng_png_extended_trc.t \
+    color/icc/0139_parametric_trc_inverse.t \
+    color/icc/0140_sampled_trc_inverse.t \
+    color/icc/0141_extended_trc_roundtrip.t \
     color/gamut/0063_pipeline_minde_linear_b2.t \
     color/gamut/0064_pipeline_failure.t \
     color/gamut/0067_pipeline_mask.t \
@@ -166,6 +169,11 @@ set -- \
     encoder/pipeline/0129_encode_frame_g1_levels.t \
     encoder/pipeline/0130_encode_frame_g2_levels.t \
     encoder/pipeline/0131_encode_frame_g4_levels.t \
+    encoder/planning/0118_default_colorspace_auto.t \
+    encoder/planning/0119_reset_colorspace_auto.t \
+    encoder/planning/0120_explicit_clustering_auto_working.t \
+    encoder/planning/0121_byte_precision_auto.t \
+    encoder/planning/0122_explicit_working_auto_clustering.t \
     encoder/planning/0197_default_display_p3_pixels.t \
     encoder/planning/0198_gamma_display_p3_pixels.t \
     encoder/planning/0199_gamma_display_p3_preserve_resize.t \
@@ -309,7 +317,39 @@ set -- \
     palette/working-space/0152_oklab_cluster_linear_fs_rgb.t \
     palette/working-space/0153_oklab_cluster_linear_fs_xyz.t \
     palette/working-space/0154_worker_oklab_linear_fs_rgb.t \
-    palette/working-space/0155_worker_oklab_linear_fs_xyz.t
+    palette/working-space/0155_worker_oklab_linear_fs_xyz.t \
+    palette/working-space/0156_matrix_icc_cluster_linear.t \
+    palette/working-space/0157_worker_matrix_icc_cluster_oklab.t \
+    palette/working-space/0158_cluster_rejects_lut_icc.t \
+    palette/working-space/0159_cluster_icc_wire_unsnapped.t \
+    palette/working-space/0160_cluster_icc_wire_reversible.t \
+    palette/working-space/0161_matrix_icc_auto_binning.t \
+    palette/working-space/0162_matrix_icc_reset_auto.t \
+    palette/working-space/0163_icc_center_linear_lookup.t \
+    palette/working-space/0164_icc_medoids_linear_lookup.t \
+    palette/working-space/0165_icc_heckbert_linear_lookup.t \
+    palette/working-space/0166_icc_heckbert_linear_fs.t \
+    palette/working-space/0167_icc_alpha_serial.t \
+    palette/working-space/0168_icc_alpha_worker.t \
+    palette/working-space/0169_icc_extended_roundtrip.t \
+    palette/working-space/0170_icc_work_lookup.t \
+    palette/working-space/0171_icc_work_fs.t \
+    palette/working-space/0172_icc_work_auto_cluster.t \
+    palette/working-space/0173_icc_work_reset_auto.t \
+    palette/working-space/0174_icc_work_rejects_lut.t \
+    palette/working-space/0175_icc_work_export.t \
+    palette/working-space/0176_icc_work_extended_lookup.t \
+    palette/working-space/0177_icc_work_delta_frames.t \
+    palette/working-space/0178_icc_work_vptree.t \
+    palette/working-space/0179_icc_work_eytzinger.t \
+    palette/working-space/0180_icc_work_fhedt_reuse.t \
+    palette/working-space/0181_icc_work_parallel_fs.t \
+    palette/working-space/0182_icc_work_delta_fs.t \
+    palette/cover/0146_hard_icc_srgb_anchors.t \
+    palette/cover/0147_soft_icc_srgb_anchors.t \
+    palette/cover/0148_icc_cover_apply_snap.t \
+    palette/mapfile-application/0112_structured_map_icc_transition.t \
+    palette/export/0007_matrix_icc_heckbert_srgb8.t
 
 # Only the precise observed legacy behavior is an expected failure. Promote
 # each witness to the PASS group when its corresponding work is complete.

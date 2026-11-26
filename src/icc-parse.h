@@ -59,6 +59,13 @@ typedef struct sixel_icc_curve {
     size_t param_count;
     uint16_t function_type;
     double params[7];
+    /* Prepared for the top-level device TRC. Equal endpoints denote an
+     * unusable inverse; forward evaluation still uses the original curve. */
+    double inverse_first;
+    double inverse_last;
+    double inverse_linear_end;
+    double inverse_power_start;
+    int inverse_analytic;
 } sixel_icc_curve_t;
 
 typedef enum sixel_icc_lut_kind {

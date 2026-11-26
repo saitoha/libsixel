@@ -1225,11 +1225,39 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_palette_convert_icc_rgbf32(float *pixels, size_t count,
+    sixel_color_def_t const *source, sixel_color_def_t const *destination)
+{
+    double input[3];
+    double output[3];
+    size_t i;
+    int c;
+
+    for (i = 0; i < count; ++i, pixels += 3) {
+        for (c = 0; c < 3; ++c) {
+            input[c] = pixels[c];
+        }
+        if (!sixel_cdef_convert_intermediate(source, destination,
+                                             input, output)) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (fabs(output[c]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            pixels[c] = (float)output[c];
+        }
+    }
+    return SIXEL_OK;
+}
+
 /* Publish cover in both palette views only after the native repair and
  * all required allocations have succeeded. The float view is authoritative. */
 static SIXELSTATUS
 sixel_palette_repair_native(sixel_palette_t *palette,
                             sixel_palette_generate_request_t const *request,
+                            sixel_palette_build_attempt_t const *attempt,
                             unsigned int *ncolors,
                             unsigned int capacity,
                             sixel_allocator_t *work_allocator)
@@ -1237,6 +1265,7 @@ sixel_palette_repair_native(sixel_palette_t *palette,
     sixel_palette_storage_t *storage;
     SIXELSTATUS status;
     float repaired[SIXEL_PALETTE_MAX * 3];
+    float const *samples;
     unsigned int repaired_count;
     unsigned int index;
     unsigned int channel;
@@ -1246,15 +1275,29 @@ sixel_palette_repair_native(sixel_palette_t *palette,
         return SIXEL_OK;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
-    if (storage->entries_float32 == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        return status;
+    if (storage->entries_float32 == NULL ||
+            storage->entries_float32_size < (size_t)*ncolors * 3U *
+                sizeof(float)) {
+        return SIXEL_BAD_ARGUMENT;
     }
     memcpy(repaired, storage->entries_float32,
-        *ncolors * 3u * sizeof(float));
+        (size_t)*ncolors * 3U * sizeof(float));
+    samples = request->data;
+    if (attempt != NULL && attempt->cover_icc != NULL) {
+        /* The solver uses encoded ICC RGB. Cover operates in sRGB and
+         * inserts colors which may be outside that ICC's device gamut. */
+        status = sixel_palette_convert_icc_rgbf32(repaired, *ncolors,
+            attempt->cover_icc, attempt->cover_linear);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (attempt->cover_samples != NULL) {
+            samples = attempt->cover_samples;
+        }
+    }
     repaired_count = *ncolors;
     status = sixel_palette_cover_float(repaired, &repaired_count,
-        request->data, request->length, request->pixelformat,
+        samples, request->length, request->pixelformat,
         sixel_palette_cover_policy(), sixel_palette_cover_mode(),
         sixel_palette_cover_grow_enabled(),
         capacity,
@@ -1382,7 +1425,8 @@ sixel_palette_generate_internal(
     storage->build_context = &context;
 
     status = sixel_palette_snap_begin(request->pixelformat,
-        context.quantize_model, work_allocator);
+        context.quantize_model, work_allocator,
+        context.attempt != NULL && context.attempt->cover_icc != NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1512,8 +1556,10 @@ success:
         status = snap_status;
         goto end;
     }
-    if (SIXEL_SUCCEEDED(status) && color_capacity < SIXEL_PALETTE_MAX &&
-            ncolors > color_capacity) {
+    /* Bound both the active count and its three-channel byte length before
+     * snap or cover copies a solver result to a fixed-size palette. */
+    if (SIXEL_SUCCEEDED(status) &&
+            (ncolors > color_capacity || ncolors > SIXEL_PALETTE_MAX)) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -1538,8 +1584,8 @@ success:
          * retain their coordinates unless the caller explicitly selects
          * application preparation below. Never rebuild this typed palette
          * from the RGB101 compatibility cache. */
-        status = sixel_palette_repair_native(palette, request, &ncolors,
-            color_capacity, work_allocator);
+        status = sixel_palette_repair_native(palette, request, context.attempt,
+            &ncolors, color_capacity, work_allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1989,13 +2035,21 @@ end:
  * A profile can have independent forward and reverse LUTs. */
 static int
 sixel_palette_icc_code_color(sixel_palette_t const *palette,
-    unsigned char const code[3], int space, double rgb[3])
+    unsigned char const code[3], int space,
+    sixel_color_def_t const *cluster_icc, double rgb[3])
 {
     double device[3];
+    double xyz[3];
 
     device[0] = code[0] / 100.0;
     device[1] = code[1] / 100.0;
     device[2] = code[2] / 100.0;
+    if (cluster_icc != NULL) {
+        return sixel_cdef_to_xyz(
+            SIXEL_PALETTE_STORAGE_CONST(palette)->output_device,
+            device, xyz, SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
+            sixel_cdef_from_xyz_intermediate(cluster_icc, xyz, rgb);
+    }
     return sixel_palette_from_output(palette, rgb, device, space);
 }
 
@@ -2016,7 +2070,8 @@ sixel_palette_icc_distance(double const a[3], double const b[3])
  * Keep the initial tuple on ties, particularly with a many-to-one LUT. */
 static int
 sixel_palette_select_icc_code(sixel_palette_t const *palette,
-    unsigned char code[3], double const target[3], int space)
+    unsigned char code[3], double const target[3], int space,
+    sixel_color_def_t const *cluster_icc)
 {
     unsigned char candidate[3];
     unsigned char selected[3];
@@ -2027,7 +2082,8 @@ sixel_palette_select_icc_code(sixel_palette_t const *palette,
     int direction;
     int component;
 
-    if (!sixel_palette_icc_code_color(palette, code, space, actual)) {
+    if (!sixel_palette_icc_code_color(palette, code, space, cluster_icc,
+                                      actual)) {
         return 0;
     }
     best = sixel_palette_icc_distance(target, actual);
@@ -2041,7 +2097,7 @@ sixel_palette_select_icc_code(sixel_palette_t const *palette,
             }
             candidate[channel] = (unsigned char)component;
             if (sixel_palette_icc_code_color(palette, candidate, space,
-                                             actual)) {
+                                             cluster_icc, actual)) {
                 distance = sixel_palette_icc_distance(target, actual);
                 /* Interpolating equal LUT entries can leave a few ulps. */
                 if (distance < best - 64 * DBL_EPSILON * fmax(1.0, best)) {
@@ -2057,7 +2113,8 @@ sixel_palette_select_icc_code(sixel_palette_t const *palette,
 
 SIXELSTATUS
 sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
-    int clustering, int palette_type, unsigned int first, unsigned int end)
+    int clustering, struct sixel_color_def const *cluster_icc,
+    int palette_type, unsigned int first, unsigned int end)
 {
     sixel_palette_storage_t *storage;
     sixel_palette_icc_source_t *original;
@@ -2100,14 +2157,24 @@ sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
             for (channel = 0; channel < 3; ++channel) {
                 source[channel] = storage->entries_float32[offset + channel];
             }
-            if (!sixel_color_convert(target, source, workspace, clustering) ||
-                    !sixel_palette_select_icc_code(palette, codes + offset,
-                                                   target, clustering)) {
+            if (cluster_icc != NULL) {
+                if (!sixel_color_convert(working, source, workspace,
+                        SIXEL_COLORSPACE_GAMMA) ||
+                        !sixel_cdef_convert_intermediate(storage->output_srgb,
+                            cluster_icc, working, target)) {
+                    return SIXEL_BAD_INPUT;
+                }
+            } else if (!sixel_color_convert(target, source, workspace,
+                                             clustering)) {
+                return SIXEL_BAD_INPUT;
+            }
+            if (!sixel_palette_select_icc_code(palette, codes + offset,
+                    target, clustering, cluster_icc)) {
                 return SIXEL_BAD_INPUT;
             }
         }
         if (!sixel_palette_icc_code_color(palette, wire + offset, workspace,
-                                           working)) {
+                                           NULL, working)) {
             return SIXEL_BAD_INPUT;
         }
         for (channel = 0; channel < 3; ++channel) {

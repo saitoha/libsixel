@@ -2571,6 +2571,41 @@ sixel_icc_apply_cmyk_float32_to_rgb_float32(float *dst_pixels,
 }
 
 
+/* In the interior, only solve on a branch that cannot overlap the
+ * other one. Endpoints and ambiguous joins use the existing rules. */
+static int
+sixel_icc_inverse_formula(sixel_icc_curve_t const *curve, double value,
+                          double *result)
+{
+    double const *p;
+    double offset;
+
+    if (!curve->inverse_analytic) {
+        return 0;
+    }
+    p = curve->params;
+    if (curve->function_type == 0u) {
+        *result = pow(value, 1.0 / p[0]);
+    } else if (value > curve->inverse_power_start &&
+               value > curve->inverse_linear_end) {
+        offset = curve->function_type == 2u ? p[3] :
+            curve->function_type == 4u ? p[5] : 0.0;
+        *result = (pow(value - offset, 1.0 / p[0]) - p[2]) / p[1];
+    } else if (curve->function_type >= 3u && p[3] > 0.0 &&
+               value < curve->inverse_power_start &&
+               value < curve->inverse_linear_end) {
+        offset = curve->function_type == 4u ? p[6] : 0.0;
+        *result = (value - offset) / p[3];
+    } else {
+        return 0;
+    }
+    if (!isfinite(*result)) {
+        return 0;
+    }
+    *result = sixel_icc_clamp_unit(*result);
+    return 1;
+}
+
 /*
  * ICC curves have a specified device domain. Keep that boundary separate
  * from extended standard-RGB intermediates: evaluating a device curve must
@@ -2622,18 +2657,8 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
             result = sixel_icc_eval_curve(curve, value);
             break;
         }
-        for (i = 1; i < count; ++i) {
-            if (curve->table[i] < curve->table[i - 1u]) {
-                return 0;
-            }
-        }
-        first = (double)curve->table[0] / 65535.0;
-        last = (double)curve->table[count - 1u] / 65535.0;
-        if (curve->param_count != 0u &&
-            (!sixel_icc_parametric_device(curve, 0.0, &first) ||
-             !sixel_icc_parametric_device(curve, 1.0, &last))) {
-            return 0;
-        }
+        first = curve->inverse_first;
+        last = curve->inverse_last;
         if (last <= first) {
             return 0;
         }
@@ -2642,8 +2667,10 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
         } else if (value >= last) {
             result = 1.0;
         } else if (curve->param_count != 0u) {
-            /* Invert the retained formula, without quantizing its range
-             * into the legacy table. Table monotonicity was checked above. */
+            if (sixel_icc_inverse_formula(curve, value, &result)) {
+                break;
+            }
+            /* Search joins that have no unambiguous analytic inverse. */
             low_value = 0.0;
             high_value = 1.0;
             for (i = 0u; i < 48u; ++i) {
@@ -2679,6 +2706,50 @@ sixel_icc_curve_device(sixel_icc_curve_t const *curve, double value,
     default:
         return 0;
     }
+    if (!isfinite(result)) {
+        return 0;
+    }
+    *out = result;
+    return 1;
+}
+
+/* Extend the measured device curve linearly at both ends. The full
+ * secant is positive even when the first or last segment is flat. Use
+ * the same slope and anchors in both directions. */
+int
+sixel_icc_curve_intermediate(sixel_icc_curve_t const *curve, double value,
+                             int inverse, double *out)
+{
+    double first;
+    double last;
+    double slope;
+    double anchor;
+    double endpoint;
+    double result;
+
+    if (curve == NULL || out == NULL || !isfinite(value)) {
+        return 0;
+    }
+    if (curve->kind == SIXEL_ICC_CURVE_IDENTITY ||
+            curve->kind == SIXEL_ICC_CURVE_GAMMA) {
+        first = 0.0;
+        last = 1.0;
+    } else {
+        first = curve->inverse_first;
+        last = curve->inverse_last;
+    }
+    slope = last - first;
+    if (slope <= 0.0) {
+        return 0;
+    }
+    if (value >= (inverse ? first : 0.0) &&
+            value <= (inverse ? last : 1.0)) {
+        return sixel_icc_curve_device(curve, value, inverse, out);
+    }
+    endpoint = value < (inverse ? first : 0.0) ? 0.0 : 1.0;
+    anchor = endpoint == 0.0 ? first : last;
+    result = inverse ? endpoint + (value - anchor) / slope :
+        anchor + (value - endpoint) * slope;
     if (!isfinite(result)) {
         return 0;
     }

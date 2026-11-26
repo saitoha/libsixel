@@ -30,6 +30,8 @@ struct sixel_snap_grid {
     sixel_allocator_t *allocator;
     sixel_color_xform_t *to_linear;
     sixel_color_def_t *destination;
+    sixel_color_def_t *cluster;
+    sixel_color_def_t *cluster_linear;
     int colorspace;
     int policy;
     double tones[101];
@@ -45,6 +47,18 @@ struct sixel_snap_grid {
 };
 
 static int
+sixel_snap_grid_coordinates(sixel_snap_grid_t *grid, double const linear[3],
+                            double target[3])
+{
+    if (grid->cluster != NULL) {
+        return sixel_cdef_convert_intermediate(grid->cluster_linear,
+            grid->cluster, linear, target);
+    }
+    return sixel_color_convert(target, linear, SIXEL_COLORSPACE_LINEAR,
+                               grid->colorspace);
+}
+
+static int
 sixel_snap_grid_direct(sixel_snap_grid_t *grid, unsigned int code,
                         double *target)
 {
@@ -56,8 +70,7 @@ sixel_snap_grid_direct(sixel_snap_grid_t *grid, unsigned int code,
     rgb[2] = grid->tones[code % 101U];
     ++grid->conversions;
     return sixel_cxform_apply(grid->to_linear, rgb, linear) &&
-        sixel_color_convert(target, linear, SIXEL_COLORSPACE_LINEAR,
-                            grid->colorspace);
+        sixel_snap_grid_coordinates(grid, linear, target);
 }
 
 static int
@@ -80,8 +93,7 @@ sixel_snap_grid_table(sixel_snap_grid_t *grid, unsigned int code,
             - 2.0 * grid->black[channel];
     }
     ++grid->conversions;
-    return sixel_color_convert(target, linear, SIXEL_COLORSPACE_LINEAR,
-                               grid->colorspace);
+    return sixel_snap_grid_coordinates(grid, linear, target);
 }
 
 static int
@@ -134,6 +146,8 @@ sixel_snap_grid_destroy(sixel_snap_grid_t *grid)
         "LSXSG1|strategy=%d|queries=%lu|hits=%lu|conversions=%lu",
         grid->policy, grid->queries, grid->hits, grid->conversions);
     allocator = grid->allocator;
+    sixel_cdef_free(grid->cluster);
+    sixel_cdef_free(grid->cluster_linear);
     sixel_cxform_free(grid->to_linear);
     sixel_cdef_free(grid->destination);
     sixel_allocator_free(allocator, grid->cache);
@@ -146,6 +160,15 @@ SIXELSTATUS
 sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
                      sixel_color_def_t const *destination,
                      sixel_allocator_t *allocator)
+{
+    return sixel_snap_grid_new_cluster(result, policy, colorspace,
+                                       destination, NULL, allocator);
+}
+
+SIXELSTATUS
+sixel_snap_grid_new_cluster(sixel_snap_grid_t **result, int policy,
+    int colorspace, sixel_color_def_t const *destination,
+    sixel_color_def_t const *cluster_icc, sixel_allocator_t *allocator)
 {
     static char const *const policies[] = {
         "auto", "direct", "table", "cache", "full"
@@ -204,11 +227,17 @@ sixel_snap_grid_new(sixel_snap_grid_t **result, int policy, int colorspace,
     destination_linear = sixel_cdef_linearized(destination);
     forward = sixel_cxform_new(srgb, destination_linear, 1);
     grid->to_linear = sixel_cxform_new(destination, srgb, 1);
+    if (cluster_icc != NULL) {
+        grid->cluster = sixel_cdef_clone(cluster_icc);
+        grid->cluster_linear = srgb;
+        srgb = NULL;
+    }
     sixel_cdef_free(destination_linear);
     sixel_cdef_free(srgb);
     status = SIXEL_BAD_ALLOCATION;
     if (forward == NULL || grid->to_linear == NULL ||
-            grid->destination == NULL) {
+            grid->destination == NULL || (cluster_icc != NULL &&
+            (grid->cluster == NULL || grid->cluster_linear == NULL))) {
         goto end;
     }
     status = SIXEL_BAD_INPUT;
@@ -328,9 +357,14 @@ sixel_snap_grid_project(sixel_snap_grid_t *grid, double const source[3],
 
     if (grid == NULL || source == NULL || result == NULL ||
             !isfinite(lightness_weight) || lightness_weight < 0.0 ||
-            lightness_weight > 1.0 ||
-            !sixel_color_convert(linear, source, grid->colorspace,
-                                  SIXEL_COLORSPACE_LINEAR)) {
+            lightness_weight > 1.0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (grid->cluster != NULL
+            ? !sixel_cdef_convert_intermediate(grid->cluster,
+                grid->cluster_linear, source, linear)
+            : !sixel_color_convert(linear, source, grid->colorspace,
+                                   SIXEL_COLORSPACE_LINEAR)) {
         return SIXEL_BAD_INPUT;
     }
     weights[0] = weights[1] = weights[2] = 1.0;

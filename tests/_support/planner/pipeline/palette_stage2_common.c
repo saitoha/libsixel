@@ -85,7 +85,7 @@ palette_stage2_request(sixel_allocator_t *allocator, int floating,
     encoder->planner.working_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     encoder->planner.working_colorspace_effective = SIXEL_COLORSPACE_DIN99D;
     encoder->reqcolors = 256;
-    encoder->working_colorspace = SIXEL_COLORSPACE_OKLAB;
+    encoder->working = sixel_color_geometry(SIXEL_COLORSPACE_OKLAB);
     failed = 0;
 end:
     sixel_encoder_unref(encoder);

@@ -8563,6 +8563,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0132_MPET_SIMPLEX_WEIGHT_RESIDUAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0133_MPET_NONRELATIVE_SNAP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0134_MPET_NONRELATIVE_GAMUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0139_PARAMETRIC_TRC_INVERSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0140_SAMPLED_TRC_INVERSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0141_EXTENDED_TRC_ROUNDTRIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_MPET_PCS_LAB_FORWARD \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ICC_NUMERIC_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_EXTENDED_SRGB_DECODE \
@@ -9327,6 +9330,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MAP_STRUCTURED_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MAP_CLUSTERING_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_MAP_ANIMATION_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0112_STRUCTURED_MAP_ICC_TRANSITION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLUSTER_PRECISION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LINEAR_MEAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_OKLAB_MEAN \
@@ -14911,7 +14915,10 @@ batch_color_icc_0126 = \
     color/icc/0131_mpet_matrix_product_residual.c \
     color/icc/0132_mpet_simplex_weight_residual.c \
     color/icc/0133_mpet_nonrelative_snap.c \
-    color/icc/0134_mpet_nonrelative_gamut.c
+    color/icc/0134_mpet_nonrelative_gamut.c \
+    color/icc/0139_parametric_trc_inverse.c \
+    color/icc/0140_sampled_trc_inverse.c \
+    color/icc/0141_extended_trc_roundtrip.c
 
 batch_color_lcms2_0011 = \
     color/lcms2/0011_lcms_cmyk_linear.c \
@@ -19634,7 +19641,8 @@ batch_palette_mapfile_application_0001 = \
     palette/mapfile-application/0010_map_gamma_byte.c \
     palette/mapfile-application/0011_map_structured_byte.c \
     palette/mapfile-application/0012_map_clustering_reuse.c \
-    palette/mapfile-application/0013_map_animation_cache.c
+    palette/mapfile-application/0013_map_animation_cache.c \
+    palette/mapfile-application/0112_structured_map_icc_transition.c
 
 batch_palette_mapfile_application_0014 = \
     palette/mapfile-application/0014_map_palette_gamma.c \

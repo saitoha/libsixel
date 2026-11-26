@@ -415,6 +415,17 @@ SIXEL_INTERNAL_API int
 sixel_cdef_from_xyz(sixel_color_def_t const *definition,
                      double const xyz[3], double rgb[3], int intent);
 
+/* Relative D50 conversion for separable internal RGB coordinates.
+ * Extend device TRCs without clipping intermediate colors. */
+SIXEL_INTERNAL_API int
+sixel_cdef_from_xyz_intermediate(sixel_color_def_t const *definition,
+    double const xyz[3], double output[3]);
+
+SIXEL_INTERNAL_API int
+sixel_cdef_convert_intermediate(sixel_color_def_t const *source,
+    sixel_color_def_t const *destination, double const input[3],
+    double output[3]);
+
 /* Evaluate RGB device zero in relative PCS and return its usable Y. */
 SIXEL_INTERNAL_API int
 sixel_cdef_black_y(sixel_color_def_t const *definition, double *black);

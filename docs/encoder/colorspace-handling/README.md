@@ -78,15 +78,15 @@ The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize i
 
 | Option | Boundary controlled | Default | Accepted values |
 | --- | --- | --- | --- |
-| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
-| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
+| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
+| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
 | `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `gamma` | `gamma`, `linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
 
 The names are defined in [spaces used by libsixel](../../concepts/colorspace/README.md#spaces-used-by-libsixel).
 
 ### `-X`: palette-construction geometry
 
-`-X` changes the distances, ranges, centroids, and partitions seen by a generated-palette algorithm. It operates on a palette-building view; specifying it does not by itself convert the main image path. After palette construction, the `K` generated entries are converted from `-X` to `-W` before palette lookup and dithering.
+`-X` changes the distances, ranges, centroids, and partitions seen by a generated-palette algorithm. It operates on a palette-building view; specifying it does not by itself convert the main image path. Each palette build request captures the resolved [coordinate definition](../../../src/colorspace.c), including its float representation, nominal binning bounds and transforms. These bounds describe binning and byte encoding; float distances and centroids use the model coordinates. After palette construction, the `K` generated entries are converted from `-X` to `-W` before palette lookup and dithering.
 
 `-Xauto` follows the resolved working space. An explicit non-auto `-X` is authoritative regardless of whether it appears before or after `-W`. The [working-space coupling policy](../palette-application/working-colorspace/README.md#default-and-option-coupling) defines defaults, repeated options and per-frame resolution. `-X` is ignored by paths that use a fixed palette through `-b`, `-m`, or `-e`, because those paths do not construct a new palette.
 
@@ -94,7 +94,7 @@ The names are defined in [spaces used by libsixel](../../concepts/colorspace/REA
 
 `-W` selects the shared working coordinates for the main image and the generated palette. Lookup policies compare pixels with palette entries in this space, and dithering propagates its error in this space. Changing `-W` can therefore change selected indices even when the palette itself was generated in another space.
 
-`-Wgamma` can use either the 8-bit or float32 precision path. `linear`, `oklab`, `cielab`, and `din99d` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
+`-Wgamma` can use either the 8-bit or float32 precision path. `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
 
 The mathematical role of each accepted space and the controlled quality, runtime, and stream-size comparison are documented in [Working color space](../palette-application/working-colorspace/README.md).
 

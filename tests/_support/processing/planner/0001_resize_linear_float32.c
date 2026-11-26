@@ -64,10 +64,11 @@ planner_linear_float32_valid(void)
         goto end;
     }
 
-    encoder->working_colorspace = SIXEL_COLORSPACE_OKLAB;
-    encoder->working_colorspace_set = 1;
-    encoder->force_float32_colorspace = 1;
-    encoder->prefer_float32 = 1;
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_WORKING_COLORSPACE,
+                                  "oklab");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     encoder->percentwidth = 50;
     sixel_encoding_planner_init(&planner);
     sixel_encoding_planner_analyze(&planner, encoder, frame);

@@ -31,6 +31,30 @@
 extern "C" {
 #endif
 
+/* Resolved builtin palette coordinates. The nominal bounds describe the
+ * binning grid; extended float samples and distance calculations retain the
+ * model's own units. Definitions are immutable across palette workers. */
+typedef void (*sixel_color_triplet_fn)(double out[3], double const in[3]);
+typedef struct sixel_color_geometry {
+    char const *name;
+    int space;
+    int float_format;
+    float minimum[3];
+    float maximum[3];
+    sixel_color_triplet_fn to_linear;
+    sixel_color_triplet_fn from_linear;
+} sixel_color_geometry_t;
+
+SIXEL_INTERNAL_API sixel_color_geometry_t const *
+sixel_color_geometry(int space);
+
+static inline int
+sixel_geometry_format(sixel_color_geometry_t const *geometry, int want_float)
+{
+    return !want_float && geometry->space == SIXEL_COLORSPACE_GAMMA
+        ? SIXEL_PIXELFORMAT_RGB888 : geometry->float_format;
+}
+
 int
 sixel_colorspace_supports_pixelformat(int pixelformat);
 

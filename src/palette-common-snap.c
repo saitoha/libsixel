@@ -56,8 +56,6 @@ static double
 sixel_palette_get_snap_approach_rate(void);
 static double
 sixel_palette_get_snap_channel_factor(void);
-static int
-sixel_palette_determine_colorspace(int pixelformat);
 static SIXELSTATUS
 sixel_palette_snap_float_entries(float *entries, unsigned int colors,
                                   int pixelformat);
@@ -80,6 +78,8 @@ sixel_palette_snap_float_entries(float *entries, unsigned int colors,
 static SIXEL_SNAP_TLS sixel_palette_snap_options_t g_snap_options;
 static SIXEL_SNAP_TLS int g_snap_output_definition;
 static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_output_icc;
+static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_cluster;
+static SIXEL_SNAP_TLS sixel_color_def_t const *g_snap_linear;
 static SIXEL_SNAP_TLS int g_snap_grid_policy;
 static SIXEL_SNAP_TLS sixel_snap_grid_t *g_snap_grid;
 static SIXEL_SNAP_TLS SIXELSTATUS g_snap_status;
@@ -101,6 +101,8 @@ sixel_set_palette_snap_override(
         memset(&g_snap_options, 0, sizeof(g_snap_options));
         g_snap_output_definition = 0;
         g_snap_output_icc = NULL;
+        g_snap_cluster = NULL;
+        g_snap_linear = NULL;
         g_snap_grid_policy = SIXEL_SNAP_GRID_AUTO;
         return;
     }
@@ -346,9 +348,45 @@ sixel_palette_snap_set_output(int definition, int grid_override,
 }
 
 void
-sixel_palette_snap_set_icc(sixel_color_def_t const *definition)
+sixel_palette_snap_set_icc(sixel_color_def_t const *definition,
+                           sixel_color_def_t const *cluster,
+                           sixel_color_def_t const *linear)
 {
+    g_snap_cluster = cluster;
+    g_snap_linear = linear;
     g_snap_output_icc = definition;
+}
+
+/* Snapping and automatic bin-range recovery project the same safe tones.
+ * Use the active construction profile on both sides of that projection. */
+int
+sixel_palette_cluster_to_gamma(double gamma[3], double const point[3],
+                             int space)
+{
+    double linear[3];
+
+    if (g_snap_cluster == NULL) {
+        return sixel_color_convert(gamma, point, space, SIXEL_COLORSPACE_GAMMA);
+    }
+    return sixel_cdef_convert_intermediate(g_snap_cluster, g_snap_linear,
+                                           point, linear) &&
+        sixel_color_convert(gamma, linear, SIXEL_COLORSPACE_LINEAR,
+                            SIXEL_COLORSPACE_GAMMA);
+}
+
+int
+sixel_palette_gamma_to_cluster(double point[3], double const gamma[3],
+                             int space)
+{
+    double linear[3];
+
+    if (g_snap_cluster == NULL) {
+        return sixel_color_convert(point, gamma, SIXEL_COLORSPACE_GAMMA, space);
+    }
+    return sixel_color_convert(linear, gamma, SIXEL_COLORSPACE_GAMMA,
+                               SIXEL_COLORSPACE_LINEAR) &&
+        sixel_cdef_convert_intermediate(g_snap_linear, g_snap_cluster,
+                                        linear, point);
 }
 
 int
@@ -359,9 +397,10 @@ sixel_palette_snap_destination_active(void)
 
 SIXELSTATUS
 sixel_palette_snap_begin(int pixelformat, int quantizer,
-                          sixel_allocator_t *allocator)
+                          sixel_allocator_t *allocator, int cover_linear)
 {
     sixel_color_def_t *destination;
+    sixel_color_def_t const *cluster;
     char const *name;
 
     if (g_snap_grid != NULL) {
@@ -384,9 +423,16 @@ sixel_palette_snap_begin(int pixelformat, int quantizer,
         g_snap_status = SIXEL_BAD_ALLOCATION;
         return g_snap_status;
     }
-    g_snap_status = sixel_snap_grid_new(&g_snap_grid, g_snap_grid_policy,
-        sixel_palette_determine_colorspace(pixelformat), destination,
-        allocator);
+    /* The apply-only stage can receive a linear palette after ICC
+     * cover. Its grid must use the same coordinates as that palette. */
+    cluster = g_snap_cluster;
+    if (cover_linear && sixel_palette_should_snap(
+            SIXEL_PALETTE_SNAP_STAGE_APPLY)) {
+        cluster = NULL;
+    }
+    g_snap_status = sixel_snap_grid_new_cluster(&g_snap_grid,
+        g_snap_grid_policy, sixel_pixelformat_get_colorspace(pixelformat),
+        destination, cluster, allocator);
     sixel_cdef_free(destination);
     return g_snap_status;
 }
@@ -417,23 +463,6 @@ sixel_palette_snap_end(void)
     return status;
 }
 
-static int
-sixel_palette_determine_colorspace(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
 void
 sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
@@ -455,7 +484,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
     color_index = 0U;
     depth = sixel_helper_compute_depth(pixelformat);
     channel = 0;
-    colorspace = sixel_palette_determine_colorspace(pixelformat);
+    colorspace = sixel_pixelformat_get_colorspace(pixelformat);
     approach = sixel_palette_get_snap_approach_rate();
     channels = 0U;
     if (!sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT)) {
@@ -638,7 +667,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
     int c1;
     int c2;
 
-    space = sixel_palette_determine_colorspace(pixelformat);
+    space = sixel_pixelformat_get_colorspace(pixelformat);
     policy = sixel_palette_get_snap_policy();
     rate = sixel_palette_get_snap_approach_rate();
     weights[0] = weights[1] = weights[2] = 1.0;
@@ -659,8 +688,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
         }
         goto blend;
     }
-    if (!sixel_color_convert(gamma, source, space,
-            SIXEL_COLORSPACE_GAMMA)) {
+    if (!sixel_palette_cluster_to_gamma(gamma, source, space)) {
         return SIXEL_BAD_INPUT;
     }
     for (channel = 0; channel < 3; ++channel) {
@@ -697,8 +725,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
                 candidate[0] = corners[0][c0];
                 candidate[1] = corners[1][c1];
                 candidate[2] = corners[2][c2];
-                if (!sixel_color_convert(target, candidate,
-                        SIXEL_COLORSPACE_GAMMA, space)) {
+                if (!sixel_palette_gamma_to_cluster(target, candidate, space)) {
                     return SIXEL_BAD_INPUT;
                 }
                 distance = 0.0;

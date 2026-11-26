@@ -793,12 +793,13 @@ typedef int SIXELSTATUS;
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */
     /* select palette clustering space */
-    /* ignored with fixed palette options (-b, -m, -e) */
+    /* includes float image maps; ignored for -b, -e, and structured -m */
     /*   gamma  -> keep gamma encoded pixels */
     /*   linear -> convert to linear RGB */
     /*   oklab  -> OKLab color space */
     /*   cielab -> CIELAB color space */
     /*   din99d -> DIN99d color space */
+    /*   icc:FILE -> encoded matrix/TRC ICC RGB coordinates */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE    ('W')
     /* -W COLORSPACE */
     /* --working-colorspace=COLORSPACE */

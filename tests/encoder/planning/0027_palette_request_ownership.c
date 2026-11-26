@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "../../_support/planner/pipeline/palette_stage2_common.h"
 #include "src/cms.h"
+#include "src/colorspace.h"
 
 int
 test_palette_stage2_0027(int argc, char **argv)
@@ -39,14 +40,15 @@ test_palette_stage2_0027(int argc, char **argv)
     }
     profile = sixel_palette_snapshot_profile(snapshot);
     if (profile->consumer_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-            profile->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            profile->working != sixel_color_geometry(SIXEL_COLORSPACE_GAMMA) ||
+            profile->clustering != profile->working ||
             profile->delta_alpha_key != 1 || profile->keycolor_reserved != 1 ||
             profile->paintable_colors != 2 || profile->output_icc == NULL ||
             profile->construction.quantizer.phase !=
                 SIXEL_PALETTE_POLICY_EXECUTED) {
         fprintf(stderr, "profile format=%x work=%d delta=%d key=%d "
             "paint=%d icc=%p phase=%d\n", profile->consumer_pixelformat,
-            profile->working_colorspace, profile->delta_alpha_key,
+            profile->working->space, profile->delta_alpha_key,
             profile->keycolor_reserved, profile->paintable_colors,
             (void *)profile->output_icc, profile->construction.quantizer.phase);
         goto end;

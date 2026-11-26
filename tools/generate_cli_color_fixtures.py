@@ -3,6 +3,7 @@
 
 import argparse
 from decimal import Decimal as D, localcontext
+from itertools import combinations
 import hashlib
 import json
 from pathlib import Path
@@ -15,7 +16,9 @@ from generate_builtin_native_fixtures import XTERM16
 
 INPUTS = ('png-samples.json', 'png-p3-16-rgba.png', 'tiff-layout.json',
           'tiff-layout-rgb16-o6.tif', 'display-p3.icc', 'tiff-ycbcr.json',
-          'png-p3-8-rgb.png', 'png-p3-16-rgb.png', 'png-raw-8-rgb.png')
+          'png-p3-8-rgb.png', 'png-p3-16-rgb.png', 'png-raw-8-rgb.png',
+          'icc-center-samples.ppm', 'icc-medoids-samples.ppm',
+          'icc-heckbert-samples.ppm', 'icc-heckbert-fs-samples.ppm')
 
 
 def embedded_profile(blob):
@@ -42,18 +45,18 @@ def embedded_profile(blob):
     raise ValueError('missing original ICC profile')
 
 
-def wire_color(linear):
+def wire_color(linear, maximum=100):
     result = []
     for component in linear:
         value = min(D(1), max(D(0), D(str(component))))
         gamma = (D('12.92') * value if value <= D('.0031308') else
                  D('1.055') * value ** (D(1) / D('2.4')) - D('.055'))
-        percent = gamma * 100
-        rounded = int(percent + D('.5'))
+        scaled = gamma * maximum
+        rounded = int(scaled + D('.5'))
         # This is a fixture-selection margin, not an implementation tolerance.
         # Stay away from wire half steps; runtime assertions remain exact.
-        assert abs(percent - (D(rounded) - D('.5'))) > D('.01')
-        assert abs(percent - (D(rounded) + D('.5'))) > D('.01')
+        assert abs(scaled - (D(rounded) - D('.5'))) > D('.01')
+        assert abs(scaled - (D(rounded) + D('.5'))) > D('.01')
         result.append(rounded)
     return result
 
@@ -75,9 +78,67 @@ def p3_wire_color(linear):
     return wire_color([D(x.numerator) / D(x.denominator) for x in output])
 
 
-def cli_space_cases():
-    def coordinates(rgb, linear):
-        encoded = [D(component) / 255 for component in rgb]
+def squared_distance(a, b):
+    return sum((x - y) ** 2 for x, y in zip(a, b))
+
+
+def solver_groups(model, points):
+    """Return sample indices contributing to each of the two representatives."""
+    if model == 'heckbert':
+        # Equal populations, norm split, median cut, distinct-color average.
+        spans = [max(axis) - min(axis) for axis in zip(*points)]
+        axis = spans.index(max(spans))
+        assert spans.count(spans[axis]) == 1
+        order = sorted(range(len(points)), key=lambda i: points[i][axis])
+        mid = len(points) // 2
+        assert points[order[mid - 1]][axis] < points[order[mid]][axis]
+        return sorted([sorted(order[:mid]), sorted(order[mid:])])
+
+    # Exhaust all 28 sample pairs. The chosen witnesses have distinct best
+    # scores. This characterizes these inputs, not a global solver guarantee.
+    scores = []
+    for i, j in combinations(range(len(points)), 2):
+        residuals = [min(squared_distance(p, points[i]),
+                         squared_distance(p, points[j])) for p in points]
+        score = max(residuals) if model == 'center' else sum(residuals)
+        scores.append((score, (i, j)))
+    scores.sort()
+    assert scores[1][0] > scores[0][0]
+    if model == 'medoids':
+        # From any other pair at least one PAM swap lowers the objective.
+        for cost, pair in scores[1:]:
+            assert any(other < cost and set(pair).intersection(candidate)
+                       for other, candidate in scores)
+    return [[i] for i in scores[0][1]]
+
+
+FS_TAPS = ((1, 0, 7), (-1, 1, 3), (0, 1, 5), (1, 1, 1))
+
+
+def raster_owners(points, palette, taps=FS_TAPS):
+    """Independent two-row, four-column raster FS in the supplied coordinates."""
+    working = [point[:] for point in points]
+    owners, margins = [], []
+    for index, point in enumerate(working):
+        distances = [squared_distance(point, color) for color in palette]
+        owner = distances.index(min(distances))
+        margin = abs(distances[0] - distances[1])
+        assert margin > D('.00001')
+        owners.append(owner)
+        margins.append(str(margin))
+        error = [x - y for x, y in zip(point, palette[owner])]
+        for dx, dy, numerator in taps:
+            x, y = index % 4 + dx, index // 4 + dy
+            if 0 <= x < 4 and 0 <= y < 2:
+                neighbor = working[y * 4 + x]
+                for c in range(3):
+                    neighbor[c] += error[c] * numerator / 16
+    return owners, margins
+
+
+def cli_space_cases(inputs):
+    def coordinates(rgb, linear, maximum=255):
+        encoded = [D(component) / maximum for component in rgb]
         if not linear:
             return encoded
         return [x / D('12.92') if x <= D('.04045') else
@@ -116,6 +177,151 @@ def cli_space_cases():
         yield case('pnm-cluster-' + space, samples, cluster_distance_margins=margins,
                    wire=[wire[i] for i in owners])
 
+    # Solve the two-center problem directly: for three equal-weight samples
+    # the minimum SSE pairs the two closest points. Read the actual colorants
+    # and parametric TRCs from the file, including fixed-point rounding.
+    from generate_color_fixtures import opponents
+    samples = [[241, 168, 181], [88, 220, 201], [147, 61, 180]]
+    def colorants(tags):
+        matrix = list(zip(*[[reference.F(v, 65536) for v in
+                             struct.unpack_from('>3i', tags[k], 8)]
+                            for k in (b'rXYZ', b'gXYZ', b'bXYZ')]))
+        return reference.matmul(reference.D, matrix)
+
+    tags = reference.tags(inputs['display-p3.icc'])
+    to_linear = colorants(tags)
+    to_device = reference.inv(to_linear)
+
+    def decimal(x):
+        return D(x.numerator) / D(x.denominator)
+
+    def encode_device(tag, value):
+        assert tag[:4] == b'para' and struct.unpack_from('>H', tag, 8) == (4,)
+        g, a, b, c, d, e, f = [D(n) / 65536
+                               for n in struct.unpack_from('>7i', tag, 12)]
+        if value < c * d + f:
+            return (value - f) / c
+        return ((value - e) ** (1 / g) - b) / a
+
+    def closest(points):
+        return min((sum((x-y)**2 for x, y in zip(points[i], points[j])), i, j)
+                   for i in range(3) for j in range(i+1, 3))[1:]
+
+    curves = [tags[k] for k in (b'rTRC', b'gTRC', b'bTRC')]
+
+    def device_rgb(rgb):
+        values = reference.mv(to_device, list(map(reference.F, rgb)))
+        return [encode_device(tag, decimal(x)) for tag, x in zip(curves, values)]
+
+    def linear_rgb(point):
+        values = [reference.curve(tag, x) for tag, x in zip(curves, point)]
+        return [decimal(v) for v in reference.mv(to_linear, values)]
+
+    def profile_centroids(samples):
+        linear = [coordinates(rgb, True) for rgb in samples]
+        device = list(map(device_rgb, linear))
+        assert closest(device) == (0, 1)
+        centers = [[(x+y)/2 for x, y in zip(device[0], device[1])], device[2]]
+        palette = list(map(linear_rgb, centers))
+        wire = [wire_color(rgb) for rgb in palette]
+        return linear, centers, palette, wire
+
+    linear, centers, palette, wire = profile_centroids(samples)
+    assert closest(linear) != (0, 1)
+    for name, working in [('linear', lambda rgb: rgb),
+                          ('oklab', lambda rgb: opponents(rgb)[0])]:
+        owners = [nearest(working(rgb), list(map(working, palette)))[0]
+                  for rgb in linear]
+        assert owners == [0, 0, 1]
+        yield case('pnm-cluster-icc-' + name, samples, owners=owners,
+                   cluster_members=[[0, 1], [2]], wire=[wire[i] for i in owners])
+
+    # With the same device as destination, nearest wire registers minimize
+    # RGB distance componentwise. Reversible snap rounds through RGB8 first.
+    def register(x, mode):
+        if mode == 'reversible':
+            byte = int(x * 255 + D('.5'))
+            return (byte * 100 + 127) // 255
+        return int(x * 100 + D('.5'))
+
+    codes = [[register(x, 'reversible') for x in center] for center in centers]
+    yield case('pnm-cluster-device-reversible', samples, owners=owners,
+               wire=[codes[i] for i in owners])
+
+    # One center and its six axial neighbors. Changing the scoring space
+    # changes the chosen blue register even with identical ICC endpoints.
+    samples = [[215, 215, 173]]
+    center = device_rgb(coordinates(samples[0], True))
+    rounded = [register(x, 'unsnapped') for x in center]
+    candidates = [rounded]
+    for axis in range(3):
+        for step in (-1, 1):
+            candidate = rounded[:]
+            candidate[axis] += step
+            candidates.append(candidate)
+
+    def register_score(candidate, transform):
+        return squared_distance(transform(center),
+                                transform([D(v)/100 for v in candidate]))
+
+    code = min(candidates, key=lambda c: register_score(c, lambda x: x))
+    assert code != min(candidates, key=lambda c: register_score(c, linear_rgb))
+    yield case('pnm-cluster-device-unsnapped', samples, wire=[code])
+
+    # Four-bit hard binning merges these levels. Safe-tone evidence lifts
+    # that collapse before two-color clustering. The first two levels
+    # share a center, the brightest retains its own.
+    samples = [[level]*3 for level in (243, 245, 247)]
+    points = [device_rgb(coordinates(rgb, True)) for rgb in samples]
+    mean = [(x+y)/2 for x, y in zip(points[0], points[1])]
+    wire = [wire_color(linear_rgb(point)) for point in (mean, points[2])]
+    yield case('pnm-cluster-icc-binning', samples, wire=[wire[0], wire[0], wire[1]])
+
+    # The input PNG alternates two visible colors with hidden extremes.
+    visible = [[40,80,120], [191,170,100]]
+    wire = [wire_color(coordinates(rgb, True)) for rgb in visible]
+    yield dict(name='icc-cluster-alpha', source='icc-cluster-alpha.png',
+               width=4, height=1, source_width=4, scale=1, p2=1,
+               hidden=[0,1,0,1], wire=[wire[0], [0]*3, wire[1], [0]*3])
+
+    for model in ('center', 'medoids', 'heckbert', 'heckbert-fs'):
+        name = 'icc-' + model + '-linear'
+        filename = 'icc-' + model + '-samples.ppm'
+        words = inputs[filename].split()
+        assert words[:4] == [b'P3', b'4', b'2', b'255'] and len(words) == 28
+        linear = [coordinates(map(int, words[i:i + 3]), True)
+                  for i in range(4, len(words), 3)]
+        points = list(map(device_rgb, linear))
+        solver = model.split('-')[0]
+        groups = solver_groups(solver, points)
+        assert groups != solver_groups(solver, linear)
+        centers = [[sum(points[i][c] for i in group) / len(group)
+                    for c in range(3)] for group in groups]
+        palette = list(map(linear_rgb, centers))
+        wire = list(map(wire_color, palette))
+        owners = [min(range(2), key=lambda i: squared_distance(p, palette[i]))
+                  for p in linear]
+        assert set(owners) == {0, 1}
+        base = dict(source=filename, width=4, height=2, source_width=4,
+                    scale=1, hidden=[0]*8, p2=0, representative_samples=groups)
+        lookup = dict(base, name=name, owners=owners, wire=[wire[i] for i in owners])
+        if model == 'heckbert':
+            lookup['export_srgb8'] = [wire_color(rgb, 255) for rgb in palette]
+        if model != 'heckbert-fs':
+            yield lookup
+        else:
+            fs, margins = raster_owners(linear, palette)
+            assert fs != owners
+            assert fs != raster_owners(linear, palette, taps=FS_TAPS[:1])[0]
+            assert fs != raster_owners(points, centers)[0]
+            for scale in (100, 255):
+                rounded = [coordinates(wire_color(rgb, scale), True, scale)
+                           for rgb in palette]
+                assert fs != raster_owners(linear, rounded)[0]
+            yield dict(base, name='icc-heckbert-linear-fs', owners=fs,
+                       fs_lookup_distance_margins=margins,
+                       wire=[wire[i] for i in fs])
+
     # The same first color wins in both spaces. Its residual is encoded in
     # different coordinates. In a one-row raster, only the 7/16 right tap
     # reaches the second pixel, and it changes the selected entry in both.
@@ -139,6 +345,47 @@ def cli_space_cases():
                    lookup_distance_margins=[first_margin, corrected_margin],
                    second_candidate=list(map(str, candidate)),
                    wire=[srgb_wire[first], srgb_wire[corrected]])
+
+    # These P3 lookup and one-tap feedback results differ from the
+    # corresponding results in both builtin RGB geometries. Reuse the rational
+    # matrix and parametric curves above, independently of the encoder.
+    samples = [[76, 190, 42], [75, 218, 173]]
+    points = [device_rgb(coordinates(rgb, True)) for rgb in samples]
+    palette = [device_rgb(coordinates(rgb, True)) for rgb in XTERM16]
+    first, _ = nearest(points[0], palette)
+    second, _ = nearest(points[1], palette)
+    candidate = [x + D(7)/16*(y-p)
+                 for x, y, p in zip(points[1], points[0], palette[first])]
+    corrected, _ = nearest(candidate, palette)
+    assert second != corrected
+    yield case('pnm-lookup-icc', samples, fixed_palette='xterm16',
+               wire=[srgb_wire[first], srgb_wire[second]])
+    yield case('pnm-fs-icc', samples, fixed_palette='xterm16',
+               wire=[srgb_wire[first], srgb_wire[corrected]])
+
+    narrow = reference.tags(narrow_cluster_profile(inputs['display-p3.icc']))
+    inverse = reference.inv(colorants(narrow))
+
+    def extended(rgb):
+        point = reference.mv(inverse, list(map(reference.F, coordinates(rgb, True))))
+        # This fixture's three TRCs map zero to zero and one to one.
+        # Their full-range secant therefore extends with slope one.
+        return [encode_device(tag, decimal(v)) if 0 <= v <= 1 else decimal(v)
+                for tag, v in zip(curves, point)]
+
+    samples = [[81, 220, 201], [127, 250, 142]]
+    palette = list(map(extended, XTERM16))
+    clipped = [[min(D(1), max(D(0), x)) for x in p] for p in palette]
+    owners = []
+    for rgb in samples:
+        point = extended(rgb)
+        owner, _ = nearest(point, palette)
+        limited = [min(D(1), max(D(0), x)) for x in point]
+        assert owner != nearest(limited, clipped)[0]
+        owners.append(owner)
+    yield case('pnm-lookup-icc-extended', samples, fixed_palette='xterm16',
+               wire=[srgb_wire[i] for i in owners])
+
 
 
 def mixed_spaces_cases():
@@ -301,6 +548,23 @@ def icc_register_cases():
     return cases, fixtures
 
 
+def narrow_cluster_profile(profile):
+    """Contract the linear P3 primaries towards white at unchanged TRCs."""
+    blob = bytearray(profile)
+    offsets = {}
+    for index in range(struct.unpack_from('>I', blob, 128)[0]):
+        key, offset, size = struct.unpack_from('>4sII', blob, 132 + 12 * index)
+        offsets[key] = offset
+    primaries = [offsets[key] + 8 for key in (b'rXYZ', b'gXYZ', b'bXYZ')]
+    columns = [struct.unpack_from('>3i', blob, offset) for offset in primaries]
+    white = list(map(sum, zip(*columns)))
+    for offset, column in zip(primaries, columns):
+        # A half-strength primary plus half the neutral, in stored units.
+        struct.pack_into('>3i', blob, offset, *((3*c+w+3)//6
+                                               for c, w in zip(column, white)))
+    return bytes(blob)
+
+
 def build(inputs):
     png = json.loads(inputs['png-samples.json'])
     png_source = next(x for x in png['pngs']
@@ -412,25 +676,9 @@ def build(inputs):
         # Integer wire colors are a separate serialization-only projection.
         working_palette = [[encode_extended(x) for x in rgb] for rgb in centers]
         working = [[encode_extended(x) for x in rgb] for rgb in points]
-        painted = []
-        fs_margins = []
-        # Independent raster FS, exact rational weights and Decimal error.
-        for y in range(2):
-            for x in range(4):
-                index = y * 4 + x
-                distances = [sum((working[index][c] - color[c]) ** 2
-                                 for c in range(3)) for color in working_palette]
-                owner = 0 if distances[0] < distances[1] else 1
-                fs_margins.append(str(abs(distances[0] - distances[1])))
-                assert abs(distances[0] - distances[1]) > D('.001')
-                painted.append(palette[owner])
-                error = [working[index][c] - working_palette[owner][c] for c in range(3)]
-                for dx, dy, numerator in ((1, 0, 7), (-1, 1, 3),
-                                          (0, 1, 5), (1, 1, 1)):
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < 4 and ny < 2:
-                        for c in range(3):
-                            working[ny * 4 + nx][c] += error[c] * D(numerator) / 16
+        owners, fs_margins = raster_owners(working, working_palette)
+        assert all(D(margin) > D('.001') for margin in fs_margins)
+        painted = [palette[i] for i in owners]
         cases.append(dict(name='png-p3-16-two-cluster-fs-output-p3',
                           source=source['source'], width=4, height=2,
                           source_width=4, scale=1, hidden=[0] * 8, p2=0,
@@ -447,7 +695,7 @@ def build(inputs):
                           linear=source['linear'],
                           wire=[wire_color(rgb) for rgb in source['linear']]))
         cli_space_first = len(cases)
-        cases.extend(cli_space_cases())
+        cases.extend(cli_space_cases(inputs))
         mixed_cases, mixed_fixtures = mixed_spaces_cases()
         cases.extend(mixed_cases)
         icc_cases, icc_fixtures = icc_register_cases()
@@ -497,9 +745,21 @@ def build(inputs):
                                               ** D('2.4')) + ',\n'
                                   for x in ('.35', '.37'))
         palette_header += '};\n'
-    return {'cli-color-wire.h': header.encode(),
+    export = next(c['export_srgb8'] for c in cases if c['name'] == 'icc-heckbert-linear')
+    pal = 'JASC-PAL\n0100\n2\n' + ''.join('%d %d %d\n' % tuple(row) for row in export)
+    from generate_color_fixtures import chunk
+    alpha_png = b'\x89PNG\r\n\x1a\n' + b''.join((
+        chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 1, 8, 6, 0, 0, 0)),
+        chunk(b'IDAT', zlib.compress(bytes((0, 40,80,120,255, 0,255,0,0,
+                                           191,170,100,255, 255,255,255,0)))),
+        chunk(b'IEND', b''),
+    ))
+    return {'icc-cluster-alpha.png': alpha_png,
+            'narrow-p3-cluster.icc': narrow_cluster_profile(inputs['display-p3.icc']),
+            'cli-color-wire.h': header.encode(),
             'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode(),
-            'p3-palette.h': palette_header.encode(), **mixed_fixtures,
+            'p3-palette.h': palette_header.encode(),
+            'icc-heckbert-srgb8.pal': pal.encode(), **mixed_fixtures,
             **icc_fixtures}
 
 

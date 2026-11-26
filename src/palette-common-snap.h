@@ -137,12 +137,22 @@ sixel_palette_snap_set_output(int definition, int grid_override,
 struct sixel_color_def;
 /* Borrow until the build override is cleared; the grid owns its clone. */
 SIXEL_INTERNAL_API void
-sixel_palette_snap_set_icc(struct sixel_color_def const *definition);
+sixel_palette_snap_set_icc(struct sixel_color_def const *definition,
+                           struct sixel_color_def const *cluster,
+                           struct sixel_color_def const *linear);
+SIXEL_INTERNAL_API int
+sixel_palette_cluster_to_gamma(double gamma[3], double const point[3],
+                              int space);
+
+SIXEL_INTERNAL_API int
+sixel_palette_gamma_to_cluster(double point[3], double const gamma[3],
+                              int space);
+
 SIXEL_INTERNAL_API int
 sixel_palette_snap_destination_active(void);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_snap_begin(int pixelformat, int quantizer,
-                          sixel_allocator_t *allocator);
+                          sixel_allocator_t *allocator, int cover_linear);
 /* Merge/medoid solvers use nominal byte-scaled doubles, not typed units. */
 SIXEL_INTERNAL_API void
 sixel_palette_snap_scaled_triple(double *components, int pixelformat,

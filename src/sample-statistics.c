@@ -95,8 +95,8 @@ sixel_sample_safe_color_add(sixel_sample_statistics_t *statistics,
         }
         if (gamma_source != NULL) {
             memcpy(gamma, gamma_source, sizeof(gamma));
-        } else if (!sixel_color_convert(gamma, native, statistics->colorspace,
-                SIXEL_COLORSPACE_GAMMA)) {
+        } else if (!sixel_palette_cluster_to_gamma(gamma, native,
+                       statistics->colorspace)) {
             /* Optional recovery evidence must not reject extended input
              * accepted by the solver. An unprojectable population simply
              * has no usable safe-tone evidence for automatic refinement. */
@@ -135,8 +135,8 @@ sixel_sample_safe_color_add(sixel_sample_statistics_t *statistics,
             for (axis = 0u; axis < 3u; ++axis) {
                 projected[axis] = statistics->safe_color_values[slot][axis];
             }
-        } else if (!sixel_color_convert(projected, gamma,
-                SIXEL_COLORSPACE_GAMMA, statistics->colorspace)) {
+        } else if (!sixel_palette_gamma_to_cluster(projected, gamma,
+                       statistics->colorspace)) {
             statistics->safe_colors_valid = 0;
             statistics->safe_color_count = 0u;
             return SIXEL_OK;

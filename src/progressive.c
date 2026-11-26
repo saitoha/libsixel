@@ -416,7 +416,7 @@ sixel_repair_context_bind_owned(sixel_repair_context_t *context,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    replacement.workspace = encoder->working_colorspace;
+    replacement.workspace = encoder->working->space;
     stop = context->config.stop_distance;
     if (context->config.stop_distance_auto) {
         stop = replacement.workspace == SIXEL_COLORSPACE_GAMMA ? 2.0 / 255
@@ -1427,7 +1427,7 @@ sixel_repair_stats_snapshot(sixel_repair_context_t const *context,
     stats->source_generation = audit->source_generation;
     stats->history_revision = audit->history_revision;
     stats->configuration_revision = audit->configuration_revision;
-    stats->working_colorspace = context->encoder->working_colorspace;
+    stats->working_colorspace = context->encoder->working->space;
     stats->output_colorspace = context->encoder->output_colorspace;
     stats->output_color_definition = context->encoder->output_color_definition;
     stats->backend = SIXEL_PROGRESSIVE_BACKEND_CPU;

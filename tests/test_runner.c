@@ -532,6 +532,9 @@ int test_icc_0131(int argc, char **argv);
 int test_icc_0132(int argc, char **argv);
 int test_icc_0133(int argc, char **argv);
 int test_icc_0134(int argc, char **argv);
+int test_icc_0139(int argc, char **argv);
+int test_icc_0140(int argc, char **argv);
+int test_icc_0141(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
@@ -1254,6 +1257,9 @@ int test_delta_native_0121(int argc, char **argv);
 int test_delta_native_0122(int argc, char **argv);
 int test_delta_native_0123(int argc, char **argv);
 int test_delta_native_0124(int argc, char **argv);
+int test_icc_work_fhedt_reuse(int argc, char **argv);
+int test_icc_work_parallel_fs(int argc, char **argv);
+int test_icc_work_delta_fs(int argc, char **argv);
 int test_delta_native_0125(int argc, char **argv);
 int test_delta_native_0126(int argc, char **argv);
 int test_delta_native_0127(int argc, char **argv);
@@ -1635,6 +1641,7 @@ int test_map_cluster_0010(int argc, char **argv);
 int test_map_cluster_0011(int argc, char **argv);
 int test_map_cluster_0012(int argc, char **argv);
 int test_map_cluster_0013(int argc, char **argv);
+int test_map_cluster_0112(int argc, char **argv);
 int test_cluster_precision_0001(int argc, char **argv);
 int test_cluster_precision_0002(int argc, char **argv);
 int test_cluster_precision_0003(int argc, char **argv);
@@ -7835,6 +7842,12 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0123 },
     { "palette/delta_native/0124_delta_linear_output_linear_frames",
         test_delta_native_0124 },
+    { "palette/working-space/0180_icc_work_fhedt_reuse",
+        test_icc_work_fhedt_reuse },
+    { "palette/working-space/0181_icc_work_parallel_fs",
+        test_icc_work_parallel_fs },
+    { "palette/working-space/0182_icc_work_delta_fs",
+        test_icc_work_delta_fs },
     { "palette/delta_native/0125_delta_linear_output_oklab_frames",
         test_delta_native_0125 },
     { "palette/delta_native/0126_delta_linear_output_cielab_frames",
@@ -8460,6 +8473,8 @@ static test_entry_t const test_entries[] = {
       test_map_cluster_0012 },
     { "palette/map_cluster/0013_map_animation_cache",
       test_map_cluster_0013 },
+    { "palette/map_cluster/0112_structured_map_icc_transition",
+      test_map_cluster_0112 },
     { "palette/cluster_precision/0001_linear_mean",
       test_cluster_precision_0001 },
     { "palette/cluster_precision/0002_oklab_mean",
@@ -10793,6 +10808,9 @@ static test_entry_t const test_entries[] = {
     { "icc/0132_mpet_simplex_weight_residual", test_icc_0132 },
     { "icc/0133_mpet_nonrelative_snap", test_icc_0133 },
     { "icc/0134_mpet_nonrelative_gamut", test_icc_0134 },
+    { "icc/0139_parametric_trc_inverse", test_icc_0139 },
+    { "icc/0140_sampled_trc_inverse", test_icc_0140 },
+    { "icc/0141_extended_trc_roundtrip", test_icc_0141 },
     { "icc/latest_feedback", test_latest_icc_feedback },
     { "icc/red_alpha", test_icc_red_alpha },
     { "icc/png_extended_trc", test_icc_png_extended_trc },
