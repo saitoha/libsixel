@@ -343,6 +343,8 @@ set -- \
     palette/working-space/0178_icc_work_vptree.t \
     palette/working-space/0179_icc_work_eytzinger.t \
     palette/working-space/0180_icc_work_fhedt_reuse.t \
+    palette/working-space/0181_icc_work_parallel_fs.t \
+    palette/working-space/0182_icc_work_delta_fs.t \
     palette/cover/0146_hard_icc_srgb_anchors.t \
     palette/cover/0147_soft_icc_srgb_anchors.t \
     palette/cover/0148_icc_cover_apply_snap.t \

@@ -12,9 +12,12 @@
 #include "src/colorspace.h"
 #include "tests/data/color-numeric/output-native.h"
 #include "src/dither.h"
+#include "src/encode-result.h"
 #include "src/encoder.h"
 #include "src/palette.h"
 #include "src/sixel_decode_pixels.h"
+
+int test_dither_parallel_available(void);
 
 static int const pd_workspaces[5] = {
     SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB,
@@ -350,8 +353,9 @@ pd_encoder(sixel_encoder_t **encoder, sixel_output_t **output,
 /* Decode the actual wire and check every paint bit and painted triplet.
  * Expectations are independent output codes, not the encoder's palette view. */
 static int
-pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
-          int width, int height, int keep, unsigned char const color[3])
+pd_decode_pattern(sixel_encoder_t *encoder, pd_stream_t *stream,
+          int width, int height, int kept_prefix,
+                  unsigned char const (*colors)[3], int pattern_size)
 {
     unsigned char *indexes;
     unsigned char *mask;
@@ -361,6 +365,8 @@ pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
     int h;
     int count;
     int i;
+    unsigned char const *color;
+    int keep;
     int ok;
 
     indexes = mask = palette = NULL;
@@ -372,6 +378,8 @@ pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
         goto end;
     }
     for (i = 0; i < w * h; ++i) {
+        keep = i < kept_prefix;
+        color = colors[i % pattern_size];
         if ((mask[i] != 0) == keep || (!keep &&
                 memcmp(palette + indexes[i] * 3, color, 3) != 0)) {
             fprintf(stderr, "delta pixel=%d mask=%d keep=%d "
@@ -387,6 +395,14 @@ end:
     sixel_allocator_free(encoder->allocator, mask);
     sixel_allocator_free(encoder->allocator, palette);
     return ok;
+}
+
+static int
+pd_decode(sixel_encoder_t *encoder, pd_stream_t *stream,
+          int width, int height, int keep, unsigned char const color[3])
+{
+    return pd_decode_pattern(encoder, stream, width, height,
+        keep ? width * height : 0, (unsigned char const (*)[3])color, 1);
 }
 
 int
@@ -883,6 +899,142 @@ test_icc_work_fhedt_reuse(int argc, char **argv)
         }
         sixel_frame_unref(frame);
         frame = NULL;
+    }
+    ok = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_icc_work_parallel_fs(int argc, char **argv)
+{
+    static unsigned char const row[6] = {76, 190, 42, 75, 218, 173};
+    /* Decode the fixture ICC colorants and parametric TRCs using the
+     * reference in generate_cli_color_fixtures.py. Start each 2x6 band
+     * with zero error and apply the raster 7/16, 3/16, 5/16, 1/16 taps
+     * using Euclidean distance in encoded ICC coordinates. The xterm16
+     * indices are 10,8,3,14,10,8,10,14,3,8,10,14, with >0.0109 squared
+     * distance margin. The table is decoded wire RGB, in raster order. */
+    static unsigned char const expected[12][3] = {
+        {0, 255, 0}, {128, 128, 128}, {128, 128, 0}, {0, 255, 255},
+        {0, 255, 0}, {128, 128, 128}, {0, 255, 0}, {0, 255, 255},
+        {128, 128, 0}, {128, 128, 128}, {0, 255, 0}, {0, 255, 255}
+    };
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    sixel_dither_t const *dither;
+    pd_stream_t stream;
+    unsigned char pixels[12 * sizeof(row)];
+    int y;
+    int ok;
+
+    if (!test_dither_parallel_available()) {
+        fputs("ICC FS: parallel bands unavailable\n", stderr);
+        return EXIT_SUCCESS;
+    }
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    if (argc != 2 || !pd_encoder(&encoder, &output, &stream, 1) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B2")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
+                "fs:scan=raster:band_width=6:band_overwrap=0")) ||
+            SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
+        goto end;
+    }
+    for (y = 0; y < 12; ++y) {
+        memcpy(pixels + y * sizeof(row), row, sizeof(row));
+    }
+    stream.size = 0;
+    if (SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 12,
+            SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
+            SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output))) {
+        goto end;
+    }
+    dither = encoder->diagnostic_dither;
+    if (dither == NULL || dither->pipeline_last_dither_threads != 2 ||
+            dither->pipeline_last_band_height != 6 ||
+            dither->pipeline_last_band_overlap != 0) {
+        fputs("ICC FS: expected two independent 6-row bands\n", stderr);
+        goto end;
+    }
+    ok = pd_decode_pattern(encoder, &stream, 2, 12, 0, expected, 12);
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_icc_work_delta_fs(int argc, char **argv)
+{
+    static char const *const policies[2] = {
+        "delta:T16:error=diffuse", "delta:T16:error=skip"
+    };
+    static unsigned char const expected[2][3] = {
+        {0, 0, 0}, {255, 255, 255}
+    };
+    unsigned char history[6] = {64, 64, 64, 0, 0, 0};
+    float pixels[6] = {.50f, .50f, .50f, .51f, .51f, .51f};
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_frame_t *frame;
+    unsigned char *rgb;
+    unsigned char *valid;
+    pd_stream_t stream;
+    int pass;
+    int ok;
+
+    encoder = NULL;
+    output = NULL;
+    frame = NULL;
+    ok = 0;
+    if (argc != 2 || !pd_encoder(&encoder, &output, &stream, 1) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "gray1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1])) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
+                "fs:scan=raster")) ||
+            SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+            SIXEL_FAILED(sixel_frame_init_borrowed(frame,
+                (unsigned char *)pixels, 2, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                NULL, -1))) {
+        goto end;
+    }
+    for (pass = 0; pass < 2; ++pass) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', policies[pass])) ||
+                SIXEL_FAILED(sixel_encoder_set_accumulation_buffer(encoder,
+                    history, 2, 1, SIXEL_PIXELFORMAT_RGB888)) ||
+                SIXEL_FAILED(sixel_retained_plane_legacy_map(
+                    encoder->retained_plane, &rgb, &valid))) {
+            goto end;
+        }
+        valid[1] = 0;
+        sixel_retained_plane_legacy_unmap(encoder->retained_plane);
+        /* The first pixel decodes to .214 in linear light, within T16
+         * of the seeded 64/255. Display P3's neutral axis uses the sRGB
+         * transfer, so the retained level is about .538 in ICC units.
+         * Diffuse sends .51 + (.50 - .538)*7/16 = .493 toward black.
+         * Skip leaves .51, which selects white. Only pixel 1 paints. */
+        stream.size = 0;
+        if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output)) ||
+                !pd_decode_pattern(encoder, &stream, 2, 1, 1,
+                    expected + pass, 1)) {
+            fprintf(stderr, "ICC delta FS: %s\n", policies[pass]);
+            goto end;
+        }
     }
     ok = 1;
 end:

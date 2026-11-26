@@ -8,13 +8,23 @@
 #include "src/palette.h"
 #if !defined(__PCC__) && !defined(__TINYC__)
 #include "tests/data/color-numeric/clamp-bands.h"
+#define TEST_DITHER_PARALLEL_AVAILABLE 1
+#else
+#define TEST_DITHER_PARALLEL_AVAILABLE 0
 #endif
+
+/* Match the deliberate compiler exclusion in dither.c. */
+int
+test_dither_parallel_available(void)
+{
+    return TEST_DITHER_PARALLEL_AVAILABLE;
+}
+#undef TEST_DITHER_PARALLEL_AVAILABLE
 
 int
 test_clamp_0040(int argc, char **argv)
 {
 #if defined(__PCC__) || defined(__TINYC__)
-    /* Match the deliberate compiler exclusion in dither.c. */
     (void)argc;
     (void)argv;
     fputs("clamp: compiler disables parallel apply\n", stderr);

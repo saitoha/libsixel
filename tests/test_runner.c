@@ -1258,6 +1258,8 @@ int test_delta_native_0122(int argc, char **argv);
 int test_delta_native_0123(int argc, char **argv);
 int test_delta_native_0124(int argc, char **argv);
 int test_icc_work_fhedt_reuse(int argc, char **argv);
+int test_icc_work_parallel_fs(int argc, char **argv);
+int test_icc_work_delta_fs(int argc, char **argv);
 int test_delta_native_0125(int argc, char **argv);
 int test_delta_native_0126(int argc, char **argv);
 int test_delta_native_0127(int argc, char **argv);
@@ -7842,6 +7844,10 @@ static test_entry_t const test_entries[] = {
         test_delta_native_0124 },
     { "palette/working-space/0180_icc_work_fhedt_reuse",
         test_icc_work_fhedt_reuse },
+    { "palette/working-space/0181_icc_work_parallel_fs",
+        test_icc_work_parallel_fs },
+    { "palette/working-space/0182_icc_work_delta_fs",
+        test_icc_work_delta_fs },
     { "palette/delta_native/0125_delta_linear_output_oklab_frames",
         test_delta_native_0125 },
     { "palette/delta_native/0126_delta_linear_output_cielab_frames",
