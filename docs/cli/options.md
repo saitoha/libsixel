@@ -17,7 +17,7 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 
 | Option | Level | Summary | Details |
 | --- | --- | --- | --- |
-| `-o`, `--outfile` | basic | Write output to a file instead of standard output. | [`img2sixel(1)`](../../converters/img2sixel.1) |
+| `-o`, `--outfile` | basic | Write output to a file instead of standard output. A named destination that refers to an input file, including through a hard link, is rejected before writing. | [`img2sixel(1)`](../../converters/img2sixel.1) |
 | `-y`, `--clipboard-policy` | basic | Read input from or write output to the clipboard. | [Clipboard](clipboard.md) |
 | `-7`, `--7bit-mode` | basic | Use 7-bit control sequences (default). | [SIXEL format](../sixel-format/README.md) |
 | `-8`, `--8bit-mode` | basic | Use 8-bit C1 control characters. | [SIXEL format](../sixel-format/README.md) |

@@ -79,6 +79,8 @@ it matches both "auto" and "average".
 .TP 5
 .B \-o, \-\-outfile
 specify output file name (default:stdout).
+A named destination that refers to an input file, including through a hard
+link, is rejected before writing.
 Selecting a name ending in \(dq.png\(dq, the literal \(dqpng:-\(dq, or the
 prefix \(dqpng:\(dq emits PNG data that reproduces the generated SIXEL
 stream. For ordinary palette SIXEL, the PNG keeps the palette indices

@@ -13334,6 +13334,8 @@ sixel_encoder_new(
     (*ppencoder)->png_output_path       = NULL;
     (*ppencoder)->sixel_output_path     = NULL;
     (*ppencoder)->defer_sixel_outfile   = 0;
+    (*ppencoder)->cli_input_count       = 0;
+    (*ppencoder)->cli_inputs            = NULL;
     (*ppencoder)->clipboard_output_active = 0;
     (*ppencoder)->clipboard_output_format[0] = '\0';
     (*ppencoder)->clipboard_output_path = NULL;
@@ -15521,29 +15523,79 @@ sixel_encoder_apply_mapfile_output_option(
 }
 
 
-/* The CLI configures its private encoder before processing any options. */
+/* The CLI owns the argument vector for the lifetime of its encoder. */
 SIXEL_INTERNAL_API void
-sixel_encoder_defer_sixel_outfile(sixel_encoder_t *encoder)
+sixel_encoder_defer_sixel_outfile(sixel_encoder_t *encoder,
+                                  int input_count, char *const *inputs)
 {
     encoder->defer_sixel_outfile = 1;
+    encoder->cli_input_count = input_count;
+    encoder->cli_inputs = inputs;
+}
+
+static SIXELSTATUS
+sixel_encoder_check_outfile_inputs(sixel_encoder_t const *encoder,
+                                   int fd, char const *path)
+{
+    int i;
+    char const *input;
+
+    /* With no positional arguments, the sole input is standard input. */
+    i = 0;
+    do {
+        input = encoder->cli_input_count == 0 ? NULL : encoder->cli_inputs[i];
+        if (sixel_compat_same_file(fd, path, input)) {
+            sixel_helper_set_additional_message(
+                "Input and output refer to the same file.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        ++i;
+    } while (i < encoder->cli_input_count);
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
 sixel_encoder_open_sixel_outfile(sixel_encoder_t *encoder)
 {
+    SIXELSTATUS status;
+    char const *path;
     int flags;
     int fd;
 
-    flags = O_RDWR | O_CREAT | O_TRUNC;
+    path = encoder->sixel_output_path;
+    flags = O_RDWR | O_CREAT;
+    if (!encoder->defer_sixel_outfile || !SIXEL_HAVE_FD_TRUNCATE) {
+        if (encoder->defer_sixel_outfile) {
+            status = sixel_encoder_check_outfile_inputs(encoder, -1, path);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+        flags |= O_TRUNC;
+    }
 #if defined(O_BINARY)
     flags |= O_BINARY;
 #endif
-    fd = sixel_compat_open(encoder->sixel_output_path, flags,
-                           S_IRUSR | S_IWUSR);
+    fd = sixel_compat_open(path, flags, S_IRUSR | S_IWUSR);
     if (fd < 0) {
         sixel_helper_set_additional_message(
             "sixel_encoder_setopt: failed to open output path.");
         return SIXEL_LIBC_ERROR | (errno & 0xff);
+    }
+
+    if (encoder->defer_sixel_outfile && SIXEL_HAVE_FD_TRUNCATE) {
+        /* Validate the descriptor that will be truncated, even if the
+         * output pathname was redirected between opening and writing. */
+        status = sixel_encoder_check_outfile_inputs(encoder, fd, path);
+        if (SIXEL_SUCCEEDED(status) && sixel_compat_truncate_output(fd) < 0) {
+            status = SIXEL_LIBC_ERROR | (errno & 0xff);
+            sixel_helper_set_additional_message(
+                "Failed to truncate the output file.");
+        }
+        if (SIXEL_FAILED(status)) {
+            (void)sixel_compat_close(fd);
+            return status;
+        }
     }
     encoder->outfd = fd;
     return SIXEL_OK;
@@ -19652,6 +19704,13 @@ sixel_encoder_encode_owned(
     if (encoder->defer_sixel_outfile && encoder->outfd < 0 &&
             encoder->sixel_output_path != NULL) {
         status = sixel_encoder_open_sixel_outfile(encoder);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    if (encoder->defer_sixel_outfile && encoder->png_output_path != NULL) {
+        status = sixel_encoder_check_outfile_inputs(encoder, -1,
+                                                   encoder->png_output_path);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

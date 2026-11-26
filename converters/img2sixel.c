@@ -93,7 +93,8 @@ const char *img2sixel_compat_getenv(const char *name);
 int img2sixel_compat_setenv(const char *name, const char *value);
 int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
-SIXEL_INTERNAL_API void sixel_encoder_defer_sixel_outfile(sixel_encoder_t *);
+SIXEL_INTERNAL_API void
+sixel_encoder_defer_sixel_outfile(sixel_encoder_t *, int, char *const *);
 SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
 SIXEL_INTERNAL_API int
@@ -3991,7 +3992,8 @@ img2sixel_main(int argc, char *argv[])
     if (SIXEL_FAILED(status)) {
         goto error;
     }
-    sixel_encoder_defer_sixel_outfile(encoder);
+    sixel_encoder_defer_sixel_outfile(encoder, argc - parse_terminal_optind,
+                                     argv + parse_terminal_optind);
 
     /*
      * Keep the interactive frontend default distinct from the library
