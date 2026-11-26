@@ -26,8 +26,8 @@ sample_stream_ownership_is_valid(void)
     sixel_frame_t *owned_frame;
     sixel_frame_t *owned_identity;
     sixel_sample_stream_t stream;
-    unsigned char borrowed_pixels[12];
-    unsigned char owned_pixels[18];
+    unsigned char borrowed_pixels[12] = {0};
+    unsigned char owned_pixels[18] = {0};
 
     status = SIXEL_FALSE;
     allocator = NULL;
