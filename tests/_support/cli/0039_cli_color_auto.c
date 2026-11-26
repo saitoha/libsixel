@@ -382,8 +382,11 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     } else if (color_auto_is(name, "timeout-env") ||
                color_auto_is(name, "bad-env-timeout")) {
         color_option = "-Uauto";
+        /* The controller checks 20 ms without a PTY. Use the normal
+         * exchange budget here to allow for scheduling during the
+         * capability query write, which shares the reply's deadline. */
         setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS",
-               color_auto_is(name, "timeout-env") ? "20" : "0", 1);
+               color_auto_is(name, "timeout-env") ? "200" : "0", 1);
     } else if (color_auto_is(name, "timeout-cli-over-env")) {
         color_option = "-Uauto:timeout_ms=20";
         setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS", "invalid", 1);
