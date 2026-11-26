@@ -52,6 +52,15 @@ typedef struct sixel_palette_icc_source {
     float floats[SIXEL_PALETTE_MAX * 3];
 } sixel_palette_icc_source_t;
 
+/* Prepared output conversion for the palette and retained-surface paths.
+ * Builtin spaces reuse their numeric kernels. A device endpoint owns its
+ * reference sRGB and destination definitions for PCS evaluation. */
+typedef struct sixel_palette_output_transform {
+    struct sixel_color_def *srgb;
+    struct sixel_color_def *device;
+    int builtin_space;
+} sixel_palette_output_transform_t;
+
 typedef struct sixel_palette_storage {
     sixel_palette_t palette_interface;
     sixel_atomic_u32_t ref;
@@ -79,11 +88,8 @@ typedef struct sixel_palette_storage {
     int output_hls_ready;
     /* The interchange export still uses the palette before wire rounding. */
     sixel_palette_icc_source_t *output_icc_source;
-    /* Immutable definitions owned with the output cache, shared read-only
-     * by palette-application workers. No per-pixel transform allocation. */
-    struct sixel_color_def *output_srgb;
-    struct sixel_color_def *output_device;
-    int output_colorspace;
+    /* Shared read-only by palette-application workers. */
+    sixel_palette_output_transform_t output_transform;
 } sixel_palette_storage_t;
 
 static inline sixel_palette_storage_t *

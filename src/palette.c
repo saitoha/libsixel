@@ -712,11 +712,11 @@ sixel_palette_clear_output(sixel_palette_storage_t *storage)
         sixel_allocator_free(storage->allocator, storage->output_icc_source);
         storage->output_icc_source = NULL;
     }
-    sixel_cdef_free(storage->output_srgb);
-    sixel_cdef_free(storage->output_device);
-    storage->output_srgb = NULL;
-    storage->output_device = NULL;
-    storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_cdef_free(storage->output_transform.srgb);
+    sixel_cdef_free(storage->output_transform.device);
+    storage->output_transform.srgb = NULL;
+    storage->output_transform.device = NULL;
+    storage->output_transform.builtin_space = SIXEL_COLORSPACE_GAMMA;
     storage->output_rgb101_count = 0U;
     storage->output_hls_ready = 0;
 }
@@ -908,9 +908,9 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     memset(&storage->build_attempt, 0, sizeof(storage->build_attempt));
     storage->build_attempt_active = 0;
     storage->build_context = NULL;
-    storage->output_srgb = NULL;
-    storage->output_device = NULL;
-    storage->output_colorspace = SIXEL_COLORSPACE_GAMMA;
+    storage->output_transform.srgb = NULL;
+    storage->output_transform.device = NULL;
+    storage->output_transform.builtin_space = SIXEL_COLORSPACE_GAMMA;
     storage->output_rgb101_count = 0U;
     storage->output_hls_ready = 0;
     storage->output_icc_source = NULL;
@@ -1919,20 +1919,42 @@ sixel_palette_prepare_output(sixel_palette_t *palette, int source_colorspace,
         output_definition, output_colorspace, NULL);
 }
 
+/* Use the same arithmetic for register preparation and delta's forward
+ * comparison. Keep the builtin path as a direct kernel call in the loop. */
+#if HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE
+__attribute__((always_inline))
+#endif
+static inline int
+sixel_palette_transform_to_output(
+    sixel_palette_output_transform_t const *transform, double out[3],
+    double const in[3], int workspace)
+{
+    double gamma[3];
+    double xyz[3];
+
+    if (transform->device == NULL) {
+        return sixel_color_convert_output(out, in, workspace,
+                                          transform->builtin_space);
+    }
+    return sixel_color_convert(gamma, in, workspace, SIXEL_COLORSPACE_GAMMA) &&
+        sixel_cdef_to_xyz(transform->srgb, gamma, xyz,
+                          SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
+        sixel_cdef_from_xyz(transform->device, xyz, out,
+                            SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC);
+}
+
 SIXELSTATUS
 sixel_palette_prepare_output_definition(sixel_palette_t *palette,
     int source_colorspace, int output_definition, int output_colorspace,
     sixel_color_def_t const *definition)
 {
     sixel_palette_storage_t *storage;
-    sixel_color_def_t *srgb;
-    sixel_color_def_t *destination;
-    sixel_color_xform_t *forward;
+    sixel_palette_output_transform_t transform;
     SIXELSTATUS status;
     unsigned char codes[SIXEL_PALETTE_MAX * 3];
     float output_rgb[SIXEL_PALETTE_MAX * 3];
     double source[3];
-    double gamma[3];
+    double xyz[3];
     double output[3];
     unsigned int index;
     unsigned int channel;
@@ -1966,18 +1988,14 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
         return SIXEL_BAD_ARGUMENT;
     }
     status = SIXEL_BAD_ALLOCATION;
-    srgb = NULL;
-    destination = NULL;
-    forward = NULL;
+    transform.srgb = NULL;
+    transform.device = NULL;
+    transform.builtin_space = output_colorspace;
     if (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
-        srgb = sixel_cdef_name("srgb");
-        destination = definition != NULL ? sixel_cdef_clone(definition)
+        transform.srgb = sixel_cdef_name("srgb");
+        transform.device = definition != NULL ? sixel_cdef_clone(definition)
             : sixel_cdef_name(sixel_cdef_named_name(output_definition));
-        if (srgb == NULL || destination == NULL) {
-            goto end;
-        }
-        forward = sixel_cxform_new(srgb, destination, 1);
-        if (forward == NULL) {
+        if (transform.srgb == NULL || transform.device == NULL) {
             goto end;
         }
     }
@@ -1987,14 +2005,8 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
         for (channel = 0U; channel < 3U; ++channel) {
             source[channel] = storage->entries_float32[offset + channel];
         }
-        if (forward != NULL) {
-            if (!sixel_color_convert(gamma, source, source_colorspace,
-                    SIXEL_COLORSPACE_GAMMA) ||
-                    !sixel_cxform_apply(forward, gamma, output)) {
-                goto end;
-            }
-        } else if (!sixel_color_convert_output(output, source,
-                       source_colorspace, output_colorspace)) {
+        if (!sixel_palette_transform_to_output(&transform, output, source,
+                                               source_colorspace)) {
             goto end;
         }
         /* Quantize only the serialized view. Snap policy owns changes to
@@ -2002,32 +2014,33 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
          * implicitly or replace the palette used for lookup and diffusion. */
         sixel_palette_output_channels(output, codes + offset,
                                        output_rgb + offset);
-        for (channel = 0U; channel < 3U; ++channel) {
-            output[channel] =
-                ((codes[offset + channel] * 255 + 50) / 100) / 255.0;
-        }
-        if (destination != NULL &&
-                !sixel_cdef_to_xyz(destination, output, gamma, 1)) {
-            goto end;
+        if (transform.device != NULL) {
+            /* Verify that the device can evaluate the rounded register. */
+            for (channel = 0U; channel < 3U; ++channel) {
+                output[channel] =
+                    ((codes[offset + channel] * 255 + 50) / 100) / 255.0;
+            }
+            if (!sixel_cdef_to_xyz(transform.device, output, xyz,
+                    SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
+                goto end;
+            }
         }
     }
     /* Publish only after every transform succeeds. Keep both working views
      * unchanged, including extended coordinates and unsnapped centroids.
      * Cached codes retain the same indices; no later reordering is allowed. */
     sixel_palette_clear_output(storage);
-    storage->output_srgb = srgb;
-    storage->output_device = destination;
-    storage->output_colorspace = output_colorspace;
-    srgb = destination = NULL;
+    storage->output_transform = transform;
+    transform.srgb = NULL;
+    transform.device = NULL;
     memcpy(storage->output_rgb101, codes, storage->entry_count * 3U);
     memcpy(storage->output_rgb_float, output_rgb,
         storage->entry_count * 3U * sizeof(float));
     storage->output_rgb101_count = storage->entry_count;
     status = SIXEL_OK;
 end:
-    sixel_cxform_free(forward);
-    sixel_cdef_free(srgb);
-    sixel_cdef_free(destination);
+    sixel_cdef_free(transform.srgb);
+    sixel_cdef_free(transform.device);
     return status;
 }
 
@@ -2046,7 +2059,7 @@ sixel_palette_icc_code_color(sixel_palette_t const *palette,
     device[2] = code[2] / 100.0;
     if (cluster_icc != NULL) {
         return sixel_cdef_to_xyz(
-            SIXEL_PALETTE_STORAGE_CONST(palette)->output_device,
+            SIXEL_PALETTE_STORAGE_CONST(palette)->output_transform.device,
             device, xyz, SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
             sixel_cdef_from_xyz_intermediate(cluster_icc, xyz, rgb);
     }
@@ -2135,7 +2148,8 @@ sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
     count = storage->output_rgb101_count * 3U;
-    if (storage->output_device == NULL || storage->output_icc_source != NULL ||
+    if (storage->output_transform.device == NULL ||
+            storage->output_icc_source != NULL ||
             count == 0U ||
             storage->output_rgb101_count != storage->entry_count ||
             first > end || end > storage->entry_count) {
@@ -2160,8 +2174,9 @@ sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
             if (cluster_icc != NULL) {
                 if (!sixel_color_convert(working, source, workspace,
                         SIXEL_COLORSPACE_GAMMA) ||
-                        !sixel_cdef_convert_intermediate(storage->output_srgb,
-                            cluster_icc, working, target)) {
+                        !sixel_cdef_convert_intermediate(
+                            storage->output_transform.srgb, cluster_icc,
+                            working, target)) {
                     return SIXEL_BAD_INPUT;
                 }
             } else if (!sixel_color_convert(target, source, workspace,
@@ -2220,13 +2235,14 @@ sixel_palette_copy_output_cache(sixel_palette_t *destination,
     }
     dst = SIXEL_PALETTE_STORAGE(destination);
     src = SIXEL_PALETTE_STORAGE_CONST(source);
-    if (src->output_device == NULL || src->output_icc_source == NULL ||
+    if (src->output_transform.device == NULL ||
+            src->output_icc_source == NULL ||
             src->output_rgb101_count == 0U ||
             src->output_rgb101_count != dst->entry_count) {
         return SIXEL_BAD_ARGUMENT;
     }
-    srgb = sixel_cdef_clone(src->output_srgb);
-    device = sixel_cdef_clone(src->output_device);
+    srgb = sixel_cdef_clone(src->output_transform.srgb);
+    device = sixel_cdef_clone(src->output_transform.device);
     original = sixel_allocator_malloc(dst->allocator, sizeof(*original));
     if (srgb == NULL || device == NULL || original == NULL) {
         sixel_cdef_free(srgb);
@@ -2247,9 +2263,9 @@ sixel_palette_copy_output_cache(sixel_palette_t *destination,
     }
     dst->output_hls_ready = src->output_hls_ready;
     dst->output_rgb101_count = src->output_rgb101_count;
-    dst->output_colorspace = src->output_colorspace;
-    dst->output_srgb = srgb;
-    dst->output_device = device;
+    dst->output_transform.builtin_space = src->output_transform.builtin_space;
+    dst->output_transform.srgb = srgb;
+    dst->output_transform.device = device;
     return SIXEL_OK;
 }
 
@@ -2371,7 +2387,7 @@ sixel_palette_output_is_p3(sixel_palette_t const *palette)
     }
     storage = SIXEL_PALETTE_STORAGE_CONST(palette);
     return storage->output_rgb101_count != 0U &&
-        storage->output_device != NULL;
+        storage->output_transform.device != NULL;
 }
 
 int
@@ -2384,8 +2400,8 @@ sixel_palette_output_is_gamma(sixel_palette_t const *palette)
     }
     storage = SIXEL_PALETTE_STORAGE_CONST(palette);
     return storage->output_rgb101_count != 0U &&
-        storage->output_device == NULL &&
-        storage->output_colorspace == SIXEL_COLORSPACE_GAMMA;
+        storage->output_transform.device == NULL &&
+        storage->output_transform.builtin_space == SIXEL_COLORSPACE_GAMMA;
 }
 
 int
@@ -2393,9 +2409,6 @@ sixel_palette_to_output(sixel_palette_t const *palette, double out[3],
                         double const in[3], int workspace)
 {
     sixel_palette_storage_t const *storage;
-    double gamma[3];
-    double xyz[3];
-    double result[3];
 
     if (palette == NULL || out == NULL || in == NULL) {
         return 0;
@@ -2404,17 +2417,8 @@ sixel_palette_to_output(sixel_palette_t const *palette, double out[3],
     if (storage->output_rgb101_count == 0U) {
         return 0;
     }
-    if (storage->output_device == NULL) {
-        return sixel_color_convert_output(out, in, workspace,
-            storage->output_colorspace);
-    }
-    if (!sixel_color_convert(gamma, in, workspace, SIXEL_COLORSPACE_GAMMA) ||
-            !sixel_cdef_to_xyz(storage->output_srgb, gamma, xyz, 1) ||
-            !sixel_cdef_from_xyz(storage->output_device, xyz, result, 1)) {
-        return 0;
-    }
-    memcpy(out, result, sizeof(result));
-    return 1;
+    return sixel_palette_transform_to_output(&storage->output_transform,
+                                             out, in, workspace);
 }
 
 int
@@ -2432,15 +2436,17 @@ sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
     if (storage->output_rgb101_count == 0U) {
         return 0;
     }
-    if (storage->output_device == NULL) {
-        return sixel_color_from_output(out, in, storage->output_colorspace,
-            workspace);
+    if (storage->output_transform.device == NULL) {
+        return sixel_color_from_output(out, in,
+            storage->output_transform.builtin_space, workspace);
     }
     /* Use the same immutable definitions in reverse. In particular, P3
      * primaries may become negative/over-one sRGB: do not project to bytes
      * or clamp before the working-space residual has been computed. */
-    if (!sixel_cdef_to_xyz(storage->output_device, in, xyz, 1) ||
-            !sixel_cdef_from_xyz(storage->output_srgb, xyz, gamma, 1)) {
+    if (!sixel_cdef_to_xyz(storage->output_transform.device, in, xyz,
+                          SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) ||
+            !sixel_cdef_from_xyz(storage->output_transform.srgb, xyz, gamma,
+                                SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
         return 0;
     }
     return sixel_color_convert(out, gamma, SIXEL_COLORSPACE_GAMMA, workspace);
