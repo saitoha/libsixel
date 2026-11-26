@@ -275,6 +275,11 @@ sixel_icc_curve_reset(sixel_icc_curve_t *curve)
     curve->param_count = 0u;
     curve->function_type = 0u;
     memset(curve->params, 0, sizeof(curve->params));
+    curve->inverse_first = 0.0;
+    curve->inverse_last = 0.0;
+    curve->inverse_linear_end = 0.0;
+    curve->inverse_power_start = 0.0;
+    curve->inverse_analytic = 0;
 }
 
 static void
@@ -1233,6 +1238,73 @@ sixel_icc_parse_curve_data(unsigned char const *tag_data,
     return 0;
 }
 
+/* A forward-only profile may still use a constant or nonmonotone TRC.
+ * Prepare the inverse without changing which curves the parser accepts. */
+static void
+sixel_icc_prepare_curve_inverse(sixel_icc_curve_t *curve)
+{
+    double const *p;
+    double first;
+    double last;
+    double split;
+    double lower;
+    double upper;
+    size_t i;
+
+    if (curve->table == NULL || curve->table_length < 2u) {
+        return;
+    }
+    for (i = 1u; i < curve->table_length; ++i) {
+        if (curve->table[i] < curve->table[i - 1u]) {
+            return;
+        }
+    }
+    first = (double)curve->table[0] / 65535.0;
+    last = (double)curve->table[curve->table_length - 1u] / 65535.0;
+    if (curve->param_count != 0u &&
+            (!sixel_icc_parametric_device(curve, 0.0, &first) ||
+             !sixel_icc_parametric_device(curve, 1.0, &last))) {
+        return;
+    }
+    if (first >= last) {
+        return;
+    }
+    curve->inverse_first = first;
+    curve->inverse_last = last;
+    if (curve->param_count == 0u) {
+        return;
+    }
+    if (curve->function_type == 0u) {
+        curve->inverse_analytic = 1;
+        return;
+    }
+
+    p = curve->params;
+    if (p[1] <= 0.0) {
+        return;
+    }
+    split = curve->function_type < 3u ? -p[2] / p[1] : p[4];
+    if (split <= 0.0) {
+        lower = upper = first;
+    } else if (split > 1.0) {
+        lower = upper = last;
+    } else {
+        lower = curve->function_type == 1u ? 0.0 :
+            curve->function_type == 2u ? p[3] :
+            p[3] * split + (curve->function_type == 4u ? p[6] : 0.0);
+        lower = sixel_icc_parse_clamp_unit(lower);
+        if (!sixel_icc_parametric_device(curve, split, &upper)) {
+            return;
+        }
+    }
+    /* Stored ICC coefficients can leave a small gap or overlap at the
+     * split. Outside both branch limits the inverse has a unique branch.
+     * Retain the established inverse search across the entire seam. */
+    curve->inverse_linear_end = lower;
+    curve->inverse_power_start = upper;
+    curve->inverse_analytic = 1;
+}
+
 static int
 sixel_icc_parse_curve_tag(unsigned char const *profile_data,
                           size_t profile_size,
@@ -1254,6 +1326,7 @@ sixel_icc_parse_curve_tag(unsigned char const *profile_data,
     failure = SIXEL_ICC_ISSUE_NONE;
     if (sixel_icc_parse_curve_data(profile_data + tag_offset, tag_length,
                                    out_curve, budget, &failure)) {
+        sixel_icc_prepare_curve_inverse(out_curve);
         return 1;
     }
     sixel_icc_record_issue(issue, failure == SIXEL_ICC_ISSUE_NONE

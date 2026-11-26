@@ -154,6 +154,8 @@ set -- \
     color/icc/0134_mpet_nonrelative_gamut.t \
     color/icc/0135_builtin_png_extended_trc.t \
     color/icc/0136_libpng_png_extended_trc.t \
+    color/icc/0139_parametric_trc_inverse.t \
+    color/icc/0140_sampled_trc_inverse.t \
     color/gamut/0063_pipeline_minde_linear_b2.t \
     color/gamut/0064_pipeline_failure.t \
     color/gamut/0067_pipeline_mask.t \

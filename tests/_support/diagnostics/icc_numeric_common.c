@@ -4868,3 +4868,144 @@ test_icc_red_alpha(int argc, char **argv)
     }
     return ok && probe.known == 0 ? 0 : 1;
 }
+
+
+/* Reuse the synthetic gray header and white point with just one device TRC.
+ * The declared tag length excludes any padding in the backing array. */
+static void
+iccn_inverse_trc_header(unsigned char bytes[260], size_t length)
+{
+    icc_numeric_gray_legacy_profile(bytes);
+    iccn_be32(bytes + 128u, 2u);
+    iccn_be32(bytes + 152u, (unsigned int)length);
+}
+
+int
+icc_numeric_parametric_trc_inverse_test(void)
+{
+    static struct {
+        unsigned int function_type;
+        int params[7];
+        size_t count;
+        double input[5];
+        double output[5];
+    } const probes[] = {
+        {0u, {131072}, 1u,
+            {-0.25, 0.0, 0.0625, 0.25, 1.25},
+            {0.0, 0.0, 0.25, 0.5, 1.0}},
+        /* The saturated end returns device 1, not the start of the flat. */
+        {1u, {131072, 131072, -32768}, 3u,
+            {0.0, 0.015625, 0.25, 0.5625, 1.0},
+            {0.0, 0.3125, 0.5, 0.625, 1.0}},
+        {2u, {131072, 65536, -16384, 8192}, 4u,
+            {0.0625, 0.125, 0.140625, 0.375, 0.6875},
+            {0.0, 0.0, 0.375, 0.75, 1.0}},
+        {3u, {131072, 65536, 0, 32768, 32768}, 5u,
+            {0.125, 0.249999, 0.25, 0.250001, 0.390625},
+            {0.25, 0.499998, 0.5, 0.500000999999, 0.625}},
+        /* Values in a gap between branches map to the split. */
+        {4u, {131072, 65536, 0, 32768, 32768, 8192, 4096}, 7u,
+            {0.0625, 0.1875, 0.34375, 0.375, 0.515625},
+            {0.0, 0.25, 0.5, 0.5, 0.625}},
+        /* A small downward jump survives the monotone legacy sample table.
+         * In the overlap, preserve the old bisection's branch selection. */
+        {4u, {131072, 65536, 0, 32768, 32768, 0, 1}, 7u,
+            {0.125, 0.25, 0.25000762939453125, 0.390625, 1.0},
+            {0.249969482421875, 0.499969482421875,
+             0.5000076293363245, 0.625, 1.0}}
+    };
+    unsigned char bytes[260];
+    unsigned char *tag;
+    sixel_icc_profile_t profile;
+    size_t i;
+    size_t j;
+    double output;
+    int ok;
+
+    for (i = 0u; i < sizeof(probes) / sizeof(probes[0]); ++i) {
+        iccn_inverse_trc_header(bytes, 12u + probes[i].count * 4u);
+        tag = bytes + 188u;
+        memcpy(tag, "para", 4u);
+        tag[9] = (unsigned char)probes[i].function_type;
+        for (j = 0u; j < probes[i].count; ++j) {
+            iccn_be32(tag + 12u + j * 4u, (unsigned int)probes[i].params[j]);
+        }
+        if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
+            return EXIT_FAILURE;
+        }
+        ok = 1;
+        for (j = 0u; j < 5u; ++j) {
+            if (!sixel_icc_curve_device(&profile.curves[0], probes[i].input[j],
+                    1, &output) || fabs(output - probes[i].output[j]) > 1e-13) {
+                fprintf(stderr, "inverse para case %u, sample %u\n",
+                        (unsigned int)i, (unsigned int)j);
+                ok = 0;
+                break;
+            }
+        }
+        sixel_icc_profile_destroy(&profile);
+        if (!ok) {
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+int
+icc_numeric_sampled_trc_inverse_test(void)
+{
+    static unsigned int const table[][5] = {
+        {0u, 16384u, 16384u, 49152u, 65535u},
+        {0u, 8192u, 4096u, 49152u, 65535u},
+        {16384u, 16384u, 16384u, 16384u, 16384u}
+    };
+    static unsigned int const inputs[] = {
+        0u, 8192u, 16383u, 16384u, 16385u, 32768u, 65535u
+    };
+    static double const expected[] = {
+        0.0, 0.125, 16383.0 / 65536.0, 0.25, 0.50000762939453125, 0.625, 1.0
+    };
+    unsigned char bytes[260];
+    unsigned char *tag;
+    sixel_icc_profile_t profile;
+    size_t i;
+    size_t j;
+    double output;
+    int ok;
+
+    for (i = 0u; i < sizeof(table) / sizeof(table[0]); ++i) {
+        iccn_inverse_trc_header(bytes, 22u);
+        tag = bytes + 188u;
+        memcpy(tag, "curv", 4u);
+        iccn_be32(tag + 8u, 5u);
+        for (j = 0u; j < 5u; ++j) {
+            tag[12u + j * 2u] = (unsigned char)(table[i][j] >> 8);
+            tag[13u + j * 2u] = (unsigned char)table[i][j];
+        }
+        if (!sixel_icc_parse_profile(bytes, sizeof(bytes), &profile)) {
+            return EXIT_FAILURE;
+        }
+        /* The forward transform stays available for each kind of table. */
+        ok = sixel_icc_curve_device(&profile.curves[0], 0.5, 0, &output) &&
+            fabs(output - table[i][2] / 65535.0) < 1e-13;
+        if (i == 0u) {
+            /* At an interior plateau the smallest matching x wins. */
+            for (j = 0u; ok && j < sizeof(inputs) / sizeof(inputs[0]); ++j) {
+                ok = sixel_icc_curve_device(&profile.curves[0],
+                    inputs[j] / 65535.0, 1, &output) &&
+                    fabs(output - expected[j]) < 1e-13;
+            }
+        } else {
+            output = 23.0;
+            ok = ok && !sixel_icc_curve_device(&profile.curves[0], 0.5, 1,
+                                              &output) && output == 23.0;
+        }
+        sixel_icc_profile_destroy(&profile);
+        if (!ok) {
+            fprintf(stderr, "sampled inverse case %u failed\n",
+                    (unsigned int)i);
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}

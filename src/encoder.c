@@ -9612,6 +9612,8 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     int palette_height;
     unsigned int icc_score_end;
     size_t source_point_count;
+    double icc_started;
+    int trace_icc;
     sixel_filter_t *merge_filter;
     sixel_palette_cover_options_t cover_options;
     sixel_palette_snap_options_t snap_options;
@@ -9917,9 +9919,18 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         palette_height = 1;
     }
     if (request->clustering_icc != NULL) {
+        trace_icc = sixel_trace_topic_is_enabled("palette_contract");
+        icc_started = trace_icc ? sixel_timer_now() : 0.0;
         status = sixel_encoder_transform_cluster((float *)palette_pixels,
             (size_t)palette_width * palette_height, request->linear_srgb,
             request->clustering_icc);
+        if (trace_icc) {
+            sixel_trace_topic_message("palette_contract",
+                "LSXICC1|stage=clustering-samples|points=%" SIXEL_PRI_SIZE
+                "|ms=%.3f",
+                SIXEL_PRINTF_SIZE((size_t)palette_width * palette_height),
+                (sixel_timer_now() - icc_started) * 1000.0);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }

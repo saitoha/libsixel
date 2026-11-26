@@ -1004,7 +1004,9 @@ batch_color_icc_0126 = \
     color/icc/0131_mpet_matrix_product_residual.c \
     color/icc/0132_mpet_simplex_weight_residual.c \
     color/icc/0133_mpet_nonrelative_snap.c \
-    color/icc/0134_mpet_nonrelative_gamut.c
+    color/icc/0134_mpet_nonrelative_gamut.c \
+    color/icc/0139_parametric_trc_inverse.c \
+    color/icc/0140_sampled_trc_inverse.c
 
 batch_color_lcms2_0011 = \
     color/lcms2/0011_lcms_cmyk_linear.c \
