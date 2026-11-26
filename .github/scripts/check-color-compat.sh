@@ -332,6 +332,16 @@ set -- \
     palette/working-space/0167_icc_alpha_serial.t \
     palette/working-space/0168_icc_alpha_worker.t \
     palette/working-space/0169_icc_extended_roundtrip.t \
+    palette/working-space/0170_icc_work_lookup.t \
+    palette/working-space/0171_icc_work_fs.t \
+    palette/working-space/0172_icc_work_auto_cluster.t \
+    palette/working-space/0173_icc_work_reset_auto.t \
+    palette/working-space/0174_icc_work_rejects_lut.t \
+    palette/working-space/0175_icc_work_export.t \
+    palette/working-space/0176_icc_work_extended_lookup.t \
+    palette/working-space/0177_icc_work_delta_frames.t \
+    palette/working-space/0178_icc_work_vptree.t \
+    palette/working-space/0179_icc_work_eytzinger.t \
     palette/cover/0146_hard_icc_srgb_anchors.t \
     palette/cover/0147_soft_icc_srgb_anchors.t \
     palette/cover/0148_icc_cover_apply_snap.t \

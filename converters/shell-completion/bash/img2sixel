@@ -92,8 +92,8 @@ _img2sixel()
     elif [[ $cur == ${opt_short_uninstall}=* ]]; then
         prev=${opt_short_uninstall}
         cur=${cur#*=}
-    elif [[ $cur == --clustering-colorspace=* ]]; then
-        prev=--clustering-colorspace
+    elif [[ $cur == --clustering-colorspace=* || $cur == --working-colorspace=* ]]; then
+        prev=${cur%%=*}
         cur=${cur#*=}
     elif [[ $cur == ${opt_threads}=* ]]; then
         prev=${opt_threads}
@@ -1035,7 +1035,7 @@ _img2sixel()
                                    colorsync' -- "$cur" ) )
         return 0
         ;;
-    -X|--clustering-colorspace)
+    -X|--clustering-colorspace|-W|--working-colorspace)
         if [[ $cur == icc:* ]]; then
             cur=${cur#icc:}
             _img2sixel_filedir
@@ -1048,14 +1048,6 @@ _img2sixel()
             return 0
         fi
         COMPREPLY=( $( compgen -W 'auto icc: gamma \
-                                   linear \
-                                   oklab \
-                                   cielab \
-                                   din99d' -- "$cur" ) )
-        return 0
-        ;;
-    -W|--working-colorspace)
-        COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
                                    oklab \
                                    cielab \

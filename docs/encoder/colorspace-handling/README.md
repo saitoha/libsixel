@@ -79,7 +79,7 @@ The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize i
 | Option | Boundary controlled | Default | Accepted values |
 | --- | --- | --- | --- |
 | `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
-| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
+| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
 | `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `gamma` | `gamma`, `linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
 
 The names are defined in [spaces used by libsixel](../../concepts/colorspace/README.md#spaces-used-by-libsixel).
@@ -94,7 +94,7 @@ The names are defined in [spaces used by libsixel](../../concepts/colorspace/REA
 
 `-W` selects the shared working coordinates for the main image and the generated palette. Lookup policies compare pixels with palette entries in this space, and dithering propagates its error in this space. Changing `-W` can therefore change selected indices even when the palette itself was generated in another space.
 
-`-Wgamma` can use either the 8-bit or float32 precision path. `linear`, `oklab`, `cielab`, and `din99d` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
+`-Wgamma` can use either the 8-bit or float32 precision path. `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
 
 The mathematical role of each accepted space and the controlled quality, runtime, and stream-size comparison are documented in [Working color space](../palette-application/working-colorspace/README.md).
 

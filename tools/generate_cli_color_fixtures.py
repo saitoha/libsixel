@@ -182,11 +182,14 @@ def cli_space_cases(inputs):
     # and parametric TRCs from the file, including fixed-point rounding.
     from generate_color_fixtures import opponents
     samples = [[241, 168, 181], [88, 220, 201], [147, 61, 180]]
+    def colorants(tags):
+        matrix = list(zip(*[[reference.F(v, 65536) for v in
+                             struct.unpack_from('>3i', tags[k], 8)]
+                            for k in (b'rXYZ', b'gXYZ', b'bXYZ')]))
+        return reference.matmul(reference.D, matrix)
+
     tags = reference.tags(inputs['display-p3.icc'])
-    matrix = list(zip(*[[reference.F(v, 65536) for v in
-                         struct.unpack_from('>3i', tags[k], 8)]
-                        for k in (b'rXYZ', b'gXYZ', b'bXYZ')]))
-    to_linear = reference.matmul(reference.D, matrix)
+    to_linear = colorants(tags)
     to_device = reference.inv(to_linear)
 
     def decimal(x):
@@ -342,6 +345,47 @@ def cli_space_cases(inputs):
                    lookup_distance_margins=[first_margin, corrected_margin],
                    second_candidate=list(map(str, candidate)),
                    wire=[srgb_wire[first], srgb_wire[corrected]])
+
+    # These P3 lookup and one-tap feedback results differ from the
+    # corresponding results in both builtin RGB geometries. Reuse the rational
+    # matrix and parametric curves above, independently of the encoder.
+    samples = [[76, 190, 42], [75, 218, 173]]
+    points = [device_rgb(coordinates(rgb, True)) for rgb in samples]
+    palette = [device_rgb(coordinates(rgb, True)) for rgb in XTERM16]
+    first, _ = nearest(points[0], palette)
+    second, _ = nearest(points[1], palette)
+    candidate = [x + D(7)/16*(y-p)
+                 for x, y, p in zip(points[1], points[0], palette[first])]
+    corrected, _ = nearest(candidate, palette)
+    assert second != corrected
+    yield case('pnm-lookup-icc', samples, fixed_palette='xterm16',
+               wire=[srgb_wire[first], srgb_wire[second]])
+    yield case('pnm-fs-icc', samples, fixed_palette='xterm16',
+               wire=[srgb_wire[first], srgb_wire[corrected]])
+
+    narrow = reference.tags(narrow_cluster_profile(inputs['display-p3.icc']))
+    inverse = reference.inv(colorants(narrow))
+
+    def extended(rgb):
+        point = reference.mv(inverse, list(map(reference.F, coordinates(rgb, True))))
+        # This fixture's three TRCs map zero to zero and one to one.
+        # Their full-range secant therefore extends with slope one.
+        return [encode_device(tag, decimal(v)) if 0 <= v <= 1 else decimal(v)
+                for tag, v in zip(curves, point)]
+
+    samples = [[81, 220, 201], [127, 250, 142]]
+    palette = list(map(extended, XTERM16))
+    clipped = [[min(D(1), max(D(0), x)) for x in p] for p in palette]
+    owners = []
+    for rgb in samples:
+        point = extended(rgb)
+        owner, _ = nearest(point, palette)
+        limited = [min(D(1), max(D(0), x)) for x in point]
+        assert owner != nearest(limited, clipped)[0]
+        owners.append(owner)
+    yield case('pnm-lookup-icc-extended', samples, fixed_palette='xterm16',
+               wire=[srgb_wire[i] for i in owners])
+
 
 
 def mixed_spaces_cases():

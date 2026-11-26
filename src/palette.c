@@ -1275,12 +1275,13 @@ sixel_palette_repair_native(sixel_palette_t *palette,
         return SIXEL_OK;
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
-    if (storage->entries_float32 == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        return status;
+    if (storage->entries_float32 == NULL ||
+            storage->entries_float32_size < (size_t)*ncolors * 3U *
+                sizeof(float)) {
+        return SIXEL_BAD_ARGUMENT;
     }
     memcpy(repaired, storage->entries_float32,
-        *ncolors * 3u * sizeof(float));
+        (size_t)*ncolors * 3U * sizeof(float));
     samples = request->data;
     if (attempt != NULL && attempt->cover_icc != NULL) {
         /* The solver uses encoded ICC RGB. Cover operates in sRGB and
@@ -1555,8 +1556,10 @@ success:
         status = snap_status;
         goto end;
     }
-    if (SIXEL_SUCCEEDED(status) && color_capacity < SIXEL_PALETTE_MAX &&
-            ncolors > color_capacity) {
+    /* Bound both the active count and its three-channel byte length before
+     * snap or cover copies a solver result to a fixed-size palette. */
+    if (SIXEL_SUCCEEDED(status) &&
+            (ncolors > color_capacity || ncolors > SIXEL_PALETTE_MAX)) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }

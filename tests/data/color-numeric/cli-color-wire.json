@@ -1848,6 +1848,120 @@
       ]
     },
     {
+      "name": "pnm-lookup-icc",
+      "source": "inline PNM",
+      "samples": [
+        [
+          76,
+          190,
+          42
+        ],
+        [
+          75,
+          218,
+          173
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "wire": [
+        [
+          0,
+          100,
+          0
+        ],
+        [
+          75,
+          75,
+          75
+        ]
+      ]
+    },
+    {
+      "name": "pnm-fs-icc",
+      "source": "inline PNM",
+      "samples": [
+        [
+          76,
+          190,
+          42
+        ],
+        [
+          75,
+          218,
+          173
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "wire": [
+        [
+          0,
+          100,
+          0
+        ],
+        [
+          50,
+          50,
+          50
+        ]
+      ]
+    },
+    {
+      "name": "pnm-lookup-icc-extended",
+      "source": "inline PNM",
+      "samples": [
+        [
+          81,
+          220,
+          201
+        ],
+        [
+          127,
+          250,
+          142
+        ]
+      ],
+      "width": 2,
+      "height": 1,
+      "source_width": 2,
+      "scale": 1,
+      "hidden": [
+        0,
+        0
+      ],
+      "p2": 0,
+      "fixed_palette": "xterm16",
+      "wire": [
+        [
+          0,
+          50,
+          50
+        ],
+        [
+          75,
+          75,
+          75
+        ]
+      ]
+    },
+    {
       "name": "mixed-spaces-rgb",
       "source": "mixed-spaces-rgb.ppm",
       "width": 5,

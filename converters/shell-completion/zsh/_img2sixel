@@ -252,9 +252,16 @@ _clusteringcolorspace() {
 }
 
 _workingcolorspace() {
+  if [[ $PREFIX = icc:* ]]; then
+    compset -P 'icc:'
+    _files
+    return
+  fi
   _values \
     'WORKINGCOLORSPACE' \
-    'gamma[keep gamma encoded pixels (default)]' \
+    'auto[follow the input color space (default)]' \
+    'icc:[matrix/TRC RGB ICC profile]' \
+    'gamma[keep gamma encoded pixels]' \
     'linear[use linear RGB as working space]' \
     'oklab[operate in OKLab uniform color space]' \
     'cielab[operate in CIELAB uniform color space]' \

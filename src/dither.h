@@ -105,6 +105,13 @@ sixel_dither_freeze_application_precision(sixel_dither_t *dither);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_dither_lookup_preparers(
     sixel_dither_t *, sixel_palette_apply_prepare_request_t *);
 
+/* All three objects outlive the synchronous encode and its band workers. */
+struct sixel_icc_workspace {
+    sixel_color_def_t const *profile;
+    sixel_color_def_t const *linear;
+    sixel_palette_t *wire_palette;
+};
+
 /* dither context object */
 struct sixel_dither {
     int clamp_policy;
@@ -208,6 +215,7 @@ struct sixel_dither {
     size_t gpu_palette_threshold;   /* AUTO policy pixel threshold */
     sixel_gpu_lookup_preparer_interface_t *gpu_lookup;
     sixel_lookup_policy_configuration_t gpu_lookup_configuration;
+    struct sixel_icc_workspace const *icc_workspace;
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
     sixel_gpu_dither_preparer_interface_t *gpu_dither;
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */

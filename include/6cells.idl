@@ -1213,6 +1213,7 @@ struct dither_execution {
     timeline_logger *logger;
     int band_height;
     delta_compare delta_compare;
+    struct sixel_icc_workspace const *icc_workspace;
 };
 
 struct dither_policy_apply_request {

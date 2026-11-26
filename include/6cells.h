@@ -1786,6 +1786,7 @@ typedef struct sixel_dither_execution {
     sixel_timeline_logger_t *logger;
     int band_height;
     sixel_delta_compare_t delta_compare;
+    struct sixel_icc_workspace const *icc_workspace;
 } sixel_dither_execution_t;
 
 typedef struct sixel_dither_policy_apply_request {

@@ -11,18 +11,26 @@ command -v bash >/dev/null || {
 bash --noprofile --norc -c '
     img2sixel() { :; }
     profile=$1/tests/data/color-numeric/display-p3.icc
-    _init_completion() { prev=-X; cur=icc:${profile%?}; }
+    _init_completion() { prev=$option; cur=icc:${profile%?}; }
     _filedir() {
         test "$cur" = "${profile%?}" || exit 1
         COMPREPLY=("$profile")
     }
     source "$1/converters/shell-completion/bash/img2sixel"
+    option=-X
     COMP_WORDBREAKS=" :"
     _img2sixel
     test "${#COMPREPLY[@]}" = 1 && test "${COMPREPLY[0]}" = "$profile" || exit 1
     COMP_WORDBREAKS=" "
     _img2sixel
-    test "${#COMPREPLY[@]}" = 1 && test "${COMPREPLY[0]}" = "icc:$profile"
+    test "${#COMPREPLY[@]}" = 1 && test "${COMPREPLY[0]}" = "icc:$profile" || exit 1
+    option=-W
+    COMP_WORDBREAKS=" :"
+    _img2sixel
+    test "${#COMPREPLY[@]}" = 1 && test "${COMPREPLY[0]}" = "$profile" || exit 1
+    COMP_WORDBREAKS=" "
+    _img2sixel
+    test "${#COMPREPLY[@]}" = 1 && test "${COMPREPLY[0]}" = "icc:$profile" || exit 1
 ' bash "$TOP_SRCDIR" || {
     printf '\n%s\n' 'not ok 1 - Bash ICC completion duplicates the prefix'
     exit 0

@@ -633,6 +633,7 @@ struct sixel_palette_build_request {
     int delta_alpha_key;
     int native_palette;
     int native_candidate;
+    int icc_workspace;
     int from_map_image;
     int consumer_pixelformat;
     int output_palette_type;
@@ -832,6 +833,7 @@ struct sixel_palette_snapshot {
     sixel_dither_t *built;
     sixel_color_def_t *output_icc;
     sixel_palette_snapshot_profile_t profile;
+    int icc_workspace;
 };
 
 typedef struct sixel_palette_async_job {
@@ -6385,7 +6387,10 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
         ? sixel_pixelformat_for_colorspace(context->current_colorspace, 1)
         : context->current_pixelformat;
     sixel_dither_set_pixelformat(context->dither, consumer_pixelformat);
-    if (context->dither->lut_policy != SIXEL_LUT_POLICY_FHEDT) {
+    /* ICC coordinates exist only on the application palette. Building an
+     * exact search tree from the staging palette would bind the wrong axes. */
+    if (context->encoder->working_icc == NULL &&
+            context->dither->lut_policy != SIXEL_LUT_POLICY_FHEDT) {
         status = sixel_encoder_apply_lut_filter(context->dither,
             consumer_pixelformat, context->encoder->logger,
             context->dither->lookup_policy);
@@ -7176,7 +7181,7 @@ sixel_encoder_palette_job_build_impl(sixel_palette_async_job_t *job,
     }
     status = sixel_palette_request_build(job->request,
         job->samples.frame, &local, &job->state, job->logger);
-    if (SIXEL_SUCCEEDED(status) &&
+    if (SIXEL_SUCCEEDED(status) && !job->request->icc_workspace &&
             local->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
         status = sixel_encoder_apply_lut_filter(local,
@@ -8775,6 +8780,11 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     char message[256];
     sixel_color_def_t *linear;
 
+    if (encoder->working_icc != NULL && encoder->progressive_enabled) {
+        sixel_helper_set_additional_message(
+            "Progressive repair does not support ICC working coordinates.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (encoder->output_bpc &&
             encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
         sixel_helper_set_additional_message(
@@ -9070,6 +9080,7 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     int consumer_pixelformat)
 {
     sixel_palette_build_request_t *request;
+    sixel_color_def_t const *cluster;
     SIXELSTATUS status;
 
     *out = NULL;
@@ -9094,10 +9105,13 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->native_candidate = sixel_encoder_rgb101_candidate(encoder, frame);
     request->consumer_pixelformat = consumer_pixelformat;
     request->working = encoder->working;
+    request->icc_workspace = encoder->working_icc != NULL;
     request->clustering = sixel_encoder_cluster_geometry(encoder);
-    if (encoder->clustering_icc != NULL) {
+    cluster = encoder->clustering_override != NULL
+        ? encoder->clustering_icc : encoder->working_icc;
+    if (cluster != NULL) {
         request->linear_srgb = sixel_color_def_new_named("linear-srgb");
-        request->clustering_icc = sixel_cdef_clone(encoder->clustering_icc);
+        request->clustering_icc = sixel_cdef_clone(cluster);
         if (!request->linear_srgb || !request->clustering_icc) {
             sixel_palette_build_request_free(request);
             return SIXEL_BAD_ALLOCATION;
@@ -10429,7 +10443,7 @@ sixel_palette_build_request_execute(
     if (retryable != NULL) {
         *retryable = status != SIXEL_OK;
     }
-    if (SIXEL_SUCCEEDED(status) &&
+    if (SIXEL_SUCCEEDED(status) && !request->icc_workspace &&
             (*out)->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
         status = sixel_encoder_apply_lut_filter(*out,
             request->consumer_pixelformat, logger, (*out)->lookup_policy);
@@ -10824,6 +10838,7 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
      * In the async job this stays inside its existing budget scope and can
      * overlap the full-frame working-colorspace conversion. */
     if (SIXEL_SUCCEEDED(status) && *dither_out != NULL &&
+            encoder->working_icc == NULL &&
             (*dither_out)->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
         if (failure_stage != NULL) {
             *failure_stage = SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
@@ -11034,6 +11049,7 @@ sixel_palette_snapshot_take(sixel_palette_snapshot_t **out,
     }
     snapshot->ref = 1U;
     snapshot->built = *built;
+    snapshot->icc_workspace = request->icc_workspace;
     snapshot->profile.working = request->working;
     snapshot->profile.clustering = request->clustering;
     snapshot->profile.output_colorspace = request->output_colorspace;
@@ -11194,7 +11210,7 @@ sixel_palette_snapshot_clone(sixel_palette_snapshot_t const *snapshot,
                 snapshot->profile.output_colorspace, NULL);
         }
     }
-    if (SIXEL_SUCCEEDED(status) &&
+    if (SIXEL_SUCCEEDED(status) && !snapshot->icc_workspace &&
             copy->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
         /* FHEDT alone promises non-destructive immutable-table retention.
          * Its backend checks representation, signature and sharing options;
@@ -11243,6 +11259,28 @@ sixel_debug_print_palette(
                 palette_view.entries[i * 3 + 1],
                 palette_view.entries[i * 3 + 2]);
     }
+}
+
+/* Keep canonical palette and frame storage available to the writer. Only
+ * index resolution borrows the working profile during this encode call. */
+static SIXELSTATUS
+sixel_encoder_encode_pixels(sixel_encoder_t *encoder, unsigned char *pixels,
+    int width, int height, int depth, sixel_dither_t *dither,
+    sixel_output_t *output)
+{
+    SIXELSTATUS status;
+    struct sixel_icc_workspace workspace;
+
+    if (encoder->working_icc == NULL || dither == NULL) {
+        return sixel_encode(pixels, width, height, depth, dither, output);
+    }
+    workspace.profile = encoder->working_icc;
+    workspace.linear = encoder->working_linear;
+    workspace.wire_palette = dither->palette;
+    dither->icc_workspace = &workspace;
+    status = sixel_encode(pixels, width, height, depth, dither, output);
+    dither->icc_workspace = NULL;
+    return status;
 }
 
 static SIXELSTATUS
@@ -11451,7 +11489,8 @@ sixel_encoder_output_without_macro(
     if (encoder->residual_enabled || sixel_encoder_refresh_enabled(encoder)) {
         dither->pipeline_residual_mask = encoder->residual_state.mask;
     }
-    status = sixel_encode(p, width, height, depth, dither, output);
+    status = sixel_encoder_encode_pixels(encoder, p, width, height, depth,
+                                         dither, output);
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -11642,12 +11681,8 @@ sixel_encoder_output_with_macro(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        status = sixel_encode(converted,
-                              width,
-                              height,
-                              depth,
-                              dither,
-                              output);
+        status = sixel_encoder_encode_pixels(encoder, converted, width,
+            height, depth, dither, output);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -12744,6 +12779,11 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
     }
     *prepared = NULL;
     *domain = NULL;
+    if (encoder->working_icc != NULL) {
+        sixel_helper_set_additional_message(
+            "Progressive repair does not support ICC working coordinates.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     status = sixel_encoder_resolve_working_geometry(encoder, source);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -13203,6 +13243,8 @@ sixel_encoder_new(
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
     (*ppencoder)->clustering_override = NULL;
     (*ppencoder)->clustering_icc = NULL;
+    (*ppencoder)->working_icc = NULL;
+    (*ppencoder)->working_linear = NULL;
     (*ppencoder)->working = sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
     (*ppencoder)->working_override = NULL;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
@@ -13562,6 +13604,8 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         allocator = encoder->allocator;
         sixel_refresh_spatial_free(encoder->refresh_spatial_state);
         sixel_cdef_free(encoder->clustering_icc);
+        sixel_cdef_free(encoder->working_icc);
+        sixel_cdef_free(encoder->working_linear);
         sixel_cdef_free(encoder->output_icc);
         sixel_gamut_free(encoder->gamut_mapper);
         sixel_allocator_free(allocator, encoder->mapfile);
@@ -14261,7 +14305,8 @@ sixel_encoder_apply_quantize_resolution(
 }
 
 static SIXELSTATUS
-sixel_encoder_set_cluster_icc(sixel_encoder_t *encoder, char const *path)
+sixel_encoder_set_geometry_icc(sixel_encoder_t *encoder, int option,
+                               char const *path)
 {
     static double const neutral[3] = {0.5, 0.5, 0.5};
     sixel_color_def_t *profile;
@@ -14277,8 +14322,23 @@ sixel_encoder_set_cluster_icc(sixel_encoder_t *encoder, char const *path)
     if (!sixel_cdef_transfer(profile, neutral, encoded, 1)) {
         sixel_cdef_free(profile);
         sixel_helper_set_additional_message(
-            "-X icc requires a matrix/TRC RGB profile.");
+            option == SIXEL_OPTFLAG_WORKING_COLORSPACE
+                ? "-W icc requires a matrix/TRC RGB profile."
+                : "-X icc requires a matrix/TRC RGB profile.");
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (option == SIXEL_OPTFLAG_WORKING_COLORSPACE) {
+        encoder->working_linear = sixel_color_def_new_named("linear-srgb");
+        if (!encoder->working_linear) {
+            sixel_cdef_free(profile);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        encoder->working_icc = profile;
+        encoder->working_override = sixel_color_geometry(
+            SIXEL_COLORSPACE_LINEAR);
+        encoder->working = encoder->working_override;
+        sixel_encoder_update_precision(encoder);
+        return SIXEL_OK;
     }
     encoder->clustering_icc = profile;
     /* Stage the frame in linear sRGB float storage. The request applies
@@ -15870,6 +15930,14 @@ sixel_encoder_option_release_replaced(sixel_encoder_t *old,
                                       sixel_encoder_t const *next, int arg)
 {
     switch (arg) {
+    case SIXEL_OPTFLAG_WORKING_COLORSPACE:
+        if (old->working_icc != next->working_icc) {
+            sixel_cdef_free(old->working_icc);
+        }
+        if (old->working_linear != next->working_linear) {
+            sixel_cdef_free(old->working_linear);
+        }
+        break;
     case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:
         if (old->clustering_icc != next->clustering_icc) {
             sixel_cdef_free(old->clustering_icc);
@@ -16511,9 +16579,8 @@ sixel_encoder_setopt_owned(
         break;
     case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:  /* X */
     case SIXEL_OPTFLAG_WORKING_COLORSPACE:     /* W */
-        if (arg == SIXEL_OPTFLAG_CLUSTERING_COLORSPACE &&
-                value != NULL && strncmp(value, "icc:", 4) == 0) {
-            status = sixel_encoder_set_cluster_icc(encoder, value + 4);
+        if (value != NULL && strncmp(value, "icc:", 4) == 0) {
+            status = sixel_encoder_set_geometry_icc(encoder, arg, value + 4);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -16529,6 +16596,8 @@ sixel_encoder_setopt_owned(
             encoder->clustering_icc = NULL;
             encoder->clustering_override = geometry;
         } else {
+            encoder->working_icc = NULL;
+            encoder->working_linear = NULL;
             encoder->working_override = geometry;
             encoder->working = geometry != NULL ? geometry
                 : sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);

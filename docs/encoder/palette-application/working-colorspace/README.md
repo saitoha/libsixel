@@ -9,7 +9,9 @@
 --working-colorspace=COLORSPACE
 ```
 
-The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, and `din99d`. The default is `auto`.
+The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE`. The default is `auto`.
+
+`-W icc:FILE` uses the encoded RGB axes of a matrix/TRC RGB ICC profile for nearest-color lookup and diffusion residuals. Input pixels and palette entries are converted to float32 profile coordinates, including values outside the nominal unit interval. `-X auto` uses the same profile for clustering. `-U` still controls the emitted colors, and `-M` exports sRGB8. Progressive repair currently requires a builtin working space.
 
 The working color space changes the geometry used by palette lookup and the components in which dithering error is calculated and propagated. It can therefore change visible structure, pointwise color error, runtime, memory use, and SIXEL stream size even when palette construction returns exactly the same palette colors.
 
@@ -254,6 +256,16 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-31 | PAL export writes both ICC Heckbert representatives as sRGB8 with a Display P3 output destination. | [tests/palette/export/0007_matrix_icc_heckbert_srgb8.t](../../../../tests/palette/export/0007_matrix_icc_heckbert_srgb8.t) |
 | WC-32 | ICC clustering ignores hidden PNG samples and preserves both painted colors and omitted pixels during serial and worker palette construction. | [tests/palette/working-space/0167_icc_alpha_serial.t](../../../../tests/palette/working-space/0167_icc_alpha_serial.t), [tests/palette/working-space/0168_icc_alpha_worker.t](../../../../tests/palette/working-space/0168_icc_alpha_worker.t) |
 | WC-33 | ICC clustering preserves sRGB primaries outside the clustering gamut and exports the original colors after returning the representatives to linear RGB. | [tests/palette/working-space/0169_icc_extended_roundtrip.t](../../../../tests/palette/working-space/0169_icc_extended_roundtrip.t) |
+| WC-34 | A fixed xterm16 palette uses encoded ICC coordinates for nearest fixed-palette colors. | [tests/palette/working-space/0170_icc_work_lookup.t](../../../../tests/palette/working-space/0170_icc_work_lookup.t) |
+| WC-35 | A fixed xterm16 palette uses encoded ICC coordinates for fixed-palette raster FS feedback. | [tests/palette/working-space/0171_icc_work_fs.t](../../../../tests/palette/working-space/0171_icc_work_fs.t) |
+| WC-36 | Automatic clustering follows the working ICC profile in a worker palette job. | [tests/palette/working-space/0172_icc_work_auto_cluster.t](../../../../tests/palette/working-space/0172_icc_work_auto_cluster.t) |
+| WC-37 | Resetting the working profile restores automatic source geometry. | [tests/palette/working-space/0173_icc_work_reset_auto.t](../../../../tests/palette/working-space/0173_icc_work_reset_auto.t) |
+| WC-38 | LUT profiles without a separable matrix/TRC model are rejected at option preparation. | [tests/palette/working-space/0174_icc_work_rejects_lut.t](../../../../tests/palette/working-space/0174_icc_work_rejects_lut.t) |
+| WC-39 | Palette export recovers both out-of-gamut primaries from an ICC workspace. | [tests/palette/working-space/0175_icc_work_export.t](../../../../tests/palette/working-space/0175_icc_work_export.t) |
+| WC-40 | Negative and above-one ICC coordinates select the expected xterm colors. | [tests/palette/working-space/0176_icc_work_extended_lookup.t](../../../../tests/palette/working-space/0176_icc_work_extended_lookup.t) |
+| WC-41 | Delta frames preserve the emitted surface across repaint, keep and invalidation with ICC lookup. | [tests/palette/working-space/0177_icc_work_delta_frames.t](../../../../tests/palette/working-space/0177_icc_work_delta_frames.t) |
+| WC-42 | The VP-tree indexes the palette in ICC working coordinates. | [tests/palette/working-space/0178_icc_work_vptree.t](../../../../tests/palette/working-space/0178_icc_work_vptree.t) |
+| WC-43 | The Eytzinger search indexes the palette in ICC working coordinates. | [tests/palette/working-space/0179_icc_work_eytzinger.t](../../../../tests/palette/working-space/0179_icc_work_eytzinger.t) |
 
 ### Coverage boundary
 

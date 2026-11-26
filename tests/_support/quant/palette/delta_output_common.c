@@ -741,7 +741,8 @@ end:
 }
 
 int
-test_delta_output_frames(int space, int target, int workers)
+test_delta_output_work_frames(int space, int target, int workers,
+                             char const *workspace)
 {
     sixel_encoder_t *encoder;
     sixel_output_t *output;
@@ -765,7 +766,7 @@ test_delta_output_frames(int space, int target, int workers)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                 od_names[target])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                pd_spaces[space])) ||
+                workspace)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
                 workers ? "greedy:B4" : "greedy:B1"))) {
         goto end;
@@ -816,6 +817,13 @@ end:
     sixel_output_unref(output);
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_delta_output_frames(int space, int target, int workers)
+{
+    return test_delta_output_work_frames(space, target, workers,
+                                         pd_spaces[space]);
 }
 
 int

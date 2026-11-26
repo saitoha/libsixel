@@ -440,6 +440,8 @@ struct sixel_encoder {
     sixel_color_geometry_t const *working_override;
     sixel_color_geometry_t const *clustering_override;
     sixel_color_def_t *clustering_icc;
+    sixel_color_def_t *working_icc;
+    sixel_color_def_t *working_linear;
     int output_colorspace;
     /* Base precision request, independent of float-only colorspaces. */
     int precision_prefer_float32;
