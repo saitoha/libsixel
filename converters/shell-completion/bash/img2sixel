@@ -1039,7 +1039,12 @@ _img2sixel()
         if [[ $cur == icc:* ]]; then
             cur=${cur#icc:}
             _img2sixel_filedir
-            COMPREPLY=( "${COMPREPLY[@]/#/icc:}" )
+            # Bash replaces only the text after a Readline word break.
+            # bash-completion restores the prefix in cur, but Readline
+            # still leaves it in the buffer.
+            if [[ $COMP_WORDBREAKS != *:* ]]; then
+                COMPREPLY=( "${COMPREPLY[@]/#/icc:}" )
+            fi
             return 0
         fi
         COMPREPLY=( $( compgen -W 'auto icc: gamma \
