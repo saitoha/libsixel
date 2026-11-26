@@ -81,6 +81,7 @@ amalgamation_units = files(
   '../src/palette-heckbert-gpu.c',
   '../src/palette-heckbert-gpu-vulkan.c',
   '../src/palette-heckbert-gpu-metal.m',
+  '../src/palette-ward-metal.m',
   '../src/palette-bin-histogram.c',
   '../src/palette-plan.c',
   '../src/sample-statistics.c',

@@ -39,6 +39,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
     $(srcdir)/lookup-policy-certlut-gpu.metal \
     $(srcdir)/palette-heckbert-gpu.metal \
+    $(srcdir)/palette-ward.metal \
     $(srcdir)/palette-kmeans-resident.metal \
     $(srcdir)/gpu-palette-legacy-types.metal \
     $(srcdir)/gpu-palette-legacy-query.metal \
@@ -232,6 +233,7 @@ generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
+    libsixel_la-palette-ward-metal.lo \
     libsixel_la-palette-kmeans-metal.lo \
     libsixel_la-dither-policy-lso2-gpu-metal.lo \
     libsixel_la-dither-policy-none-gpu.lo \
@@ -864,6 +866,7 @@ $(srcdir)/filter-sample-metal.m \
 $(srcdir)/decoder-gpu-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/palette-heckbert-gpu-metal.m \
+$(srcdir)/palette-ward-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif
 if HAVE_CLIPBOARD_MACOS_APPKIT

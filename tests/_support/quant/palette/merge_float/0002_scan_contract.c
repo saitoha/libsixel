@@ -66,6 +66,8 @@ typedef struct ward_scan_cluster ward_scan_cluster_t;
 #define sixel_final_merge_target_factor_override_value ward_scan_local_24
 #define sixel_final_merge_ward ward_scan_local_25
 #define sixel_final_merge_ward_matrix ward_scan_local_26
+#define sixel_final_merge_ward_join ward_scan_join
+#define sixel_final_merge_ward_metal ward_scan_metal
 #define sixel_final_merge_ward_pair_cost ward_scan_local_27
 #define sixel_final_merge_ward_refresh_row ward_scan_local_28
 #define sixel_kmeans_iter_max_override_enabled ward_scan_local_29
@@ -124,6 +126,8 @@ typedef struct ward_scan_cluster ward_scan_cluster_t;
 #undef sixel_final_merge_target_factor_override_value
 #undef sixel_final_merge_ward
 #undef sixel_final_merge_ward_matrix
+#undef sixel_final_merge_ward_join
+#undef sixel_final_merge_ward_metal
 #undef sixel_final_merge_ward_pair_cost
 #undef sixel_final_merge_ward_refresh_row
 #undef sixel_kmeans_iter_max_override_enabled
@@ -163,7 +167,8 @@ test_ward_scan_populations(int argc, char **argv)
         return EXIT_FAILURE;
     }
     ward_scan_denied = 0;
-    count = ward_scan_merge_weighted(weights, sums, 3, 4, 2,
+    count = ward_scan_merge_weighted(weights, sums, 3,
+        SIXEL_GPU_POLICY_OFF, 4, 2,
         SIXEL_FINAL_MERGE_WARD, 0, SIXEL_PIXELFORMAT_RGBFLOAT32, 1,
         allocator);
     /* These binary fractions and the one exact mean need no libm; the

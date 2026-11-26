@@ -32,6 +32,7 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | KMEANS-RESIDENT-PACK | Pack final byte centers into a resident RGB888 palette | done | n/a | n/a | n/a | n/a | done | done | |
 | KMEANS-RESIDENT-PCA | Compute the principal axis and seed centers from weighted projection buckets | done | n/a | n/a | n/a | n/a | done | done | |
 | KMEANS-RESIDENT-SNAP | Apply the final byte snap map before RGB888 cover repair | done | n/a | n/a | n/a | n/a | done | done | |
+| PALETTE-WARD | Select ordered Ward merge pairs for byte RGB palette construction | done | n/a | n/a | n/a | n/a | done | planned | Metal returns the ordered pairs for FP64 centroid and representative-statistics updates. |
 | PUBLISH-INDEX-SCAN | Check published index rows for bytes that need correction | done | done | done | planned | planned | n/a | n/a | |
 | REFRESH-COARSE | Reduce the activity map to 4x4 tiles | done | planned | planned | done | planned | n/a | n/a | |
 | REFRESH-LUMA | Compute luma for spatial refresh | done | planned | planned | done | planned | n/a | n/a | |
