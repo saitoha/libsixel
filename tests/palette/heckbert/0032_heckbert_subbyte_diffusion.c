@@ -20,7 +20,7 @@ test_heckbert_native_0032(int argc, char **argv)
         { '=', "greedy:B1" }, { 'p', "2" }, { '.', "float32" },
         { 'Q', "heckbert" }, { 'F', "none" }, { 'a', "off" },
         { '_', "none" }, { '~', "none" }, { 'd', "fs" },
-        { 'X', "gamma" }, { 'W', "gamma" }, { 'U', "gamma" },
+        { 'X', "srgb" }, { 'W', "srgb" }, { 'U', "srgb" },
         { 't', "rgb" }, { '4', "full-frame" }, { '5', "none" }
     };
     float pixels[9] = {

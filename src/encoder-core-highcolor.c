@@ -112,7 +112,7 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
     case SIXEL_COLORSPACE_OKLAB:
         byte_format = SIXEL_PIXELFORMAT_OKLABFLOAT32;
         break;
-    case SIXEL_COLORSPACE_CIELAB:
+    case SIXEL_COLORSPACE_LAB_D65:
         byte_format = SIXEL_PIXELFORMAT_CIELABFLOAT32;
         break;
     case SIXEL_COLORSPACE_DIN99D:
@@ -134,7 +134,7 @@ sixel_highcolor_convert(unsigned char **prepared, int *stride,
         status = SIXEL_BAD_INPUT;
         if (forward != NULL) {
             if (!sixel_color_convert(gamma, source,
-                    output->source_colorspace, SIXEL_COLORSPACE_GAMMA) ||
+                    output->source_colorspace, SIXEL_COLORSPACE_SRGB) ||
                     !sixel_cxform_apply(forward, gamma, target)) {
                 goto end;
             }

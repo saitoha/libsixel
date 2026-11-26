@@ -106,7 +106,7 @@ test_highcolor_band(int scenario, int width, int height)
     options.transparent_offset_top = top;
     if (SIXEL_FAILED(sixel_output_set_encoder_options(output, &options)) ||
             SIXEL_FAILED(sixel_output_set_encoder_format(output, format,
-                SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_GAMMA)) ||
+                SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB)) ||
             SIXEL_FAILED(sixel_encode(scenario == 43 ?
                 (unsigned char *)samples : source, width, height, 0,
                 dither, output)) ||

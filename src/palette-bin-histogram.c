@@ -942,7 +942,7 @@ sixel_palette_bin_range_prepare(sixel_palette_bin_range_t *range,
     }
     if (strength == 0u || !statistics->safe_colors_valid ||
             (statistics->byte_coordinates &&
-             statistics->colorspace != SIXEL_COLORSPACE_GAMMA)) {
+             statistics->colorspace != SIXEL_COLORSPACE_SRGB)) {
         return SIXEL_OK;
     }
     status = sixel_palette_bin_range_gate_count(statistics, stream, points,

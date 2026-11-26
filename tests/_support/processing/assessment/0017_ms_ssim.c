@@ -95,7 +95,7 @@ test_qa_0017(int argc, char **argv)
                 height, SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, 0))) {
         goto end;
     }
-    qa->signal_space = SIXEL_COLORSPACE_GAMMA;
+    qa->signal_space = SIXEL_COLORSPACE_SRGB;
     ms_ssim_mask = SIXEL_ASSESSMENT_METRIC_MASK(
         SIXEL_ASSESSMENT_METRIC_MS_SSIM);
     companion_mask = SIXEL_ASSESSMENT_METRIC_MASK(

@@ -46,7 +46,7 @@ palette_launch_input(sixel_allocator_t *allocator, int floating,
     (*encoder)->reqcolors = 16;
     (*encoder)->lut_policy = SIXEL_LUT_POLICY_NONE;
     (*encoder)->lut_policy_override = 1;
-    (*encoder)->planner.working_colorspace_effective = SIXEL_COLORSPACE_GAMMA;
+    (*encoder)->planner.working_colorspace_effective = SIXEL_COLORSPACE_SRGB;
     (*encoder)->planner.working_pixelformat = format;
     sixel_palette_frame_state_init(&state);
     sixel_palette_policy_resolution_init(&state.quantizer,

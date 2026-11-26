@@ -40,7 +40,7 @@ range_budget_test(int scenario)
     result = EXIT_FAILURE;
     count = scenario == 22 || scenario == 25 || scenario == 27 ? 256u : 24u;
     strength = scenario == 25 ? 50u : 100u;
-    space = scenario == 23 ? SIXEL_COLORSPACE_CIELAB : SIXEL_COLORSPACE_GAMMA;
+    space = scenario == 23 ? SIXEL_COLORSPACE_LAB_D65 : SIXEL_COLORSPACE_SRGB;
     bytes = scenario != 23;
     memset(seen, 0, sizeof(seen));
     sixel_weighted_point_set_init(&points);

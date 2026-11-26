@@ -21,7 +21,7 @@ static int const native_snap_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const native_snap_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 
 typedef struct native_snap_capture {
@@ -135,7 +135,7 @@ native_snap_encode(int model, int space, int policy, int mode)
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
-        { '4', "full-frame" }, { '5', "none" }, { 'U', "gamma" }
+        { '4', "full-frame" }, { '5', "none" }, { 'U', "srgb" }
     };
     static char const *const models[] = {
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert", "auto"
@@ -206,7 +206,7 @@ native_snap_encode(int model, int space, int policy, int mode)
     }
     if (mode >= 6 &&
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                mode < 8 ? "linear" : "smpte-c"))) {
+                mode < 8 ? "srgb-linear" : "smpte-c"))) {
         goto end;
     }
     if (mode == 3 || mode == 4) {
@@ -235,7 +235,7 @@ native_snap_encode(int model, int space, int policy, int mode)
             ok = memcmp(saved, pixels, sizeof(saved)) == 0;
             goto end;
         }
-        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb"))) {
             goto end;
         }
         for (n = 0; n < 6; ++n) {
@@ -332,7 +332,7 @@ native_snap_cover(int model, int space, int policy, int mode)
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { 'p', "1" }, { 'F', "none" }, { '~', "none" },
         { 'd', "none" }, { 't', "rgb" }, { '4', "full-frame" },
-        { '5', "none" }, { 'U', "gamma" }
+        { '5', "none" }, { 'U', "srgb" }
     };
     static char const *const models[] = {
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert", "auto"
@@ -419,7 +419,7 @@ native_snap_cover(int model, int space, int policy, int mode)
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
         if (SIXEL_FAILED(status) || capture.size == 0 ||
-                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
+                SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb"))) {
             goto end;
         }
     }

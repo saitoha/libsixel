@@ -194,7 +194,7 @@ test_frame_0239_alpha(int argc, char **argv)
                                            mode != 11);
         fa_fail = 0;
         sixel_frame_get_work_pixels(iface, &pixels);
-        if (pixels.colorspace != SIXEL_COLORSPACE_LINEAR ||
+        if (pixels.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR ||
             frame->cms_history != cms_history) {
             goto end;
         }
@@ -265,7 +265,7 @@ test_frame_0239_alpha(int argc, char **argv)
         if (SIXEL_SUCCEEDED(status) || frame->cms_history != cms_history ||
             SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &pixels)) ||
             pixels.pixels_float32 != storage ||
-            pixels.colorspace != SIXEL_COLORSPACE_LINEAR ||
+            pixels.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR ||
             SIXEL_FAILED(iface->vtbl->get_alpha(iface, &alpha)) ||
             alpha.values != adopted || alpha.count != 4u) {
             goto end;
@@ -278,7 +278,7 @@ test_frame_0239_alpha(int argc, char **argv)
             SIXEL_SUCCEEDED(sixel_frame_get_work_pixels(iface, &pixels)) &&
             pixels.pixels == replacement && pixels.width == 1 &&
             pixels.height == 1 && pixels.pixelformat == SIXEL_PIXELFORMAT_RGB888
-            && pixels.colorspace == SIXEL_COLORSPACE_GAMMA
+            && pixels.colorspace == SIXEL_COLORSPACE_SRGB
             ? EXIT_SUCCESS : EXIT_FAILURE;
         goto end;
     }

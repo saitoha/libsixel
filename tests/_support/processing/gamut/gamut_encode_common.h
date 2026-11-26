@@ -60,12 +60,12 @@ gamut_encode_check(char const *sampling, char const *working, int highcolor,
                 &capture, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                policy == SIXEL_GAMUT_RAY_TRACE ? "gamma:gamut=ray-trace"
+                policy == SIXEL_GAMUT_RAY_TRACE ? "srgb:gamut=ray-trace"
                     : policy == SIXEL_GAMUT_EDGE_SEEKER
-                    ? "gamma:gamut=edge-seeker"
-                    : "gamma:gamut=local-minde")) ||
+                    ? "srgb:gamut=edge-seeker"
+                    : "srgb:gamut=local-minde")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "kmeans:seed=1")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "srgb-linear")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', working)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "none")) ||
@@ -108,8 +108,9 @@ gamut_encode_check(char const *sampling, char const *working, int highcolor,
             entry[c] = view.entries[i * 3u + (unsigned int)c];
         }
         if (!sixel_color_convert(converted, entry,
-                strcmp(working, "linear") == 0 ? SIXEL_COLORSPACE_LINEAR
-                    : SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LINEAR)) {
+                strcmp(working,
+                    "srgb-linear") == 0 ? SIXEL_COLORSPACE_SRGB_LINEAR
+                    : SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_SRGB_LINEAR)) {
             goto end;
         }
         if (converted[0] > .5) {

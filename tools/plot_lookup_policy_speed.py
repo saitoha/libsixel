@@ -133,7 +133,7 @@ def make_command(img2sixel: str,
         "--quantize-model=kmeans:seed=1",
         "--merge-policy=ward",
         "-Xoklab",
-        "-Wgamma",
+        "-Wsrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
         f"--lookup-policy={policy}",
@@ -243,7 +243,7 @@ def probe_lookup_classes(img2sixel: str,
             if quantizer == "heckbert":
                 # Match the quality wrapper's byte-palette configuration.
                 command.remove("-Xoklab")
-                command.remove("-Wgamma")
+                command.remove("-Wsrgb")
                 command[command.index("--quantize-model=kmeans:seed=1")] = (
                     "--quantize-model=heckbert"
                 )

@@ -1315,14 +1315,14 @@ tiff_lab_failure_probe(int argc, char **argv, int mode)
     fallback_ok = clf_load(component, chunk, 0, &fallback);
     fallback_ok = fallback_ok &&
         fallback.format == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-        fallback.colorspace == SIXEL_COLORSPACE_GAMMA;
+        fallback.colorspace == SIXEL_COLORSPACE_SRGB;
 
     clf_reset(6);
     loaded = clf_load(component, chunk, 1, &frame);
     clf_arm = 0;
     normal = clf_normal_valid(frame.pixels) && loaded &&
         frame.format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-        frame.colorspace == SIXEL_COLORSPACE_LINEAR;
+        frame.colorspace == SIXEL_COLORSPACE_SRGB_LINEAR;
     memcpy(clf_expected, frame.pixels, CLF_BYTES);
 
     clf_reset(mode);
@@ -1342,7 +1342,7 @@ tiff_lab_failure_probe(int argc, char **argv, int mode)
     clf_arm = 0;
     recovered = clf_normal_valid(frame.pixels) && loaded &&
         frame.format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-        frame.colorspace == SIXEL_COLORSPACE_LINEAR &&
+        frame.colorspace == SIXEL_COLORSPACE_SRGB_LINEAR &&
         memcmp(frame.pixels, clf_expected, CLF_BYTES) == 0;
     fprintf(stderr, "TLINLOADER|normal=%d|recovered=%d\n", normal, recovered);
     ok = ok && recovered;

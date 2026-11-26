@@ -18,7 +18,7 @@ auto_sixel="${ARTIFACT_LOCAL_DIR}/simd-auto.six"
 set -- --threading-policy=greedy:global_budget=1 --precision-policy=8bit --quality=full \
     '--loaders=builtin!' --cms-engine=none \
     --sampling-policy=full-frame --binning-policy=hard \
-    -Xgamma -Wgamma -Ugamma --diffusion=none \
+    -Xsrgb -Wsrgb -Usrgb --diffusion=none \
     --gpu-policy=off --lookup-policy=none \
     --palette-type=rgb --encode-policy=fast \
     -m "${fixture_root}/safe-gray.pal"

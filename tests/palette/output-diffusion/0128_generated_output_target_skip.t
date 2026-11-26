@@ -18,7 +18,7 @@ trace=$(
     SIXEL_PALETTE_TARGET=output SIXEL_TRACE_TOPIC=dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:B1 \
     --precision-policy=float32 --sampling-policy=full-frame \
-    --binning-policy=none -7 -Lbuiltin! -Xgamma -Wgamma \
+    --binning-policy=none -7 -Lbuiltin! -Xsrgb -Wsrgb \
     -U "icc:P${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" \
     -_nearest -~none -aoff -Fnone -0none -trgb -Qkmeans:seed=1 -p2 \
     -dfs:scan=raster "$input" 2>&1) || {

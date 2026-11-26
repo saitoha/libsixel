@@ -13,7 +13,7 @@ set -v
 
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    -Lbuiltin:cms_engine=none! -.auto -Qk -Xlinear -Wlinear \
+    -Lbuiltin:cms_engine=none! -.auto -Qk -Xsrgb-linear -Wsrgb-linear \
     -dnone -aoff -_nearest -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {
     printf '\n%s\n' "not ok 1 - P3 snap rejected byte input"

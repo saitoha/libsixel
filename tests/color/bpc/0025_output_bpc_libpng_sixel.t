@@ -13,7 +13,7 @@ data="${TOP_SRCDIR}/tests/data/color-numeric"
 export SIXEL_LOADER_CMS_BPC=0 SIXEL_OUTPUT_COLORSPACE_ICC_BPC=0
 export SIXEL_LOADER_CMS_RENDERING_INTENT=relative SIXEL_LOADER_PREFER_8BIT=0
 set -- "-Llibpng:Ebuiltin!" -Acomposite -Qkmeans:seed=1 -p2 \
-    -Xgamma -Wgamma -_none -Fnone -aoff -dnone -trgb
+    -Xsrgb -Wsrgb -_none -Fnone -aoff -dnone -trgb
 managed=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     -U "icc:P${data}/output-bpc.icc:bpc=1" "${data}/output-bpc-rgba16.png") || {
     printf '\n%s\n' 'not ok 1 - libpng BPC conversion failed'

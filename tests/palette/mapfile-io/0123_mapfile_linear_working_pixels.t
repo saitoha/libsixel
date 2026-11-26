@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify sRGB mapfile entries select and emit the matching source pixel in -Wlinear.
+# Verify sRGB mapfile entries select and emit the matching source pixel in -Wsrgb-linear.
 # Policy: docs/encoder/palette-construction/external-palettes.md
 # Test-plan: docs/testing/mapfile-parser-coverage.md
 set -eux
@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    -Lbuiltin! --cms-engine=none -Wlinear -Ugamma '-~none' -dnone \
+    -Lbuiltin! --cms-engine=none -Wsrgb-linear -Usrgb '-~none' -dnone \
     -m "${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-two-colors-lf.pal" - <<'PPM'
 P3
 1 1

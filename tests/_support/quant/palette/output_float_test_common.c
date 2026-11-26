@@ -17,10 +17,10 @@ static int const out_native_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const out_native_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static char const *const out_native_outputs[] = {
-    "linear", "smpte-c", "gamma"
+    "srgb-linear", "smpte-c", "srgb"
 };
 
 typedef struct out_native_capture {

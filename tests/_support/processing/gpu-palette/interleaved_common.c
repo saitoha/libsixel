@@ -63,7 +63,7 @@ gpu_lookup_interleaved(int policy, int scalar)
         configuration.fhedt_weights[2] = 1.0;
     execution.working_palette = palette;
     execution.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    execution.colorspace = SIXEL_COLORSPACE_GAMMA;
+    execution.colorspace = SIXEL_COLORSPACE_SRGB;
     execution.allow_batch = 1;
     if (sixel_gpu_lookup_select(allocator, &configuration, &provider)
             != SIXEL_OK) goto end;

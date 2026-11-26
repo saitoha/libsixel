@@ -22,6 +22,6 @@ test_loader_0111_loader_builtin_psd_icc_digest(int argc, char **argv)
         64,
         1,
         SIXEL_PIXELFORMAT_RGB888,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         digest);
 }

@@ -37,10 +37,10 @@ test_cluster_precision(int mode)
         { '=', "greedy:B1" }, { 'F', "none" }, { 'a', "off" },
         { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
-        { '4', "full-frame" }, { '5', "none" }, { 'W', "gamma" }
+        { '4', "full-frame" }, { '5', "none" }, { 'W', "srgb" }
     };
     static char const *const spaces[] = {
-        "linear", "oklab", "cielab", "din99d", "gamma"
+        "srgb-linear", "oklab", "lab-d65", "din99d", "srgb"
     };
     /* Independent equal-population means of sRGB red and blue, calculated
      * in the named clustering geometry, then transformed to signed sRGB.
@@ -117,7 +117,7 @@ test_cluster_precision(int mode)
             (mode == 12 && SIXEL_FAILED(sixel_encoder_setopt(
                 encoder, 'd', "fs"))) ||
             (mode == 13 && SIXEL_FAILED(sixel_encoder_setopt(
-                encoder, 'U', "linear")))) {
+                encoder, 'U', "srgb-linear")))) {
         goto end;
     }
     for (pass = 0; pass < (mode == 11 ? 3 : 1); ++pass) {

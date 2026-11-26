@@ -244,10 +244,10 @@ _clusteringcolorspace() {
     'COLORSPACE' \
     'auto[follow the resolved working color space (default)]' \
     'icc:[matrix/TRC RGB ICC profile]' \
-    'gamma[keep gamma encoded pixels]' \
-    'linear[use linear RGB for palette clustering]' \
+    'srgb[encoded sRGB (D65)]' \
+    'srgb-linear[linear-light sRGB for palette clustering]' \
     'oklab[cluster in OKLab uniform color space]' \
-    'cielab[cluster in CIELAB uniform color space]' \
+    'lab-d65[cluster in CIELAB with D65 white]' \
     'din99d[cluster in DIN99d uniform color space]'
 }
 
@@ -261,10 +261,10 @@ _workingcolorspace() {
     'WORKINGCOLORSPACE' \
     'auto[follow the input color space (default)]' \
     'icc:[matrix/TRC RGB ICC profile]' \
-    'gamma[keep gamma encoded pixels]' \
-    'linear[use linear RGB as working space]' \
+    'srgb[encoded sRGB (D65)]' \
+    'srgb-linear[linear-light sRGB as working space]' \
     'oklab[operate in OKLab uniform color space]' \
-    'cielab[operate in CIELAB uniform color space]' \
+    'lab-d65[work in CIELAB with D65 white]' \
     'din99d[operate in DIN99d uniform color space]'
 }
 
@@ -292,11 +292,11 @@ _outputcolorspace() {
   fi
   _values \
     'OUTPUTCOLORSPACE' \
-    'gamma[sRGB gamma encoded output (default)]' \
-    'linear[linear RGB output]' \
+    'srgb[sRGB gamma encoded output (default)]' \
+    'srgb-linear[linear-light sRGB output]' \
     'smpte-c[SMPTE-C gamma encoded output]' \
     'display-p3[Display P3: limited CPU float palette path]' \
-    'adobe-rgb[Adobe RGB (1998): CPU float, destination snap]' \
+    'a98-rgb[Adobe RGB (1998): CPU float, destination snap]' \
     'dci-p3[DCI white, gamma 2.6: CPU float, destination snap]' \
     'icc[RGB ICC file; path=FILE or PFILE]' \
     'auto[negotiate only with the stdout image terminal]'

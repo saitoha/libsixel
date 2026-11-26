@@ -22,7 +22,7 @@ expected_palette='JASC-PAL
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \
-        --gpu-policy=off -Wgamma -Ugamma -m "${mapfile_image}" \
+        --gpu-policy=off -Wsrgb -Usrgb -m "${mapfile_image}" \
         -M pal-jasc:- -o/dev/null "${input_image}"
 ) || {
     printf '\n%s\n' "not ok 1 - animated GIF image mapfile conversion failed"

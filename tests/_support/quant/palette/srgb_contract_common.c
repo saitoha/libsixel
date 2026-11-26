@@ -59,7 +59,7 @@ srgb_palette_contract(int linear)
     if (SIXEL_FAILED(palette->vtbl->init_entries(palette, &br)) ||
             SIXEL_FAILED(palette->vtbl->init_entries_float32(palette, &fr)) ||
             SIXEL_FAILED(sixel_palette_prepare_rgb101(palette,
-                linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA,
+                linear ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB,
                 SIXEL_PALETTE_OUTPUT_LEGACY)) ||
             SIXEL_FAILED(sixel_palette_get_rgb101(palette, &wire, &count)) ||
             count != 2 ||
@@ -128,8 +128,8 @@ srgb_encoder_contract(int linear)
         int flag;
         char const *value;
     } const options[] = {
-        {'=', "greedy:B1"}, {'p', "1"}, {'.', "auto"}, {'U', "gamma"},
-        {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'F', "none"},
+        {'=', "greedy:B1"}, {'p', "1"}, {'.', "auto"}, {'U', "srgb"},
+        {'Q', "kmeans:seed=1"}, {'X', "srgb-linear"}, {'F', "none"},
         {'a', "off"}, {'_', "none"}, {'~', "none"}, {'d', "fs"},
         {'t', "rgb"}, {'5', "none"}, {'4', "full-frame"}
     };
@@ -167,7 +167,7 @@ srgb_encoder_contract(int linear)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-            linear ? "linear" : "gamma")) ||
+            linear ? "srgb-linear" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
                 linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32

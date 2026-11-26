@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
     -7 -Lbuiltin! "-Uicc:path=${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -_none -~none -Fnone -trgb \
-    -Qkmeans:seed=1 -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wlinear --snap-policy=none -aoff -dnone \
+    -Qkmeans:seed=1 -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wsrgb-linear --snap-policy=none -aoff -dnone \
     --binning-policy=none --sampling-policy=full-frame 2>&1 <<'PNM'
 P3
 1 1

@@ -117,8 +117,8 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->skip_dcs_envelope = 0;
     output->skip_header = 0;
     output->palette_type = SIXEL_PALETTETYPE_AUTO;
-    output->colorspace = SIXEL_COLORSPACE_GAMMA;
-    output->source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    output->colorspace = SIXEL_COLORSPACE_SRGB;
+    output->source_colorspace = SIXEL_COLORSPACE_SRGB;
     output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     output->save_pixel = 0;
     output->save_count = 0;

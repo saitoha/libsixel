@@ -1175,7 +1175,7 @@ gif_export_pal8_frame(
             pg->w,
             pg->h,
             SIXEL_PIXELFORMAT_PAL8,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             ncolors,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -1273,7 +1273,7 @@ gif_export_nonpal_frame(
             pg->w,
             pg->h,
             sixel_frame_format(frame),
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             -1,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -1323,7 +1323,7 @@ gif_export_linear_frame(sixel_frame_t *frame, gif_t *g,
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
             (unsigned char *)pixels, NULL, g->w, g->h,
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_LINEAR,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_SRGB_LINEAR,
             -1, SIXEL_FRAME_PIXELS_FLOAT32
         });
     if (SIXEL_FAILED(status)) {

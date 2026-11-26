@@ -1885,9 +1885,9 @@ sixel_dither_6delta_keep_float(
                 colorspace)) {
             return 0;
         }
-    } else if (colorspace != SIXEL_COLORSPACE_GAMMA &&
+    } else if (colorspace != SIXEL_COLORSPACE_SRGB &&
             !sixel_color_convert(query, query, colorspace,
-                SIXEL_COLORSPACE_GAMMA)) {
+                SIXEL_COLORSPACE_SRGB)) {
         return 0;
     }
     threshold = (double)dither->pipeline_6delta_threshold / 255.0;
@@ -1914,10 +1914,10 @@ sixel_dither_6delta_keep_float(
     if (!within && keep_distance > chosen_distance) {
         return 0;
     }
-    if (output_transform || colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (output_transform || colorspace != SIXEL_COLORSPACE_SRGB) {
         if (output_transform ? !sixel_palette_from_output(wire_palette,
                 working, history, colorspace) : !sixel_color_convert(working,
-                history, SIXEL_COLORSPACE_GAMMA, colorspace)) {
+                history, SIXEL_COLORSPACE_SRGB, colorspace)) {
             return 0;
         }
         if (icc != NULL && !sixel_cdef_convert_intermediate(icc->linear,
@@ -1933,7 +1933,7 @@ sixel_dither_6delta_keep_float(
              * explicit output threshold remains the approximation gate. */
             if (output_transform ? !sixel_palette_from_output(wire_palette,
                     target, emitted, colorspace) : !sixel_color_convert(target,
-                    emitted, SIXEL_COLORSPACE_GAMMA, colorspace)) {
+                    emitted, SIXEL_COLORSPACE_SRGB, colorspace)) {
                 return 0;
             }
             if (icc != NULL && !sixel_cdef_convert_intermediate(icc->linear,
@@ -2914,7 +2914,7 @@ sixel_dither_prepare_standalone_output(sixel_dither_t *dither)
     source_colorspace = sixel_pixelformat_get_colorspace(
         dither->standalone_palette_pixelformat);
     status = sixel_palette_prepare_output(dither->palette, source_colorspace,
-        SIXEL_PALETTE_OUTPUT_LEGACY, SIXEL_COLORSPACE_GAMMA);
+        SIXEL_PALETTE_OUTPUT_LEGACY, SIXEL_COLORSPACE_SRGB);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -4779,10 +4779,10 @@ sixel_dither_apply_palette(
             owns_float_pipeline = 1;
         }
         if (sixel_pixelformat_get_colorspace(pipeline_pixelformat) !=
-                SIXEL_COLORSPACE_LINEAR) {
+                SIXEL_COLORSPACE_SRGB_LINEAR) {
             status = sixel_color_convert_frame_rgbf32(float_pipeline_pixels,
                 total_pixels, sixel_pixelformat_get_colorspace(
-                    pipeline_pixelformat), SIXEL_COLORSPACE_LINEAR);
+                    pipeline_pixelformat), SIXEL_COLORSPACE_SRGB_LINEAR);
             if (SIXEL_FAILED(status)) goto end;
         }
         status = sixel_palette_convert_icc_rgbf32(float_pipeline_pixels,
@@ -4805,7 +4805,7 @@ sixel_dither_apply_palette(
         /* Use the unit-scale RGB float layout for the three ICC axes.
          * Delta crosses the actual profile before any wire comparison. */
         pipeline_pixelformat = sixel_pixelformat_for_colorspace(
-            SIXEL_COLORSPACE_LINEAR, 1);
+            SIXEL_COLORSPACE_SRGB_LINEAR, 1);
     }
 
     method_for_scan = dither->method_for_scan;

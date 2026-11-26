@@ -62,7 +62,7 @@ lso2_gpu_fixture_open_device(lso2_gpu_fixture_t *f, int require_gpu)
     memset(&wire, 0, sizeof(wire));
     wire.definitions = definitions;
     wire.count = 5;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     if (sixel_wire_palette_new(&f->wire, &wire, f->allocator) != SIXEL_OK)
         return 1;
     for (y = 0; y < LSO2_GPU_HEIGHT; ++y) {
@@ -86,7 +86,7 @@ lso2_gpu_fixture_open_device(lso2_gpu_fixture_t *f, int require_gpu)
     f->prepare.device = f->device;
     f->prepare.gpu_lookup = f->lookup;
     f->prepare.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    f->prepare.colorspace = SIXEL_COLORSPACE_GAMMA;
+    f->prepare.colorspace = SIXEL_COLORSPACE_SRGB;
     f->prepare.scan = SIXEL_SCAN_SERPENTINE;
     f->prepare.worker_threads = 1;
     f->prepare.gpu_policy = SIXEL_GPU_POLICY_FORCE;
@@ -242,7 +242,7 @@ lso2_gpu_fixture_baseline(lso2_gpu_fixture_t *f, int offset)
     memset(&description, 0, sizeof(description));
     description.width = LSO2_GPU_WIDTH + (offset ? 4 : 0);
     description.height = LSO2_GPU_HEIGHT + (offset ? 5 : 0);
-    description.colorspace = SIXEL_COLORSPACE_GAMMA;
+    description.colorspace = SIXEL_COLORSPACE_SRGB;
     status = f->plane->vtbl->configure(f->plane, &description);
     if (status != SIXEL_OK) return status;
     status = sixel_retained_plane_legacy_map(f->plane, &rgb, &valid);

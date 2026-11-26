@@ -67,7 +67,7 @@ palette_colors_test(int scenario)
             SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME);
         config.convert = 1;
         config.target_layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        config.target_colorspace = SIXEL_COLORSPACE_LINEAR;
+        config.target_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     } else if (scenario == 52 || scenario == 53) {
         floats[9] = NAN;
         if (scenario == 52) {
@@ -82,7 +82,7 @@ palette_colors_test(int scenario)
     } else {
         status = sixel_sample_stream_bind_borrowed_buffer(&input, bytes,
             sizeof(bytes), SIXEL_PIXELFORMAT_RGB888,
-            SIXEL_COLORSPACE_GAMMA, NULL,
+            SIXEL_COLORSPACE_SRGB, NULL,
             SIXEL_PALETTE_SAMPLING_FULL_FRAME,
             SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
     }
@@ -138,7 +138,7 @@ palette_colors_test(int scenario)
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        statistics->colorspace = SIXEL_COLORSPACE_LINEAR;
+        statistics->colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         bin_config.binning = &binning;
         bin_config.adaptive_range = 1;
         status = sixel_filter_factory_create_by_name("binning", &bin_config,
@@ -182,7 +182,7 @@ palette_colors_test(int scenario)
     }
     if (scenario == 50 && (output.frame == input.frame ||
             memcmp(sixel_frame_get_pixels(frame), bytes, sizeof(bytes)) != 0 ||
-            output.colorspace != SIXEL_COLORSPACE_LINEAR)) {
+            output.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR)) {
         goto end;
     }
     result = EXIT_SUCCESS;

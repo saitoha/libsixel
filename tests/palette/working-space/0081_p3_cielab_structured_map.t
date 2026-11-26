@@ -9,7 +9,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0055_p3_mapfile linear \
-    "${TOP_SRCDIR}/tests/data/inputs/mapfile/p3-fixed.pal" cielab || {
+    "${TOP_SRCDIR}/tests/data/inputs/mapfile/p3-fixed.pal" lab-d65 || {
     printf '\n%s\n' "not ok 1 - p3 cielab structured map"
     exit 0
 }

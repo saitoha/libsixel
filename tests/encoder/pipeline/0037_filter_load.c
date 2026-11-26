@@ -154,7 +154,7 @@ test_load_filter_prefers_bound_output_slot(void)
     sixel_filter_bind_output(filter,
                              &bound_output,
                              SIXEL_PIXELFORMAT_RGB888,
-                             SIXEL_COLORSPACE_GAMMA);
+                             SIXEL_COLORSPACE_SRGB);
 
     status = sixel_filter_run(filter, allocator, NULL);
     if (SIXEL_FAILED(status)) {

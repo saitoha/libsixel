@@ -24,7 +24,7 @@ test_qa_0004(int argc, char **argv)
         clipped[c] = fmin(1, fmax(0, color_vectors[0][9 + c]));
     }
     /* Conversion can fail without writing the XYZ output. */
-    if (!sixel_qa_xyz(srgb, SIXEL_COLORSPACE_LINEAR, clipped, xyz)) {
+    if (!sixel_qa_xyz(srgb, SIXEL_COLORSPACE_SRGB_LINEAR, clipped, xyz)) {
         sixel_cdef_free(srgb);
         return EXIT_FAILURE;
     }

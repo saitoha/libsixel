@@ -555,7 +555,7 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->working_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     planner->scale_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     planner->scale_input_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    planner->working_colorspace_effective = SIXEL_COLORSPACE_GAMMA;
+    planner->working_colorspace_effective = SIXEL_COLORSPACE_SRGB;
     planner->colorspace_before_scale = 0;
     planner->colorspace_after_scale = 0;
     planner->resize_precision_mode = 1;

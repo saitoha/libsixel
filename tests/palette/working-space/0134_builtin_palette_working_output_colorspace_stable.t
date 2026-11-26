@@ -34,10 +34,10 @@ expected_palette='JASC-PAL
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --working-colorspace=linear --output-colorspace=linear \
+        --working-colorspace=srgb-linear --output-colorspace=srgb-linear \
         -bxterm16 -M pal:- -o /dev/null "${input_image}"
 ) || {
-    printf '\n%s\n' "not ok 1 - builtin palette export failed with -W/-U linear"
+    printf '\n%s\n' "not ok 1 - builtin palette export failed with -W/-U srgb-linear"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
@@ -46,7 +46,7 @@ actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    printf '\n%s\n' "not ok 1 - builtin palette changed under -W/-U linear"
+    printf '\n%s\n' "not ok 1 - builtin palette changed under -W/-U srgb-linear"
     exit 0
 }
 

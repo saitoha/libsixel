@@ -322,11 +322,11 @@ positional_encoder_test(int method, int mode, int space)
         "bluenoise:strength=0.5:channel=rgb"
     };
     static char const *const spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "greedy:B1" }, { 'p', "1" }, { '.', "auto" }, { 'U', "gamma" },
-        { 'Q', "kmeans:seed=1" }, { 'X', "linear" }, { 'F', "none" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { '.', "auto" }, { 'U', "srgb" },
+        { 'Q', "kmeans:seed=1" }, { 'X', "srgb-linear" }, { 'F', "none" },
         { 'a', "off" }, { '_', "none" }, { '~', "none" }, { 't', "rgb" },
         { '5', "none" }, { '4', "full-frame" }, { '0', "hard" }
     };
@@ -386,7 +386,7 @@ positional_encoder_test(int method, int mode, int space)
         goto end;
     }
     if (mode >= 2 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-            'X', "gamma"))) {
+            'X', "srgb"))) {
         goto end;
     }
     if (mode == 3) {

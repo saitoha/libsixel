@@ -274,7 +274,7 @@ bmpc_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 2 || frame->height != 2 ||
         sixel_frame_format(frame) != format ||
         frame->format.coordinates != (p->byte_output || p->gamma_output ?
-            SIXEL_COLORSPACE_GAMMA : SIXEL_COLORSPACE_LINEAR)) {
+            SIXEL_COLORSPACE_SRGB : SIXEL_COLORSPACE_SRGB_LINEAR)) {
         fprintf(stderr, "BMP precision format=%x expected=%x space=%d\n",
                 sixel_frame_format(frame), format, frame->format.coordinates);
         return SIXEL_BAD_INPUT;

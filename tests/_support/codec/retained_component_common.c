@@ -65,7 +65,7 @@ retained_component_frame(indexed_fixture_t *f, int large)
     plane.width = description.plane_width;
     plane.height = description.plane_height;
     plane.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    plane.colorspace = SIXEL_COLORSPACE_GAMMA;
+    plane.colorspace = SIXEL_COLORSPACE_SRGB;
     if (f->plane->vtbl->configure(f->plane, &plane) != SIXEL_OK) return 0;
     if (!large) return 1;
     if (sixel_retained_plane_legacy_map(f->plane, &rgb, &valid) != SIXEL_OK) {

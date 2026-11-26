@@ -12,7 +12,7 @@ set -v
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
     --threading-policy=greedy:global_budget=1 -.auto -Qheckbert -Fnone -aoff -_none '-~none' -dnone \
-    -Xlinear -Wlinear -Udci-p3 -trgb -p2 \
+    -Xsrgb-linear -Wsrgb-linear -Udci-p3 -trgb -p2 \
     "${TOP_SRCDIR}/tests/data/color-numeric/named-output-p3.png" | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" quant/palette/named_output/0038_dci_libpng || {
     printf '\n%s\n' "not ok 1 - P3 libpng input to dci-p3"

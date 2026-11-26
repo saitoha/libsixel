@@ -16,7 +16,7 @@ test_color_0053_bgr_smptec_to_srgb(int argc, char **argv)
     (void)argv;
     status = sixel_helper_convert_colorspace(pixel, sizeof(pixel),
         SIXEL_PIXELFORMAT_BGR888, SIXEL_COLORSPACE_SMPTEC,
-        SIXEL_COLORSPACE_GAMMA);
+        SIXEL_COLORSPACE_SRGB);
     return status == SIXEL_OK &&
         memcmp(pixel, expected, sizeof(expected)) == 0
         ? EXIT_SUCCESS : EXIT_FAILURE;

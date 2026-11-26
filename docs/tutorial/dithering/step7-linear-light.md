@@ -89,7 +89,7 @@ The palette that fits the photograph shows the limit of this idea. With its own 
 
 The linear strip above has a dark edge at its left end. The darkest columns have so little light that no error has piled up enough for a white pixel when the first rows go by, and the pattern starts late, as in [lesson 3](step3-error-diffusion.md#grain). A pixel of white has 100% of the light, so a few dots must carry a dark area alone.
 
-Light is also not the same as visibility. Distance in light says nothing about how visible a difference is, as the [`linear` section](../../encoder/palette-application/working-colorspace/README.md#linear-linear-light-srgb-coordinates) of libsixel's reference points out. A small step between two dark colors is a large step to the eye, and yet distance in light says it is tiny. So the nearest color by light is not the color that looks nearest.
+Light is also not the same as visibility. Distance in light says nothing about how visible a difference is, as the [`srgb-linear` section](../../encoder/palette-application/working-colorspace/README.md#srgb-linear-linear-light-srgb-coordinates) of libsixel's reference points out. A small step between two dark colors is a large step to the eye, and yet distance in light says it is tiny. So the nearest color by light is not the color that looks nearest.
 
 > **Try it: separate the two decisions.** Change `step7.c` to diffuse in light, but to choose the color by comparing stored numbers. For that you need the stored number of the wanted light, which is the inverse of `stored_to_light()`. Which of the columns in the table changes?
 

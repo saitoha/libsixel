@@ -14,7 +14,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 status=0
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -.float32 -Wlinear -Goff -dnone -p4 '-~none' '-_none' \
+    -.float32 -Wsrgb-linear -Goff -dnone -p4 '-~none' '-_none' \
     -Z delta:P1 \
     -U "icc:P${TOP_SRCDIR}/tests/data/color-numeric/register-feedback-lut.icc" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" \

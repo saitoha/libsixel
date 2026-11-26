@@ -147,7 +147,7 @@ d_none_execute(d_none_plan_t *plan,
     if (status != SIXEL_OK) return status;
     if (source.width != desc->width || source.height != desc->height ||
             source.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            source.colorspace != SIXEL_COLORSPACE_GAMMA)
+            source.colorspace != SIXEL_COLORSPACE_SRGB)
         return SIXEL_BAD_ARGUMENT;
     status = run->source->vtbl->get_transparency(run->source, &transparency);
     if (status != SIXEL_OK) return status;
@@ -359,7 +359,7 @@ d_none_prepare(sixel_gpu_dither_preparer_interface_t const *self,
             request->output.height <= 0) return SIXEL_BAD_ARGUMENT;
     if (request->pixelformat != preparer->configuration.pixelformat ||
             request->scan != preparer->configuration.method_for_scan ||
-            request->colorspace != SIXEL_COLORSPACE_GAMMA)
+            request->colorspace != SIXEL_COLORSPACE_SRGB)
         return SIXEL_FEATURE_ERROR;
     if (request->output.keycolor_reserved !=
             preparer->configuration.options.keycolor_reserved ||

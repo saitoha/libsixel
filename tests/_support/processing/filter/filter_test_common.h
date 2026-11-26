@@ -191,7 +191,7 @@ make_float_frame(sixel_allocator_t *allocator,
             width,
             height,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-            SIXEL_COLORSPACE_LINEAR,
+            SIXEL_COLORSPACE_SRGB_LINEAR,
             (-1),
             SIXEL_FRAME_PIXELS_FLOAT32
         });

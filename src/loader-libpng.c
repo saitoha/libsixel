@@ -961,7 +961,7 @@ load_png(unsigned char      /* out */ **result,
     *result = NULL;
     *transparent = -1;
     *alpha_zero_is_transparent = 0;
-    *color_result = (sixel_png_color_result_t){SIXEL_COLORSPACE_GAMMA, 0, 0u};
+    *color_result = (sixel_png_color_result_t){SIXEL_COLORSPACE_SRGB, 0, 0u};
     png_ptr = NULL;
     info_ptr = NULL;
     rows = NULL;
@@ -1279,7 +1279,7 @@ load_png(unsigned char      /* out */ **result,
                 status = (SIXELSTATUS)-background_converted;
                 goto cleanup;
             }
-        } else if (background_colorspace != SIXEL_COLORSPACE_LINEAR) {
+        } else if (background_colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) {
             for (channel = 0; channel < 3; ++channel) {
                 bg_pixel[channel] = (float)png_decode_srgb_unit(
                     bg_pixel[channel]);
@@ -1309,7 +1309,7 @@ load_png(unsigned char      /* out */ **result,
             goto cleanup;
         }
         *pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        color_result->coordinates = SIXEL_COLORSPACE_LINEAR;
+        color_result->coordinates = SIXEL_COLORSPACE_SRGB_LINEAR;
         color_result->cms_applied = cms_converted;
         status = SIXEL_OK;
         goto cleanup;
@@ -1679,7 +1679,7 @@ load_png(unsigned char      /* out */ **result,
         }
         color_result->cms_applied = cms_converted;
         if (cms_converted) {
-            color_result->coordinates = SIXEL_COLORSPACE_LINEAR;
+            color_result->coordinates = SIXEL_COLORSPACE_SRGB_LINEAR;
         }
     } else {
         loader_trace_message("PNGCHRM1|role=image|requested=%s|"
@@ -2555,7 +2555,7 @@ emit_apng_frame(
                 canvas->width,
                 canvas->height,
                 SIXEL_PIXELFORMAT_RGB888,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 0,
                 SIXEL_FRAME_PIXELS_U8
             });
@@ -2565,7 +2565,7 @@ emit_apng_frame(
         emitted_bytes = NULL;
     } else {
         status = sixel_frame_init_rgb_float(frame, emitted,
-            canvas->width, canvas->height, SIXEL_COLORSPACE_LINEAR, 0);
+            canvas->width, canvas->height, SIXEL_COLORSPACE_SRGB_LINEAR, 0);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

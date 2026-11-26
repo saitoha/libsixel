@@ -78,7 +78,7 @@ timelines fix the following non-threading choices:
 --quantize-model=kmeans:seed=1
 --merge-policy=ward
 -Xoklab
--Wgamma
+-Wsrgb
 --diffusion=fs:scan=raster
 --gpu-policy=off
 --lookup-policy=6bit:shared_instance=1
@@ -163,7 +163,7 @@ Representative raw JSONL records and rendered charts are retained for:
 - [animation, four workers](measurements/animation-thread4.jsonl).
 
 The encoder timeline loader spans cover the 900 by 675 source PNG. Pre-resize
-linearization, linear-RGB resizing, conversion back to the `-Wgamma` working
+linearization, linear-RGB resizing, conversion back to the `-Wsrgb` working
 space, and the later `-Xoklab` palette-input conversion appear as separate
 filter and colorspace activity. “Full HD encoder timeline” refers to the
 processed raster, not the loader input dimensions or the loader span alone.

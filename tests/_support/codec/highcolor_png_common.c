@@ -143,7 +143,7 @@ test_highcolor_png(int mode, char const *directory)
                 "builtin:cms_engine=none!")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 mode == 0 ? "8bit" : "float32")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', "keep")) ||
@@ -188,7 +188,7 @@ test_highcolor_png(int mode, char const *directory)
         file = NULL;
         if (i != 0 ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                    p3 ? "display-p3" : "gamma")) ||
+                    p3 ? "display-p3" : "srgb")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'o', target)) ||
                 SIXEL_FAILED(sixel_encoder_encode(encoder, input_path))) {
             goto end;

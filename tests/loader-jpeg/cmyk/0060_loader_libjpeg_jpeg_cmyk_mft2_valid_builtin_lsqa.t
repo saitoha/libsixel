@@ -39,7 +39,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -r nearest -w 192 -h 192 -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W srgb -r nearest -w 192 -h 192 -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
     printf '\n%s\n' "not ok 1 - libjpeg builtin cms decode failed: cmyk_mft2_valid"
     exit 0
 }

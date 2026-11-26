@@ -24,7 +24,7 @@ set -v
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 -L"libtiff:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
     -jscalar:resize_precision=float --precision-policy=float -aoff -Qheckbert \
-    -Xgamma -Wgamma -Ugamma -Fnone -_none '-~none' -dnone -trgb \
+    -Xsrgb -Wsrgb -Usrgb -Fnone -_none '-~none' -dnone -trgb \
     -Akeep -Bblack -w8 -h12 -rnearest \
     "${TOP_SRCDIR}/tests/data/color-numeric/tiff-layout-rgb16-o6.tif" 2>&1) || {
     echo "$trace" >&2

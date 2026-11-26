@@ -26,7 +26,7 @@ test_loader_0115_loader_builtin_jpeg_rgb16_lossless_numeric(
         64,
         64,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         sample_pixels,
         expected,
         0.000001f);

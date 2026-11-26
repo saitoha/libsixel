@@ -9,7 +9,7 @@ set -v
     exit 0
 }
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    -L 'libwebp:cms_engine=none!' -.float32 -Xgamma -Wgamma -dnone -p2 \
+    -L 'libwebp:cms_engine=none!' -.float32 -Xsrgb -Wsrgb -dnone -p2 \
     -v -o/dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_64.webp" 2>&1) || {
     printf '\n%s\n' "not ok 1 - precision conversion failed"
     exit 0

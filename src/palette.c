@@ -716,7 +716,7 @@ sixel_palette_clear_output(sixel_palette_storage_t *storage)
     sixel_cdef_free(storage->output_transform.device);
     storage->output_transform.srgb = NULL;
     storage->output_transform.device = NULL;
-    storage->output_transform.builtin_space = SIXEL_COLORSPACE_GAMMA;
+    storage->output_transform.builtin_space = SIXEL_COLORSPACE_SRGB;
     storage->output_rgb101_count = 0U;
     storage->output_hls_ready = 0;
 }
@@ -910,7 +910,7 @@ sixel_palette_factory_new(sixel_allocator_t *allocator, void **object)
     storage->build_context = NULL;
     storage->output_transform.srgb = NULL;
     storage->output_transform.device = NULL;
-    storage->output_transform.builtin_space = SIXEL_COLORSPACE_GAMMA;
+    storage->output_transform.builtin_space = SIXEL_COLORSPACE_SRGB;
     storage->output_rgb101_count = 0U;
     storage->output_hls_ready = 0;
     storage->output_icc_source = NULL;
@@ -1886,7 +1886,7 @@ sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
                              int output_definition)
 {
     return sixel_palette_prepare_output(palette, source_colorspace,
-        output_definition, SIXEL_COLORSPACE_GAMMA);
+        output_definition, SIXEL_COLORSPACE_SRGB);
 }
 
 /* Share the wire rounding boundary with progressive candidate formation.
@@ -1936,7 +1936,7 @@ sixel_palette_transform_to_output(
         return sixel_color_convert_output(out, in, workspace,
                                           transform->builtin_space);
     }
-    return sixel_color_convert(gamma, in, workspace, SIXEL_COLORSPACE_GAMMA) &&
+    return sixel_color_convert(gamma, in, workspace, SIXEL_COLORSPACE_SRGB) &&
         sixel_cdef_to_xyz(transform->srgb, gamma, xyz,
                           SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC) &&
         sixel_cdef_from_xyz(transform->device, xyz, out,
@@ -1961,19 +1961,19 @@ sixel_palette_prepare_output_definition(sixel_palette_t *palette,
     unsigned int offset;
 
     if (palette == NULL ||
-            (output_colorspace != SIXEL_COLORSPACE_GAMMA &&
-             output_colorspace != SIXEL_COLORSPACE_LINEAR &&
+            (output_colorspace != SIXEL_COLORSPACE_SRGB &&
+             output_colorspace != SIXEL_COLORSPACE_SRGB_LINEAR &&
              output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
             (output_definition != SIXEL_PALETTE_OUTPUT_LEGACY &&
-             output_colorspace != SIXEL_COLORSPACE_GAMMA) ||
+             output_colorspace != SIXEL_COLORSPACE_SRGB) ||
             (definition != NULL &&
              output_definition != SIXEL_NAMED_COLOR_COUNT) ||
             (definition == NULL &&
              sixel_cdef_named_name(output_definition) == NULL) ||
-            (source_colorspace != SIXEL_COLORSPACE_GAMMA &&
-             source_colorspace != SIXEL_COLORSPACE_LINEAR &&
+            (source_colorspace != SIXEL_COLORSPACE_SRGB &&
+             source_colorspace != SIXEL_COLORSPACE_SRGB_LINEAR &&
              source_colorspace != SIXEL_COLORSPACE_OKLAB &&
-             source_colorspace != SIXEL_COLORSPACE_CIELAB &&
+             source_colorspace != SIXEL_COLORSPACE_LAB_D65 &&
              source_colorspace != SIXEL_COLORSPACE_DIN99D)) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2173,7 +2173,7 @@ sixel_palette_apply_icc_registers(sixel_palette_t *palette, int workspace,
             }
             if (cluster_icc != NULL) {
                 if (!sixel_color_convert(working, source, workspace,
-                        SIXEL_COLORSPACE_GAMMA) ||
+                        SIXEL_COLORSPACE_SRGB) ||
                         !sixel_cdef_convert_intermediate(
                             storage->output_transform.srgb, cluster_icc,
                             working, target)) {
@@ -2401,7 +2401,7 @@ sixel_palette_output_is_gamma(sixel_palette_t const *palette)
     storage = SIXEL_PALETTE_STORAGE_CONST(palette);
     return storage->output_rgb101_count != 0U &&
         storage->output_transform.device == NULL &&
-        storage->output_transform.builtin_space == SIXEL_COLORSPACE_GAMMA;
+        storage->output_transform.builtin_space == SIXEL_COLORSPACE_SRGB;
 }
 
 int
@@ -2449,7 +2449,7 @@ sixel_palette_from_output(sixel_palette_t const *palette, double out[3],
                                 SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
         return 0;
     }
-    return sixel_color_convert(out, gamma, SIXEL_COLORSPACE_GAMMA, workspace);
+    return sixel_color_convert(out, gamma, SIXEL_COLORSPACE_SRGB, workspace);
 }
 
 int

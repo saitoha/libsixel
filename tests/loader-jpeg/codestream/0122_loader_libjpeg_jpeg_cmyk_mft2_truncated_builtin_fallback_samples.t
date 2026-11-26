@@ -27,12 +27,12 @@ test -f "${input_jpeg}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_builtin}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W srgb -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_builtin}" || {
     printf '\n%s\n' "not ok 1 - libjpeg builtin cms decode failed: cmyk_mft2_truncated"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -Llibjpeg:cms_engine=none! "${input_jpeg}" >"${output_none}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W srgb -Llibjpeg:cms_engine=none! "${input_jpeg}" >"${output_none}" || {
     printf '\n%s\n' "not ok 1 - libjpeg cms=none decode failed: cmyk_mft2_truncated"
     exit 0
 }

@@ -9,6 +9,6 @@ test_gamut_0049_ray_adaptive_samples(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return gamut_encode_check("adaptive-grid", "linear", 0,
+    return gamut_encode_check("adaptive-grid", "srgb-linear", 0,
         SIXEL_GAMUT_RAY_TRACE);
 }

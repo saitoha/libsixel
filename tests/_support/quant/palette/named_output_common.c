@@ -15,10 +15,10 @@
 #include "src/palette.h"
 #include "tests/data/color-numeric/named-output.h"
 
-static char const *const named_output_names[] = { "adobe-rgb", "dci-p3" };
+static char const *const named_output_names[] = { "a98-rgb", "dci-p3" };
 static int const named_output_spaces[] = {
-    SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
-    SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+    SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR,
+    SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_DIN99D
 };
 static int const named_output_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -26,7 +26,7 @@ static int const named_output_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const named_output_work[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 
 typedef struct named_output_capture {
@@ -148,7 +148,7 @@ test_named_output(int kind, int space, int model, int mode)
         for (c = 0; c < 3; ++c) {
             source[c] = original[i * 3 + c];
         }
-        if (!sixel_color_convert(target, source, SIXEL_COLORSPACE_LINEAR,
+        if (!sixel_color_convert(target, source, SIXEL_COLORSPACE_SRGB_LINEAR,
                 named_output_spaces[space])) {
             goto end;
         }

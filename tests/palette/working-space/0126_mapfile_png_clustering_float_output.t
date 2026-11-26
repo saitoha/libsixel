@@ -19,7 +19,7 @@ mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 
 expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision-policy=float -Xoklab -Wgamma -0hard \
+        -Lbuiltin:cms_engine=none! --precision-policy=float -Xoklab -Wsrgb -0hard \
         -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     printf '\n%s\n' "not ok 1 - explicit float PNG mapfile baseline encode failed"
@@ -28,7 +28,7 @@ expected_output=$(
 
 actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision-policy=auto -Wgamma -0hard \
+        -Lbuiltin:cms_engine=none! --precision-policy=auto -Wsrgb -0hard \
         -X oklab -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     printf '\n%s\n' "not ok 1 - automatic PNG mapfile encode failed with -X oklab"

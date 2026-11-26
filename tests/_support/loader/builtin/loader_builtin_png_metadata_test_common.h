@@ -66,7 +66,7 @@ png_metadata_check(int fixture, int engine, int background)
         options.bgcolor[2] = 30;
     }
     sixel_helper_set_loader_background_colorspace(background == 2
-        ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA);
+        ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB);
     result = edge_load_buffer_options("PNG metadata", source->bytes,
         source->length, &options, &probe, &status);
     sixel_helper_set_loader_background_colorspace(-1);
@@ -79,7 +79,7 @@ png_metadata_check(int fixture, int engine, int background)
     has_alpha = source->type != 2;
     expected = source->linear;
     format = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    colorspace = SIXEL_COLORSPACE_LINEAR;
+    colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     if (background != 0) {
         expected = background == 2 ? source->explicit_linear
                                   : source->explicit_gamma;
@@ -92,12 +92,12 @@ png_metadata_check(int fixture, int engine, int background)
              * UINT16 retains its original precision in gamma float. */
             format = source->depth == 8 ? SIXEL_PIXELFORMAT_RGB888
                                        : SIXEL_PIXELFORMAT_RGBFLOAT32;
-            colorspace = SIXEL_COLORSPACE_GAMMA;
+            colorspace = SIXEL_COLORSPACE_SRGB;
         }
     }
     if (fixture == 38) {
         format = SIXEL_PIXELFORMAT_PAL8;
-        colorspace = SIXEL_COLORSPACE_GAMMA;
+        colorspace = SIXEL_COLORSPACE_SRGB;
     }
     if (probe.pixelformat[0] != format ||
         probe.colorspace[0] != colorspace) {

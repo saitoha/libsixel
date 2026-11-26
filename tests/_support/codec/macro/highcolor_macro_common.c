@@ -222,7 +222,7 @@ test_highcolor_macro(int mode, char const *directory)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'g', NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', "keep")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                mode == 0 ? "linear" : "gamma")) ||
+                mode == 0 ? "srgb-linear" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 mode == 0 || mode == 6 || mode == 7 ? 'n' : 'u',
                 mode == 0 || mode == 6 || mode == 7 ? "7" : NULL)) ||
@@ -275,7 +275,7 @@ test_highcolor_macro(int mode, char const *directory)
         }
         memcpy(saved, samples, sizeof(samples));
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                    p3 ? "display-p3" : "gamma")) ||
+                    p3 ? "display-p3" : "srgb")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'o', path)) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame, input,

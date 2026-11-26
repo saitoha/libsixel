@@ -47,7 +47,7 @@ test_loader_0105_loader_builtin_hdr_new_rle_numeric(
     if (probe.callback_count != 1 || probe.width[0] != 8 ||
         probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.rgb_size[0] != sizeof(samples)) {
         return 1;
     }

@@ -96,7 +96,7 @@ cjf_setopt(sixel_encoder_t *encoder, int option, char const *value)
 {
     (void)encoder;
     return option == SIXEL_OPTFLAG_OUTPUT_COLORSPACE &&
-        (strcmp(value, "gamma") == 0 || strcmp(value, "display-p3") == 0)
+        (strcmp(value, "srgb") == 0 || strcmp(value, "display-p3") == 0)
         ? SIXEL_OK : SIXEL_BAD_ARGUMENT;
 }
 

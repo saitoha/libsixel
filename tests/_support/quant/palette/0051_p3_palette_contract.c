@@ -162,7 +162,8 @@ test_palette_0051_p3_contract(int argc, char **argv)
             goto end;
         }
         if (SIXEL_FAILED(sixel_palette_prepare_rgb101(palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
+                SIXEL_COLORSPACE_SRGB_LINEAR,
+                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
                 SIXEL_FAILED(sixel_palette_get_rgb101(palette, &wire,
                     &count)) || count != 2 ||
                 memcmp(wire, gray_wire, sizeof(gray_wire)) != 0) {
@@ -207,7 +208,7 @@ test_palette_0051_p3_contract(int argc, char **argv)
         }
         if (SIXEL_FAILED(p3_build(palette, &request, 1)) ||
                 SIXEL_FAILED(sixel_palette_prepare_rgb101(palette,
-                    SIXEL_COLORSPACE_LINEAR,
+                    SIXEL_COLORSPACE_SRGB_LINEAR,
                     SIXEL_PALETTE_OUTPUT_DISPLAY_P3))) {
             goto end;
         }
@@ -227,7 +228,8 @@ test_palette_0051_p3_contract(int argc, char **argv)
             goto end;
         }
         if (SIXEL_FAILED(sixel_palette_prepare_rgb101(palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
+                SIXEL_COLORSPACE_SRGB_LINEAR,
+                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
                 SIXEL_FAILED(sixel_palette_get_rgb101(palette, &wire,
                     &count)) || count != 1 ||
                 memcmp(wire, red_wire, sizeof(red_wire)) != 0) {

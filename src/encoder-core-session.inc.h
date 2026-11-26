@@ -230,7 +230,7 @@ sixel_indexed_wire_palette(sixel_dither_t *dither, sixel_output_t *output,
     wire_request.definitions = definitions;
     wire_request.count = entries.entry_count;
     wire_request.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    wire_request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire_request.colorspace = SIXEL_COLORSPACE_SRGB;
     status = sixel_wire_palette_new(wire, &wire_request, dither->allocator);
     return status;
 }
@@ -330,7 +330,7 @@ prepare:
     prepare.gpu_dither = dither->gpu_dither;
     prepare.output = description;
     prepare.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    prepare.colorspace = SIXEL_COLORSPACE_GAMMA;
+    prepare.colorspace = SIXEL_COLORSPACE_SRGB;
     prepare.scan = configuration.method_for_scan;
     prepare.worker_threads = allocation.dither_threads > 0
         ? allocation.dither_threads : 1;
@@ -621,7 +621,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
      * interpretation is allowed merely to qualify for this physical plan. */
     if (output->indexed_disabled ||
             !sixel_encode_delta_is_legacy(dither, output) ||
-            output->source_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            output->source_colorspace != SIXEL_COLORSPACE_SRGB ||
             (clear && (saved_gpu_policy == SIXEL_GPU_POLICY_FORCE ||
                        !capture)) ||
             ((dither->pipeline_accumulation_result_enabled ||

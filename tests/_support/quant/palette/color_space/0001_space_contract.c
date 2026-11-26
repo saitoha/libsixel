@@ -11,11 +11,11 @@
 #include "tests/data/color-numeric/palette-space.h"
 
 static char const *const space_names[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const space_colors[] = {
-    SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB,
-    SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+    SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB,
+    SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_DIN99D
 };
 static int const space_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -87,7 +87,7 @@ space_wire(int x, int w, int p3, char const *binning, char const *snap)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', snap)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '5', binning)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', space_names[x])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', space_names[w])) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||

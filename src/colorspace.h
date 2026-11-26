@@ -51,7 +51,7 @@ sixel_color_geometry(int space);
 static inline int
 sixel_geometry_format(sixel_color_geometry_t const *geometry, int want_float)
 {
-    return !want_float && geometry->space == SIXEL_COLORSPACE_GAMMA
+    return !want_float && geometry->space == SIXEL_COLORSPACE_SRGB
         ? SIXEL_PIXELFORMAT_RGB888 : geometry->float_format;
 }
 

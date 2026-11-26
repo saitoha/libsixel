@@ -26,7 +26,7 @@ test_loader_0069_loader_background_colorspace_reset(int argc, char **argv)
     (void)argv;
     base_colorspace = loader_background_colorspace();
     current_colorspace = 0;
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     sixel_helper_set_loader_background_colorspace(12345);
     current_colorspace = loader_background_colorspace();
     sixel_helper_set_loader_background_colorspace(-1);

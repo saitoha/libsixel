@@ -286,8 +286,8 @@ lx_capture(sixel_frame_t *frame, void *context)
         sixel_frame_format(frame) ==
             (linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                                       : SIXEL_PIXELFORMAT_RGBFLOAT32) &&
-        frame->format.coordinates == (linear ? SIXEL_COLORSPACE_LINEAR
-                                     : SIXEL_COLORSPACE_GAMMA) &&
+        frame->format.coordinates == (linear ? SIXEL_COLORSPACE_SRGB_LINEAR
+                                     : SIXEL_COLORSPACE_SRGB) &&
         frame->transparent_mask == NULL && frame->ncolors == -1;
     lx.ok &= lx_values((float const *)sixel_frame_get_pixels(frame),
                        lx.mode >= 2 && lx.mode <= 4);

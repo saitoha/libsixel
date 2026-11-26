@@ -16,14 +16,14 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 status=0
 planner_log=$(set +xv; SIXEL_PRECISION_POLICY=auto \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    --precision-policy=8bit -Wlinear -dnone -p16 \
+    --precision-policy=8bit -Wsrgb-linear -dnone -p16 \
     -o/dev/null "${input_image}" 2>&1) || status=$?
 test "${status}" -ne 0 || {
     printf '\n%s\n' "not ok 1 - 8bit with a linear working space was accepted"
     exit 0
 }
 case "${planner_log}" in
-    *'precision-policy=8bit requires the gamma working colorspace'*) true ;;
+    *'precision-policy=8bit requires the srgb working colorspace'*) true ;;
     *) false ;;
 esac || {
     printf '\n%s\n' "not ok 1 - rejection did not name the working colorspace"

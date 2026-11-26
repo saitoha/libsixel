@@ -210,7 +210,7 @@ test_linear_packed_gray(int format)
         SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
                 source_pixels, NULL, width, 1, format,
-                SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
+                SIXEL_COLORSPACE_SRGB_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
             }))) {
         goto end;
     }
@@ -218,7 +218,7 @@ test_linear_packed_gray(int format)
     if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface,
             SIXEL_PIXELFORMAT_RGB888)) ||
         SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
-        view.colorspace != SIXEL_COLORSPACE_GAMMA || view.pixels == NULL) {
+        view.colorspace != SIXEL_COLORSPACE_SRGB || view.pixels == NULL) {
         goto end;
     }
     for (i = 0; i < width; ++i) {
@@ -512,7 +512,7 @@ test_indexed_delivery(int format, int key, int linear, int target,
 
     memcpy(indices, pattern, sizeof(indices));
     source_pixels = format == SIXEL_PIXELFORMAT_PAL8 ? indices : packed;
-    colorspace = linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
+    colorspace = linear ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB;
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
@@ -542,7 +542,7 @@ test_indexed_delivery(int format, int key, int linear, int target,
         if (SIXEL_FAILED(iface->vtbl->set_pixelformat(iface, target)) ||
             SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
             view.pixelformat != target ||
-            view.colorspace != SIXEL_COLORSPACE_GAMMA) {
+            view.colorspace != SIXEL_COLORSPACE_SRGB) {
             goto end;
         }
         for (i = 0; i < 8; ++i) {
@@ -618,10 +618,10 @@ test_linear_strip(void)
         SIXEL_SUCCEEDED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
                 pixel, NULL, 1, 1, SIXEL_PIXELFORMAT_RGBA8888,
-                SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
+                SIXEL_COLORSPACE_SRGB_LINEAR, -1, SIXEL_FRAME_PIXELS_U8
             }))) {
         if (SIXEL_SUCCEEDED(sixel_frame_strip_alpha(frame, NULL)) &&
-            sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_LINEAR &&
+            sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_SRGB_LINEAR &&
             SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
                 SIXEL_PIXELFORMAT_RGB888)) &&
             memcmp(sixel_frame_get_pixels(frame), expected, 3) == 0) {
@@ -707,7 +707,8 @@ test_linear_resize(int retry, int explicit_rgb)
                 SIXEL_BAD_ALLOCATION ||
             SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
             view.pixels_float32 != pixel || view.width != 1 ||
-            view.height != 1 || view.colorspace != SIXEL_COLORSPACE_LINEAR ||
+            view.height != 1 || view.colorspace !=
+                SIXEL_COLORSPACE_SRGB_LINEAR ||
             memcmp(pixel, original_pixels, sizeof(pixel)) != 0) {
             goto end;
         }
@@ -1115,7 +1116,7 @@ test_smptec_to_srgb(int byte_source, int target)
     iface = sixel_frame_as_interface(frame);
     if (SIXEL_FAILED(sixel_frame_convert_workformat(frame, target)) ||
         SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
-        view.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        view.colorspace != SIXEL_COLORSPACE_SRGB ||
         view.pixelformat != target || view.rgb_definition != NULL) {
         goto end;
     }
@@ -2010,10 +2011,10 @@ test_rgbf32_public_retry(void)
     gray[0] = gray[1] = gray[2] = .25f;
     if (sixel_frame_borrow_pixels(frame, &(sixel_frame_pixels_request_t){
             gray, NULL, 1, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
-            SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
+            SIXEL_COLORSPACE_SRGB_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
         }) != SIXEL_OK || !check_public_float_layout(frame) ||
             sixel_frame_convert_pixels(frame, SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                       SIXEL_COLORSPACE_GAMMA) != SIXEL_OK ||
+                                       SIXEL_COLORSPACE_SRGB) != SIXEL_OK ||
             fabs(gray[0] - 0.5370987) >= 1e-7) {
         goto end;
     }
@@ -2052,7 +2053,7 @@ test_rgbf32_owned_slice(void)
     iface = sixel_frame_as_interface(frame);
     request = (sixel_frame_pixels_request_t){
         pixels, NULL, 2, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
+        SIXEL_COLORSPACE_SRGB_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
     };
     if (iface->vtbl->init_pixels(iface, &request) != SIXEL_OK) {
         free(pixels);
@@ -2281,7 +2282,7 @@ test_linear_unpack(int format, int bits)
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
         SIXEL_FAILED(sixel_frame_borrow_pixels(frame,
             &(sixel_frame_pixels_request_t){
-                rows, palette, 2, 2, format, SIXEL_COLORSPACE_LINEAR,
+                rows, palette, 2, 2, format, SIXEL_COLORSPACE_SRGB_LINEAR,
                 2, SIXEL_FRAME_PIXELS_U8
             }))) {
         goto end;
@@ -2289,7 +2290,7 @@ test_linear_unpack(int format, int bits)
     if (SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
             SIXEL_PIXELFORMAT_PAL8)) &&
         sixel_frame_format(frame) == SIXEL_PIXELFORMAT_PAL8 &&
-        sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_LINEAR &&
+        sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_SRGB_LINEAR &&
         sixel_frame_get_palette(frame) == palette &&
         memcmp(sixel_frame_get_pixels(frame), expected, 4) == 0 &&
         SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
@@ -2329,7 +2330,7 @@ test_float_bgr(int profile)
             SIXEL_PIXELFORMAT_BGR888)) &&
         sixel_frame_format(frame) == SIXEL_PIXELFORMAT_BGR888 &&
         memcmp(sixel_frame_get_pixels(frame), expected, sizeof(expected)) == 0
-        && sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA) {
+        && sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_SRGB) {
         result = EXIT_SUCCESS;
     }
 end:
@@ -2898,7 +2899,7 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (SIXEL_FAILED(status) || view.pixels != NULL
             || view.pixels_float32 == NULL || view.pixels_float32 == pixels
             || view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            || view.colorspace != SIXEL_COLORSPACE_LINEAR
+            || view.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR
             || memcmp(view.pixels_float32, original, sizeof(original)) != 0) {
         goto end;
     }
@@ -2910,7 +2911,7 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (SIXEL_FAILED(status) || view.pixels_float32 != NULL
             || view.pixels == NULL
             || view.pixelformat != SIXEL_PIXELFORMAT_RGB888
-            || view.colorspace != SIXEL_COLORSPACE_GAMMA
+            || view.colorspace != SIXEL_COLORSPACE_SRGB
             || view.pixels[0] != 255 || view.pixels[1] != 0
             || view.pixels[2] != 0) {
         goto end;
@@ -2919,7 +2920,7 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (SIXEL_FAILED(status) || view.pixels != NULL
             || view.pixels_float32 != pixels
             || view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            || view.colorspace != SIXEL_COLORSPACE_LINEAR
+            || view.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR
             || memcmp(view.pixels_float32, original, sizeof(original)) != 0) {
         goto end;
     }

@@ -100,8 +100,8 @@ The photograph with its own 16 colors:
 | Floyd–Steinberg on the photograph, 27-color cube | Area ΔE00 |
 | --- | --- |
 | Tutorial step 3, on the stored numbers | 6.74 |
-| libsixel, `-W gamma` | 6.46 |
-| libsixel, `-W linear` | 0.94 |
+| libsixel, `-W srgb` | 6.46 |
+| libsixel, `-W srgb-linear` | 0.94 |
 <!-- measurements:end -->
 
 ## Viewing distance

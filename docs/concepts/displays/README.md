@@ -221,7 +221,7 @@ The principle of dithering is the same on electronic paper as on any other displ
 
 Measured palettes vary between panels and production batches, and none of these projects documents how many panels were measured, so their values are starting points rather than standards.
 
-In libsixel terms, resampling and composition already happen in linear light ([Color-space handling](../../encoder/colorspace-handling/README.md)); the measured panel colors can be supplied as a palette file with `-m`, and a linear working space with `-W linear` makes error diffusion average in linear values. Two steps have no counterpart yet: libsixel does not compress tones and colors into a measured panel gamut, and it writes palette colors as given, so a palette of measured colors is sent as measured colors rather than translated back to the panel's own codes.
+In libsixel terms, resampling and composition already happen in linear light ([Color-space handling](../../encoder/colorspace-handling/README.md)); the measured panel colors can be supplied as a palette file with `-m`, and a linear working space with `-W srgb-linear` makes error diffusion average in linear values. Two steps have no counterpart yet: libsixel does not compress tones and colors into a measured panel gamut, and it writes palette colors as given, so a palette of measured colors is sent as measured colors rather than translated back to the panel's own codes.
 
 ### A return to "16 of 4,096"
 

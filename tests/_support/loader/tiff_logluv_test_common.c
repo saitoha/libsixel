@@ -28,8 +28,8 @@ tlog_capture(sixel_frame_t *frame, void *context)
         SIXEL_PIXELFORMAT_DIN99DFLOAT32
     };
     static int const spaces[] = {
-        SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_OKLAB,
+        SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SRGB,
+        SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_OKLAB,
         SIXEL_COLORSPACE_DIN99D
     };
     tlog_context_t *ctx;
@@ -68,7 +68,7 @@ tlog_capture(sixel_frame_t *frame, void *context)
         frame->alpha_zero_is_transparent != 0 ||
         view.pixelformat != (byte_view ? SIXEL_PIXELFORMAT_RGB888
                                       : formats[target]) ||
-        view.colorspace != (byte_view ? SIXEL_COLORSPACE_GAMMA
+        view.colorspace != (byte_view ? SIXEL_COLORSPACE_SRGB
                                       : spaces[target])) {
         fprintf(stderr, "TLOGLUV|metadata=0|format=%x|space=%d\n",
                 sixel_frame_format(frame), frame->format.coordinates);

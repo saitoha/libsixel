@@ -1002,13 +1002,13 @@ test_loader_libpng_contract(int argc, char **argv)
                strcmp(argv[1], "apng_lowbits") == 0) {
         result = status != SIXEL_OK || probe.count != 1 ||
             probe.format[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-            probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
             fabs(probe.linear[0][0] - lp_linear(32769.0 / 65535.0)) > 1e-7 ||
             fabs(probe.linear[0][3] - lp_linear(32770.0 / 65535.0)) > 1e-7;
     } else if (strcmp(argv[1], "apng_gamma") == 0) {
         result = status != SIXEL_OK || probe.count != 1 ||
             probe.format[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-            probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
             fabs(probe.linear[0][0] - 128.0 / 255.0) > 0.0001;
         /* A misplaced gAMA after default IDAT must not become shared color
          * metadata. The untagged opaque 8-bit canvas keeps byte RGB. */
@@ -1022,7 +1022,7 @@ test_loader_libpng_contract(int argc, char **argv)
         status = lp_load(&reference, &probe, cms, colors, NULL, loops, 0);
         result |= status != SIXEL_OK || probe.count != 1 ||
             probe.format[0] != SIXEL_PIXELFORMAT_RGB888 ||
-            probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
             fabs(probe.linear[0][0] - lp_linear(128.0 / 255.0)) > 1e-6;
     } else if (strcmp(argv[1], "over") == 0) {
         result = status != SIXEL_OK || probe.count != 2 ||

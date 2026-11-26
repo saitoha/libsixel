@@ -62,7 +62,7 @@ image_values_capture(sixel_frame_t *frame, void *context)
     status = sixel_frame_strip_alpha(frame, NULL);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_frame_convert_pixels(frame,
-            SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA);
+            SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_SRGB);
     }
     if (SIXEL_FAILED(status)) {
         return status;

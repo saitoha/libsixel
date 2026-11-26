@@ -20,8 +20,8 @@
 int test_dither_parallel_available(void);
 
 static int const pd_workspaces[5] = {
-    SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB,
-    SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+    SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB,
+    SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_DIN99D
 };
 static int const pd_formats[5] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -29,7 +29,7 @@ static int const pd_formats[5] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const pd_spaces[5] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static double const pd_device[3][3] = {
     {1, 0, 0}, {0, 1, 0}, {.25, .5, .75}
@@ -81,7 +81,7 @@ pd_palette(sixel_dither_t **dither, int workspace)
     (*dither)->force_palette = 1;
     sixel_dither_set_transparent(*dither, 2);
     sixel_dither_set_lut_policy(*dither, SIXEL_LUT_POLICY_NONE);
-    if (workspace != SIXEL_COLORSPACE_GAMMA) {
+    if (workspace != SIXEL_COLORSPACE_SRGB) {
         /* The residual fixture uses black and linear sRGB red. */
         values[4] = values[5] = 0.0f;
     }
@@ -89,7 +89,7 @@ pd_palette(sixel_dither_t **dither, int workspace)
         (*dither)->palette, &request)) &&
         SIXEL_SUCCEEDED(sixel_palette_prepare_output((*dither)->palette,
             workspace, SIXEL_PALETTE_OUTPUT_DISPLAY_P3,
-            SIXEL_COLORSPACE_GAMMA));
+            SIXEL_COLORSPACE_SRGB));
 }
 
 int
@@ -103,7 +103,7 @@ test_delta_p3_transform(int workspace)
 
     dither = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA)) {
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB)) {
         goto end;
     }
     for (color = 0; color < 3; ++color) {
@@ -160,7 +160,7 @@ test_delta_p3_threshold(int unused)
     (void)unused;
     dither = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA)) {
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB)) {
         goto end;
     }
     for (channel = 0; channel < 3; ++channel) {
@@ -206,7 +206,7 @@ test_delta_p3_residual(int skip)
     dither = NULL;
     indexes = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_LINEAR)) {
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB_LINEAR)) {
         goto end;
     }
     for (channel = 0; channel < 3; ++channel) {
@@ -254,8 +254,8 @@ test_delta_p3_cache(int failure)
 
     dither = other = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA) ||
-            !pd_palette(&other, SIXEL_COLORSPACE_GAMMA)) {
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB) ||
+            !pd_palette(&other, SIXEL_COLORSPACE_SRGB)) {
         goto end;
     }
     if (failure) {
@@ -269,7 +269,8 @@ test_delta_p3_cache(int failure)
             !sixel_palette_from_output(dither->palette, output, invalid, 0) &&
             memcmp(output, sentinel, sizeof(output)) == 0 &&
             SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
-                SIXEL_PALETTE_OUTPUT_DISPLAY_P3, SIXEL_COLORSPACE_LINEAR)) &&
+                SIXEL_PALETTE_OUTPUT_DISPLAY_P3,
+                    SIXEL_COLORSPACE_SRGB_LINEAR)) &&
             SIXEL_SUCCEEDED(sixel_palette_get_rgb101(dither->palette,
                 &codes, &count)) && count == 3 &&
             memcmp(saved, codes, sizeof(saved)) == 0 &&
@@ -277,7 +278,7 @@ test_delta_p3_cache(int failure)
         goto end;
     }
     if (SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
-            SIXEL_PALETTE_OUTPUT_LEGACY, SIXEL_COLORSPACE_GAMMA)) ||
+            SIXEL_PALETTE_OUTPUT_LEGACY, SIXEL_COLORSPACE_SRGB)) ||
             sixel_palette_output_is_p3(dither->palette) ||
             !sixel_palette_output_is_p3(other->palette) ||
             !sixel_palette_from_output(dither->palette, output,
@@ -325,7 +326,7 @@ pd_encoder(sixel_encoder_t **encoder, sixel_output_t **output,
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
         {'F', "none"}, {'a', "off"}, {'_', "none"}, {'0', "none"},
-        {'X', "gamma"}, {'W', "gamma"}, {'U', "display-p3"}, {'t', "rgb"},
+        {'X', "srgb"}, {'W', "srgb"}, {'U', "display-p3"}, {'t', "rgb"},
         {'.', "float32"}, {'p', "4"}, {'4', "full-frame"}, {'5', "none"},
         {'Z', "delta"}, {'7', NULL}
     };
@@ -485,7 +486,7 @@ int
 test_delta_p3_identity(int seeded)
 {
     static char const *const definitions[] = {
-        "display-p3", "display-p3", "gamma", "gamma", "display-p3",
+        "display-p3", "display-p3", "srgb", "srgb", "display-p3",
         "display-p3", "display-p3"
     };
     unsigned char black[12] = {0};
@@ -521,7 +522,7 @@ test_delta_p3_identity(int seeded)
             goto end;
         }
         if (pass == 6 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                'W', "linear"))) {
+                'W', "srgb-linear"))) {
             goto end;
         }
         memset(pixels, 0, sizeof(pixels));
@@ -576,9 +577,9 @@ static double const od_retained[2][3] = {
     { 6.16404193025565e-05, 1.16598398650042e-06, -1.06391142467926e-07 },
 };
 
-static char const *const od_names[2] = {"linear", "smpte-c"};
+static char const *const od_names[2] = {"srgb-linear", "smpte-c"};
 static int const od_spaces[2] = {
-    SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_SMPTEC
+    SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SMPTEC
 };
 
 /* Independent destination coordinates above include signed, above-one and
@@ -595,7 +596,7 @@ test_delta_output_inverse(int output)
 
     dither = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA) ||
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB) ||
             SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
                 SIXEL_PALETTE_OUTPUT_LEGACY, od_spaces[output]))) {
         goto end;
@@ -603,7 +604,7 @@ test_delta_output_inverse(int output)
     for (color = 0; color < 3; ++color) {
         memcpy(result, od_input[color], sizeof(result));
         if (!sixel_palette_from_output(dither->palette, result, result,
-                SIXEL_COLORSPACE_LINEAR)) {
+                SIXEL_COLORSPACE_SRGB_LINEAR)) {
             goto end;
         }
         for (channel = 0; channel < 3; ++channel) {
@@ -635,7 +636,7 @@ test_delta_output_failure(void)
     for (i = 0; i < 3; ++i) {
         memcpy(result, sentinel, sizeof(result));
         if (sixel_color_from_output(result, invalid[i],
-                SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_LINEAR) ||
+                SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_SRGB_LINEAR) ||
                 memcmp(result, sentinel, sizeof(result)) != 0) {
             return EXIT_FAILURE;
         }
@@ -645,7 +646,7 @@ test_delta_output_failure(void)
     if (sixel_color_from_output(result, od_input[1],
             SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_SMPTEC) ||
             sixel_color_from_output(result, od_input[1],
-                SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_GAMMA) ||
+                SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_SRGB) ||
             memcmp(result, sentinel, sizeof(result)) != 0) {
         return EXIT_FAILURE;
     }
@@ -668,7 +669,7 @@ test_delta_output_threshold(int output)
 
     dither = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA) ||
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB) ||
             SIXEL_FAILED(sixel_palette_prepare_output(dither->palette, 0,
                 SIXEL_PALETTE_OUTPUT_LEGACY, od_spaces[output]))) {
         goto end;
@@ -716,7 +717,7 @@ test_delta_output_residual(int output, int skip)
     dither = NULL;
     indexes = NULL;
     ok = 0;
-    if (!pd_palette(&dither, SIXEL_COLORSPACE_GAMMA)) {
+    if (!pd_palette(&dither, SIXEL_COLORSPACE_SRGB)) {
         goto end;
     }
     memset(&request, 0, sizeof(request));
@@ -871,7 +872,7 @@ test_icc_work_fhedt_reuse(int argc, char **argv)
     if ((argc != 3 && !equivalent_profile) ||
             !pd_encoder(&encoder, &output, &stream, 1) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '~',
@@ -952,7 +953,7 @@ test_icc_work_parallel_fs(int argc, char **argv)
     if ((argc != 2 && !pipeline) ||
             !pd_encoder(&encoder, &output, &stream, 1) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "full")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
@@ -1014,7 +1015,7 @@ test_icc_work_delta_fs(int argc, char **argv)
     frame = NULL;
     ok = 0;
     if (argc != 2 || !pd_encoder(&encoder, &output, &stream, 1) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb-linear")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "gray1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1])) ||
@@ -1086,7 +1087,7 @@ test_icc_work_delta_threshold(int argc, char **argv)
     ok = 0;
     if (argc != 2 || !pd_encoder(&encoder, &output, &stream, 1) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Z', "delta:T0")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'b', "xterm16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', argv[1]))) {
@@ -1145,10 +1146,10 @@ test_delta_output_identity(int target)
     }
     for (pass = 0; pass < 8; ++pass) {
         definition = pass < 2 ? od_names[target] :
-            pass < 4 ? od_names[1 - target] : pass < 6 ? "gamma" : "display-p3";
+            pass < 4 ? od_names[1 - target] : pass < 6 ? "srgb" : "display-p3";
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', definition)) ||
                 (pass == 1 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                    'W', "linear")))) {
+                    'W', "srgb-linear")))) {
             goto end;
         }
         memset(pixels, 0, sizeof(pixels));
@@ -1195,7 +1196,7 @@ static float const hd_frame_samples[2][3] = {
     {.137f, .437f, .781f}, {.71f, .223f, .41f}
 };
 static char const *const hd_outputs[4] = {
-    "gamma", "linear", "smpte-c", "display-p3"
+    "srgb", "srgb-linear", "smpte-c", "display-p3"
 };
 static float const hd_samples[2][3] = {
     {.123f, .456f, .789f}, {.7f, .2f, .4f}
@@ -1207,7 +1208,7 @@ hd_palette(sixel_dither_t **dither)
     float values[9] = {.123f, .456f, .789f, .7f, .2f, .4f, 0, 0, 0};
     sixel_palette_float32_entries_request_t request;
 
-    if (!pd_palette(dither, SIXEL_COLORSPACE_GAMMA)) {
+    if (!pd_palette(dither, SIXEL_COLORSPACE_SRGB)) {
         return 0;
     }
     memset(&request, 0, sizeof(request));
@@ -1217,8 +1218,8 @@ hd_palette(sixel_dither_t **dither)
     return SIXEL_SUCCEEDED((*dither)->palette->vtbl->init_entries_float32(
         (*dither)->palette, &request)) &&
         SIXEL_SUCCEEDED(sixel_palette_prepare_output((*dither)->palette,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
-            SIXEL_COLORSPACE_GAMMA));
+            SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY,
+            SIXEL_COLORSPACE_SRGB));
 }
 
 int
@@ -1251,7 +1252,7 @@ test_delta_hls_cache(int mode)
     }
     if (mode == 0) {
         /* Independently prepared palettes cannot overwrite the borrowed view. */
-        if (!pd_palette(&second, SIXEL_COLORSPACE_GAMMA) ||
+        if (!pd_palette(&second, SIXEL_COLORSPACE_SRGB) ||
                 SIXEL_FAILED(sixel_palette_prepare_hls(second->palette)) ||
                 SIXEL_FAILED(sixel_palette_get_hls_rgb101(second->palette,
                     &other, &count)) || codes == other || other[3] != 100 ||
@@ -1273,8 +1274,8 @@ test_delta_hls_cache(int mode)
                 SIXEL_SUCCEEDED(sixel_palette_get_hls_rgb101(dither->palette,
                     &codes, &count)) || codes != NULL || count != 0 ||
                 SIXEL_FAILED(sixel_palette_prepare_output(dither->palette,
-                    SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
-                    SIXEL_COLORSPACE_GAMMA)) ||
+                    SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY,
+                    SIXEL_COLORSPACE_SRGB)) ||
                 SIXEL_FAILED(sixel_palette_prepare_hls(dither->palette)) ||
                 SIXEL_FAILED(sixel_palette_get_hls_rgb101(dither->palette,
                     &codes, &count)) || count != 3 ||
@@ -1452,7 +1453,7 @@ test_delta_hls_reuse(void)
     frame = NULL;
     ok = 0;
     if (!pd_encoder(&encoder, &output, &stream, 0) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "gamma"))) {
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "srgb"))) {
         goto end;
     }
     for (pass = 0; pass < 5; ++pass) {

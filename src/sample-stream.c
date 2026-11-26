@@ -71,7 +71,7 @@ sixel_sample_stream_init(sixel_sample_stream_t *stream)
     stream->width = 0;
     stream->height = 0;
     stream->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    stream->colorspace = SIXEL_COLORSPACE_GAMMA;
+    stream->colorspace = SIXEL_COLORSPACE_SRGB;
 }
 
 SIXELSTATUS

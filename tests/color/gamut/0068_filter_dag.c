@@ -27,7 +27,7 @@ test_gamut_0068_filter_dag(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder,
             SIXEL_OPTFLAG_WORKING_COLORSPACE, "oklab")) &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder,
-            SIXEL_OPTFLAG_OUTPUT_COLORSPACE, "gamma:gamut=edge-seeker"));
+            SIXEL_OPTFLAG_OUTPUT_COLORSPACE, "srgb:gamut=edge-seeker"));
     gamut = before = after = color = -1;
     sixel_encoding_planner_init(&plan);
     if (ok) {

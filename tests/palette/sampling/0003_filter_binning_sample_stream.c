@@ -113,7 +113,7 @@ test_filter_0034_filter_binning_sample_stream(int argc, char **argv)
     sixel_filter_bind_sample_input(filter, &samples);
     sixel_filter_bind_weighted_output(filter,
                                       &output,
-                                      SIXEL_COLORSPACE_GAMMA);
+                                      SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, allocator, NULL);
     if (SIXEL_FAILED(status) ||
             binning.policy.phase != SIXEL_PALETTE_POLICY_EXECUTED ||

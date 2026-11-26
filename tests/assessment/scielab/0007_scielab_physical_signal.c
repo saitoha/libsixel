@@ -42,14 +42,14 @@ test_qa_0032(int argc, char **argv)
         for (c = 0; c < 3; ++c) {
             sample[c] = av[3 * p + c];
         }
-        if (!sixel_qa_xyz(srgb, SIXEL_COLORSPACE_LINEAR,
+        if (!sixel_qa_xyz(srgb, SIXEL_COLORSPACE_SRGB_LINEAR,
                 sample, axyz + 3 * p)) {
             goto end;
         }
         for (c = 0; c < 3; ++c) {
             sample[c] = bv[3 * p + c];
         }
-        if (!sixel_qa_xyz(srgb, SIXEL_COLORSPACE_LINEAR,
+        if (!sixel_qa_xyz(srgb, SIXEL_COLORSPACE_SRGB_LINEAR,
                 sample, bxyz + 3 * p)) {
             goto end;
         }
@@ -67,7 +67,7 @@ test_qa_0032(int argc, char **argv)
     sixel_assessment_select_metrics(qa, mask);
     qa->ppd = 28.5;
     /* Luma-only controls must not clip or gray the physical color path. */
-    qa->signal_space = SIXEL_COLORSPACE_GAMMA;
+    qa->signal_space = SIXEL_COLORSPACE_SRGB;
     qa->signal_bytes = 1;
     qa->grayscale = 1;
     ok = SIXEL_SUCCEEDED(sixel_assessment_analyze(qa, a, b))

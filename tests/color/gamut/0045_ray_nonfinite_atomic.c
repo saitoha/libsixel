@@ -18,7 +18,7 @@ test_gamut_0045_ray_nonfinite_atomic(int argc, char **argv)
     ok = ray_fixture_init(&fixture, "srgb");
     for (i = 0; ok && i < 3; ++i) {
         ok = !sixel_gamut_apply(fixture.mapper, input[i], result,
-            SIXEL_COLORSPACE_LINEAR) &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) &&
             memcmp(result, saved, sizeof(saved)) == 0;
     }
     gamut_fixture_free(&fixture);

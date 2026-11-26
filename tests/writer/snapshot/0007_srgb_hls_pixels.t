@@ -14,7 +14,7 @@ set +e
 SIXEL_DECODER_INPUT_COLORSPACE=display-p3 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! --cms-engine=none \
     --threading-policy=greedy:global_budget=1 -.f -Qheckbert -Fnone -aoff -_none '-~none' -dnone \
-    -Xgamma -Wgamma -Ugamma -thls -p3 -o png:- - <<'PPM' | \
+    -Xsrgb -Wsrgb -Usrgb -thls -p3 -o png:- - <<'PPM' | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" codec/png_snapshot/0007_srgb_hls_pixels
 P3
 3 1

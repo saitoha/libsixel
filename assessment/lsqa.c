@@ -1551,10 +1551,10 @@ typedef enum LsqaComparePrecision {
 
 static sixel_option_choice_t const g_lsqa_compare_colorspace_choices[] = {
     { "reference", LSQA_COMPARE_COLORSPACE_REFERENCE },
-    { "gamma", SIXEL_COLORSPACE_GAMMA },
-    { "linear", SIXEL_COLORSPACE_LINEAR },
+    { "gamma", SIXEL_COLORSPACE_SRGB },
+    { "linear", SIXEL_COLORSPACE_SRGB_LINEAR },
     { "oklab", SIXEL_COLORSPACE_OKLAB },
-    { "cielab", SIXEL_COLORSPACE_CIELAB },
+    { "cielab", SIXEL_COLORSPACE_LAB_D65 },
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
 
@@ -3692,9 +3692,9 @@ main(int argc, char **argv)
     exit_code = LSQA_EXIT_RUNTIME_FAILED;
     parse_message = NULL;
     parse_status = 0;
-    reference_colorspace = SIXEL_COLORSPACE_GAMMA;
+    reference_colorspace = SIXEL_COLORSPACE_SRGB;
     reference_precision = LSQA_COMPARE_PRECISION_8BIT;
-    target_colorspace = SIXEL_COLORSPACE_GAMMA;
+    target_colorspace = SIXEL_COLORSPACE_SRGB;
     target_precision = LSQA_COMPARE_PRECISION_8BIT;
     input_passes = 0U;
 

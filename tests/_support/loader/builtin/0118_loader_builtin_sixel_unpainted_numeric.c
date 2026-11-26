@@ -35,7 +35,7 @@ test_loader_0118_loader_builtin_sixel_unpainted_numeric(
     if (probe.callback_count != 1 || probe.width[0] != 2 ||
         probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_PAL8 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.ncolors[0] != 2 || probe.rgb_size[0] != 2u ||
         probe.rgb[0][0] != 1u || probe.rgb[0][1] != 255u ||
         probe.palette_size[0] != 6u ||
@@ -58,7 +58,7 @@ test_loader_0118_loader_builtin_sixel_unpainted_numeric(
     if (probe.callback_count != 1 || probe.width[0] != 2 ||
         probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.rgb_size[0] != 6u ||
         probe.rgb[0][0] != 255u || probe.rgb[0][1] != 0u ||
         probe.rgb[0][2] != 0u || probe.rgb[0][3] != 253u ||

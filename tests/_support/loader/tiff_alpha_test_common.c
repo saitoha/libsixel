@@ -259,26 +259,26 @@ at_load(char const *directory, at_context_t *ctx, char const *suffix,
           (ta_cases[ctx->fixture].opaque ||
            (!ta_cases[ctx->fixture].associated && !ctx->background))
         ? SIXEL_PIXELFORMAT_RGB888 : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    ctx->space = ctx->managed ? SIXEL_COLORSPACE_LINEAR
-                             : SIXEL_COLORSPACE_GAMMA;
+    ctx->space = ctx->managed ? SIXEL_COLORSPACE_SRGB_LINEAR
+                             : SIXEL_COLORSPACE_SRGB;
     if (ctx->managed && ctx->target == 1) {
         ctx->format = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        ctx->space = SIXEL_COLORSPACE_GAMMA;
+        ctx->space = SIXEL_COLORSPACE_SRGB;
     } else if (ctx->managed && ctx->target == 2) {
         ctx->format = SIXEL_PIXELFORMAT_RGB888;
-        ctx->space = SIXEL_COLORSPACE_GAMMA;
+        ctx->space = SIXEL_COLORSPACE_SRGB;
     } else if (ctx->managed && ctx->target == 3) {
         ctx->space = strcmp(target, "oklab") == 0 ? SIXEL_COLORSPACE_OKLAB
-            : strcmp(target, "cielab") == 0 ? SIXEL_COLORSPACE_CIELAB
+            : strcmp(target, "cielab") == 0 ? SIXEL_COLORSPACE_LAB_D65
                                             : SIXEL_COLORSPACE_DIN99D;
         ctx->format = ctx->space == SIXEL_COLORSPACE_OKLAB
             ? SIXEL_PIXELFORMAT_OKLABFLOAT32
-            : ctx->space == SIXEL_COLORSPACE_CIELAB
+            : ctx->space == SIXEL_COLORSPACE_LAB_D65
             ? SIXEL_PIXELFORMAT_CIELABFLOAT32 : SIXEL_PIXELFORMAT_DIN99DFLOAT32;
     }
     sixel_helper_set_loader_transparent_policy(policy);
     sixel_helper_set_loader_background_colorspace(ctx->background == 2
-        ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA);
+        ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB);
     snprintf(path, sizeof(path), "%s/tiff-alpha-%s-%s.tif", directory,
              ta_cases[ctx->fixture].name, suffix);
     snprintf(order, sizeof(order),
@@ -337,7 +337,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
     sixel_cms_engine_t previous;
     char const *suffixes[] = { "none", "invalid", "mismatch", "icc" };
     char const *targets[] = { "oklab", "cielab", "din99d" };
-    int const spaces[] = { SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB,
+    int const spaces[] = { SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
                            SIXEL_COLORSPACE_DIN99D };
     int old_policy;
     int old_background;
@@ -469,7 +469,8 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
                         }
                         ok = sixel_color_convert_rgbf32(ctx.converted,
                             (size_t)ta_cases[ctx.fixture].count,
-                            SIXEL_COLORSPACE_LINEAR, spaces[kind]) == SIXEL_OK;
+                            SIXEL_COLORSPACE_SRGB_LINEAR,
+                                spaces[kind]) == SIXEL_OK;
                         ok = ok && at_load(argv[1], &ctx, "icc",
                             targets[kind], 0, 0);
                     }

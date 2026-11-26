@@ -147,7 +147,7 @@ test_auto_cover_encoder(int hard)
         { '_', "none" }, { '~', "none" }, { 'd', "none" },
         { 't', "rgb" }, { '4', "full-frame" }, { '5', "none" },
         { 'Q', "kmeans:seed=1" }, { '.', "float" },
-        { 'X', "gamma" }, { 'W', "gamma" }, { 'U', "gamma" }
+        { 'X', "srgb" }, { 'W', "srgb" }, { 'U', "srgb" }
     };
     sixel_allocator_t *allocator;
     sixel_encoder_t *encoder;
@@ -329,7 +329,7 @@ test_auto_cover_admission(int mode)
             (mode == 4 && SIXEL_FAILED(sixel_encoder_setopt(
                 encoder, '.', "8bit"))) ||
             (linear && SIXEL_FAILED(sixel_encoder_setopt(
-                encoder, 'W', "linear"))) ||
+                encoder, 'W', "srgb-linear"))) ||
             ((mode == 9 || mode == 10 || mode == 14) &&
              SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'U', "display-p3"))) ||

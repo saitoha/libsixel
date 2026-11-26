@@ -28,7 +28,7 @@ public_float_values(int mode)
         {.039710951737133123, 1.5806216092152059, .21182693111414714}
     };
     static int const spaces[] = {
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
         SIXEL_COLORSPACE_DIN99D
     };
     static int const formats[] = {
@@ -50,15 +50,15 @@ public_float_values(int mode)
     double tolerance;
 
     count = mode == 17 ? 257U : 1U;
-    src = SIXEL_COLORSPACE_LINEAR;
-    dst = SIXEL_COLORSPACE_GAMMA;
+    src = SIXEL_COLORSPACE_SRGB_LINEAR;
+    dst = SIXEL_COLORSPACE_SRGB;
     format = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     column = 0;
     reference = 0;
     tolerance = 2e-7;
     if (mode == 2) {
-        src = SIXEL_COLORSPACE_GAMMA;
-        dst = SIXEL_COLORSPACE_LINEAR;
+        src = SIXEL_COLORSPACE_SRGB;
+        dst = SIXEL_COLORSPACE_SRGB_LINEAR;
         format = SIXEL_PIXELFORMAT_RGBFLOAT32;
         reference = 1;
     } else if (mode >= 3 && mode <= 8) {
@@ -73,14 +73,14 @@ public_float_values(int mode)
         } else {
             src = spaces[(mode - 3) / 2];
             format = formats[(mode - 3) / 2];
-            dst = SIXEL_COLORSPACE_LINEAR;
+            dst = SIXEL_COLORSPACE_SRGB_LINEAR;
         }
     } else if (mode == 9) {
         dst = SIXEL_COLORSPACE_SMPTEC;
         reference = 2;
     } else if (mode == 10) {
         src = SIXEL_COLORSPACE_SMPTEC;
-        dst = SIXEL_COLORSPACE_LINEAR;
+        dst = SIXEL_COLORSPACE_SRGB_LINEAR;
         format = SIXEL_PIXELFORMAT_RGBFLOAT32;
         reference = 3;
     }
@@ -134,15 +134,15 @@ public_float_failure(int mode)
     SIXELSTATUS status;
 
     size = sizeof(pixels);
-    src = SIXEL_COLORSPACE_LINEAR;
-    dst = SIXEL_COLORSPACE_GAMMA;
+    src = SIXEL_COLORSPACE_SRGB_LINEAR;
+    dst = SIXEL_COLORSPACE_SRGB;
     switch (mode) {
     case 11: pixels[3] = NAN; break;
     case 12: pixels[3] = INFINITY; break;
     case 13:
         pixels[3] = FLT_MAX;
-        src = SIXEL_COLORSPACE_GAMMA;
-        dst = SIXEL_COLORSPACE_LINEAR;
+        src = SIXEL_COLORSPACE_SRGB;
+        dst = SIXEL_COLORSPACE_SRGB_LINEAR;
         break;
     case 14:
         pixels[3] = pixels[4] = pixels[5] = -1;
@@ -183,7 +183,7 @@ test_color_public_float(int argc, char **argv)
         /* Explicit byte storage keeps its original LUT rounding. */
         return SIXEL_SUCCEEDED(sixel_helper_convert_colorspace(bytes,
             sizeof(bytes), SIXEL_PIXELFORMAT_RGB888,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR)) &&
+            SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR)) &&
             memcmp(bytes, expected, sizeof(bytes)) == 0
             ? EXIT_SUCCESS : EXIT_FAILURE;
     }
@@ -193,7 +193,7 @@ test_color_public_float(int argc, char **argv)
         return SIXEL_SUCCEEDED(sixel_helper_convert_colorspace(
             (unsigned char *)identity, sizeof(identity),
             SIXEL_PIXELFORMAT_RGBFLOAT32,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_GAMMA)) &&
+            SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB)) &&
             memcmp(identity, original, sizeof(identity)) == 0
             ? EXIT_SUCCESS : EXIT_FAILURE;
     }

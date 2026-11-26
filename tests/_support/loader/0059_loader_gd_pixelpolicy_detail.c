@@ -308,7 +308,7 @@ test_partial_alpha_mask_semantics(void)
     }
 
     if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB ||
         probe.has_transparent_mask != 1 ||
         probe.alpha_zero_is_transparent != 1) {
         fprintf(stderr, "partial alpha policy metadata mismatch\n");
@@ -356,7 +356,7 @@ test_multi_keyonly_pal8_normalized(void)
     }
 
     if (probe.pixelformat != SIXEL_PIXELFORMAT_PAL8 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB ||
         probe.width != 4 ||
         probe.height != 1 ||
         probe.transparent != 0 ||
@@ -401,7 +401,7 @@ test_gama_only_bg_float32_linear(void)
     }
 
     if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.has_transparent_mask != 0 ||
         probe.width != 2 ||
         probe.height != 1) {
@@ -440,7 +440,7 @@ test_single_key_nonzero_preserved(void)
     }
 
     if (probe.pixelformat != SIXEL_PIXELFORMAT_PAL8 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB ||
         probe.width != 4 ||
         probe.height != 1 ||
         probe.transparent != 2 ||
@@ -490,7 +490,7 @@ test_partial_alpha_bg_float32_semantics(void)
     }
 
     if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.has_transparent_mask != 0 ||
         probe.width != 6 ||
         probe.height != 1) {

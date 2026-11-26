@@ -207,8 +207,8 @@ jg_capture(sixel_frame_t *frame, void *context)
         sixel_frame_format(frame) != (byte_frame ? SIXEL_PIXELFORMAT_RGB888 :
             gamma_frame ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                           SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (gamma_frame ? SIXEL_COLORSPACE_GAMMA :
-                                           SIXEL_COLORSPACE_LINEAR) ||
+        frame->format.coordinates != (gamma_frame ? SIXEL_COLORSPACE_SRGB :
+                                           SIXEL_COLORSPACE_SRGB_LINEAR) ||
         frame->palette != NULL || frame->transparent_mask != NULL) {
         fprintf(stderr, "JGRAY metadata format=%x space=%d\n",
                 sixel_frame_format(frame), frame->format.coordinates);

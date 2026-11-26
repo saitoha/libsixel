@@ -19,11 +19,11 @@ test_gamut_0027_edge_matrix_icc(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture.allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper, fixture.definition,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_EDGE_SEEKER,
+            SIXEL_COLORSPACE_SRGB, SIXEL_GAMUT_EDGE_SEEKER,
             fixture.allocator));
     for (i = 0; ok && i < 11; ++i) {
         ok = sixel_gamut_apply(fixture.mapper, edge_origins[i], result,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         for (c = 0; ok && c < 3; ++c) {
             /* Includes the ICC's 15.16 matrix representation budget. */
             ok = isfinite(result[c]) &&

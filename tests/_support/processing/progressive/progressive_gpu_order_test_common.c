@@ -285,7 +285,7 @@ test_progressive_gpu_order_case(int mode)
     GPU_ORDER_REQUIRE(sixel_encoder_setopt(encoder,
         SIXEL_OPTFLAG_GPU_POLICY, "off") == SIXEL_OK);
     GPU_ORDER_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
     GPU_ORDER_REQUIRE(sixel_encoder_setopt(encoder,
         SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B1") == SIXEL_OK);
     source = gpu_order_frame(target);

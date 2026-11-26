@@ -79,7 +79,7 @@ sixel_cover_native_rgb(double rgb[3], float const *input, int space)
     native[0] = input[0];
     native[1] = input[1];
     native[2] = input[2];
-    return sixel_color_convert(rgb, native, space, SIXEL_COLORSPACE_GAMMA);
+    return sixel_color_convert(rgb, native, space, SIXEL_COLORSPACE_SRGB);
 }
 
 /* Keep distance in nominal gamma RGB, independently of -X and histogram
@@ -295,7 +295,7 @@ place:
         if (!changed[i]) {
             continue;
         }
-        if (!sixel_color_convert(native, palette[i], SIXEL_COLORSPACE_GAMMA,
+        if (!sixel_color_convert(native, palette[i], SIXEL_COLORSPACE_SRGB,
                 space)) {
             goto end;
         }

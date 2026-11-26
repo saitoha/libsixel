@@ -76,7 +76,7 @@ sixel_playback_prepare_application(sixel_playback_producer_t *producer,
     output = NULL;
     if (context->dither == NULL ||
             context->current_pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            context->current_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            context->current_colorspace != SIXEL_COLORSPACE_SRGB ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->ormode || encoder->fuse_macro ||
             encoder->macro_number >= 0 || encoder->output_is_png)
@@ -102,8 +102,8 @@ sixel_playback_prepare_application(sixel_playback_producer_t *producer,
         encoder->transparent_offset_left, encoder->transparent_offset_top);
     if (status != SIXEL_OK) goto end;
     status = sixel_encoder_set_encoder_core_format(output,
-        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_GAMMA);
+        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_SRGB,
+        SIXEL_COLORSPACE_SRGB);
     if (status != SIXEL_OK) goto end;
     memset(&request, 0, sizeof(request));
     request.pixels = sixel_frame_get_pixels(context->frame);

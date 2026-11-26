@@ -18,7 +18,7 @@ test_gamut_0007_nonfinite_atomic(int argc, char **argv)
     memcpy(saved, result, sizeof(saved));
     ok = gamut_fixture_init(&fixture, "srgb") &&
         !sixel_gamut_apply(fixture.mapper, source, result,
-            SIXEL_COLORSPACE_LINEAR) &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) &&
         memcmp(saved, result, sizeof(saved)) == 0;
     gamut_fixture_free(&fixture);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

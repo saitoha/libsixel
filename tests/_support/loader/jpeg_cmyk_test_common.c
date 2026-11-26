@@ -50,8 +50,8 @@ jc_capture(sixel_frame_t *frame, void *context)
     if (frame->width != dimension || frame->height != dimension ||
         sixel_frame_format(frame) != (disabled ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                               SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (disabled ? SIXEL_COLORSPACE_GAMMA :
-                             SIXEL_COLORSPACE_LINEAR) ||
+        frame->format.coordinates != (disabled ? SIXEL_COLORSPACE_SRGB :
+                             SIXEL_COLORSPACE_SRGB_LINEAR) ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u) {

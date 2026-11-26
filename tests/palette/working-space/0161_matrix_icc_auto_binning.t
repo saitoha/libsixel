@@ -11,8 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 trace=$(SIXEL_TRACE_TOPIC=loader,palette_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
-    -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
-    -Qkmeans:seed=1:binbits=4 -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wlinear -aoff -dnone \
+    -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
+    -Qkmeans:seed=1:binbits=4 -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wsrgb-linear -aoff -dnone \
     --binning-policy=auto --sampling-policy=full-frame 2>&1 <<'PNM'
 P3
 3 1

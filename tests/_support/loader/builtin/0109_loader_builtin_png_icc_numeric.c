@@ -24,7 +24,7 @@ test_loader_0109_loader_builtin_png_icc_numeric(int argc, char **argv)
         93,
         14,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         sample_pixels,
         color_legacy_png_linear,
         0.000001f);

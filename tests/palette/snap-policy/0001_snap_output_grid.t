@@ -17,7 +17,7 @@ stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_
     --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
     --merge-policy=none --cover-policy=off --lookup-policy=none \
     --gpu-policy=off --diffusion=none --palette-type=rgb -p8 \
-    -Xdin99d -Wdin99d -Ugamma --snap-policy=nearest:rate=1 \
+    -Xdin99d -Wdin99d -Usrgb --snap-policy=nearest:rate=1 \
     -M "act:${ARTIFACT_LOCAL_DIR}/palette.act" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     printf '\n%s\n' "not ok 1 - snap encoding failed"

@@ -60,13 +60,13 @@ set +x
 set -x
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
-    --gpu-policy=off -Wgamma -Ugamma -m "${low_map}" \
+    --gpu-policy=off -Wsrgb -Usrgb -m "${low_map}" \
     -M pal-jasc:"${low_palette}" -o /dev/null "${input_image}" || {
     printf '\n%s\n' "not ok 1 - low-value weighted image mapfile failed"
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
-    --gpu-policy=off -Wgamma -Ugamma -m "${high_map}" \
+    --gpu-policy=off -Wsrgb -Usrgb -m "${high_map}" \
     -M pal-jasc:"${high_palette}" -o /dev/null "${input_image}" || {
     printf '\n%s\n' "not ok 1 - high-value weighted image mapfile failed"
     exit 0

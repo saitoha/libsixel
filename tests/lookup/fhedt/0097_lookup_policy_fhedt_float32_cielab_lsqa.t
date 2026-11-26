@@ -22,7 +22,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-cielab.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --working-colorspace=cielab \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --working-colorspace=lab-d65 \
     -o "${output_sixel}" "${input_image}" || {
     printf '\n%s\n' "not ok 1 - float32 FHEDT cielab colorspace conversion failed"
     exit 0

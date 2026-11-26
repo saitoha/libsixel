@@ -23,10 +23,10 @@ test_loader_0068_loader_background_colorspace_gamma(int argc, char **argv)
     (void)argc;
     (void)argv;
     current_colorspace = 0;
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB);
     current_colorspace = loader_background_colorspace();
     sixel_helper_set_loader_background_colorspace(-1);
-    if (current_colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (current_colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr, "background colorspace override to gamma failed\n");
         return EXIT_FAILURE;
     }

@@ -81,8 +81,8 @@ icco_encode(char const *argument, int mode)
             SIXEL_FAILED(sixel_output_new(&output, icco_write, NULL, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "kmeans")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "linear")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb-linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "srgb-linear")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'a', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "none")) ||
@@ -158,7 +158,7 @@ icco_encode(char const *argument, int mode)
             input[c] = color_vectors[0][9 + c];
         }
         if (!sixel_palette_to_output(retained, converted, input,
-                SIXEL_COLORSPACE_LINEAR)) {
+                SIXEL_COLORSPACE_SRGB_LINEAR)) {
             goto end;
         }
         for (c = 0; c < 3; ++c) {
@@ -283,7 +283,7 @@ icco_grid(char const *argument, int strategy)
             &definition, NULL, NULL)) ||
         SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)) ||
         SIXEL_FAILED(sixel_snap_grid_new(&grid, strategy,
-            SIXEL_COLORSPACE_LINEAR, definition, allocator))) {
+            SIXEL_COLORSPACE_SRGB_LINEAR, definition, allocator))) {
         goto end;
     }
     sixel_cdef_free(definition);
@@ -369,7 +369,7 @@ icco_register_feedback(char const *data, int mode)
             SIXEL_FAILED(sixel_output_new(&output, icco_write, NULL, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "oklab")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "linear")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb-linear")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '0', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't',
@@ -489,8 +489,8 @@ icco_delta_threshold(char const *path, int outside)
     if (dither->palette->vtbl->init_entries_float32(dither->palette,
                 &request) != SIXEL_OK ||
             sixel_palette_prepare_output_definition(dither->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
-                SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_OK ||
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_SRGB, profile) != SIXEL_OK ||
             sixel_palette_get_rgb101(dither->palette, &wire, &count)
                 != SIXEL_OK || count != 2 ||
             wire[0] != 59 || wire[1] != 18 || wire[2] != 3) {
@@ -591,7 +591,7 @@ icco_delta_feedback(char const *data, int mode)
             sixel_encoder_new(&encoder, NULL) != SIXEL_OK ||
             sixel_output_new(&output, icco_write, NULL, NULL) != SIXEL_OK ||
             sixel_frame_new(&frame, NULL) != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 'W', "linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'W', "srgb-linear") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'G', "off") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, '~', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, '_', "none") != SIXEL_OK ||
@@ -733,8 +733,8 @@ icco_cache_retry(char const *path, int copy)
     if (source->palette->vtbl->init_entries_float32(source->palette,
                 &request) != SIXEL_OK ||
             sixel_palette_prepare_output_definition(source->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
-                SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_OK) {
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_SRGB, profile) != SIXEL_OK) {
         goto end;
     }
 
@@ -743,7 +743,7 @@ icco_cache_retry(char const *path, int copy)
                 sixel_palette_get_hls_rgb101(source->palette, &codes, &count)
                     != SIXEL_OK || count != 2 ||
                 !sixel_palette_from_output(source->palette, saved_reverse,
-                    query, SIXEL_COLORSPACE_LINEAR)) {
+                    query, SIXEL_COLORSPACE_SRGB_LINEAR)) {
             goto end;
         }
         memcpy(saved_hls, codes, sizeof(saved_hls));
@@ -751,7 +751,7 @@ icco_cache_retry(char const *path, int copy)
          * but overflows the exponential in the DIN99d inverse. */
         if (sixel_palette_prepare_output_definition(source->palette,
                     SIXEL_COLORSPACE_DIN99D, SIXEL_NAMED_COLOR_COUNT,
-                    SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_BAD_INPUT ||
+                    SIXEL_COLORSPACE_SRGB, profile) != SIXEL_BAD_INPUT ||
                 sixel_palette_get_rgb101(source->palette, &codes, &count)
                     != SIXEL_OK || count != 2 ||
                 memcmp(codes, icc, sizeof(icc)) ||
@@ -759,11 +759,11 @@ icco_cache_retry(char const *path, int copy)
                     != SIXEL_OK || count != 2 ||
                 memcmp(codes, saved_hls, sizeof(saved_hls)) ||
                 !sixel_palette_from_output(source->palette, reverse, query,
-                    SIXEL_COLORSPACE_LINEAR) ||
+                    SIXEL_COLORSPACE_SRGB_LINEAR) ||
                 memcmp(reverse, saved_reverse, sizeof(reverse)) ||
                 sixel_palette_prepare_output_definition(source->palette,
-                    SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
-                    SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_OK) {
+                    SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                    SIXEL_COLORSPACE_SRGB, profile) != SIXEL_OK) {
             goto end;
         }
     }
@@ -772,12 +772,12 @@ icco_cache_retry(char const *path, int copy)
 
     if (copy) {
         if (sixel_palette_apply_icc_registers(source->palette,
-                    SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_LINEAR,
+                    SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SRGB_LINEAR,
                     NULL, SIXEL_PALETTETYPE_HLS, 0, 0) != SIXEL_OK ||
                 sixel_palette_get_hls_rgb101(source->palette, &codes, &count)
                     != SIXEL_OK || count != 2 ||
                 !sixel_palette_from_output(source->palette, saved_reverse,
-                    query, SIXEL_COLORSPACE_LINEAR) ||
+                    query, SIXEL_COLORSPACE_SRGB_LINEAR) ||
                 sixel_allocator_new(&allocator, icco_cache_malloc,
                     NULL, NULL, NULL) != SIXEL_OK ||
                 sixel_dither_new(&target, 2, allocator) != SIXEL_OK) {
@@ -788,8 +788,8 @@ icco_cache_retry(char const *path, int copy)
         if (target->palette->vtbl->init_entries_float32(target->palette,
                     &request) != SIXEL_OK ||
                 sixel_palette_prepare_output(target->palette,
-                    SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_LEGACY,
-                    SIXEL_COLORSPACE_LINEAR) != SIXEL_OK) {
+                    SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_PALETTE_OUTPUT_LEGACY,
+                    SIXEL_COLORSPACE_SRGB_LINEAR) != SIXEL_OK) {
             goto end;
         }
         icco_fail_cache_malloc = 1;
@@ -799,7 +799,7 @@ icco_cache_retry(char const *path, int copy)
                     != SIXEL_OK || count != 2 ||
                 memcmp(codes, linear, sizeof(linear)) ||
                 !sixel_palette_to_output(target->palette, forward, query,
-                    SIXEL_COLORSPACE_LINEAR) ||
+                    SIXEL_COLORSPACE_SRGB_LINEAR) ||
                 memcmp(query, forward, sizeof(query))) {
             goto end;
         }
@@ -815,7 +815,7 @@ icco_cache_retry(char const *path, int copy)
                     != SIXEL_OK || count != 2 ||
                 memcmp(codes, saved_hls, sizeof(saved_hls)) ||
                 !sixel_palette_from_output(source->palette, reverse, query,
-                    SIXEL_COLORSPACE_LINEAR) ||
+                    SIXEL_COLORSPACE_SRGB_LINEAR) ||
                 memcmp(reverse, saved_reverse, sizeof(reverse))) {
             goto end;
         }
@@ -823,7 +823,7 @@ icco_cache_retry(char const *path, int copy)
     if (sixel_palette_get_rgb101(source->palette, &codes, &count)
                 != SIXEL_OK || count != 2 || memcmp(codes, icc, sizeof(icc)) ||
             !sixel_palette_to_output(source->palette, forward, query,
-                SIXEL_COLORSPACE_LINEAR)) {
+                SIXEL_COLORSPACE_SRGB_LINEAR)) {
         goto end;
     }
     /* The fixture's B2A maps neutral input to fixed RGB (.2,.4,.6). */
@@ -879,10 +879,10 @@ icco_cache_unrounded(char const *path)
     if (source->palette->vtbl->init_entries_float32(source->palette,
                 &request) != SIXEL_OK ||
             sixel_palette_prepare_output_definition(source->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
-                SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_OK ||
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_SRGB, profile) != SIXEL_OK ||
             sixel_palette_apply_icc_registers(source->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SRGB_LINEAR,
                 NULL, SIXEL_PALETTETYPE_HLS, 0, 0) != SIXEL_OK ||
             sixel_palette_copy_output_cache(target->palette, source->palette)
                 != SIXEL_OK) {
@@ -960,21 +960,21 @@ icco_cache_rounded_inverse(char const *path)
     if (dither->palette->vtbl->init_entries_float32(dither->palette,
                 &request) != SIXEL_OK ||
             sixel_palette_prepare_output(dither->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_LEGACY,
-                SIXEL_COLORSPACE_LINEAR) != SIXEL_OK ||
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_PALETTE_OUTPUT_LEGACY,
+                SIXEL_COLORSPACE_SRGB_LINEAR) != SIXEL_OK ||
             sixel_palette_prepare_output_definition(dither->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
-                SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_BAD_INPUT ||
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_SRGB, profile) != SIXEL_BAD_INPUT ||
             sixel_palette_get_rgb101(dither->palette, &codes, &count)
                 != SIXEL_OK || count != 2 ||
             memcmp(codes, saved, sizeof(saved)) != 0 ||
             !sixel_palette_to_output(dither->palette, out, query,
-                SIXEL_COLORSPACE_LINEAR) ||
+                SIXEL_COLORSPACE_SRGB_LINEAR) ||
             memcmp(out, query, sizeof(out)) != 0 ||
             sixel_color_read_icc(path, &good) != SIXEL_OK ||
             sixel_palette_prepare_output_definition(dither->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
-                SIXEL_COLORSPACE_GAMMA, good) != SIXEL_OK) {
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_SRGB, good) != SIXEL_OK) {
         goto end;
     }
     ok = 1;
@@ -1016,8 +1016,8 @@ icco_direct_delta(char const *profile, char const *path)
         pixels[i] = (float)color_vectors[i / 3][9 + i % 3];
     }
     if (sixel_encoder_new(&encoder, NULL) != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 'W', "linear") != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 'X', "linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'W', "srgb-linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'X', "srgb-linear") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'G', "off") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'd', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'F', "none") != SIXEL_OK ||
@@ -1094,7 +1094,7 @@ icco_progressive_reject(char const *argument)
         sixel_encoder_setopt(encoder, 'U', argument) == SIXEL_OK &&
         sixel_progressive_new(&context, encoder, &config, NULL)
             == SIXEL_BAD_ARGUMENT && context == NULL &&
-        sixel_encoder_setopt(encoder, 'U', "gamma") == SIXEL_OK &&
+        sixel_encoder_setopt(encoder, 'U', "srgb") == SIXEL_OK &&
         sixel_progressive_new(&context, encoder, &config, NULL) == SIXEL_OK &&
         sixel_encoder_setopt(encoder, 'U', argument) == SIXEL_BAD_ARGUMENT &&
         encoder->output_icc == NULL;
@@ -1142,13 +1142,13 @@ icco_progressive_retry(char const *argument)
     if (sixel_allocator_new(&allocator, NULL, NULL, NULL, icco_watch_free)
                 != SIXEL_OK ||
             sixel_encoder_new(&encoder, allocator) != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 'W', "linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'W', "srgb-linear") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'G', "off") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'd', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, '~', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, '_', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'Z', "delta") != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 'U', "gamma:gamut=local-minde")
+            sixel_encoder_setopt(encoder, 'U', "srgb:gamut=local-minde")
                 != SIXEL_OK ||
             sixel_progressive_config_init(&config, sizeof(config))
                 != SIXEL_OK ||
@@ -1158,7 +1158,7 @@ icco_progressive_retry(char const *argument)
     }
     mapper = encoder->gamut_mapper;
     if (mapper == NULL || !sixel_gamut_apply(mapper, outside, expected,
-            SIXEL_COLORSPACE_LINEAR) ||
+            SIXEL_COLORSPACE_SRGB_LINEAR) ||
             memcmp(outside, expected, sizeof(expected)) == 0) {
         goto end;
     }
@@ -1167,7 +1167,8 @@ icco_progressive_retry(char const *argument)
     if (sixel_encoder_setopt(encoder, 'U', argument) != SIXEL_BAD_ARGUMENT ||
             icco_mapper_frees != 0 || encoder->gamut_mapper != mapper ||
             encoder->output_icc != NULL ||
-            !sixel_gamut_apply(mapper, outside, mapped, SIXEL_COLORSPACE_LINEAR)
+            !sixel_gamut_apply(mapper, outside, mapped,
+                SIXEL_COLORSPACE_SRGB_LINEAR)
                 || memcmp(expected, mapped, sizeof(mapped)) != 0 ||
             sixel_output_new(&output, icco_write, NULL, allocator)
                 != SIXEL_OK ||
@@ -1213,8 +1214,8 @@ icco_output_target(int cluster, char const *data)
             SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_output_new(&output, icco_write, NULL, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-            sixel_encoder_setopt(encoder, 'X', "linear") ||
-            sixel_encoder_setopt(encoder, 'W', "linear") ||
+            sixel_encoder_setopt(encoder, 'X', "srgb-linear") ||
+            sixel_encoder_setopt(encoder, 'W', "srgb-linear") ||
             sixel_encoder_setopt(encoder, 'F', "none") ||
             sixel_encoder_setopt(encoder, '_', "none") ||
             sixel_encoder_setopt(encoder, '0', "none") ||
@@ -1230,7 +1231,7 @@ icco_output_target(int cluster, char const *data)
         if (sixel_encoder_setopt(encoder, 'a', "off") ||
                 sixel_encoder_setopt(encoder, '4', "full-frame") ||
                 sixel_encoder_setopt(encoder, '5', "none") ||
-                sixel_encoder_setopt(encoder, 'U', "gamma") ||
+                sixel_encoder_setopt(encoder, 'U', "srgb") ||
                 sixel_encoder_setopt(encoder, 'Q', "kmeans:seed=1") ||
                 sixel_encoder_setopt(encoder, 'p', "2")) {
             goto end;

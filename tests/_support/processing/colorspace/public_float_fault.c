@@ -467,8 +467,8 @@ int test_color_public_float_fault(int argc, char **argv)
     }
     status = fault_convert_colorspace((unsigned char *)pixels, sizeof(pixels),
                                       SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                                      SIXEL_COLORSPACE_LINEAR,
-                                      SIXEL_COLORSPACE_GAMMA);
+                                      SIXEL_COLORSPACE_SRGB_LINEAR,
+                                      SIXEL_COLORSPACE_SRGB);
     if (float_fault_created != 1 ||
         float_fault_pushes != (float_fault_mode == 2 ? 0 : 2) ||
         status != (float_fault_mode == 3 ? SIXEL_RUNTIME_ERROR : SIXEL_OK)) {
@@ -534,15 +534,15 @@ int test_color_worker_memo_lifetime(int argc, char **argv)
     sixel_runtime_policy_store(&runtime);
     ok = 1;
     for (float_fault_mode = 4; float_fault_mode <= 5; ++float_fault_mode) {
-        for (target = SIXEL_COLORSPACE_LINEAR;
-             target <= SIXEL_COLORSPACE_CIELAB; target += 3) {
+        for (target = SIXEL_COLORSPACE_SRGB_LINEAR;
+             target <= SIXEL_COLORSPACE_LAB_D65; target += 3) {
             for (i = 0U; i < count * 3U; ++i) {
                 pixels[i] = .25f;
             }
             for (channel = 0; channel < 3; ++channel) {
                 input[channel] = .25;
             }
-            ok &= fault_color_convert(output, input, SIXEL_COLORSPACE_GAMMA,
+            ok &= fault_color_convert(output, input, SIXEL_COLORSPACE_SRGB,
                                       target);
             for (channel = 0; channel < 3; ++channel) {
                 expected[channel] = (float)output[channel];
@@ -559,7 +559,7 @@ int test_color_worker_memo_lifetime(int argc, char **argv)
             sixel_thread_budget_set_reclaim(&scope, 8, float_fault_donate,
                                             &polls);
             status = fault_color_convert_frame_rgbf32(
-                pixels, count, SIXEL_COLORSPACE_GAMMA, target);
+                pixels, count, SIXEL_COLORSPACE_SRGB, target);
             sixel_thread_budget_leave(&scope);
             ok &= status == SIXEL_OK && polls == 2 && float_fault_grows == 1 &&
                   float_fault_used == 7 && float_fault_memo_attempts == 8 &&

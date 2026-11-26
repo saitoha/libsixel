@@ -26,7 +26,7 @@ test_loader_0116_loader_builtin_psd_rgb16_zip_pred_numeric(
         16,
         16,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         sample_pixels,
         expected,
         0.000001f);

@@ -423,7 +423,7 @@ def encode_comparison(build, source, continuous, directory, manifest):
     for d, method in enumerate(("none", "fs")):
         for m, policy in enumerate(POLICIES):
             command = [build / "converters/img2sixel", source, *FLAGS,
-                       "-d", method, "-U", "gamma:gamut=" + policy]
+                       "-d", method, "-U", "srgb:gamut=" + policy]
             sixel = run(command)
             png = run([build / "converters/sixel2png", "-T", "srgb"], input=sixel)
             decoded = Image.open(io.BytesIO(png)).convert("RGB")
@@ -530,7 +530,7 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
         preview = encode_srgb(data[:, :, m + 1, :3])
         continuous_line = strip(data[:, :, m + 1, 3])
         sixel = run([build / "converters/img2sixel", source, *FLAGS,
-                     "-d", "fs", "-U", "gamma:gamut=" + policy])
+                     "-d", "fs", "-U", "srgb:gamut=" + policy])
         png = run([build / "converters/sixel2png", "-T", "srgb"], input=sixel)
         decoded = Image.open(io.BytesIO(png)).convert("RGB")
         assert decoded.size == (192, 96)

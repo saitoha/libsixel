@@ -45,7 +45,7 @@ dn_frames(int mode, char const *positional, int workspace)
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
         {'F', "none"}, {'a', "off"}, {'_', "none"}, {'0', "none"},
-        {'X', "gamma"}, {'W', "gamma"}, {'U', "gamma"}, {'t', "rgb"},
+        {'X', "srgb"}, {'W', "srgb"}, {'U', "srgb"}, {'t', "rgb"},
         {'.', "float32"}, {'p', "4"}, {'4', "full-frame"}, {'5', "none"},
         {'Z', "delta"}, {'7', NULL}
     };
@@ -56,7 +56,7 @@ dn_frames(int mode, char const *positional, int workspace)
     static float const color[3] = { -.05f, .124f, 1.05f };
     static unsigned char const wire[3] = { 0, 31, 255 };
     static char const *const spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     /* Independently evaluated extended sRGB equations, not CMS output.
      * Normalized Lab/DIN units match the documented working convention. */
@@ -310,7 +310,7 @@ dn_prepare(sixel_dither_t *dither, unsigned char const *bytes, int count)
     return SIXEL_SUCCEEDED(dither->palette->vtbl->init_entries_float32(
             dither->palette, &request)) &&
         SIXEL_SUCCEEDED(sixel_palette_prepare_rgb101(dither->palette,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY));
+            SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY));
 }
 
 /* A kept .6 gray at a desired .55 creates a negative residual. All nine
@@ -441,8 +441,8 @@ test_delta_native_scope(int unused)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
-        {'F', "none"}, {'a', "off"}, {'_', "none"}, {'X', "gamma"},
-        {'W', "gamma"}, {'U', "display-p3"}, {'t', "rgb"},
+        {'F', "none"}, {'a', "off"}, {'_', "none"}, {'X', "srgb"},
+        {'W', "srgb"}, {'U', "display-p3"}, {'t', "rgb"},
         {'.', "float32"}, {'p', "4"}, {'Z', "delta"}
     };
     float pixels[3] = { .2f, .4f, .6f };

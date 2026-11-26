@@ -145,7 +145,7 @@ test_png_delta_recovery(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
-        {'_', "none"}, {'W', "gamma"}, {'t', "rgb"}, {'Z', "full"},
+        {'_', "none"}, {'W', "srgb"}, {'t', "rgb"}, {'Z', "full"},
         {'7', NULL}, {'b', "gray1"}, {'o', "png:-"}
     };
     float pixels[6] = { 1.f, 1.f, 1.f, 0.f, 0.f, 0.f };
@@ -186,7 +186,7 @@ test_png_delta_recovery(int mode)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 mode ? "float32" : "8bit")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                mode == 2 ? "display-p3" : "gamma")) ||
+                mode == 2 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame,
                 mode ? (unsigned char *)pixels : bytes, 2, 1,

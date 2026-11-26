@@ -136,7 +136,7 @@ For why linear RGB is needed and when the planner inserts or skips conversions, 
 
 ### Linear-light resize
 
-The normal filtered-resize path converts a gamma byte source to `LINEARRGBFLOAT32`, resamples linear-light values, and converts to the requested working format afterward. With `--precision-policy=8bit -Wgamma`, the float buffer is transient: planner diagnostics report `source=rgb888 work=rgb888 scale_out=linear-f32`. This is an implicit high-precision operation even though the main work buffer remains byte-based.
+The normal filtered-resize path converts a gamma byte source to `LINEARRGBFLOAT32`, resamples linear-light values, and converts to the requested working format afterward. With `--precision-policy=8bit -Wsrgb`, the float buffer is transient: planner diagnostics report `source=rgb888 work=rgb888 scale_out=linear-f32`. This is an implicit high-precision operation even though the main work buffer remains byte-based.
 
 `-j auto:resize_precision=preserve` explicitly keeps an integer source in `RGB888` while resizing. It reduces the storage of each affected RGB buffer from twelve to three bytes per pixel, but interpolation then averages gamma-encoded values rather than light. This mode is a memory-recovery policy with an accuracy cost, not an equivalent implementation of the default.
 
@@ -144,28 +144,28 @@ The normal filtered-resize path converts a gamma byte source to `LINEARRGBFLOAT3
 
 ### Working color-space conversion
 
-`-Wlinear`, `-Woklab`, `-Wcielab`, and `-Wdin99d` require color-space-specific float32 work formats. Under `auto` they promote the work buffer; `8bit` rejects them. `-Wgamma` is the only working space that can use either `RGB888` or `RGBFLOAT32`.
+`-Wsrgb-linear`, `-Woklab`, `-Wlab-d65`, and `-Wdin99d` require color-space-specific float32 work formats. Under `auto` they promote the work buffer; `8bit` rejects them. `-Wsrgb` is the only working space that can use either `RGB888` or `RGBFLOAT32`.
 
 This rule is why these two commands have the same effective linear work format and the same output:
 
 ```sh
-img2sixel --precision-policy=auto -Xlinear -Wlinear image.png
-img2sixel --precision-policy=float32 -Xlinear -Wlinear image.png
+img2sixel --precision-policy=auto -Xsrgb-linear -Wsrgb-linear image.png
+img2sixel --precision-policy=float32 -Xsrgb-linear -Wsrgb-linear image.png
 ```
 
 The same equality holds for the Oklab pair. It shows that automatic precision does not truncate a float-only working space; it does not prove that every option outside the controlled pair is irrelevant.
 
-`-X` selects the clustering coordinates rather than the main work coordinates. A non-gamma `-X` can create a float32 palette-construction view while `-Wgamma` remains byte-based. The detailed ownership and cost model are in [Palette clustering color space](../../encoder/palette-construction/clustering-colorspace/README.md).
+`-X` selects the clustering coordinates rather than the main work coordinates. A non-gamma `-X` can create a float32 palette-construction view while `-Wsrgb` remains byte-based. The detailed ownership and cost model are in [Palette clustering color space](../../encoder/palette-construction/clustering-colorspace/README.md).
 
 ### Output color definition
 
-A [named RGB output destination](../../encoder/output/output-colorspace.md#named-destination-definitions) requires an effective float working format, even with `-Wgamma`, because its palette is converted and rounded to the sent destination values with extended intermediate coordinates; `--precision-policy=8bit` therefore rejects it. The requested precision is kept separately, so leaving named output restores the format required by the remaining settings. The legacy `gamma`, `linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
+A [named RGB output destination](../../encoder/output/output-colorspace.md#named-destination-definitions) requires an effective float working format, even with `-Wsrgb`, because its palette is converted and rounded to the sent destination values with extended intermediate coordinates; `--precision-policy=8bit` therefore rejects it. The requested precision is kept separately, so leaving named output restores the format required by the remaining settings. The legacy `gamma`, `linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ### Loader CMS output
 
 When a loader applies an ICC transform, `cms_target` selects the target color space and `prefer_8bit` selects the requested representation after that transform. With `prefer_8bit=0`, gamma produces `RGBFLOAT32` and linear or Lab-family targets produce their typed float32 formats. A float source frame remains float through the planner and palette construction under every policy, so the encoder cannot silently down-convert it before construction. Under `-.8bit` it is rounded to gamma bytes only at palette application; `prefer_8bit=1` is the boundary to use when the CMS output itself should be bytes.
 
-`prefer_8bit=1` requests `RGB888`, even when `cms_target` names a non-gamma space. This is intentionally a request for an 8-bit gamma storage boundary, not an 8-bit encoding of linear RGB or Oklab. A later `-Wlinear` or Lab-family working-space conversion may promote that byte frame again, but information rounded at the CMS boundary cannot be reconstructed.
+`prefer_8bit=1` requests `RGB888`, even when `cms_target` names a non-gamma space. This is intentionally a request for an 8-bit gamma storage boundary, not an 8-bit encoding of linear RGB or Oklab. A later `-Wsrgb-linear` or Lab-family working-space conversion may promote that byte frame again, but information rounded at the CMS boundary cannot be reconstructed.
 
 CMS promotion occurs only when the selected loader actually applies a color transform. A plain image without an applicable profile may remain `RGB888`; the presence of `--cms-engine` or a float-capable target name alone does not prove that a transform ran.
 
@@ -185,7 +185,7 @@ The checked-in path inventory was recorded on 2026-09-09 from clean revision `8a
 | --- | --- | --- | --- | --- | --- |
 | gamma baseline | 8-bit | `rgb888` | `rgb888` | `rgb888` | no promotion |
 | gamma baseline | float32 | `rgb888` | `rgb-f32` | `rgb888` | explicit main-work promotion |
-| `-Xlinear -Wlinear` | 8-bit | `rgb888` | `linear-f32` | `rgb888` | implicit working-space promotion |
+| `-Xsrgb-linear -Wsrgb-linear` | 8-bit | `rgb888` | `linear-f32` | `rgb888` | implicit working-space promotion |
 | `-Xoklab -Woklab` | 8-bit | `rgb888` | `oklab-f32` | `rgb888` | implicit working-space promotion |
 | 50% resize, default policy | 8-bit | `rgb888` | `rgb888` | `linear-f32` | transient linear-light promotion |
 | 50% resize, `resize_precision=preserve` | 8-bit | `rgb888` | `rgb888` | `rgb888` | explicit byte path |
@@ -218,7 +218,7 @@ Use the default resize policy when accuracy is the priority. Use `resize_precisi
 Verbose planner output is the authoritative local check:
 
 ```sh
-img2sixel --precision-policy=8bit -Wgamma -w50% -v -o /dev/null image.png
+img2sixel --precision-policy=8bit -Wsrgb -w50% -v -o /dev/null image.png
 ```
 
 Read all of these fields together:

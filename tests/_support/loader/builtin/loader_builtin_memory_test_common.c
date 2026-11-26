@@ -1293,7 +1293,7 @@ edge_expect_buffer_rgb_digest(char const *label,
         probe.width[0] != expected_width ||
         probe.height[0] != expected_height ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.rgb_size[0] != expected_size ||
         edge_digest_bytes(probe.rgb[0], probe.rgb_size[0]) !=
             expected_digest) {
@@ -1324,7 +1324,7 @@ edge_expect_fixture_rgb_digests(char const *label,
         expected_height,
         expected_frames,
         SIXEL_PIXELFORMAT_RGB888,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         expected_digests);
 }
 
@@ -1565,7 +1565,7 @@ edge_expect_fixture_rgb_mask_digests(
         if (probe.width[frame_index] != expected_width ||
             probe.height[frame_index] != expected_height ||
             probe.pixelformat[frame_index] != SIXEL_PIXELFORMAT_RGB888 ||
-            probe.colorspace[frame_index] != SIXEL_COLORSPACE_GAMMA ||
+            probe.colorspace[frame_index] != SIXEL_COLORSPACE_SRGB ||
             probe.rgb_size[frame_index] != rgb_size ||
             probe.mask_size[frame_index] != mask_size ||
             probe.alpha_zero_is_transparent[frame_index] == 0) {

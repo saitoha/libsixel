@@ -86,13 +86,13 @@ test_map_solver_run(int mode, int space, char const *path,
                 int output_p3, int solver, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "greedy:B1" }, { 'X', "linear" },
+        { '=', "greedy:B1" }, { 'X', "srgb-linear" },
         { 'F', "none" }, { '_', "none" }, { '~', "5bit" },
         { 't', "rgb" }, { '4', "full-frame" },
-        { '0', "none" }, { 'U', "gamma" }, { '.', "auto" }
+        { '0', "none" }, { 'U', "srgb" }, { '.', "auto" }
     };
     static char const *const spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static unsigned char const export_rgb[12] = {
         88, 88, 88, 94, 94, 94, 88, 88, 88, 255, 0, 0
@@ -156,7 +156,7 @@ test_map_solver_run(int mode, int space, char const *path,
             (binning != NULL && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 '5', binning))) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                output_p3 ? "display-p3" : "gamma")) ||
+                output_p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
                 fs ? "fs" : "none")) ||
@@ -209,7 +209,7 @@ test_map_solver_run(int mode, int space, char const *path,
             }
         }
         if (mode == 5 && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma"))) {
+                p3 ? "display-p3" : "srgb"))) {
             goto end;
         }
         for (i = 0; i < 6; ++i) {

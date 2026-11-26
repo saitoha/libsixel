@@ -297,7 +297,7 @@ test_encode_writes_stream_and_progress(void)
     progress.aborted = 0;
     counter.calls = 0;
     counter.bytes = 0;
-    expected_colorspace = SIXEL_COLORSPACE_LINEAR;
+    expected_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {

@@ -51,8 +51,8 @@ tb_check(sixel_frame_t const *frame, tb_context_t const *ctx)
     byte = ctx->mode == 1 || ctx->mode == 3 || ctx->mode == 4;
     format = byte ? SIXEL_PIXELFORMAT_RGB888 : ctx->mode == 2
         ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    space = byte || ctx->mode == 2 ? SIXEL_COLORSPACE_GAMMA
-                                  : SIXEL_COLORSPACE_LINEAR;
+    space = byte || ctx->mode == 2 ? SIXEL_COLORSPACE_SRGB
+                                  : SIXEL_COLORSPACE_SRGB_LINEAR;
     if (ctx->mode == 6) {
         format = ctx->target_format;
         space = ctx->target_space;
@@ -203,7 +203,7 @@ tiff_byte_test(int argc, char **argv, int fixture, int engine, int mode)
     char const *targets[] = { "cielab", "oklab", "din99d" };
     int const formats[] = { SIXEL_PIXELFORMAT_CIELABFLOAT32,
         SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_DIN99DFLOAT32 };
-    int const spaces[] = { SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_OKLAB,
+    int const spaces[] = { SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_OKLAB,
                           SIXEL_COLORSPACE_DIN99D };
 
     if (argc != 2) { return 2; }
@@ -266,7 +266,7 @@ tiff_byte_test(int argc, char **argv, int fixture, int engine, int mode)
             ctx.target_format = formats[i];
             ctx.target_space = spaces[i];
             ok = ok && sixel_color_convert_rgbf32(ctx.control, 6u,
-                SIXEL_COLORSPACE_LINEAR, spaces[i]) == SIXEL_OK;
+                SIXEL_COLORSPACE_SRGB_LINEAR, spaces[i]) == SIXEL_OK;
             ok = ok && tb_load(argv[1], &ctx, "icc", targets[i], 0, 0);
         }
     }

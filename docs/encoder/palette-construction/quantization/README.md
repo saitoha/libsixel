@@ -172,7 +172,7 @@ Ratios multiply channel ranges in native color-space units; compensation for the
 `cut=sse` completely sorts the selected axis, including PCA and native float norm/lum paths, then scans cumulative weighted sums and squared sums to minimize the sum of child errors. The objective squares the same effective coordinate weights used for axis selection. PCA retains its established nominal-coordinate projection; custom ratios affect its SSE evaluation, not its covariance. Ties choose the first cut. A singleton outlier is valid: only empty or out-of-range partitions are rejected. `order=sse` caches each box's error, reuses cut moments, and selects the largest error with deterministic position/count tie breaks. Accumulation is serial in fixed table order; worker count does not change it. This does not promise identical floating-point arithmetic on compilers using incompatible contraction or fast-math rules.
 
 ```sh
-img2sixel -Q heckbert:cut=sse:order=sse:weights=2/1/1 -Xc -s histogram image.png
+img2sixel -Q heckbert:cut=sse:order=sse:weights=2/1/1 -Xlab-d65 -s histogram image.png
 ```
 
 ### Deprecated complexion score
@@ -580,7 +580,7 @@ The controlled command shape is:
 
 ```text
 img2sixel --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full \
-  --loaders=libpng! --quantize-model=CONFIG -Xoklab -Wgamma \
+  --loaders=libpng! --quantize-model=CONFIG -Xoklab -Wsrgb \
   --diffusion=none --gpu-policy=off --lookup-policy=none \
   -p K images/snake.png
 ```

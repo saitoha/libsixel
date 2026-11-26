@@ -468,7 +468,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
     chunk_status = SIXEL_FALSE;
     decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_NONE;
     skip_icc_conversion = 0;
-    colorspace = SIXEL_COLORSPACE_GAMMA;
+    colorspace = SIXEL_COLORSPACE_SRGB;
     use_32bit_overflow_case = 0;
     result = 1;
     /*

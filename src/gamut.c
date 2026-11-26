@@ -100,7 +100,7 @@ sixel_gamut_clip(sixel_gamut_t const *mapper, double const lab[3],
     int i;
 
     if (!sixel_color_convert(linear, lab, SIXEL_COLORSPACE_OKLAB,
-            SIXEL_COLORSPACE_LINEAR)) {
+            SIXEL_COLORSPACE_SRGB_LINEAR)) {
         return 0;
     }
     sixel_gamut_matrix(mapper->forward, linear, device);
@@ -116,7 +116,7 @@ sixel_gamut_clip(sixel_gamut_t const *mapper, double const lab[3],
         /* EdgeSeeker only needs the bounded color, not a clipping error. */
         return 1;
     }
-    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_SRGB_LINEAR,
             SIXEL_COLORSPACE_OKLAB)) {
         return 0;
     }
@@ -147,7 +147,7 @@ sixel_gamut_local_minde(sixel_gamut_t const *mapper, double const input[3],
     int iteration;
 
     if (!sixel_color_convert(linear, input, colorspace,
-            SIXEL_COLORSPACE_LINEAR)) {
+            SIXEL_COLORSPACE_SRGB_LINEAR)) {
         return 0;
     }
     sixel_gamut_matrix(mapper->forward, linear, device);
@@ -156,7 +156,7 @@ sixel_gamut_local_minde(sixel_gamut_t const *mapper, double const input[3],
         memcpy(output, input, 3u * sizeof(double));
         return 1;
     }
-    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
             SIXEL_COLORSPACE_OKLAB)) {
         return 0;
     }
@@ -180,7 +180,7 @@ sixel_gamut_local_minde(sixel_gamut_t const *mapper, double const input[3],
             candidate[1] = lab[1] * (middle / chroma);
             candidate[2] = lab[2] * (middle / chroma);
             if (!sixel_color_convert(linear, candidate,
-                    SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LINEAR)) {
+                    SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_SRGB_LINEAR)) {
                 return 0;
             }
             sixel_gamut_matrix(mapper->forward, linear, device);
@@ -204,7 +204,7 @@ sixel_gamut_local_minde(sixel_gamut_t const *mapper, double const input[3],
             }
         }
     }
-    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_SRGB_LINEAR,
             colorspace)) {
         return 0;
     }
@@ -379,12 +379,12 @@ sixel_edge_samples(sixel_gamut_t const *mapper,
                 }
             }
             if (transfer != SIXEL_COLORSPACE_SMPTEC &&
-                    transfer != SIXEL_COLORSPACE_LINEAR &&
+                    transfer != SIXEL_COLORSPACE_SRGB_LINEAR &&
                     !sixel_cdef_transfer(definition, rgb, device, 0)) {
                 return 0;
             }
             sixel_gamut_matrix(mapper->backward, device, linear);
-            if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+            if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
                     SIXEL_COLORSPACE_OKLAB)) {
                 return 0;
             }
@@ -502,7 +502,7 @@ sixel_gamut_edge_seeker(sixel_gamut_t const *mapper, double const input[3],
     double d;
 
     if (!sixel_color_convert(linear, input, colorspace,
-            SIXEL_COLORSPACE_LINEAR)) {
+            SIXEL_COLORSPACE_SRGB_LINEAR)) {
         return 0;
     }
     sixel_gamut_matrix(mapper->forward, linear, device);
@@ -510,7 +510,7 @@ sixel_gamut_edge_seeker(sixel_gamut_t const *mapper, double const input[3],
         memcpy(output, input, 3u * sizeof(double));
         return 1;
     }
-    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
             SIXEL_COLORSPACE_OKLAB)) {
         return 0;
     }
@@ -543,7 +543,7 @@ sixel_gamut_edge_seeker(sixel_gamut_t const *mapper, double const input[3],
             return 0;
         }
     }
-    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(result, clipped, SIXEL_COLORSPACE_SRGB_LINEAR,
             colorspace)) {
         return 0;
     }
@@ -622,7 +622,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
     int c;
 
     if (!sixel_color_convert(linear, input, colorspace,
-            SIXEL_COLORSPACE_LINEAR)) {
+            SIXEL_COLORSPACE_SRGB_LINEAR)) {
         return 0;
     }
     sixel_gamut_matrix(mapper->forward, linear, device);
@@ -635,7 +635,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
         memcpy(output, input, 3u * sizeof(double));
         return 1;
     }
-    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(lab, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
             SIXEL_COLORSPACE_OKLAB)) {
         return 0;
     }
@@ -649,7 +649,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
         hue_b = chroma > 0.0 ? lab[2] / chroma : 0.0;
         lab[1] = lab[2] = 0.0;
         if (!sixel_color_convert(linear, lab, SIXEL_COLORSPACE_OKLAB,
-                SIXEL_COLORSPACE_LINEAR)) {
+                SIXEL_COLORSPACE_SRGB_LINEAR)) {
             return 0;
         }
         sixel_gamut_matrix(mapper->forward, linear, anchor);
@@ -663,7 +663,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
             if (iteration > 0) {
                 sixel_gamut_matrix(mapper->backward, device, linear);
                 if (!sixel_color_convert(lab, linear,
-                        SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
+                        SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
                     return 0;
                 }
                 chroma = hypot(lab[1], lab[2]);
@@ -671,7 +671,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
                 lab[1] = hue_a * chroma;
                 lab[2] = hue_b * chroma;
                 if (!sixel_color_convert(linear, lab,
-                        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LINEAR)) {
+                        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_SRGB_LINEAR)) {
                     return 0;
                 }
                 sixel_gamut_matrix(mapper->forward, linear, device);
@@ -726,7 +726,7 @@ sixel_gamut_ray_trace(sixel_gamut_t const *mapper, double const input[3],
             fmin(mapper->maximum[c], device[c]));
     }
     sixel_gamut_matrix(mapper->backward, device, linear);
-    if (!sixel_color_convert(result, linear, SIXEL_COLORSPACE_LINEAR,
+    if (!sixel_color_convert(result, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
             colorspace)) {
         return 0;
     }
@@ -808,9 +808,9 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
         if (destination == NULL && legacy_colorspace ==
                 SIXEL_COLORSPACE_SMPTEC) {
             ok = ok && sixel_color_convert_output(forward, basis,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_SMPTEC)
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SMPTEC)
                 && sixel_color_from_output(backward, basis,
-                    SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_LINEAR);
+                    SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_SRGB_LINEAR);
             for (j = 0; ok && j < 3; ++j) {
                 forward[j] = copysign(pow(fabs(forward[j]), 2.2),
                     forward[j]);
@@ -830,7 +830,7 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
         status = sixel_edge_build(mapper,
             destination != NULL ? destination : srgb,
             destination == NULL ? legacy_colorspace
-                : SIXEL_COLORSPACE_GAMMA, allocator);
+                : SIXEL_COLORSPACE_SRGB, allocator);
         ok = SIXEL_SUCCEEDED(status);
     }
     sixel_cdef_free(target);
@@ -944,7 +944,7 @@ sixel_gamut_apply_float32(sixel_gamut_t const *mapper, float *pixels,
         if (hidden != NULL && i < hidden_count && hidden[i] != 0) {
             continue;
         }
-        if (colorspace == SIXEL_COLORSPACE_LINEAR &&
+        if (colorspace == SIXEL_COLORSPACE_SRGB_LINEAR &&
                 mapper->contains_srgb_cube &&
                 pixels[i * 3u] >= 0.0f && pixels[i * 3u] <= 1.0f &&
                 pixels[i * 3u + 1u] >= 0.0f &&
@@ -956,7 +956,7 @@ sixel_gamut_apply_float32(sixel_gamut_t const *mapper, float *pixels,
         for (c = 0; c < 3; ++c) {
             input[c] = pixels[i * 3u + (size_t)c];
         }
-        if (colorspace == SIXEL_COLORSPACE_LINEAR) {
+        if (colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) {
             sixel_gamut_matrix(mapper->forward, input, device);
             if (sixel_gamut_contains(mapper, device)) {
                 /* Preserve the original float bits, including signed zero.

@@ -51,7 +51,8 @@ tiff_numeric_capture(sixel_frame_t *frame, void *context)
     orientation = color_tiff_cases[fixture].orientation;
     format = probe->managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                             : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    space = probe->managed ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
+    space = probe->managed ?
+        SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB;
     if (frame->width != color_tiff_cases[fixture].width ||
         frame->height != color_tiff_cases[fixture].height ||
         sixel_frame_format(frame) != format ||

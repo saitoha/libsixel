@@ -35,7 +35,7 @@ indexed_fixture_init(indexed_fixture_t *f)
     wire.definitions = definitions;
     wire.count = 3;
     wire.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     if (sixel_wire_palette_new(&f->wire, &wire, f->allocator) != SIXEL_OK) {
         return 0;
     }
@@ -63,7 +63,7 @@ indexed_fixture_init(indexed_fixture_t *f)
     plane.width = 3;
     plane.height = 1;
     plane.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    plane.colorspace = SIXEL_COLORSPACE_GAMMA;
+    plane.colorspace = SIXEL_COLORSPACE_SRGB;
     if (f->plane->vtbl->configure(f->plane, &plane) != SIXEL_OK ||
             sixel_retained_plane_legacy_map(f->plane, &rgb, &valid) !=
                 SIXEL_OK) return 0;

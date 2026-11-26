@@ -14,7 +14,7 @@ actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -7 -Lbuiltin! -Udisplay-p3 -_none -~none -Fnone -trgb \
     -Qheckbert:cut=median -fnorm -saverage -p2 \
     "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" \
-    -Wlinear -aoff -dnone --binning-policy=none --sampling-policy=full-frame \
+    -Wsrgb-linear -aoff -dnone --binning-policy=none --sampling-policy=full-frame \
     -Mpal:- -o/dev/null "${TOP_SRCDIR}/tests/data/color-numeric/icc-heckbert-samples.ppm") || {
     printf '\n%s\n' 'not ok 1 - ICC palette export'
     exit 0

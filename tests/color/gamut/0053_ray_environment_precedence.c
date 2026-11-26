@@ -15,7 +15,7 @@ test_gamut_0053_ray_environment_precedence(int argc, char **argv)
     ok = SIXEL_SUCCEEDED(sixel_encoder_new(&encoder, NULL)) &&
         encoder->output_gamut == SIXEL_GAMUT_RAY_TRACE &&
         encoder->gamut_mapper != NULL && encoder->prefer_float32 &&
-        SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder, 'U', "gamma:Gclip")) &&
+        SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder, 'U', "srgb:Gclip")) &&
         encoder->output_gamut == SIXEL_GAMUT_CLIP &&
         encoder->gamut_mapper == NULL && !encoder->prefer_float32;
     sixel_encoder_unref(encoder);

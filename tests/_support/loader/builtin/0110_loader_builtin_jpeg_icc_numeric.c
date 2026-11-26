@@ -22,7 +22,7 @@ test_loader_0110_loader_builtin_jpeg_icc_numeric(int argc, char **argv)
         64,
         64,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         sample_pixels,
         color_jpeg_srgb,
         0.000001f);

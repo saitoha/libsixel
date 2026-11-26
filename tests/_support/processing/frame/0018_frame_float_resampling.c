@@ -351,7 +351,7 @@ test_frame_0018_resampling(int argc, char **argv)
     if (SIXEL_FAILED(status) || view.pixels != NULL
             || view.pixels_float32 == NULL
             || view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            || view.colorspace != SIXEL_COLORSPACE_LINEAR
+            || view.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR
             || view.width != (invalid ? sw : dw)
             || view.height != (invalid ? sh : dh)
             || memcmp(pixels, original, sizeof(pixels)) != 0) {

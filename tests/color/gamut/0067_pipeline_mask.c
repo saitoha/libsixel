@@ -41,7 +41,7 @@ test_gamut_0067_pipeline_mask(int argc, char **argv)
             memset(mask.transparent_mask, 1, 131073);
             ok = SIXEL_SUCCEEDED(object->vtbl->set_transparency(object,
                 &mask)) && SIXEL_SUCCEEDED(sixel_gamut_apply_float32(
-                    f.mapper, expected, count, SIXEL_COLORSPACE_LINEAR,
+                    f.mapper, expected, count, SIXEL_COLORSPACE_SRGB_LINEAR,
                     mask.transparent_mask, mask.transparent_mask_size));
         }
         ok = ok && gamut_filter_scope(&scope, "greedy:global_budget=4");

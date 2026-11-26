@@ -36,10 +36,10 @@ actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none --threading-policy=greedy:global_budget=1 \
         --quantize-model=heckbert --binning-policy=none \
         --sampling-policy=full-frame --snap-policy=none --diffusion=none \
-        -L builtin! --working-colorspace=linear --output-colorspace=linear \
+        -L builtin! --working-colorspace=srgb-linear --output-colorspace=srgb-linear \
         -m "${mapfile_png}" -M pal:- -o /dev/null "${input_image}"
 ) || {
-    printf '\n%s\n' "not ok 1 - ICC PNG mapfile export failed with -W/-U linear"
+    printf '\n%s\n' "not ok 1 - ICC PNG mapfile export failed with -W/-U srgb-linear"
     exit 0
 }
 actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
@@ -48,7 +48,7 @@ actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
 }
 
 test "${actual_palette}" = "${expected_palette}" || {
-    printf '\n%s\n' "not ok 1 - ICC PNG mapfile converted palette changed under -W/-U linear"
+    printf '\n%s\n' "not ok 1 - ICC PNG mapfile converted palette changed under -W/-U srgb-linear"
     exit 0
 }
 

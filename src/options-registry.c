@@ -1041,12 +1041,12 @@ enum {
 };
 
 static sixel_option_value_schema_t const g_output_color_values[] = {
-    { "gamma", SIXEL_COLORSPACE_GAMMA, 0u },
-    { "linear", SIXEL_COLORSPACE_LINEAR, 0u },
+    { "srgb", SIXEL_COLORSPACE_SRGB, 0u },
+    { "srgb-linear", SIXEL_COLORSPACE_SRGB_LINEAR, 0u },
     { "smpte-c", SIXEL_COLORSPACE_SMPTEC, 0u },
     { "smptec", SIXEL_COLORSPACE_SMPTEC, 0u },
     { "display-p3", -SIXEL_NAMED_COLOR_DISPLAY_P3, 0u },
-    { "adobe-rgb", -SIXEL_NAMED_COLOR_ADOBE_RGB, 0u },
+    { "a98-rgb", -SIXEL_NAMED_COLOR_A98_RGB, 0u },
     { "dci-p3", -SIXEL_NAMED_COLOR_DCI_P3, 0u },
     { "icc", -SIXEL_NAMED_COLOR_COUNT, 0u }
 };
@@ -1054,7 +1054,7 @@ static sixel_option_value_schema_t const g_output_color_values[] = {
 static sixel_option_value_schema_t const g_input_color_values[] = {
     { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u },
     { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u },
-    { "adobe-rgb", SIXEL_OPTION_INPUT_ADOBE_RGB, 0u },
+    { "adobe-rgb", SIXEL_OPTION_INPUT_A98_RGB, 0u },
     { "dci-p3", SIXEL_OPTION_INPUT_DCI_P3, 0u },
     { "icc", SIXEL_NAMED_COLOR_COUNT, 0u }
 };
@@ -1746,15 +1746,15 @@ static sixel_suboption_choice_t const g_loader_background_policy_choices[] = {
 
 static sixel_suboption_choice_t const
 g_loader_background_colorspace_choices[] = {
-    { "gamma", SIXEL_COLORSPACE_GAMMA },
-    { "linear", SIXEL_COLORSPACE_LINEAR }
+    { "gamma", SIXEL_COLORSPACE_SRGB },
+    { "linear", SIXEL_COLORSPACE_SRGB_LINEAR }
 };
 
 static sixel_suboption_choice_t const
 g_loader_cms_target_colorspace_choices[] = {
-    { "gamma", SIXEL_COLORSPACE_GAMMA },
-    { "linear", SIXEL_COLORSPACE_LINEAR },
-    { "cielab", SIXEL_COLORSPACE_CIELAB },
+    { "gamma", SIXEL_COLORSPACE_SRGB },
+    { "linear", SIXEL_COLORSPACE_SRGB_LINEAR },
+    { "cielab", SIXEL_COLORSPACE_LAB_D65 },
     { "oklab", SIXEL_COLORSPACE_OKLAB },
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
@@ -3589,7 +3589,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         "output-colorspace",
         SIXEL_OPTION_ARGUMENT_SINGLE,
         SIXEL_OPTION_DEFAULT_FIXED,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         g_output_color_values,
         NULL),
     SIXEL_REGISTRY_SCALAR_CHOICE(

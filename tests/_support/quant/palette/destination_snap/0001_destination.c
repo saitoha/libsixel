@@ -16,8 +16,8 @@
 #include "tests/data/color-numeric/paired-lut.h"
 
 static int const destination_spaces[] = {
-    SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB,
-    SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+    SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB,
+    SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_DIN99D
 };
 
 static sixel_color_def_t *
@@ -31,7 +31,7 @@ destination_definition(int kind)
     if (kind == 2) {
         return sixel_cdef_rgb(xy, SIXEL_COLOR_TRC_POWER, gamma);
     }
-    return sixel_cdef_name(kind ? "dci-p3" : "adobe-rgb");
+    return sixel_cdef_name(kind ? "dci-p3" : "a98-rgb");
 }
 
 static int
@@ -124,7 +124,7 @@ destination_pipeline(int kind, int model, int space, int policy, int mode)
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_PIXELFORMAT_OKLABFLOAT32,
         SIXEL_PIXELFORMAT_CIELABFLOAT32, SIXEL_PIXELFORMAT_DIN99DFLOAT32};
     static char const *const names[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"};
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"};
     static char const *const models[] = {
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert"};
     static struct { int flag; char const *value; } const options[] = {
@@ -189,7 +189,7 @@ destination_pipeline(int kind, int model, int space, int policy, int mode)
             }
         }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                kind ? "dci-p3" : "adobe-rgb"))) {
+                kind ? "dci-p3" : "a98-rgb"))) {
             goto end;
         }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', models[model])) ||
@@ -267,7 +267,7 @@ destination_isolation(void)
     for (kind = 0; kind < 2; ++kind) {
         definition = destination_definition(kind);
         if (SIXEL_FAILED(sixel_snap_grid_new(&grids[kind],
-                SIXEL_SNAP_GRID_CACHE, SIXEL_COLORSPACE_LINEAR,
+                SIXEL_SNAP_GRID_CACHE, SIXEL_COLORSPACE_SRGB_LINEAR,
                 definition, allocator))) {
             goto end;
         }
@@ -327,9 +327,10 @@ destination_invalid(void)
     }
     icc = sixel_cdef_icc(color_paired_lut, sizeof(color_paired_lut));
     if (icc == NULL || sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
-            SIXEL_COLORSPACE_LINEAR, NULL, allocator) != SIXEL_BAD_ARGUMENT ||
+            SIXEL_COLORSPACE_SRGB_LINEAR, NULL,
+                allocator) != SIXEL_BAD_ARGUMENT ||
             grid != NULL || sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
-                SIXEL_COLORSPACE_LINEAR, icc, allocator) !=
+                SIXEL_COLORSPACE_SRGB_LINEAR, icc, allocator) !=
                     SIXEL_BAD_ARGUMENT || grid != NULL) {
         goto end;
     }
@@ -345,7 +346,7 @@ destination_invalid(void)
         goto end;
     }
     ok = SIXEL_SUCCEEDED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_TABLE,
-        SIXEL_COLORSPACE_LINEAR, definition, allocator));
+        SIXEL_COLORSPACE_SRGB_LINEAR, definition, allocator));
 end:
     sixel_cdef_free(linear);
     sixel_cdef_free(icc);
@@ -393,7 +394,7 @@ destination_stages(int kind)
         options.timing = timings[stage];
         sixel_set_palette_snap_override(&options);
         sixel_palette_snap_set_output(kind ? SIXEL_NAMED_COLOR_DCI_P3
-            : SIXEL_NAMED_COLOR_ADOBE_RGB, 1, SIXEL_SNAP_GRID_TABLE);
+            : SIXEL_NAMED_COLOR_A98_RGB, 1, SIXEL_SNAP_GRID_TABLE);
         for (c = 0; c < 3; ++c) {
             entries[c] = (float)destination_snap_values[kind][2][1][0][c];
             expected[c] = .75 * entries[c] +

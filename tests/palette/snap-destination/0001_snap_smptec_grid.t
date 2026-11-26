@@ -19,7 +19,7 @@ stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_
     --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
     --merge-policy=none --cover-policy=off --lookup-policy=none \
     --gpu-policy=off --diffusion=none --palette-type=rgb -p2 \
-    -Xlinear -Woklab -Usmpte-c --snap-policy=nearest:rate=1 \
+    -Xsrgb-linear -Woklab -Usmpte-c --snap-policy=nearest:rate=1 \
     -Lbuiltin! --cms-engine=none - <<'PPM'
 P3
 1 1

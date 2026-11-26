@@ -64,7 +64,7 @@ dw_palette(sixel_dither_t **dither)
     return SIXEL_SUCCEEDED((*dither)->palette->vtbl->init_entries_float32(
         (*dither)->palette, &request)) &&
         SIXEL_SUCCEEDED(sixel_palette_prepare_rgb101((*dither)->palette,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY));
+            SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY));
 }
 
 int
@@ -268,11 +268,11 @@ test_delta_work_fixed(int workers)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'~', "none"}, {'d', "none"}, {'0', "none"}, {'_', "none"},
-        {'.', "float32"}, {'U', "gamma"}, {'t', "rgb"},
+        {'.', "float32"}, {'U', "srgb"}, {'t', "rgb"},
         {'Z', "delta:threshold=0"}, {'7', NULL}, {'b', "gray1"}
     };
     static char const *const spaces[] = {
-        "linear", "oklab", "cielab", "din99d", "gamma", "linear"
+        "srgb-linear", "oklab", "lab-d65", "din99d", "srgb", "srgb-linear"
     };
     float pixels[256 * 25 * 3];
     unsigned char *decoded;

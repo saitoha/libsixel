@@ -56,7 +56,7 @@ retained_gpu_fixture_resize(indexed_fixture_t *f, int partial, int statistics)
     plane.width = image.plane_width;
     plane.height = image.plane_height;
     plane.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    plane.colorspace = SIXEL_COLORSPACE_GAMMA;
+    plane.colorspace = SIXEL_COLORSPACE_SRGB;
     if (f->plane->vtbl->configure(f->plane, &plane) != SIXEL_OK ||
             sixel_retained_plane_legacy_map(f->plane, &rgb, &valid) != SIXEL_OK)
         return 0;
@@ -443,7 +443,7 @@ retained_gpu_sequence_observe(int observation)
     desc.width = 8;
     desc.height = 3;
     desc.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    desc.colorspace = SIXEL_COLORSPACE_GAMMA;
+    desc.colorspace = SIXEL_COLORSPACE_SRGB;
     if (f.plane->vtbl->configure(f.plane, &desc) != SIXEL_OK ||
             sixel_retained_plane_legacy_map(f.plane, &rgb, &valid) != SIXEL_OK)
         goto end;

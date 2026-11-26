@@ -1886,7 +1886,7 @@ iccn_capture(sixel_frame_t *frame, void *context)
     ++*calls;
     if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
         frame->width != 1 || frame->height != 1 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR) {
         return SIXEL_BAD_INPUT;
     }
     rgb = (float const *)sixel_frame_get_pixels(frame);
@@ -2514,7 +2514,7 @@ iccn_capture_mpet_bmp(sixel_frame_t *frame, void *context)
     ++expected->calls;
     if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
         frame->width != 1 || frame->height != 1 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR) {
         return SIXEL_BAD_INPUT;
     }
     rgb = (float const *)sixel_frame_get_pixels(frame);
@@ -4511,20 +4511,21 @@ icc_numeric_mpet_palette_test(int reverse, char slot, int gamut)
             ? SIXEL_FAILED(sixel_gamut_new(&mapper, definition, 0,
                 SIXEL_GAMUT_LOCAL_MINDE, allocator))
             : SIXEL_FAILED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_DIRECT,
-                SIXEL_COLORSPACE_LINEAR, definition, allocator));
+                SIXEL_COLORSPACE_SRGB_LINEAR, definition, allocator));
     } else if (gamut && ok) {
         ok = SIXEL_SUCCEEDED(sixel_gamut_new(&mapper, definition, 0,
                 SIXEL_GAMUT_LOCAL_MINDE, allocator)) &&
             SIXEL_SUCCEEDED(sixel_gamut_new(&base_mapper, reference, 0,
                 SIXEL_GAMUT_LOCAL_MINDE, allocator)) &&
-            sixel_gamut_apply(mapper, input, result, SIXEL_COLORSPACE_LINEAR) &&
+            sixel_gamut_apply(mapper, input, result,
+                SIXEL_COLORSPACE_SRGB_LINEAR) &&
             sixel_gamut_apply(base_mapper, input, expected,
-                               SIXEL_COLORSPACE_LINEAR);
+                               SIXEL_COLORSPACE_SRGB_LINEAR);
     } else if (ok) {
         ok = SIXEL_SUCCEEDED(sixel_snap_grid_new(&grid, SIXEL_SNAP_GRID_DIRECT,
-                SIXEL_COLORSPACE_LINEAR, definition, allocator)) &&
+                SIXEL_COLORSPACE_SRGB_LINEAR, definition, allocator)) &&
             SIXEL_SUCCEEDED(sixel_snap_grid_new(&base_grid,
-                SIXEL_SNAP_GRID_DIRECT, SIXEL_COLORSPACE_LINEAR, reference,
+                SIXEL_SNAP_GRID_DIRECT, SIXEL_COLORSPACE_SRGB_LINEAR, reference,
                 allocator)) &&
             SIXEL_SUCCEEDED(sixel_snap_grid_project(grid, input, 1, 1.0,
                                                        result)) &&
@@ -4590,7 +4591,7 @@ iccn_capture_mpet_png(sixel_frame_t *frame, void *context)
     }
     if (frame->width != 3 || frame->height != 1 ||
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR) {
         fprintf(stderr, "PNG frame %dx%d format=%x space=%d\n",
             frame->width, frame->height, sixel_frame_format(frame),
             frame->format.coordinates);
@@ -4697,7 +4698,7 @@ iccn_check_png_extended_trc(sixel_frame_t *frame, void *context)
     ++*calls;
     if (frame->width != 3 || frame->height != 1 ||
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR ||
         frame->cms_history != SIXEL_FRAME_CMS_EMBEDDED_ICC) {
         fprintf(stderr, "Expected one linear float32 PNG with embedded ICC\n");
         return SIXEL_BAD_INPUT;

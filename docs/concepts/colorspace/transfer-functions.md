@@ -137,7 +137,7 @@ This is why libsixel performs resizing, background composition and other light m
 
 - **Internal working values.** 8-bit pixels are treated as sRGB-encoded by default. Linear values exist only as floating-point intermediates where an operation needs them. The `gamma` and `linear` color-space names in options refer to sRGB-encoded and linear-light sRGB, as listed under [spaces used by libsixel](README.md#spaces-used-by-libsixel).
 - **Input files.** Loaders read transfer information from file metadata where it exists, such as the PNG chunks described in [PNG color metadata](../../loader/png-color-metadata.md) and ICC profiles described in [color management](../color-management/README.md).
-- **SIXEL output.** The SIXEL format does not say which transfer function its register values use. libsixel writes sRGB-encoded values by default and explains that choice, and its historical alternatives, in [interpretation 1 of the specification layers](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb). `-U linear` writes linear values and `-U smpte-c` a 2.2 power with SMPTE-C primaries, as described in [output color space](../../encoder/output/output-colorspace.md).
+- **SIXEL output.** The SIXEL format does not say which transfer function its register values use. libsixel writes sRGB-encoded values by default and explains that choice, and its historical alternatives, in [interpretation 1 of the specification layers](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb). `-U srgb-linear` writes linear values and `-U smpte-c` a 2.2 power with SMPTE-C primaries, as described in [output color space](../../encoder/output/output-colorspace.md).
 
 ## Reproducing the figures
 

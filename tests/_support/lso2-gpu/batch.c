@@ -47,7 +47,7 @@ lso2_gpu_batch_equivalence(unsigned int count, int transparent, int deferred,
     f.wire = NULL;
     memset(&wire,0,sizeof(wire));
     wire.definitions = definitions; wire.count = count+1;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     LSO2_GPU_CHECK(sixel_wire_palette_new(&f.wire,&wire,f.allocator) == SIXEL_OK);
     f.prepare.output.palette = f.wire;
     f.prepare.output.keycolor = (int)count;

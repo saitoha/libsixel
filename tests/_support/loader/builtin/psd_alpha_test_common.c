@@ -567,7 +567,7 @@ psd_alpha_test(int specimen)
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 8 || probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.mask_size[0] != (bgcolor ? 0u : 8u) ||
         probe.rgb_size[0] != sizeof(actual)) {
         fprintf(stderr, "PSD alpha=%d status=%x callbacks=%d\n",

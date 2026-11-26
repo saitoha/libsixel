@@ -18,7 +18,7 @@ test_gamut_0018_policy_cache_reset(int argc, char **argv)
             retained, 1, 1, SIXEL_PIXELFORMAT_RGB888)) &&
         encoder->accumulation_valid &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder, 'U',
-            "gamma:gamut=local-minde")) && !encoder->accumulation_valid;
+            "srgb:gamut=local-minde")) && !encoder->accumulation_valid;
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

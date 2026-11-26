@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 trace=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    -Lbuiltin:cms_engine=none! -.auto -Qk -Xgamma -Wgamma \
+    -Lbuiltin:cms_engine=none! -.auto -Qk -Xsrgb -Wsrgb \
     -0hard -dnone -aoff -_auto:rate=0 -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {
     printf '\n%s\n' "not ok 1 - P3 rejected byte input"

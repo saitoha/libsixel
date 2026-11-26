@@ -1336,7 +1336,7 @@ coregraphics_expand_palette(sixel_frame_t *frame,
     }
     for (c = 0u; c < 3u; ++c) {
         background[c] = bgcolor == NULL ? 0.0 : bgcolor[c] / 255.0;
-        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
+        if (loader_background_colorspace() != SIXEL_COLORSPACE_SRGB_LINEAR) {
             background[c] = coregraphics_decode_srgb_unit(background[c]);
         }
     }
@@ -2429,7 +2429,7 @@ coregraphics_try_source_png(coregraphics_loader_state_t *state, int *handled)
     for (c = 0; c < 3; ++c) {
         background[c] = state->bgcolor == NULL ? 0.0 :
             state->bgcolor[c] / 255.0;
-        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
+        if (loader_background_colorspace() != SIXEL_COLORSPACE_SRGB_LINEAR) {
             background[c] = coregraphics_decode_srgb_unit(background[c]);
         }
     }

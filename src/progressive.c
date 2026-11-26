@@ -434,8 +434,8 @@ sixel_repair_context_bind_owned(sixel_repair_context_t *context,
     replacement.workspace = encoder->working->space;
     stop = context->config.stop_distance;
     if (context->config.stop_distance_auto) {
-        stop = replacement.workspace == SIXEL_COLORSPACE_GAMMA ? 2.0 / 255
-            : replacement.workspace == SIXEL_COLORSPACE_LINEAR ? 0.005
+        stop = replacement.workspace == SIXEL_COLORSPACE_SRGB ? 2.0 / 255
+            : replacement.workspace == SIXEL_COLORSPACE_SRGB_LINEAR ? 0.005
             : 0.01;
     }
     replacement.stop_squared = stop * stop;
@@ -644,7 +644,7 @@ sixel_repair_context_audit_owned(sixel_repair_context_t *context,
         context->tile_x = context->tile_y = context->tile_offset = 0;
     }
     source = (float const *)sixel_frame_get_pixels(context->source);
-    gamma_history = context->workspace == SIXEL_COLORSPACE_GAMMA &&
+    gamma_history = context->workspace == SIXEL_COLORSPACE_SRGB &&
         sixel_palette_output_is_gamma(context->transform);
     while (context->tile_y < context->height) {
         if ((work->pixel_visits & 127U) == 0) {

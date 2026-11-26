@@ -18,8 +18,8 @@ sixel_repair_video_luma(float const color[3], int workspace, double *luma)
     int channel;
     int basis;
 
-    basis = workspace == SIXEL_COLORSPACE_GAMMA
-        ? SIXEL_COLORSPACE_GAMMA : SIXEL_COLORSPACE_LINEAR;
+    basis = workspace == SIXEL_COLORSPACE_SRGB
+        ? SIXEL_COLORSPACE_SRGB : SIXEL_COLORSPACE_SRGB_LINEAR;
     if (workspace == basis) {
         *luma = .2126 * color[0] + .7152 * color[1] + .0722 * color[2];
         return isfinite(*luma);

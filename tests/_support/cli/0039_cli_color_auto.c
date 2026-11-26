@@ -343,8 +343,8 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     arguments[count++] = "-jscalar:resize_precision=float";
     arguments[count++] = "--precision-policy=auto";
     arguments[count++] = "-Qkmeans:seed=1";
-    arguments[count++] = "-Xlinear";
-    arguments[count++] = "-Wlinear";
+    arguments[count++] = "-Xsrgb-linear";
+    arguments[count++] = "-Wsrgb-linear";
     arguments[count++] = "-Fnone";
     arguments[count++] = "-aoff";
     arguments[count++] = "-_none";
@@ -421,27 +421,27 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
         color_auto_is(name, "bad-env-base"))) {
         setenv("SIXEL_OUTPUT_COLORSPACE", (color_auto_is(name, "env-auto") ||
             color_auto_is(name, "drcs-env")) ? "auto"
-            : color_auto_is(name, "env-gamma") ? "gamma"
+            : color_auto_is(name, "env-gamma") ? "srgb"
             : color_auto_is(name, "env-empty") ? "" : "invalid", 1);
         setenv("SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS", "200", 1);
     } else {
         arguments[count++] = baseline
             ? (color_auto_is(name, "gamut")
-                ? "-Ugamma:gamut=local-minde"
+                ? "-Usrgb:gamut=local-minde"
                 : color_auto_is(name, "edge")
-                    ? "-Ugamma:gamut=edge-seeker"
+                    ? "-Usrgb:gamut=edge-seeker"
                     : color_auto_is(name, "ray")
-                        ? "-Ugamma:gamut=ray-trace" : "-Ugamma")
+                        ? "-Usrgb:gamut=ray-trace" : "-Usrgb")
             : (char *)color_option;
     }
     if (!baseline && color_auto_is(name, "drcs-gamma")) {
-        arguments[count - 1] = "-Ugamma";
+        arguments[count - 1] = "-Usrgb";
     }
     if (!baseline && color_auto_is(name, "drcs-p3")) {
         arguments[count - 1] = "-Udisplay-p3";
     }
     if (!baseline && color_auto_is(name, "drcs-overridden")) {
-        arguments[count++] = "-Ugamma";
+        arguments[count++] = "-Usrgb";
     }
     if (!baseline && color_auto_is(name, "base-invalid-ignored")) {
         setenv("SIXEL_OUTPUT_COLORSPACE", "invalid", 1);
@@ -449,14 +449,14 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     if (!baseline && (color_auto_is(name, "explicit-gamma") ||
         color_auto_is(name, "cli-over-env"))) {
         setenv("SIXEL_OUTPUT_COLORSPACE", "auto", 1);
-        arguments[count++] = "-Ugamma";
+        arguments[count++] = "-Usrgb";
     }
     if (!baseline && color_auto_is(name, "repeated-auto")) {
-        arguments[count++] = "-Ugamma";
+        arguments[count++] = "-Usrgb";
         arguments[count++] = "-Uauto:T200";
     }
     if (!baseline && color_auto_is(name, "env-assignment-overridden")) {
-        arguments[count++] = "-Ugamma";
+        arguments[count++] = "-Usrgb";
         arguments[count++] = "--env";
         arguments[count++] = "SIXEL_OUTPUT_COLORSPACE=auto";
     }

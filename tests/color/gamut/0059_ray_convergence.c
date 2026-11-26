@@ -8,8 +8,8 @@ int
 test_gamut_0059_ray_convergence(int argc, char **argv)
 {
     gamut_fixture_t fixture = {0};
-    int const spaces[] = {SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_OKLAB};
+    int const spaces[] = {SIXEL_COLORSPACE_SRGB_LINEAR,
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_OKLAB};
     double input[3];
     double mapped[3];
     double result[3];
@@ -24,7 +24,7 @@ test_gamut_0059_ray_convergence(int argc, char **argv)
     for (i = 0; ok && i < 12; ++i) {
         for (s = 0; ok && s < 3; ++s) {
             ok = sixel_color_convert(input, ray_convergence_origins[i],
-                SIXEL_COLORSPACE_LINEAR, spaces[s]);
+                SIXEL_COLORSPACE_SRGB_LINEAR, spaces[s]);
             /* Exercise the frame's float storage as well as the mapper's
              * double arithmetic. Boundary behavior must not depend on
              * which workspace supplied the color. */
@@ -33,7 +33,7 @@ test_gamut_0059_ray_convergence(int argc, char **argv)
             }
             ok = ok && sixel_gamut_apply(fixture.mapper, input, mapped,
                 spaces[s]) && sixel_color_convert(result, mapped,
-                spaces[s], SIXEL_COLORSPACE_LINEAR);
+                spaces[s], SIXEL_COLORSPACE_SRGB_LINEAR);
             for (c = 0; ok && c < 3; ++c) {
                 /* Independently bisected constant-L/h boundary values.
                  * 3e-5 linear units allows the four-ray approximation,

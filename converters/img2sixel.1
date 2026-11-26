@@ -60,7 +60,7 @@ arguments. Enclose arguments whose uppercase characters must be preserved
 in double quotes:
 .PP
 .nf
-img2sixel \(dq\-Wc\(dq \(dq\-Qk\(dq input.png
+img2sixel \(dq\-Wlab-d65\(dq \(dq\-Qk\(dq input.png
 .fi
 .PP
 This applies whether or not an argument contains a slash.
@@ -1556,13 +1556,13 @@ Ignored for \fB\-b\fP, \fB\-e\fP, and structured \fB\-m\fP palettes.
 .br
 auto -> follow the resolved working color space (default)
 .br
-gamma  -> keep gamma encoded pixels
+srgb  -> use encoded sRGB coordinates
 .br
-linear -> convert to linear RGB for clustering
+srgb-linear -> cluster in linear-light sRGB
 .br
 oklab -> cluster in OKLab uniform color space
 .br
-cielab -> cluster in CIELAB uniform color space
+lab-d65 -> cluster in CIELAB with a D65 reference white
 .br
 din99d -> cluster in DIN99d uniform color space
 .br
@@ -1576,13 +1576,13 @@ select internal working color space
 .br
 auto -> follow the input frame color space (default)
 .br
-gamma  -> keep gamma encoded pixels at the selected precision
+srgb  -> use encoded sRGB coordinates at the selected precision
 .br
-linear -> convert to linear RGB float32 for processing
+srgb-linear -> operate in linear-light sRGB float32
 .br
 oklab -> operate in OKLab float32 for palette decisions
 .br
-cielab -> operate in CIELAB float32 for palette decisions
+lab-d65 -> operate in D65 CIELAB float32 for palette decisions
 .br
 din99d -> operate in DIN99d float32 for palette decisions
 .br
@@ -1611,15 +1611,15 @@ CLI auto resolves the destination.
 .br
 \fICOLORSPACE\fP is one of them:
 .br
-gamma   -> sRGB gamma encoded output (default)
+srgb   -> sRGB gamma encoded output (default)
 .br
-linear  -> linear RGB output
+srgb-linear -> linear-light sRGB output
 .br
 smpte-c -> SMPTE-C gamma encoded output
 .br
 display-p3 -> Display P3 output for selected CPU palette or high-color paths
 .br
-adobe-rgb -> Adobe RGB (1998), D65 white and power 563/256
+a98-rgb -> Adobe RGB (1998), D65 white and power 563/256
 .br
 dci-p3 -> P3 primaries, DCI white and power 2.6
 .br
@@ -1644,7 +1644,7 @@ The receiver must interpret emitted RGB in the selected space.
 auto[:timeout_ms=N] -> negotiate with the image destination on stdout
 .br
 The CLI-only auto choice uses the same stdout terminal for queries and
-image output. File/pipe destinations use gamma without color queries,
+image output. File/pipe destinations use srgb without color queries,
 even when stderr is a terminal. Any outfile argument other than an exact
 "-" excludes auto negotiation, including "-o file -o -".
 Explicit color-space choices do not negotiate and remain honored for files.

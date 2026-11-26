@@ -203,9 +203,9 @@ def measure_light(arguments: argparse.Namespace, out: Path,
         raise SystemExit("--measure needs --img2sixel and --sixel2png")
     palette = out / "cube27.png"
     palette.write_bytes(png_palette(inputs["cube27"]))
-    for space in ("gamma", "linear"):
+    for space, cli_space in (("gamma", "srgb"), ("linear", "srgb-linear")):
         stream = out / f"light-{space}.six"
-        stream.write_bytes(run([str(arguments.img2sixel), "-W", space, "-m",
+        stream.write_bytes(run([str(arguments.img2sixel), "-W", cli_space, "-m",
                                 str(palette), "-d", "fs",
                                 str(ROOT / "images/snake.png")]).stdout)
         decoded = out / f"light-{space}.png"
@@ -436,8 +436,8 @@ def render_light(results: dict) -> str:
     return table(["Floyd–Steinberg on the photograph, 27-color cube",
                   "Area ΔE00"], [
         ["Tutorial step 3, on the stored numbers", f"{light['tutorial']:.2f}"],
-        ["libsixel, `-W gamma`", f"{light['gamma']:.2f}"],
-        ["libsixel, `-W linear`", f"{light['linear']:.2f}"],
+        ["libsixel, `-W srgb`", f"{light['gamma']:.2f}"],
+        ["libsixel, `-W srgb-linear`", f"{light['linear']:.2f}"],
     ])
 
 

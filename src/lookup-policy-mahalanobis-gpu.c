@@ -298,7 +298,7 @@ mahal_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         return SIXEL_FEATURE_ERROR;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            request->colorspace != SIXEL_COLORSPACE_GAMMA ||
+            request->colorspace != SIXEL_COLORSPACE_SRGB ||
             (!vulkan && !webgpu &&
              strcmp(format, "metal.lookup-rgb8.v1") != 0)) {
         return SIXEL_FEATURE_ERROR;

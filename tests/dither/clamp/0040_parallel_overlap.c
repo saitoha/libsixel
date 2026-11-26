@@ -72,7 +72,7 @@ test_clamp_0040(int argc, char **argv)
     if (SIXEL_FAILED(parallel->palette->vtbl->init_entries_float32(
             parallel->palette, &request)) ||
             SIXEL_FAILED(sixel_palette_prepare_rgb101(parallel->palette,
-                SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY)) ||
+                SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY)) ||
             SIXEL_FAILED(sixel_dither_set_clamp_policy(parallel,
                 SIXEL_DITHER_CLAMP_SOFT, 1.01))) {
         goto end;

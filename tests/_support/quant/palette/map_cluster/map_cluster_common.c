@@ -36,11 +36,11 @@ test_map_cluster(int mode, char const *path)
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { 'F', "none" }, { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
-        { '4', "full-frame" }, { '5', "none" }, { 'W', "gamma" },
+        { '4', "full-frame" }, { '5', "none" }, { 'W', "srgb" },
         { 'L', "builtin:cms_engine=none!" }, { '0', "hard" }
     };
     static char const *const spaces[] = {
-        "linear", "oklab", "cielab", "din99d", "gamma"
+        "srgb-linear", "oklab", "lab-d65", "din99d", "srgb"
     };
     /* Independent equal-population means of sRGB red and blue, calculated
      * in the named clustering geometry, then transformed to signed sRGB.
@@ -246,7 +246,7 @@ test_map_cluster_icc_transition(char const *path)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { 'm', "pal:-" }, { '.', "float32" },
-        { 'W', "linear" }, { 'd', "none" }, { 't', "rgb" }, { '7', NULL }
+        { 'W', "srgb-linear" }, { 'd', "none" }, { 't', "rgb" }, { '7', NULL }
     };
     unsigned char pixels[] = {255, 0, 0, 0, 0, 255};
     sixel_encoder_t *encoder;
@@ -286,7 +286,7 @@ test_map_cluster_icc_transition(char const *path)
     for (pass = 0; pass < 3; ++pass) {
         memset(&capture, 0, sizeof(capture));
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
-                pass == 0 ? "gamma" : pass == 1 ? argument : "auto")) ||
+                pass == 0 ? "srgb" : pass == 1 ? argument : "auto")) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
                     SIXEL_PIXELFORMAT_RGB888, NULL, -1))) {

@@ -52,7 +52,7 @@ gamut_filter_init(gamut_filter_fixture_t *f, float *pixels, size_t count,
             SIXEL_FAILED(sixel_frame_init_borrowed(f->frame, pixels,
                 (int)count, 1, source, NULL, 0)) ||
             SIXEL_FAILED(sixel_gamut_new(&f->mapper, NULL,
-                SIXEL_COLORSPACE_GAMMA, policy, f->allocator))) {
+                SIXEL_COLORSPACE_SRGB, policy, f->allocator))) {
         return 0;
     }
     gamut.mapper = f->mapper;

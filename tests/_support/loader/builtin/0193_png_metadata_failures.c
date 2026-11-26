@@ -418,7 +418,7 @@ test_loader_0193_png_metadata_failures(int argc, char **argv)
     pixels = sixel_frame_get_pixels(frame);
     if (pmfi_mode == 1) {
         if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 ||
-            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA) {
+            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_SRGB) {
             goto cleanup;
         }
         for (p = 0; p < 8; ++p) {
@@ -431,7 +431,7 @@ test_loader_0193_png_metadata_failures(int argc, char **argv)
     } else {
         if (sixel_frame_format(frame) !=
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_LINEAR) {
+            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_SRGB_LINEAR) {
             goto cleanup;
         }
         for (p = 0; p < 24; ++p) {

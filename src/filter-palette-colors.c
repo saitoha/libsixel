@@ -173,8 +173,8 @@ sixel_filter_palette_colors_apply(sixel_filter_t *filter,
              * reuse gamma evidence without exposing source pixels or a
              * color-conversion callback to the binning consumer. */
             reuse_gamma = config->convert &&
-                input->colorspace == SIXEL_COLORSPACE_GAMMA &&
-                samples_out->colorspace != SIXEL_COLORSPACE_GAMMA;
+                input->colorspace == SIXEL_COLORSPACE_SRGB &&
+                samples_out->colorspace != SIXEL_COLORSPACE_SRGB;
             if (reuse_gamma) {
                 status = sixel_sample_stream_get_view(input, &gamma_view,
                     &gamma_transparency, &gamma_channels, &gamma_floating);

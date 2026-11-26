@@ -26,7 +26,7 @@ test_gamut_0017_palette_continuous(int argc, char **argv)
         SIXEL_SUCCEEDED(dither->palette->vtbl->init_entries_float32(
             dither->palette, &request)) &&
         SIXEL_SUCCEEDED(sixel_palette_map_gamut(dither->palette,
-            fixture.mapper, SIXEL_COLORSPACE_LINEAR,
+            fixture.mapper, SIXEL_COLORSPACE_SRGB_LINEAR,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&
         SIXEL_SUCCEEDED(sixel_palette_reconcile_bytes(dither->palette,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) &&

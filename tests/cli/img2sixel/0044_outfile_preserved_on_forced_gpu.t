@@ -16,14 +16,14 @@ target="${ARTIFACT_LOCAL_DIR}/output.six"
 cat "$fixture" >"$target"
 status=0
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -o "$target" -Gforce -Wlinear "$fixture" \
+    -o "$target" -Gforce -Wsrgb-linear "$fixture" \
     2>&1 >"${ARTIFACT_LOCAL_DIR}/stdout") || status=$?
 test "$status" -eq 2 && test ! -s "${ARTIFACT_LOCAL_DIR}/stdout" || {
     printf '\n%s\n' 'not ok 1 - expected rejection before output'
     exit 0
 }
 case "$trace" in
-    *"forced GPU palette application requires -W gamma."*) true ;;
+    *"forced GPU palette application requires -W srgb."*) true ;;
     *) false ;;
 esac || {
     printf '\n%s\n' 'not ok 1 - expected rejection diagnostic missing'

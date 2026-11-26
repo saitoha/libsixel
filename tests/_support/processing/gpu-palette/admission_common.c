@@ -107,7 +107,7 @@ lookup_admission_test(int policy, size_t threshold, SIXELSTATUS gpu_status,
     wire_request.definitions = definitions;
     wire_request.count = 2;
     wire_request.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    wire_request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire_request.colorspace = SIXEL_COLORSPACE_SRGB;
     if (sixel_wire_palette_new(&wire, &wire_request, fixture.allocator)
             != SIXEL_OK) goto end;
     request.working_palette = fixture.palette;
@@ -118,7 +118,7 @@ lookup_admission_test(int policy, size_t threshold, SIXELSTATUS gpu_status,
     request.output.palette = wire;
     request.output.width = request.output.height = 1;
     request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    request.colorspace = SIXEL_COLORSPACE_SRGB;
     request.scan = SIXEL_SCAN_RASTER;
     request.worker_threads = 1;
     request.gpu_policy = policy;

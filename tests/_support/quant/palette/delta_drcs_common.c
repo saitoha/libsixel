@@ -118,7 +118,7 @@ test_delta_drcs_recovery(int mode)
 #if defined(TIOCGWINSZ) && !defined(__EMSCRIPTEN__)
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
-        {'_', "none"}, {'W', "gamma"}, {'t', "rgb"},
+        {'_', "none"}, {'W', "srgb"}, {'t', "rgb"},
         {'Z', "full"}, {'7', NULL}, {'b', "gray1"}, {'@', "2:1"}
     };
     sixel_encoder_t *encoder;
@@ -163,7 +163,7 @@ test_delta_drcs_recovery(int mode)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
             mode ? "float32" : "8bit")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                mode == 2 ? "display-p3" : "gamma"))) {
+                mode == 2 ? "display-p3" : "srgb"))) {
         goto end;
     }
     /* Keep geometry cached even when testing a missing validation guard:

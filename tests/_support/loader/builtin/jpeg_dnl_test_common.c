@@ -214,7 +214,7 @@ jd_expect(unsigned char const *data, size_t size, int variant)
     count = (size_t)width * (size_t)height * 3u;
     if (probe.callback_count != 1 || probe.width[0] != width ||
         probe.height[0] != height ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.pixelformat[0] != (is_float ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                                           SIXEL_PIXELFORMAT_RGB888) ||
         probe.rgb_size[0] != count * (is_float ? sizeof(float) : 1u)) {

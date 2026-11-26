@@ -63,8 +63,8 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
     expected_format = probe->target == 2 ? SIXEL_PIXELFORMAT_RGB888 :
         probe->target == 1 ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    expected_space = probe->target ? SIXEL_COLORSPACE_GAMMA :
-        SIXEL_COLORSPACE_LINEAR;
+    expected_space = probe->target ? SIXEL_COLORSPACE_SRGB :
+        SIXEL_COLORSPACE_SRGB_LINEAR;
     if (probe->default_srgb && probe->managed) {
         /* Builtin requires gAMA before using isolated cHRM. Its documented
          * fallback keeps opaque bytes/words in their original sRGB transfer. */
@@ -73,8 +73,8 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
             probe->depth ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
             SIXEL_PIXELFORMAT_RGB888;
         expected_space = probe->rgba && probe->background
-            ? SIXEL_COLORSPACE_LINEAR :
-            SIXEL_COLORSPACE_GAMMA;
+            ? SIXEL_COLORSPACE_SRGB_LINEAR :
+            SIXEL_COLORSPACE_SRGB;
     }
     if (frame->width != (probe->oriented ? 2 : 4) ||
         frame->height != (probe->oriented ? 4 : 2) ||
@@ -127,7 +127,8 @@ png_numeric_capture(sixel_frame_t *frame, void *context)
                     color_png_wide_chrm_linear[probe->depth][source_pixel][c];
             } else if (probe->managed && !probe->default_srgb) {
                 expected = color_png_icc_linear[probe->depth][source_pixel][c];
-            } else if (frame->format.coordinates == SIXEL_COLORSPACE_LINEAR) {
+            } else if (frame->format.coordinates ==
+                SIXEL_COLORSPACE_SRGB_LINEAR) {
                 expected = color_png_srgb_linear[probe->depth][source_pixel][c];
             } else {
                 expected =

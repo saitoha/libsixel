@@ -11,7 +11,7 @@ set -v
 # Fix both sample storage and coordinates for the identity branch.
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" --loaders=builtin! --precision-policy=8bit \
-    -Q kmeans -W gamma -X gamma -5 auto \
+    -Q kmeans -W srgb -X srgb -5 auto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     printf '\n%s\n' "not ok 1 - palette colors conversion failed"
     exit 0

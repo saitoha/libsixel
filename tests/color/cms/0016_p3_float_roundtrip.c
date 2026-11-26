@@ -13,7 +13,7 @@ int test_cdef_0010(int argc, char **argv)
     };
     static double const gamma[3] = {1.0, 1.0, 1.0};
     static int const spaces[3] = {
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
         SIXEL_COLORSPACE_DIN99D
     };
     sixel_color_def_t *p3;
@@ -58,7 +58,7 @@ int test_cdef_0010(int argc, char **argv)
                         work[channel] = (double)(float)work[channel];
                     }
                     ok = ok && sixel_color_convert(opponent, work,
-                        SIXEL_COLORSPACE_LINEAR, spaces[space]);
+                        SIXEL_COLORSPACE_SRGB_LINEAR, spaces[space]);
                     if (!ok) {
                         break;
                     }
@@ -66,7 +66,7 @@ int test_cdef_0010(int argc, char **argv)
                         opponent[channel] = (double)(float)opponent[channel];
                     }
                     ok = ok && sixel_color_convert(work, opponent,
-                        spaces[space], SIXEL_COLORSPACE_LINEAR);
+                        spaces[space], SIXEL_COLORSPACE_SRGB_LINEAR);
                     if (!ok) {
                         break;
                     }

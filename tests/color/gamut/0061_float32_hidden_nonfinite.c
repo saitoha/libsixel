@@ -8,7 +8,7 @@ test_gamut_0061_float32_hidden_nonfinite(int argc, char **argv)
 {
     int const policies[] = {SIXEL_GAMUT_LOCAL_MINDE,
         SIXEL_GAMUT_EDGE_SEEKER, SIXEL_GAMUT_RAY_TRACE};
-    int const spaces[] = {SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB};
+    int const spaces[] = {SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB};
     unsigned char hidden[] = {1, 0};
     gamut_fixture_t fixture = {0};
     float pixels[6];
@@ -21,7 +21,7 @@ test_gamut_0061_float32_hidden_nonfinite(int argc, char **argv)
         NULL, NULL, NULL, NULL));
     for (policy = 0; ok && policy < 3; ++policy) {
         ok = SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper, NULL,
-            SIXEL_COLORSPACE_GAMMA, policies[policy], fixture.allocator));
+            SIXEL_COLORSPACE_SRGB, policies[policy], fixture.allocator));
         for (space = 0; ok && space < 2; ++space) {
             for (bad = 0; ok && bad < 2; ++bad) {
                 pixels[0] = bad ? INFINITY : NAN;

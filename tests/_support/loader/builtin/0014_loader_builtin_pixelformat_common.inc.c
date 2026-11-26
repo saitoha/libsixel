@@ -10,9 +10,9 @@ expected_colorspace_for_pixelformat(int pixelformat)
 {
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
+        return SIXEL_COLORSPACE_SRGB_LINEAR;
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
+        return SIXEL_COLORSPACE_LAB_D65;
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
         return SIXEL_COLORSPACE_OKLAB;
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
@@ -20,7 +20,7 @@ expected_colorspace_for_pixelformat(int pixelformat)
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_RGB888:
     default:
-        return SIXEL_COLORSPACE_GAMMA;
+        return SIXEL_COLORSPACE_SRGB;
     }
 }
 

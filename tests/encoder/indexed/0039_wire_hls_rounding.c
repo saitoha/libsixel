@@ -23,7 +23,7 @@ test_indexed_wire_hls_rounding(int argc, char **argv)
     request.definitions = &definition;
     request.count = 1;
     request.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    request.colorspace = SIXEL_COLORSPACE_SRGB;
     if (sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL) != SIXEL_OK ||
             sixel_wire_palette_new(&wire, &request, allocator) != SIXEL_OK ||
             sixel_wire_palette_get_view(wire, &view) != SIXEL_OK) goto end;

@@ -118,7 +118,7 @@ test_gamut_0056_ray_geometry(int argc, char **argv)
         mapper.maximum[c] = .8;
     }
     ok = ok && ray_test_gamut_ray_trace(&mapper, input, result,
-        SIXEL_COLORSPACE_LINEAR);
+        SIXEL_COLORSPACE_SRGB_LINEAR);
     for (c = 0; ok && c < 3; ++c) {
         ok = isfinite(result[c]) && result[c] == expected[c];
         if (!ok) {
@@ -131,7 +131,7 @@ test_gamut_0056_ray_geometry(int argc, char **argv)
     mapper.forward[0] = DBL_MAX;
     memcpy(result, expected, sizeof(result));
     ok = ok && !ray_test_gamut_ray_trace(&mapper, huge, result,
-        SIXEL_COLORSPACE_LINEAR) &&
+        SIXEL_COLORSPACE_SRGB_LINEAR) &&
         memcmp(result, expected, sizeof(result)) == 0;
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

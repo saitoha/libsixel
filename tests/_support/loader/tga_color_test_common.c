@@ -264,8 +264,8 @@ tga_color_test(int specimen, int engine)
             specimen == 36 ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
         probe.colorspace[0] != (unmanaged || specimen == 36 ?
-            SIXEL_COLORSPACE_GAMMA :
-            SIXEL_COLORSPACE_LINEAR)) {
+            SIXEL_COLORSPACE_SRGB :
+            SIXEL_COLORSPACE_SRGB_LINEAR)) {
         fprintf(stderr, "TGA case=%d status=%x callbacks=%d type=%x space=%d\n",
                 specimen, status, probe.callback_count,
                 probe.pixelformat[0], probe.colorspace[0]);

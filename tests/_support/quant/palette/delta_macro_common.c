@@ -90,7 +90,7 @@ test_delta_macro_recovery(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
-        {'_', "none"}, {'W', "gamma"}, {'t', "rgb"}, {'E', "fast"},
+        {'_', "none"}, {'W', "srgb"}, {'t', "rgb"}, {'E', "fast"},
         {'Z', "full"}, {'7', NULL}, {'b', "gray1"}
     };
     float pixels[3] = { 1.f, 1.f, 1.f };
@@ -117,7 +117,7 @@ test_delta_macro_recovery(int mode)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 mode ? "float32" : "8bit")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                mode == 2 ? "display-p3" : "gamma")) ||
+                mode == 2 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 mode == 1 ? 'n' : 'u', mode == 1 ? "7" : NULL)) ||
             (mode == 2 && SIXEL_FAILED(sixel_encoder_setopt(encoder,

@@ -148,7 +148,7 @@ reuse_image(sixel_allocator_t *allocator, int observation, int second)
     wire.definitions = colors;
     wire.count = count;
     wire.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     if (sixel_wire_palette_new(&palette, &wire, allocator) != SIXEL_OK) {
         return NULL;
     }

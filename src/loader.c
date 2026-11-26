@@ -1584,7 +1584,7 @@ loader_load_source(sixel_loader_t *loader, char const *filename,
          * default requested a different background color space.
          */
         sixel_helper_set_loader_background_colorspace(
-            SIXEL_COLORSPACE_GAMMA);
+            SIXEL_COLORSPACE_SRGB);
     }
 
     build_request.resolution = active_order_resolution;

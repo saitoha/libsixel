@@ -132,7 +132,7 @@ awk '
 in_func && /serial_logger[ \t]*=[ \t]*NULL[ \t]*;/ {
     saw_serial_init = 1
 }
-in_func && /palette_source_colorspace[ \t]*=[ \t]*SIXEL_COLORSPACE_GAMMA[ \t]*;/ {
+in_func && /palette_source_colorspace[ \t]*=[ \t]*SIXEL_COLORSPACE_SRGB[ \t]*;/ {
     if (!saw_serial_init) {
         print "src/encoder-core-encode.c:" FNR \
             ": serial_logger must be initialized before early cleanup paths"

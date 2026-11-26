@@ -227,7 +227,7 @@ def wide_svg() -> str:
         "float",
         ["promote to float32", "gamma -> linear RGB"],
         ["Resampling: selected kernel", "linear-f32: scalar or SIMD"],
-        ["retain float32 work", "RGB-f32 for -W gamma"],
+        ["retain float32 work", "RGB-f32 for -W srgb"],
     )
 
     svg.rect(625, 92, 390, 500, SIMD, "9 7", "none", 14)
@@ -314,7 +314,7 @@ def mobile_svg() -> str:
         "float",
         [
             "promote + gamma -> linear-f32 -> Resampling",
-            "-> retain float32 work, RGB-f32 for -W gamma",
+            "-> retain float32 work, RGB-f32 for -W srgb",
         ],
     )
 

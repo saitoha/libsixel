@@ -29,7 +29,7 @@ test_loader_0184_psd_cmyk_icc_numeric(int argc, char **argv)
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 8 || probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.rgb_size[0] != sizeof(actual)) {
         return 1;
     }

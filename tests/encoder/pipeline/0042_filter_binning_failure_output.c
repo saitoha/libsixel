@@ -161,7 +161,7 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
         NULL,
         97u,
         97.0,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         &raw_state);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -196,7 +196,7 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
         sixel_filter_bind_weighted_output(
             filter,
             &output,
-            SIXEL_COLORSPACE_GAMMA);
+            SIXEL_COLORSPACE_SRGB);
         binning_failure_allocation_count = 0u;
         binning_failure_allocation_target = failure_target;
         status = sixel_filter_run(filter, allocator, NULL);
@@ -242,7 +242,7 @@ test_filter_0032_filter_binning_failure_output(int argc, char **argv)
         sixel_filter_bind_weighted_output(
             filter,
             &output,
-            SIXEL_COLORSPACE_GAMMA);
+            SIXEL_COLORSPACE_SRGB);
         binning_failure_allocation_count = 0u;
         binning_failure_allocation_target = failure_target;
         status = sixel_filter_run(filter, allocator, NULL);

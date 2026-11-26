@@ -230,7 +230,7 @@ static int libpng_enable_cms = 0;
 static int builtin_enable_cms_default = 0;
 static int builtin_enable_cms = 0;
 static int loader_background_colorspace_initialized;
-static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+static int loader_background_colorspace_value = SIXEL_COLORSPACE_SRGB;
 static int loader_transparent_policy_initialized;
 static int loader_transparent_policy_value =
     SIXEL_LOADER_ALPHA_POLICY_CLEAR;
@@ -915,8 +915,8 @@ SIXEL_INTERNAL_API void
 sixel_helper_set_loader_background_colorspace(int colorspace)
 {
     loader_background_lock();
-    if (colorspace == SIXEL_COLORSPACE_GAMMA ||
-            colorspace == SIXEL_COLORSPACE_LINEAR) {
+    if (colorspace == SIXEL_COLORSPACE_SRGB ||
+            colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) {
         loader_background_colorspace_override = colorspace;
     } else {
         loader_background_colorspace_override = -1;
@@ -943,7 +943,7 @@ loader_background_initialize_colorspace(void)
 {
     int value;
 
-    value = SIXEL_COLORSPACE_GAMMA;
+    value = SIXEL_COLORSPACE_SRGB;
     loader_background_lock();
     if (loader_background_colorspace_initialized) {
         loader_background_unlock();
@@ -951,7 +951,7 @@ loader_background_initialize_colorspace(void)
     }
 
     loader_background_colorspace_initialized = 1;
-    loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+    loader_background_colorspace_value = SIXEL_COLORSPACE_SRGB;
 
     if (sixel_option_resolve_registered_int_binding(
             SIXEL_OPTION_SCHEMA_LOADERS,
@@ -1024,8 +1024,8 @@ loader_background_colorspace(void)
     suboptions = sixel_loader_active_suboptions();
     loader_background_lock();
     override_value = loader_background_colorspace_override;
-    if (override_value == SIXEL_COLORSPACE_GAMMA ||
-            override_value == SIXEL_COLORSPACE_LINEAR) {
+    if (override_value == SIXEL_COLORSPACE_SRGB ||
+            override_value == SIXEL_COLORSPACE_SRGB_LINEAR) {
         loader_background_unlock();
         return override_value;
     }
@@ -1111,7 +1111,7 @@ loader_cms_target_colorspace(void)
     return loader_resolve_int_suboption(
         NULL,
         SIXEL_SUBOPTION_BINDING_ID_1(cms_target_colorspace),
-        SIXEL_COLORSPACE_LINEAR);
+        SIXEL_COLORSPACE_SRGB_LINEAR);
 }
 
 /* Keep the effective CMS consumer contract stable for per-option tests. */
@@ -1119,15 +1119,15 @@ static char const *
 loader_cms_target_name(int target_colorspace)
 {
     switch (target_colorspace) {
-    case SIXEL_COLORSPACE_GAMMA:
+    case SIXEL_COLORSPACE_SRGB:
         return "gamma";
-    case SIXEL_COLORSPACE_CIELAB:
+    case SIXEL_COLORSPACE_LAB_D65:
         return "cielab";
     case SIXEL_COLORSPACE_OKLAB:
         return "oklab";
     case SIXEL_COLORSPACE_DIN99D:
         return "din99d";
-    case SIXEL_COLORSPACE_LINEAR:
+    case SIXEL_COLORSPACE_SRGB_LINEAR:
     default:
         return "linear";
     }
@@ -1168,10 +1168,10 @@ loader_cms_target_pixelformat(void)
         pixelformat = SIXEL_PIXELFORMAT_RGB888;
     } else {
         switch (target_colorspace) {
-        case SIXEL_COLORSPACE_GAMMA:
+        case SIXEL_COLORSPACE_SRGB:
             pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
             break;
-        case SIXEL_COLORSPACE_CIELAB:
+        case SIXEL_COLORSPACE_LAB_D65:
             pixelformat = SIXEL_PIXELFORMAT_CIELABFLOAT32;
             break;
         case SIXEL_COLORSPACE_OKLAB:
@@ -1180,7 +1180,7 @@ loader_cms_target_pixelformat(void)
         case SIXEL_COLORSPACE_DIN99D:
             pixelformat = SIXEL_PIXELFORMAT_DIN99DFLOAT32;
             break;
-        case SIXEL_COLORSPACE_LINEAR:
+        case SIXEL_COLORSPACE_SRGB_LINEAR:
         default:
             pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
             break;

@@ -366,12 +366,12 @@ sixel_palette_cluster_to_gamma(double gamma[3], double const point[3],
     double linear[3];
 
     if (g_snap_cluster == NULL) {
-        return sixel_color_convert(gamma, point, space, SIXEL_COLORSPACE_GAMMA);
+        return sixel_color_convert(gamma, point, space, SIXEL_COLORSPACE_SRGB);
     }
     return sixel_cdef_convert_intermediate(g_snap_cluster, g_snap_linear,
                                            point, linear) &&
-        sixel_color_convert(gamma, linear, SIXEL_COLORSPACE_LINEAR,
-                            SIXEL_COLORSPACE_GAMMA);
+        sixel_color_convert(gamma, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
+                            SIXEL_COLORSPACE_SRGB);
 }
 
 int
@@ -381,10 +381,10 @@ sixel_palette_gamma_to_cluster(double point[3], double const gamma[3],
     double linear[3];
 
     if (g_snap_cluster == NULL) {
-        return sixel_color_convert(point, gamma, SIXEL_COLORSPACE_GAMMA, space);
+        return sixel_color_convert(point, gamma, SIXEL_COLORSPACE_SRGB, space);
     }
-    return sixel_color_convert(linear, gamma, SIXEL_COLORSPACE_GAMMA,
-                               SIXEL_COLORSPACE_LINEAR) &&
+    return sixel_color_convert(linear, gamma, SIXEL_COLORSPACE_SRGB,
+                               SIXEL_COLORSPACE_SRGB_LINEAR) &&
         sixel_cdef_convert_intermediate(g_snap_linear, g_snap_cluster,
                                         linear, point);
 }
@@ -518,12 +518,12 @@ sixel_palette_reversible_palette(unsigned char *palette,
         return;
     }
     memcpy(working, palette, palette_bytes);
-    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace != SIXEL_COLORSPACE_SRGB) {
         status = sixel_helper_convert_colorspace(working,
                                                  palette_bytes,
                                                  pixelformat,
                                                  colorspace,
-                                                 SIXEL_COLORSPACE_GAMMA);
+                                                 SIXEL_COLORSPACE_SRGB);
         if (SIXEL_FAILED(status)) {
             free(working);
             return;
@@ -572,11 +572,11 @@ sixel_palette_reversible_palette(unsigned char *palette,
         }
     }
 
-    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace != SIXEL_COLORSPACE_SRGB) {
         status = sixel_helper_convert_colorspace(working,
                                                  palette_bytes,
                                                  pixelformat,
-                                                 SIXEL_COLORSPACE_GAMMA,
+                                                 SIXEL_COLORSPACE_SRGB,
                                                  colorspace);
         if (SIXEL_FAILED(status)) {
             free(working);
@@ -671,7 +671,7 @@ sixel_palette_snap_coordinates(double *result, double const *source,
     policy = sixel_palette_get_snap_policy();
     rate = sixel_palette_get_snap_approach_rate();
     weights[0] = weights[1] = weights[2] = 1.0;
-    if (space == SIXEL_COLORSPACE_OKLAB || space == SIXEL_COLORSPACE_CIELAB ||
+    if (space == SIXEL_COLORSPACE_OKLAB || space == SIXEL_COLORSPACE_LAB_D65 ||
             space == SIXEL_COLORSPACE_DIN99D) {
         weights[0] = sixel_palette_get_snap_channel_factor();
         weights[1] = weights[2] = (1.0 - weights[0]) * 0.5;

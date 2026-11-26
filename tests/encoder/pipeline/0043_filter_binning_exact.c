@@ -132,7 +132,7 @@ test_filter_0033_filter_binning_exact(int argc, char **argv)
         weights,
         97u,
         97.0,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         &raw_state);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -161,7 +161,7 @@ test_filter_0033_filter_binning_exact(int argc, char **argv)
     sixel_filter_bind_weighted_output(
         filter,
         &output,
-        SIXEL_COLORSPACE_GAMMA);
+        SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, allocator, NULL);
     if (status != SIXEL_LOGIC_ERROR ||
             output.ownership != SIXEL_WEIGHTED_POINT_EMPTY ||
@@ -178,7 +178,7 @@ test_filter_0033_filter_binning_exact(int argc, char **argv)
         NULL,
         97u,
         97.0,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         &raw_state);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -194,7 +194,7 @@ test_filter_0033_filter_binning_exact(int argc, char **argv)
     sixel_filter_bind_weighted_output(
         filter,
         &output,
-        SIXEL_COLORSPACE_GAMMA);
+        SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, allocator, NULL);
     if (SIXEL_FAILED(status) ||
             binning.policy.phase != SIXEL_PALETTE_POLICY_EXECUTED ||
@@ -242,7 +242,7 @@ test_filter_0033_filter_binning_exact(int argc, char **argv)
     sixel_filter_bind_weighted_output(
         repeat_filter,
         &repeat_output,
-        SIXEL_COLORSPACE_GAMMA);
+        SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(repeat_filter, allocator, NULL);
     if (SIXEL_FAILED(status) ||
             repeat_binning.policy.phase !=

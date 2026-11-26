@@ -16,13 +16,13 @@ profile="icc:P${TOP_SRCDIR}/tests/data/color-numeric/register-feedback-lut.icc"
 input="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 target="${ARTIFACT_LOCAL_DIR}/output.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -.float32 -Wlinear -Goff -dnone -p4 '-~none' '-_none' \
+    -.float32 -Wsrgb-linear -Goff -dnone -p4 '-~none' '-_none' \
     -U "$profile" -Zfull "$input" "$input" >"${ARTIFACT_LOCAL_DIR}/expected" || {
     printf '\n%s\n' 'not ok 1 - reference conversion failed'
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -.float32 -Wlinear -Goff -dnone -p4 '-~none' '-_none' \
+    -.float32 -Wsrgb-linear -Goff -dnone -p4 '-~none' '-_none' \
     -U "$profile" -Zprogressive:N2:M0 -o "$target" -o - -Zfull \
     "$input" "$input" >"${ARTIFACT_LOCAL_DIR}/stdout" || {
     printf '\n%s\n' 'not ok 1 - deferred file conversion failed'

@@ -32,8 +32,8 @@ tiff_managed_check(sixel_frame_t const *frame, int fixture, int engine,
         frame->height != tm_cases[fixture].height ||
         sixel_frame_format(frame) != (raw ? SIXEL_PIXELFORMAT_RGBFLOAT32
                                   : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (raw ? SIXEL_COLORSPACE_GAMMA
-                                 : SIXEL_COLORSPACE_LINEAR) ||
+        frame->format.coordinates != (raw ? SIXEL_COLORSPACE_SRGB
+                                 : SIXEL_COLORSPACE_SRGB_LINEAR) ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL || frame->transparent_mask_size ||
         frame->alpha_zero_is_transparent) { return 0; }
@@ -95,10 +95,10 @@ tm_capture(sixel_frame_t *frame, void *context)
         reference = *frame;
         reference.pixels.u8ptr = (unsigned char *)tm_cases[ctx->fixture].source;
         reference.format.layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        reference.format.coordinates = SIXEL_COLORSPACE_GAMMA;
+        reference.format.coordinates = SIXEL_COLORSPACE_SRGB;
         reference.format.rgb = NULL;
         ok = sixel_frame_format(frame) == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-             frame->format.coordinates == SIXEL_COLORSPACE_LINEAR &&
+             frame->format.coordinates == SIXEL_COLORSPACE_SRGB_LINEAR &&
              tiff_managed_check(&reference, ctx->fixture, ctx->engine, 1);
         bytes = (size_t)frame->width * frame->height * 3u * sizeof(float);
         if (ctx->native == 1) {

@@ -63,7 +63,7 @@ test_progressive_gpu_strata_case(int mode)
     request.view.plane_height = 3;
     request.view.origin_x = 2;
     request.view.origin_y = 1;
-    request.view.workspace = SIXEL_COLORSPACE_GAMMA;
+    request.view.workspace = SIXEL_COLORSPACE_SRGB;
     request.count = 73;
     request.policy = SIXEL_GPU_POLICY_FORCE;
     request.filter = filter;
@@ -215,11 +215,11 @@ test_progressive_gpu_selection_case(int mode)
     SELECT_GPU_REQUIRE(palette->vtbl->init_entries_float32(palette, &floats)
         == SIXEL_OK);
     SELECT_GPU_REQUIRE(sixel_palette_prepare_output(palette,
-        SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
-        SIXEL_COLORSPACE_GAMMA) == SIXEL_OK);
+        SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY,
+        SIXEL_COLORSPACE_SRGB) == SIXEL_OK);
     for (pass = 0; pass < 2; ++pass) {
         SELECT_GPU_REQUIRE(sixel_repair_selection_new(&selections[pass],
-            source, errors, domain, count, palette, SIXEL_COLORSPACE_GAMMA,
+            source, errors, domain, count, palette, SIXEL_COLORSPACE_SRGB,
             SIXEL_PALETTETYPE_RGB, stop, .4, mode != 189, samples, 8,
             allocator) == SIXEL_OK);
         selection = selections[pass];
@@ -245,7 +245,7 @@ test_progressive_gpu_selection_case(int mode)
             selection->gpu_view.plane_height = 3;
             selection->gpu_view.origin_x = 2;
             selection->gpu_view.origin_y = 1;
-            selection->gpu_view.workspace = SIXEL_COLORSPACE_GAMMA;
+            selection->gpu_view.workspace = SIXEL_COLORSPACE_SRGB;
         }
         done = 0;
         for (calls = 0; calls < 100000 && !done; ++calls) {

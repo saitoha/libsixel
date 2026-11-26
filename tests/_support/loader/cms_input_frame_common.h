@@ -34,7 +34,7 @@ cms_input_frame_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 16 || frame->height != 16 ||
         sixel_frame_format(frame) !=
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR) {
         return SIXEL_BAD_INPUT;
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);

@@ -29,7 +29,7 @@ test_0024_range_projection_after_saturation(int argc, char **argv)
         goto end;
     }
     status = sixel_sample_statistics_new(&statistics,
-        SIXEL_COLORSPACE_GAMMA, 0, allocator);
+        SIXEL_COLORSPACE_SRGB, 0, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

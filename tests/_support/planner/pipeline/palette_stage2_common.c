@@ -56,14 +56,14 @@ palette_stage2_request(sixel_allocator_t *allocator, int floating,
     encoder->lut_policy_fhedt_resolution = 64;
     encoder->lut_policy_fhedt_shared_override = 1;
     encoder->lut_policy_fhedt_shared = shared;
-    encoder->planner.working_colorspace_effective = SIXEL_COLORSPACE_GAMMA;
+    encoder->planner.working_colorspace_effective = SIXEL_COLORSPACE_SRGB;
     encoder->planner.working_pixelformat = format;
     if (endpoint) {
         encoder->output_color_definition = SIXEL_NAMED_COLOR_COUNT;
         encoder->output_icc = sixel_cdef_name("display-p3");
         if (encoder->output_icc == NULL ||
                 SIXEL_FAILED(sixel_gamut_new(&encoder->gamut_mapper,
-                    encoder->output_icc, SIXEL_COLORSPACE_GAMMA,
+                    encoder->output_icc, SIXEL_COLORSPACE_SRGB,
                     SIXEL_GAMUT_EDGE_SEEKER, encoder->allocator))) {
             goto end;
         }

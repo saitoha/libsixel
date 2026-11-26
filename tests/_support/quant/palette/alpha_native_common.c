@@ -13,7 +13,7 @@
 #include "tests/data/color-numeric/output-native.h"
 
 static char const *const an_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const an_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -233,7 +233,7 @@ test_alpha_native_run(int space, int mode, int animated)
             (mode == 24 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 '~', "eytzinger"))) ||
             (mode == 13 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                'X', "linear"))) ||
+                'X', "srgb-linear"))) ||
             (mode == 17 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'B', "#ff0000"))) ||
             (mode >= 20 && mode <= 22 &&

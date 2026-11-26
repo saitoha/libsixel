@@ -20,7 +20,7 @@ input='P3
 cluster_first=$(set +xv; printf '%s\n' "$input" |
     SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threading-policy=greedy:B1 --precision-policy=float32 \
-        -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
+        -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
         -Qkmeans:seed=1 -p2 "$cluster" "$working" -aoff -dnone \
         --binning-policy=none --sampling-policy=full-frame 2>&1) || {
     printf '%s\n' "$cluster_first" >&2
@@ -30,7 +30,7 @@ cluster_first=$(set +xv; printf '%s\n' "$input" |
 working_first=$(set +xv; printf '%s\n' "$input" |
     SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threading-policy=greedy:B1 --precision-policy=float32 \
-        -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
+        -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
         -Qkmeans:seed=1 -p2 "$working" "$cluster" -aoff -dnone \
         --binning-policy=none --sampling-policy=full-frame 2>&1) || {
     printf '%s\n' "$working_first" >&2

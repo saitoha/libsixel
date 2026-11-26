@@ -144,7 +144,7 @@ lab_linear_capture(sixel_frame_t *frame, void *context)
     ++state->calls;
     if (frame->width != 521 || frame->height != 1 ||
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u ||

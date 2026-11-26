@@ -27,7 +27,7 @@ gamut_fixture_init(gamut_fixture_t *fixture, char const *name)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture->allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture->mapper,
-            fixture->definition, SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_LOCAL_MINDE,
+            fixture->definition, SIXEL_COLORSPACE_SRGB, SIXEL_GAMUT_LOCAL_MINDE,
             fixture->allocator));
 }
 
@@ -42,7 +42,7 @@ gamut_fixture_free(gamut_fixture_t *fixture)
 static inline int
 gamut_reference_check(int space)
 {
-    char const *names[] = {"srgb", "display-p3", "adobe-rgb", "dci-p3"};
+    char const *names[] = {"srgb", "display-p3", "a98-rgb", "dci-p3"};
     gamut_fixture_t fixture = {0};
     double result[3];
     int i;
@@ -52,7 +52,7 @@ gamut_reference_check(int space)
     ok = gamut_fixture_init(&fixture, names[space]);
     for (i = 0; ok && i < 4; ++i) {
         ok = sixel_gamut_apply(fixture.mapper, gamut_origins[i], result,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         for (c = 0; ok && c < 3; ++c) {
             /* Independent primary-matrix/OKLab inverses differ slightly.
              * 3e-5 covers that and the 1e-4 chroma search endpoint, while

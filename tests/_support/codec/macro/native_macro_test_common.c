@@ -17,7 +17,7 @@ macro_native_contract(int scenario)
         { '=', "greedy:B1" }, { 'p', "1" }, { 'Q', "heckbert" },
         { 'F', "none" }, { 'a', "off" }, { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 'E', "fast" },
-        { 'X', "linear" }, { 'W', "linear" }, { '7', NULL },
+        { 'X', "srgb-linear" }, { 'W', "srgb-linear" }, { '7', NULL },
         { '4', "full-frame" }, { '5', "none" }, { 'g', NULL }
     };
     float pixels[9] = { 2.f, .1f, .1f, -.25f, .1f, .1f, 9.f, 9.f, 9.f };
@@ -63,8 +63,8 @@ macro_native_contract(int scenario)
             '8', NULL))) {
         goto end;
     }
-    if (byte && (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "gamma")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma")))) {
+    if (byte && (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "srgb")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb")))) {
         goto end;
     }
     if (scenario == 4 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -75,7 +75,7 @@ macro_native_contract(int scenario)
         p3 = scenario != 0 && scenario != 5 && !byte &&
             !(scenario == 7 && step == 1);
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma"))) {
+                p3 ? "display-p3" : "srgb"))) {
             goto end;
         }
         if (scenario == 5) {

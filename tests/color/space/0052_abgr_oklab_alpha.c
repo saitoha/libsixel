@@ -15,7 +15,7 @@ test_color_0052_abgr_oklab_alpha(int argc, char **argv)
     (void)argc;
     (void)argv;
     status = sixel_helper_convert_colorspace(pixel, sizeof(pixel),
-        SIXEL_PIXELFORMAT_ABGR8888, SIXEL_COLORSPACE_GAMMA,
+        SIXEL_PIXELFORMAT_ABGR8888, SIXEL_COLORSPACE_SRGB,
         SIXEL_COLORSPACE_OKLAB);
     return status == SIXEL_OK &&
         memcmp(pixel, expected, sizeof(expected)) == 0

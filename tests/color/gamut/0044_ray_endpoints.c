@@ -17,7 +17,7 @@ test_gamut_0044_ray_endpoints(int argc, char **argv)
     ok = ray_fixture_init(&fixture, "display-p3");
     for (i = 0; ok && i < 2; ++i) {
         ok = sixel_gamut_apply(fixture.mapper, input[i], result,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         for (c = 0; ok && c < 3; ++c) {
             ok = isfinite(result[c]) && fabs(result[c] - i) < 3e-6;
         }

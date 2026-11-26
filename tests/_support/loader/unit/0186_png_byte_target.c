@@ -38,8 +38,8 @@ png_byte_capture(sixel_frame_t *frame, void *context)
     format = probe->stage == 3 ? SIXEL_PIXELFORMAT_RGB888 :
         probe->stage == 1 ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
         SIXEL_PIXELFORMAT_RGBFLOAT32;
-    space = probe->stage == 1 ? SIXEL_COLORSPACE_LINEAR :
-        SIXEL_COLORSPACE_GAMMA;
+    space = probe->stage == 1 ? SIXEL_COLORSPACE_SRGB_LINEAR :
+        SIXEL_COLORSPACE_SRGB;
     if (frame->width != 1 || frame->height != 1 ||
         sixel_frame_format(frame) != format ||
         frame->format.coordinates != space ||

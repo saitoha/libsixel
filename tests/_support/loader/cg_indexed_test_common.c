@@ -91,8 +91,8 @@ cgi_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 5 || frame->height != 3 ||
         sixel_frame_format(frame) != (byte_path ? SIXEL_PIXELFORMAT_PAL8 :
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_GAMMA :
-            SIXEL_COLORSPACE_LINEAR) || !frame->owns_pixels ||
+        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_SRGB :
+            SIXEL_COLORSPACE_SRGB_LINEAR) || !frame->owns_pixels ||
         frame->transparent != -1 ||
         frame->ncolors != (byte_path ? probe->colors : -1) ||
         (frame->palette != NULL) != byte_path ||

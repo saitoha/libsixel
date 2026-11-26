@@ -468,7 +468,7 @@ lso2_gpu_run_impl(lso2_gpu_plan_t *plan,
         if (source.pixels == NULL || source.width != (int)params.width ||
                 source.height != (int)params.height ||
                 source.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-                source.colorspace != SIXEL_COLORSPACE_GAMMA)
+                source.colorspace != SIXEL_COLORSPACE_SRGB)
             return SIXEL_BAD_ARGUMENT;
         status = request->source->vtbl->get_transparency(request->source,
             &transparency);
@@ -821,7 +821,7 @@ lso2_gpu_prepare_impl(sixel_allocator_t *allocator,
             request->output.height < 1 || request->working_palette == NULL)
         return SIXEL_BAD_ARGUMENT;
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            request->colorspace != SIXEL_COLORSPACE_GAMMA ||
+            request->colorspace != SIXEL_COLORSPACE_SRGB ||
             request->scan != SIXEL_SCAN_SERPENTINE) return SIXEL_FEATURE_ERROR;
     device = sixel_gpu_metal_device(request->device);
     if (device == nil) return SIXEL_FEATURE_ERROR;

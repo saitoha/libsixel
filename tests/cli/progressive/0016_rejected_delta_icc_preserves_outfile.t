@@ -17,7 +17,7 @@ profile="icc:P${TOP_SRCDIR}/tests/data/color-numeric/register-feedback-lut.icc"
 printf '%s' 'existing capture' >"$target"
 status=0
 trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -.float32 -Wlinear -Goff -dnone -p4 '-~none' '-_none' \
+    -.float32 -Wsrgb-linear -Goff -dnone -p4 '-~none' '-_none' \
     -Zdelta:P1 -U "$profile" -o "$target" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" \
     2>&1 >"${ARTIFACT_LOCAL_DIR}/stdout") || status=$?

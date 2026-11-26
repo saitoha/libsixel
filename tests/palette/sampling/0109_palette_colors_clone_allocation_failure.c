@@ -83,7 +83,7 @@ test_palette_colors_clone_allocation_failure(int argc, char **argv)
     }
     config.copy_payload = 1;
     config.target_layout = SIXEL_PIXELFORMAT_RGB888;
-    config.target_colorspace = SIXEL_COLORSPACE_GAMMA;
+    config.target_colorspace = SIXEL_COLORSPACE_SRGB;
     status = sixel_filter_factory_create_palette_colors(&config, &filter);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -95,7 +95,7 @@ test_palette_colors_clone_allocation_failure(int argc, char **argv)
     }
     sixel_filter_bind_sample_input(filter, &input);
     sixel_filter_bind_sample_output(filter, &output,
-        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA);
+        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, clone_allocator, NULL);
     if (status == SIXEL_BAD_ALLOCATION &&
         palette_clone_pixel_failures == 1 &&

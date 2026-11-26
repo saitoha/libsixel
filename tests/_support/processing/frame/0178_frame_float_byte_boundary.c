@@ -252,7 +252,7 @@ test_frame_0178_byte(int argc, char **argv)
     } else {
         if (after.pixels == NULL || after.pixels_float32 != NULL ||
             after.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            after.colorspace != SIXEL_COLORSPACE_GAMMA) {
+            after.colorspace != SIXEL_COLORSPACE_SRGB) {
             goto end;
         }
         for (i = 0u; i < count; ++i) {

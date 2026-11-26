@@ -390,8 +390,8 @@ sixel_psd_render_color_data(sixel_chunk_t const *chunk,
     for (j = 0u; j < 3u; ++j) {
         bg[j] = bgcolor == NULL ? 0.0 : bgcolor[j] / 255.0;
     }
-    (void)sixel_color_convert(bg, bg, SIXEL_COLORSPACE_GAMMA,
-                              SIXEL_COLORSPACE_LINEAR);
+    (void)sixel_color_convert(bg, bg, SIXEL_COLORSPACE_SRGB,
+                              SIXEL_COLORSPACE_SRGB_LINEAR);
     for (i = 0u; i < count; ++i) {
         rgb[0] = rgb[1] = rgb[2] = 1.0;
         for (k = 0u; k < (duotone ? 1u : data.ink_count); ++k) {

@@ -44,7 +44,7 @@ test_loader_0164_loader_builtin_jpeg_lossless_preds_numeric(
                 3,
                 3,
                 SIXEL_PIXELFORMAT_RGBFLOAT32,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 pixels,
                 expected,
                 0.0000001f) != 0) {

@@ -230,7 +230,7 @@ sixel_filter_bind_sample_input(sixel_filter_t *filter,
     filter->input.pixelformat = stream != NULL
         ? stream->pixelformat : SIXEL_PIXELFORMAT_RGB888;
     filter->input.colorspace = stream != NULL
-        ? stream->colorspace : SIXEL_COLORSPACE_GAMMA;
+        ? stream->colorspace : SIXEL_COLORSPACE_SRGB;
 }
 
 SIXELAPI void
@@ -270,7 +270,7 @@ sixel_filter_bind_weighted_input(
     filter->input.weighted_points = points;
     filter->input.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     filter->input.colorspace = points != NULL
-        ? points->colorspace : SIXEL_COLORSPACE_GAMMA;
+        ? points->colorspace : SIXEL_COLORSPACE_SRGB;
 }
 
 SIXELAPI void

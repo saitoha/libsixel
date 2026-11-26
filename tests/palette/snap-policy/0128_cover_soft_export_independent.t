@@ -14,8 +14,8 @@ gamma=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_b
     --sampling-policy=full-frame --binning-policy=hard \
     --quantize-model=kmeans:seed=1:binbits=6 --merge-policy=none \
     --cover-policy=corners:Wsoft:V1 --lookup-policy=none --gpu-policy=off \
-    --diffusion=none --palette-type=rgb -p8 -Xoklab -Wgamma \
-    --snap-policy=nearest:rate=0.75 -Mpal:- -o/dev/null -Ugamma \
+    --diffusion=none --palette-type=rgb -p8 -Xoklab -Wsrgb \
+    --snap-policy=nearest:rate=0.75 -Mpal:- -o/dev/null -Usrgb \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     printf '\n%s\n' "not ok 1 - gamma output palette export failed"
     exit 0
@@ -24,8 +24,8 @@ linear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_
     --sampling-policy=full-frame --binning-policy=hard \
     --quantize-model=kmeans:seed=1:binbits=6 --merge-policy=none \
     --cover-policy=corners:Wsoft:V1 --lookup-policy=none --gpu-policy=off \
-    --diffusion=none --palette-type=rgb -p8 -Xoklab -Wgamma \
-    --snap-policy=nearest:rate=0.75 -Mpal:- -o/dev/null -Ulinear \
+    --diffusion=none --palette-type=rgb -p8 -Xoklab -Wsrgb \
+    --snap-policy=nearest:rate=0.75 -Mpal:- -o/dev/null -Usrgb-linear \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     printf '\n%s\n' "not ok 1 - linear output palette export failed"
     exit 0

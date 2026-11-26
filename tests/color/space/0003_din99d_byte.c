@@ -23,7 +23,7 @@ test_color_0003_din99d_byte(int argc, char **argv)
     (void)argv;
     status = sixel_helper_convert_colorspace(pixels, sizeof(pixels),
         SIXEL_PIXELFORMAT_RGB888,
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_DIN99D);
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_DIN99D);
     if (SIXEL_FAILED(status)) {
         return EXIT_FAILURE;
     }

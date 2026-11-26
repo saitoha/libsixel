@@ -16,7 +16,7 @@ test_gamut_0001_srgb_identity(int argc, char **argv)
     (void)argv;
     ok = gamut_fixture_init(&fixture, "srgb") &&
         sixel_gamut_apply(fixture.mapper, source, result,
-            SIXEL_COLORSPACE_LINEAR) &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) &&
         memcmp(source, result, sizeof(source)) == 0;
     gamut_fixture_free(&fixture);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

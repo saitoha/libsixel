@@ -197,7 +197,7 @@ The encode controller records `context_begin` for cold preparation and `context_
 
 The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;
 they do not decode a Full HD PNG. The complete preprocessing sequence for the
-controlled `-Wgamma -Xoklab` command is:
+controlled `-Wsrgb -Xoklab` command is:
 
 ```text
 builtin PNG decode: 900x675 gamma RGB888
@@ -209,7 +209,7 @@ colorspace/pre: gamma RGB888 -> linear RGB float32
 resize: 900x675 -> 1920x1080 in linear RGB float32
               |
               v
-colorspace/post: linear RGB float32 -> gamma RGB888 (-Wgamma)
+colorspace/post: linear RGB float32 -> gamma RGB888 (-Wsrgb)
               |
               v
 palette input: gamma RGB888 -> Oklab float32 (-Xoklab)

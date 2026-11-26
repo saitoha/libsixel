@@ -31,14 +31,15 @@ colorspace_auto_check(int mode)
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
     };
     int const spaces[] = {
-        SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D,
-        SIXEL_COLORSPACE_LINEAR
+        SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SRGB,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_SRGB,
+        SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_DIN99D,
+        SIXEL_COLORSPACE_SRGB_LINEAR
     };
     /* Keep independent mappings for explicit working names and formats. */
     char const *const names[] = {
-        "LiN", "GaM", "Ok", "Gamma", "CiE", "DiN", "Linear"
+        "SrGb-LiN", "SrGb", "Ok", "sRGB", "LaB", "DiN",
+        "SrGb-LiNeAr"
     };
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
@@ -70,7 +71,7 @@ colorspace_auto_check(int mode)
     if (SIXEL_FAILED(status)) goto end;
     for (i = 0; i < sizeof(formats) / sizeof(formats[0]); ++i) {
         for (j = 0; j < 24; ++j) {
-            samples[j] = spaces[i] == SIXEL_COLORSPACE_LINEAR
+            samples[j] = spaces[i] == SIXEL_COLORSPACE_SRGB_LINEAR
                 ? (j % 3 == 0 ? -0.125f : j % 3 == 1 ? 0.5f : 1.25f)
                 : 0.25f;
             bytes[j] = 64;
@@ -82,13 +83,13 @@ colorspace_auto_check(int mode)
             ? sizeof(bytes) : sizeof(samples);
         selected = (i + 1u) % (sizeof(formats) / sizeof(formats[0]));
         expected = mode == 4 ? spaces[selected] :
-            mode == 3 && i > 0 ? SIXEL_COLORSPACE_GAMMA : spaces[i];
+            mode == 3 && i > 0 ? SIXEL_COLORSPACE_SRGB : spaces[i];
         format = expected == spaces[i] ? formats[i] :
             SIXEL_PIXELFORMAT_RGBFLOAT32;
-        if (mode == 4 && expected != SIXEL_COLORSPACE_GAMMA) {
+        if (mode == 4 && expected != SIXEL_COLORSPACE_SRGB) {
             format = formats[selected];
         }
-        clustering = mode == 2 ? SIXEL_COLORSPACE_GAMMA : expected;
+        clustering = mode == 2 ? SIXEL_COLORSPACE_SRGB : expected;
         if (mode == 3 && i > 0) {
             status = sixel_encoder_setopt(encoder,
                 SIXEL_OPTFLAG_PRECISION_POLICY, "8bit");
@@ -116,7 +117,7 @@ colorspace_auto_check(int mode)
                 SIXEL_OPTFLAG_WORKING_COLORSPACE, "oklab");
             if (SIXEL_FAILED(status)) goto end;
             status = sixel_encoder_setopt(encoder,
-                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "gamma");
+                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "srgb");
             if (SIXEL_FAILED(status)) goto end;
             status = sixel_encoder_setopt(encoder,
                 i % 2 ? SIXEL_OPTFLAG_CLUSTERING_COLORSPACE :
@@ -128,7 +129,7 @@ colorspace_auto_check(int mode)
             if (SIXEL_FAILED(status)) goto end;
         } else if (mode == 2 && i == 0) {
             status = sixel_encoder_setopt(encoder,
-                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "GaM");
+                SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "sRgB");
             if (SIXEL_FAILED(status)) goto end;
             /* An invalid selector must preserve this explicit definition
              * as AUTO follows subsequent frames in different workspaces. */

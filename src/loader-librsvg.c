@@ -1667,7 +1667,7 @@ librsvg_commit_frame_pixels(sixel_frame_t *frame,
             frame->width,
             frame->height,
             pixelformat,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             -1,
             SIXEL_FRAME_PIXELS_U8
         });

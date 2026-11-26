@@ -183,18 +183,19 @@ int
 test_progressive_gpu_colors_case(int workspace, int output_space, int hls)
 {
     static char const *const workspaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static int const work_ids[] = {
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
+            SIXEL_COLORSPACE_DIN99D
     };
     static char const *const outputs[] = {
-        "gamma", "linear", "smpte-c", "display-p3"
+        "srgb", "srgb-linear", "smpte-c", "display-p3"
     };
     static int const output_ids[] = {
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_GAMMA
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR,
+        SIXEL_COLORSPACE_SMPTEC, SIXEL_COLORSPACE_SRGB
     };
     sixel_encoder_t *encoder;
     sixel_progressive_t *context;

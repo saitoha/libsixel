@@ -304,7 +304,7 @@ td_capture(sixel_frame_t *frame, void *context)
             linear && !td.target ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
             SIXEL_PIXELFORMAT_RGBFLOAT32)
         && frame->format.coordinates == (linear && !td.target
-            ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA)
+            ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB)
         && frame->transparent_mask_size == (mask ? 15u : 0u);
     if (!td.ok) {
         fprintf(stderr, "TD|metadata|format=%x|space=%d|mask=%zu\n",

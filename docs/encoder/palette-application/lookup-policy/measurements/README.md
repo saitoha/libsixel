@@ -32,7 +32,7 @@ The controlled K-means quality and speed comparisons use this normal CLI path, w
 img2sixel \
   --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wsrgb \
   --diffusion=none --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
@@ -44,7 +44,7 @@ The Floyd--Steinberg control changes only the diffusion option:
 img2sixel \
   --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wsrgb \
   --diffusion=fs --gpu-policy=off \
   --lookup-policy=POLICY -p K \
   images/snake.png
@@ -68,7 +68,7 @@ The shared-instance speed comparison uses controlled K-means, eight total pipeli
 img2sixel \
   --threading-policy=greedy:global_budget=8 --precision-policy=auto --quality=full \
   --loaders=libpng! \
-  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
+  --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wsrgb \
   --diffusion=none:band_overwrap=0 --gpu-policy=off \
   --lookup-policy=POLICY:shared_instance=0|1 -p K \
   images/snake.png
@@ -90,7 +90,7 @@ img2sixel \
 
 The recorded build leaves `FLOAT_LOOKUP_CFLAGS` empty. Delaunay's byte cold batches use NEON, while its native-float K-means sweep retains scalar misses under the [float SIMD gate](../delaunay.md#method); this sweep does not measure the optional float batch kernel.
 
-Untimed probes at `K = 256` check all ten consumer classes for K-means with both diffusion settings and for Heckbert without diffusion. The manifests retain these probes. In this build, the K-means `5bit` and `6bit` measurements exercise their native-float exhaustive fallbacks; only the Heckbert quality curves exercise their byte-addressed caches. `-Wgamma` selects gamma-RGB application coordinates without forcing a byte palette.
+Untimed probes at `K = 256` check all ten consumer classes for K-means with both diffusion settings and for Heckbert without diffusion. The manifests retain these probes. In this build, the K-means `5bit` and `6bit` measurements exercise their native-float exhaustive fallbacks; only the Heckbert quality curves exercise their byte-addressed caches. `-Wsrgb` selects gamma-RGB application coordinates without forcing a byte palette.
 
 ## Results
 
@@ -313,7 +313,7 @@ The run was recorded on 2026-10-22 JST on an Apple M3 Max with 36 GiB RAM, macOS
 
 This snapshot predates eight-query cold-miss batching in Delaunay, so its timings characterize the earlier point-walk miss path. Autotools used `CFLAGS=-O3` with the project's C99 flag. Byte lookup used NEON; `FLOAT_LOOKUP_CFLAGS` was empty, so float lookup retained native scalar arithmetic under the existing [SIMD gate](../delaunay.md#method).
 
-Every command uses `--threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Wgamma --gpu-policy=off`. The byte matrix adds `--cms-engine=none`; the float matrix keeps default CMS and adds `-Xoklab`. All inherited `SIXEL_*` variables are removed. An untimed `LSXLUT2|phase=palette-apply` trace confirms `lookup/POLICY.8bit` or `lookup/POLICY.float32` for each configuration. CMS and clustering differ between the two matrices, so comparisons are within each representation, not an estimate of the cost of changing representation alone.
+Every command uses `--threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Wsrgb --gpu-policy=off`. The byte matrix adds `--cms-engine=none`; the float matrix keeps default CMS and adds `-Xoklab`. All inherited `SIXEL_*` variables are removed. An untimed `LSXLUT2|phase=palette-apply` trace confirms `lookup/POLICY.8bit` or `lookup/POLICY.float32` for each configuration. CMS and clustering differ between the two matrices, so comparisons are within each representation, not an estimate of the cost of changing representation alone.
 
 Hyperfine runs each configuration with `-N`, two warmups and seven measured fresh processes. The plots show arithmetic mean elapsed time with sample-standard-deviation error bars; the [CSV](lookup-policy-delaunay-speed.csv) also retains medians and extrema, and the [JSON](lookup-policy-delaunay-run.json) retains every sample. Output goes to the null device during timing. Policy order is fixed as `vptree`, `delaunay`, `5bit`, `6bit`, without round-by-round rotation. Process startup, loading, palette construction, lookup preparation, mapping, and SIXEL encoding are all included.
 

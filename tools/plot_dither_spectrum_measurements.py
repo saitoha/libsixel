@@ -103,7 +103,7 @@ def make_command(img2sixel: str, diffusion: str) -> List[str]:
         "--quality=full",
         "--loaders=builtin!",
         "--builtin-palette=gray4",
-        "-Wgamma",
+        "-Wsrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
         "--lookup-policy=none",

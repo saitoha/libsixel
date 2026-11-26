@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma \
+trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wsrgb \
     --env SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD=2 \
     --env SIXEL_UPDATE_PROGRESSIVE_MAX_PASSES=2 \
     --env SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300 \

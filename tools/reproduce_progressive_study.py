@@ -351,7 +351,7 @@ def main() -> None:
             if args.quality:
                 qa_command = [str(args.lsqa), "-L", "builtin!", "-#", "builtin",
                               "-M", "6delta-progressive", "-T", "srgb",
-                              "-W", "gamma", "-P", "float32", "-w", "16",
+                              "-W", "srgb", "-P", "float32", "-w", "16",
                               str(args.input), "-"]
                 qa = subprocess.run(qa_command, env=env,
                                     input=stream[:record["wire_bytes"]],

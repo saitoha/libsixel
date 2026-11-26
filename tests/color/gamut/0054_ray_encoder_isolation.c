@@ -19,17 +19,17 @@ test_gamut_0054_ray_encoder_isolation(int argc, char **argv)
     ok = SIXEL_SUCCEEDED(sixel_encoder_new(&first, NULL)) &&
         SIXEL_SUCCEEDED(sixel_encoder_new(&second, NULL)) &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(first, 'U',
-            "gamma:gamut=ray-trace")) &&
+            "srgb:gamut=ray-trace")) &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(second, 'U',
             "display-p3:gamut=ray-trace")) &&
         sixel_gamut_apply(first->gamut_mapper, source, result,
-            SIXEL_COLORSPACE_LINEAR) && result[0] <= 1.000001 &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) && result[0] <= 1.000001 &&
         sixel_gamut_apply(second->gamut_mapper, source, retained,
-            SIXEL_COLORSPACE_LINEAR) &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) &&
         memcmp(retained, source, sizeof(source)) == 0;
     sixel_encoder_unref(first);
     ok = ok && sixel_gamut_apply(second->gamut_mapper, source, retained,
-        SIXEL_COLORSPACE_LINEAR) &&
+        SIXEL_COLORSPACE_SRGB_LINEAR) &&
         memcmp(retained, source, sizeof(source)) == 0;
     sixel_encoder_unref(second);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

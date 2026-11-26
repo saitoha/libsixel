@@ -3167,11 +3167,11 @@ static int
 sixel_palette_float_pixelformat_for_colorspace(int colorspace)
 {
     switch (colorspace) {
-    case SIXEL_COLORSPACE_LINEAR:
+    case SIXEL_COLORSPACE_SRGB_LINEAR:
         return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     case SIXEL_COLORSPACE_OKLAB:
         return SIXEL_PIXELFORMAT_OKLABFLOAT32;
-    case SIXEL_COLORSPACE_CIELAB:
+    case SIXEL_COLORSPACE_LAB_D65:
         return SIXEL_PIXELFORMAT_CIELABFLOAT32;
     case SIXEL_COLORSPACE_DIN99D:
         return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
@@ -3221,7 +3221,7 @@ sixel_encode_delta_is_legacy(sixel_dither_t const *dither,
                              sixel_output_t const *output)
 {
     return !dither->use_rgb101_palette && !output->ormode &&
-        !dither->bodyonly && output->colorspace == SIXEL_COLORSPACE_GAMMA &&
+        !dither->bodyonly && output->colorspace == SIXEL_COLORSPACE_SRGB &&
         !sixel_dither_is_terminal_mono(dither);
 }
 
@@ -5135,7 +5135,7 @@ sixel_encode_dither(
     serial_logger = NULL;
     close_status = SIXEL_FALSE;
     image_started = 0;
-    palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    palette_source_colorspace = SIXEL_COLORSPACE_SRGB;
     if (width <= 0 || height <= 0 ||
         (size_t)width > SIZE_MAX / (size_t)height) {
         sixel_helper_set_additional_message(
@@ -5233,7 +5233,7 @@ sixel_encode_dither(
     }
     if (dither->pipeline_6delta_enabled &&
             sixel_encode_delta_is_legacy(dither, output) &&
-            output->source_colorspace == SIXEL_COLORSPACE_GAMMA) {
+            output->source_colorspace == SIXEL_COLORSPACE_SRGB) {
         status = palette_obj->vtbl->get_entries_float32(palette_obj,
             &palette_float_view);
         if (SIXEL_FAILED(status)) {

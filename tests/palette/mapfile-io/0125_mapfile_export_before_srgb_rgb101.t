@@ -17,7 +17,7 @@ set -v
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -Lbuiltin! --cms-engine=none --precision-policy=float32 \
     --sampling-policy=full-frame --binning-policy=none \
-    -Qkmeans:seed=1 -Xlinear -Wlinear -Ugamma \
+    -Qkmeans:seed=1 -Xsrgb-linear -Wsrgb-linear -Usrgb \
     -Fnone -aoff -_none '-~none' -dnone -trgb -Mpal:- -o/dev/null - <<'PPM'
 P3
 1 1

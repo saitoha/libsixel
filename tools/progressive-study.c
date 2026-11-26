@@ -567,7 +567,7 @@ main(int argc, char **argv)
     STUDY_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
         "none") == SIXEL_OK);
     STUDY_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT_COLORSPACE,
-        "gamma") == SIXEL_OK);
+        "srgb") == SIXEL_OK);
     STUDY_REQUIRE(sixel_encoder_setopt(encoder,
         SIXEL_OPTFLAG_WORKING_COLORSPACE, argv[7]) == SIXEL_OK);
     sink.file = sixel_compat_fopen(argv[2], "w+b");

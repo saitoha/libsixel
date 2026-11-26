@@ -25,7 +25,7 @@ env_output="${artifact_dir}/0169-fhedt-weights-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    -Wc "-~fhedt:W1/1/1" "${input_image}" 2>&1 >"${short_output}") || {
+    -Wlab-d65 "-~fhedt:W1/1/1" "${input_image}" 2>&1 >"${short_output}") || {
     printf '\n%s\n' "not ok 1 - fhedt:weights short conversion failed"
     exit 0
 }
@@ -40,7 +40,7 @@ case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*weights=1/1/1**) true ;; *) f
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    --env "SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1" -Wc "-~fhedt" \
+    --env "SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1" -Wlab-d65 "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
     printf '\n%s\n' "not ok 1 - fhedt:weights environment conversion failed"
     exit 0
@@ -55,7 +55,7 @@ case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*weights=1/1/1**) true ;; *) fal
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    --precision-policy=float32 -Wc "-~fhedt:W1/1/1" "${input_image}" \
+    --precision-policy=float32 -Wlab-d65 "-~fhedt:W1/1/1" "${input_image}" \
     2>&1 >/dev/null) || {
     printf '\n%s\n' "not ok 1 - fhedt weights float32 conversion failed"
     exit 0

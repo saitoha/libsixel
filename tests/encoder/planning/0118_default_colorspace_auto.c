@@ -89,7 +89,7 @@ check_p3_pixels(enum p3_case mode)
     }
     if (mode != P3_AUTO &&
         (SIXEL_FAILED(sixel_encoder_setopt(encoder,
-             SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma")) ||
+             SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb")) ||
          SIXEL_FAILED(sixel_encoder_setopt(encoder,
              SIXEL_OPTFLAG_DIFFUSION, "none")) ||
          SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -173,7 +173,7 @@ check_linear_palette(int mode)
     float colors[] = {.25f, .25f, .25f, .5f, .5f, .5f};
     sixel_frame_pixels_request_t implicit = {
         colors, NULL, 2, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
+        SIXEL_COLORSPACE_SRGB_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32
     };
     sixel_frame_t *image = NULL, *source = NULL;
     sixel_encoder_t *encoder = NULL;

@@ -21,6 +21,6 @@ test_loader_0183_jpeg_source_numeric(int argc, char **argv)
      * The bound covers the decoder's rounded YCbCr constants and float. */
     return edge_expect_fixture_float_samples("JPEG source before ICC",
         "/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg", &options,
-        64, 64, SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA,
+        64, 64, SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_SRGB,
         sample_pixels, color_jpeg_raw, 0.0000005f);
 }

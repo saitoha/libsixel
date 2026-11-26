@@ -242,7 +242,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    select the sample precision of palette application.\n"
         "      auto    -> promote to float32 where processing requires it.\n"
         "      8bit    -> apply the palette on 8-bit gamma samples; earlier\n"
-        "                 stages may use float32. Rejects a non-gamma -W\n"
+        "                 stages may use float32. Rejects a non-sRGB -W\n"
         "                 and a named -U destination.\n"
         "      float32 -> request float even when bytes would suffice.\n"
     },
@@ -1281,10 +1281,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "    applies to generated palettes, including float image maps\n"
         "    ignored for -b, -e, and structured -m palettes\n"
         "      auto   -> follow the working color space (default)\n"
-        "      gamma  -> sRGB gamma\n"
-        "      linear -> linear RGB color space\n"
+        "      srgb  -> sRGB gamma\n"
+        "      srgb-linear -> linear-light sRGB\n"
         "      oklab  -> OKLab color space\n"
-        "      cielab -> CIELAB color space\n"
+        "      lab-d65 -> CIELAB D65 color space\n"
         "      din99d -> DIN99d color space\n"
         "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
@@ -1294,10 +1294,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "-W COLORSPACE, --working-colorspace=COLORSPACE\n"
         "    choose internal working color space\n"
         "      auto   -> follow the input frame color space (default)\n"
-        "      gamma  -> sRGB gamma at the selected precision\n"
-        "      linear -> linear RGB in float32\n"
+        "      srgb  -> encoded sRGB at the selected precision\n"
+        "      srgb-linear -> linear-light sRGB in float32\n"
         "      oklab  -> OKLab in float32\n"
-        "      cielab -> CIELAB in float32\n"
+        "      lab-d65 -> CIELAB D65 in float32\n"
         "      din99d -> DIN99d in float32\n"
         "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
@@ -1306,12 +1306,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "output-colorspace",
         "-U COLORSPACE, --output-colorspace=COLORSPACE\n"
         "    choose output color space\n"
-        "      gamma   -> sRGB gamma(default)\n"
-        "      linear  -> linear RGB color space\n"
+        "      srgb   -> sRGB (default)\n"
+        "      srgb-linear -> linear-light sRGB\n"
         "      smpte-c -> SMPTE-C gamma color space\n"
         "      display-p3 -> Display P3 "
         "(selected CPU palette/high-color paths)\n"
-        "      adobe-rgb -> Adobe RGB (1998), D65, power 563/256\n"
+        "      a98-rgb -> Adobe RGB (1998), D65, power 563/256\n"
         "      dci-p3 -> P3 primaries, DCI white, power 2.6\n"
         "      icc[:path=FILE] -> RGB ICC endpoint (compact :PFILE)\n"
         "    icc: path=P; SIXEL_OUTPUT_COLORSPACE_ICC_PATH supplies default\n"
@@ -1327,7 +1327,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Named/ICC destinations use CPU float; ICC snap needs matrix/TRC.\n"
         "      auto[:timeout_ms=N] -> negotiate only with stdout's TTY\n"
         "    auto: timeout_ms=T, decimal 1..10000, default 200 ms per\n"
-        "    exchange/write; file/pipe output uses gamma, no stderr fallback\n"
+        "    exchange/write; file/pipe output uses srgb, no stderr fallback\n"
         "    auto cannot be combined with DRCS output (-@)\n"
         "    CLI overrides SIXEL_OUTPUT_COLORSPACE and the auto timeout\n"
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
@@ -1475,7 +1475,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_OUTPUT_COLORSPACE",
         "img2sixel output color-space choice, including CLI-only auto.\n"
-        "Explicit -U wins; empty means the gamma default. Set the timeout\n"
+        "Explicit -U wins; empty means the srgb default. Set the timeout\n"
         "separately; this variable takes a base name without suboptions."
     },
     {

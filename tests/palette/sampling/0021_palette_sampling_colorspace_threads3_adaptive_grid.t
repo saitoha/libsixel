@@ -18,7 +18,7 @@ set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=3 \
-    -Wlinear -Qheckbert -d none -p 16 "-~none" \
+    -Wsrgb-linear -Qheckbert -d none -p 16 "-~none" \
     -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
     printf '\n%s\n' "not ok 1 - three-thread linear palette encode failed"

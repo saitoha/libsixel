@@ -47,7 +47,7 @@ test_dither_bluenoise_0064(int argc, char **argv)
         goto end;
     }
     sixel_filter_bind_input(filter, &frame, SIXEL_PIXELFORMAT_PAL8,
-                            SIXEL_COLORSPACE_GAMMA);
+                            SIXEL_COLORSPACE_SRGB);
     if (sixel_filter_run(filter, allocator, NULL) == SIXEL_OK &&
         dither->bluenoise_gradient_map != NULL &&
         dither->bluenoise_gradient_map_size == sizeof(expected) &&

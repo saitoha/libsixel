@@ -56,8 +56,8 @@ reserved_delta_render(int gpu, int latest, int threshold, int record,
     UI_CHECK(sixel_encoder_setopt(encoder, 'd', "bluenoise") == SIXEL_OK);
     UI_CHECK(sixel_encoder_setopt(encoder, '~', "none") == SIXEL_OK);
     UI_CHECK(sixel_encoder_setopt(encoder, '.', "8bit") == SIXEL_OK);
-    UI_CHECK(sixel_encoder_setopt(encoder, 'X', "gamma") == SIXEL_OK);
-    UI_CHECK(sixel_encoder_setopt(encoder, 'W', "gamma") == SIXEL_OK);
+    UI_CHECK(sixel_encoder_setopt(encoder, 'X', "srgb") == SIXEL_OK);
+    UI_CHECK(sixel_encoder_setopt(encoder, 'W', "srgb") == SIXEL_OK);
     UI_CHECK(sixel_encoder_setopt(encoder, 'G', gpu ? "force" : "off")
         == SIXEL_OK);
     UI_CHECK(sixel_encoder_setopt(encoder, '=', "greedy:B4:prepare=serial")

@@ -30,7 +30,7 @@
 typedef enum sixel_named_color {
     SIXEL_NAMED_COLOR_SRGB = 0,
     SIXEL_NAMED_COLOR_DISPLAY_P3,
-    SIXEL_NAMED_COLOR_ADOBE_RGB,
+    SIXEL_NAMED_COLOR_A98_RGB,
     SIXEL_NAMED_COLOR_DCI_P3,
     SIXEL_NAMED_COLOR_COUNT
 } sixel_named_color_t;

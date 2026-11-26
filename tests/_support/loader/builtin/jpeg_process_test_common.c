@@ -249,7 +249,7 @@ jp_samples(int fixture, unsigned char const *data, size_t size)
     count = (size_t)f->width * (size_t)f->height * 3u;
     if (probe.callback_count != 1 || probe.width[0] != f->width ||
         probe.height[0] != f->height ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.pixelformat[0] != (byte ? SIXEL_PIXELFORMAT_RGB888 :
                                        SIXEL_PIXELFORMAT_RGBFLOAT32) ||
         probe.rgb_size[0] != count * (byte ? 1u : sizeof(float))) {

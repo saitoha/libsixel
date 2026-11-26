@@ -1681,7 +1681,7 @@ sixel_builtin_load_hdr_frame(
     width = 0;
     height = 0;
     hdr_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
+    hdr_colorspace = SIXEL_COLORSPACE_SRGB;
     target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
 
     if (chunk == NULL || allocator == NULL || frame == NULL) {
@@ -2531,7 +2531,7 @@ sixel_builtin_decode_hdr_float32_custom(
         *pwidth = hint->width;
         *pheight = hint->height;
         *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        *pcolorspace = SIXEL_COLORSPACE_LINEAR;
+        *pcolorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         return SIXEL_OK;
     }
 
@@ -2571,7 +2571,7 @@ sixel_builtin_decode_hdr_float32_custom(
     *pwidth = hint->width;
     *pheight = hint->height;
     *ppixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    *pcolorspace = SIXEL_COLORSPACE_LINEAR;
+    *pcolorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     return SIXEL_OK;
 }
 
@@ -2634,7 +2634,7 @@ sixel_builtin_decode_hdr_float32_with_hint(
     *pwidth = 0;
     *pheight = 0;
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
-    *pcolorspace = SIXEL_COLORSPACE_GAMMA;
+    *pcolorspace = SIXEL_COLORSPACE_SRGB;
 
     if (sixel_chunk_get_size(chunk) == 0u) {
         return SIXEL_FALSE;
