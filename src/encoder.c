@@ -13339,6 +13339,7 @@ sixel_encoder_new(
     (*ppencoder)->output_png_to_stdout  = 0;
     (*ppencoder)->png_output_path       = NULL;
     (*ppencoder)->sixel_output_path     = NULL;
+    (*ppencoder)->defer_sixel_outfile   = 0;
     (*ppencoder)->clipboard_output_active = 0;
     (*ppencoder)->clipboard_output_format[0] = '\0';
     (*ppencoder)->clipboard_output_path = NULL;
@@ -13621,7 +13622,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_encoder_clear_dither_cache(encoder);
         sixel_dither_unref((sixel_dither_t *)encoder->diagnostic_dither);
-        if (encoder->outfd
+        if (encoder->outfd >= 0
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
             (void)sixel_compat_close(encoder->outfd);
@@ -15526,6 +15527,34 @@ sixel_encoder_apply_mapfile_output_option(
 }
 
 
+/* The CLI configures its private encoder before processing any options. */
+SIXEL_INTERNAL_API void
+sixel_encoder_defer_sixel_outfile(sixel_encoder_t *encoder)
+{
+    encoder->defer_sixel_outfile = 1;
+}
+
+static SIXELSTATUS
+sixel_encoder_open_sixel_outfile(sixel_encoder_t *encoder)
+{
+    int flags;
+    int fd;
+
+    flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_BINARY)
+    flags |= O_BINARY;
+#endif
+    fd = sixel_compat_open(encoder->sixel_output_path, flags,
+                           S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_setopt: failed to open output path.");
+        return SIXEL_LIBC_ERROR | (errno & 0xff);
+    }
+    encoder->outfd = fd;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_encoder_apply_outfile_option(
     sixel_encoder_t *encoder,
@@ -15536,26 +15565,22 @@ sixel_encoder_apply_outfile_option(
     SIXELSTATUS clip_status;
     char *spool_path;
     int spool_fd;
-    int output_open_flags;
     int png_argument_has_prefix;
     size_t png_path_length;
     size_t libc_buffer_size;
     char *libc_buffer;
     char const *png_path_view;
-    char const *outfile_open_path;
     char const *libc_path;
 
     status = SIXEL_OK;
     clip_status = SIXEL_OK;
     spool_path = NULL;
     spool_fd = (-1);
-    output_open_flags = 0;
     png_argument_has_prefix = 0;
     png_path_length = 0u;
     libc_buffer_size = 0u;
     libc_buffer = NULL;
     png_path_view = NULL;
-    outfile_open_path = value;
     libc_path = NULL;
     clipboard_spec.is_clipboard = 0;
     clipboard_spec.format[0] = '\0';
@@ -15647,9 +15672,6 @@ sixel_encoder_apply_outfile_option(
                 }
             }
         }
-        outfile_open_path = encoder->output_png_to_stdout
-            ? "-"
-            : encoder->png_output_path;
     } else {
         encoder->output_is_png = 0;
         encoder->output_png_to_stdout = 0;
@@ -15714,31 +15736,15 @@ sixel_encoder_apply_outfile_option(
                                       strlen(value) + 1u,
                                       value);
         }
-        outfile_open_path = value;
     }
 
-    /*
-     * Keep "png:" handling in the option layer so the encode phase can
-     * assume filesystem paths or stdout sentinels only.
-     */
-    if (!encoder->clipboard_output_active
-        && !encoder->output_is_png
-        && outfile_open_path != NULL
-        && strcmp(outfile_open_path, "-") != 0) {
-        if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
-            (void)sixel_compat_close(encoder->outfd);
-        }
-        output_open_flags = O_RDWR | O_CREAT | O_TRUNC;
-#if defined(O_BINARY)
-        output_open_flags |= O_BINARY;
-#endif
-        encoder->outfd = sixel_compat_open(outfile_open_path,
-                                           output_open_flags,
-                                           S_IRUSR | S_IWUSR);
-        if (encoder->outfd < 0) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: failed to open output path.");
-            return SIXEL_LIBC_ERROR | (errno & 0xff);
+    if (encoder->sixel_output_path != NULL &&
+            !encoder->clipboard_output_active) {
+        /* A pending CLI path has no descriptor until final validation. */
+        if (encoder->defer_sixel_outfile) {
+            encoder->outfd = -1;
+        } else {
+            return sixel_encoder_open_sixel_outfile(encoder);
         }
     }
 
@@ -16734,6 +16740,9 @@ sixel_encoder_setopt_owned(
          * detached candidate must not close a live descriptor on failure. */
         if (strcmp(value, "-") == 0) {
             encoder->outfd = destination->outfd;
+            if (destination->defer_sixel_outfile && encoder->outfd < 0) {
+                encoder->sixel_output_path = destination->sixel_output_path;
+            }
         }
         break;
     case SIXEL_OPTFLAG_THREADING_POLICY:  /* = */
@@ -19637,6 +19646,13 @@ sixel_encoder_encode_owned(
     status = sixel_encoder_validate_output_definition(encoder);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+    if (encoder->defer_sixel_outfile && encoder->outfd < 0 &&
+            encoder->sixel_output_path != NULL) {
+        status = sixel_encoder_open_sixel_outfile(encoder);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
     (void)sixel_timeline_logger_prepare_env(encoder->allocator, &logger);
     logger_prepared = logger != NULL;

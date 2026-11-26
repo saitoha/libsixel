@@ -319,6 +319,15 @@ set -- \
     cli/progressive/0013_progressive_output_reset_gamma.t \
     cli/progressive/0014_icc_environment_progressive_reset.t \
     encoder/progressive-refinement/0185_output_icc_gamut_retry.t \
+    palette/output-diffusion/0132_icc_delta_working_guard.t \
+    palette/output-diffusion/0133_icc_delta_hls_outside.t \
+    palette/output-diffusion/0134_icc_delta_hls_staged.t \
+    palette/output-diffusion/0135_icc_delta_hls_pipeline.t \
+    delta/commit/0015_icc_cache_copy_unrounded.t \
+    delta/commit/0016_icc_cache_rounded_inverse_retry.t \
+    cli/progressive/0015_rejected_icc_preserves_outfile.t \
+    cli/progressive/0016_rejected_delta_icc_preserves_outfile.t \
+    cli/progressive/0017_icc_overrides_keep_outfile.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \
     palette/working-space/0147_cli_cluster_linear_centroid.t \

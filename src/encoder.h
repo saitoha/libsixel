@@ -557,6 +557,7 @@ struct sixel_encoder {
     int output_png_to_stdout;
     char *png_output_path;
     char *sixel_output_path;
+    int defer_sixel_outfile;
     int clipboard_output_active;
     char clipboard_output_format[32];
     char *clipboard_output_path;

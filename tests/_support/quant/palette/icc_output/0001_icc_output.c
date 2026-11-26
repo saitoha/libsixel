@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /* Independent wire endpoints, parsed-state atomicity and ICC ownership. */
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -21,6 +22,8 @@
 #include "src/palette-snap-grid.h"
 #include "tests/data/color-numeric/vectors.h"
 #include "tests/writer/png/color_test_common.h"
+
+int test_dither_parallel_available(void);
 
 static unsigned char icco_bytes[8192];
 static size_t icco_size;
@@ -449,7 +452,7 @@ end:
 }
 
 static int
-icco_delta_threshold(char const *path)
+icco_delta_threshold(char const *path, int outside)
 {
     float entries[6] = {.59f, .59f, .59f, 0, 0, 0};
     float query[3] = {.588f, .588f, .588f};
@@ -461,6 +464,7 @@ icco_delta_threshold(char const *path)
     unsigned int count;
     int ok;
     int channel;
+    unsigned int threshold;
     sixel_dither_t *dither;
     sixel_color_def_t *profile;
     sixel_palette_float32_entries_request_t request;
@@ -468,6 +472,12 @@ icco_delta_threshold(char const *path)
     dither = NULL;
     profile = NULL;
     ok = 0;
+    threshold = outside ? 0U : 1U;
+    if (outside) {
+        memcpy(query, entries, sizeof(query));
+        history[0] = 151;
+        history[1] = 45;
+    }
     request.entries = entries;
     request.colors = 2;
     request.depth = 3 * sizeof(float);
@@ -488,11 +498,13 @@ icco_delta_threshold(char const *path)
     }
     /* B2D maps .588 to (.588,.1764,.0294). The green-channel
      * difference from the retained byte 43 lies between 1/255 and 2/255.
-     * D2B maps retained red back to the neutral gray .5 + R/2. */
+     * With the .59 query, (151,45,8) is closer than (150,46,8)
+     * in output RGB. D2B maps red back to .5 + R/2. The retained
+     * gray is then farther away, so T0 must repaint and T1 keeps. */
     dither->use_rgb101_palette = 1;
     sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
         history, sizeof(history), valid, sizeof(valid),
-        1, 1, 0, 0, 1, 1, 2, 1, 1, SIXEL_6DELTA_ERROR_DIFFUSE);
+        1, 1, 0, 0, 1, 1, 2, 1, threshold, SIXEL_6DELTA_ERROR_DIFFUSE);
     if (sixel_dither_6delta_keep_float(dither, 0, 0, 0,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, query, entries, 0, 0,
             retained)) {
@@ -500,7 +512,7 @@ icco_delta_threshold(char const *path)
     }
     sixel_dither_set_pipeline_accumulation_buffer_hint(dither,
         history, sizeof(history), valid, sizeof(valid),
-        1, 1, 0, 0, 1, 1, 2, 1, 2, SIXEL_6DELTA_ERROR_DIFFUSE);
+        1, 1, 0, 0, 1, 1, 2, 1, threshold + 1U, SIXEL_6DELTA_ERROR_DIFFUSE);
     if (!sixel_dither_6delta_keep_float(dither, 0, 0, 0,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, query, entries, 0, 0,
             retained)) {
@@ -508,7 +520,7 @@ icco_delta_threshold(char const *path)
     }
     for (channel = 0; channel < 3; ++channel) {
         if (!isfinite(retained[channel]) ||
-                fabs(retained[channel] - (0.5 + 148.0 / 510.0)) > 1e-5) {
+                fabs(retained[channel] - (0.5 + history[0] / 510.0)) > 1e-5) {
             goto end;
         }
     }
@@ -520,27 +532,39 @@ end:
 }
 
 static int
-icco_delta_feedback(char const *data)
+icco_delta_feedback(char const *data, int mode)
 {
-    unsigned char history[6] = {204, 61, 10, 0, 0, 0};
-    float samples[6] = {.80f, .80f, .80f, .82f, .82f, .82f};
-    static unsigned char const expected[2][4] = {
+    static unsigned char const expected_rgb[2][4] = {
         {148, 43, 8, 255}, {163, 48, 8, 255}
     };
-    static char const *const modes[2] = {
+    static unsigned char const expected_hls[2][4] = {
+        {145, 43, 8, 255}, {161, 48, 8, 255}
+    };
+    static char const *const policies[2] = {
         "delta:T16:error=diffuse", "delta:T16:error=skip"
     };
+    unsigned char history_row[6] = {204, 61, 10, 0, 0, 0};
+    float sample_row[6] = {.80f, .80f, .80f, .82f, .82f, .82f};
+    unsigned char history[12 * sizeof(history_row)];
+    float samples[12 * 6];
     char argument[4096];
     sixel_encoder_t *encoder;
     sixel_output_t *output;
     sixel_frame_t *frame;
+    sixel_dither_t const *dither;
     unsigned char *rgb;
     unsigned char *valid;
     unsigned char *decoded;
+    unsigned char const *row;
     size_t offset;
     int width;
     int height;
-    int mode;
+    int rows;
+    int pass;
+    int y;
+    int bands;
+    int pipeline;
+    int outside;
     int ok;
 
     encoder = NULL;
@@ -548,6 +572,21 @@ icco_delta_feedback(char const *data)
     frame = NULL;
     decoded = NULL;
     ok = 0;
+    outside = mode == 1;
+    bands = mode >= 2;
+    pipeline = mode == 3;
+    rows = bands ? 12 : 1;
+    if (outside) {
+        history_row[0] = 146;
+        history_row[1] = 43;
+        history_row[2] = 8;
+        sample_row[0] = sample_row[1] = sample_row[2] = .55f;
+    }
+    for (y = 0; y < rows; ++y) {
+        memcpy(history + y * sizeof(history_row), history_row,
+               sizeof(history_row));
+        memcpy(samples + y * 6, sample_row, sizeof(sample_row));
+    }
     if (strlen(data) > sizeof(argument) - 64 ||
             sixel_encoder_new(&encoder, NULL) != SIXEL_OK ||
             sixel_output_new(&output, icco_write, NULL, NULL) != SIXEL_OK ||
@@ -557,8 +596,13 @@ icco_delta_feedback(char const *data)
             sixel_encoder_setopt(encoder, '~', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, '_', "none") != SIXEL_OK ||
             sixel_encoder_setopt(encoder, 'F', "none") != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 't', "rgb") != SIXEL_OK ||
-            sixel_encoder_setopt(encoder, 'd', "fs:scan=raster") != SIXEL_OK) {
+            sixel_encoder_setopt(encoder, 't', bands ? "hls" : "rgb")
+                != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'd', bands
+                ? "fs:scan=raster:band_width=6:band_overwrap=0"
+                : "fs:scan=raster") != SIXEL_OK ||
+            (bands && sixel_encoder_setopt(encoder, '=', pipeline
+                ? "greedy:B4:dither=2:encode=2" : "greedy:B2") != SIXEL_OK)) {
         goto end;
     }
     snprintf(argument, sizeof(argument),
@@ -570,24 +614,40 @@ icco_delta_feedback(char const *data)
     if (sixel_encoder_setopt(encoder, 'm', argument) != SIXEL_OK) {
         goto end;
     }
-    /* The retained red code 204 maps to .90 in linear working RGB.
-     * Diffuse shifts the second sample to .82 + 7/16*(.80-.90) = .77625,
-     * below the .805 midpoint. Skip leaves it .82 and chooses high. */
-    for (mode = 0; mode < 2; ++mode) {
+    /* On each band start, .82 plus the retained residual
+     * 7/16*(.80-.90) falls below both RGB and HLS midpoints.
+     * At T0 the .55 query is closer to retained red 146 than
+     * RGB candidate 148, but closer to HLS candidate 145. */
+    for (pass = 0; pass < 2; ++pass) {
         icco_size = 0;
-        if (sixel_encoder_setopt(encoder, 'Z', modes[mode]) != SIXEL_OK ||
-                sixel_frame_init_borrowed(frame, samples, 2, 1,
+        if ((outside && sixel_encoder_setopt(encoder, 't',
+                    pass == 0 ? "rgb" : "hls") != SIXEL_OK) ||
+                sixel_encoder_setopt(encoder, 'Z', outside ?
+                    "delta:T0:error=skip" : policies[pass]) != SIXEL_OK ||
+                sixel_frame_init_borrowed(frame, samples, 2, rows,
                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1)
                     != SIXEL_OK ||
-                sixel_encoder_set_accumulation_buffer(encoder, history, 2, 1,
-                    SIXEL_PIXELFORMAT_RGB888) != SIXEL_OK ||
+                sixel_encoder_set_accumulation_buffer(encoder, history, 2,
+                    rows, SIXEL_PIXELFORMAT_RGB888) != SIXEL_OK ||
                 sixel_retained_plane_legacy_map(encoder->retained_plane,
                     &rgb, &valid) != SIXEL_OK) {
             goto end;
         }
-        valid[1] = 0;
+        for (y = 0; y < rows * 2; ++y) {
+            valid[y] = (unsigned char)(y % 12 == 0);
+        }
         sixel_retained_plane_legacy_unmap(encoder->retained_plane);
         if (sixel_encoder_encode_frame(encoder, frame, output) != SIXEL_OK) {
+            goto end;
+        }
+        dither = encoder->diagnostic_dither;
+        if (bands && (dither == NULL || dither->pipeline_last_mode !=
+                    (pipeline ? SIXEL_DITHER_ENCODE_PIPELINE
+                              : SIXEL_DITHER_ENCODE_STAGED) ||
+                dither->pipeline_last_dither_threads != 2 ||
+                dither->pipeline_last_band_height != 6 ||
+                dither->pipeline_last_band_overlap != 0)) {
+            fprintf(stderr, "ICC HLS delta did not use two 6-row bands\n");
             goto end;
         }
         for (offset = 0; offset + 1 < icco_size; ++offset) {
@@ -598,11 +658,23 @@ icco_delta_feedback(char const *data)
         if (offset + 1 >= icco_size ||
                 sixel_decode_direct(icco_bytes + offset,
                     (int)(icco_size - offset), &decoded, &width, &height, NULL)
-                    != SIXEL_OK || width != 2 || height != 1 ||
-                decoded[3] != 0 || memcmp(decoded + 4, expected[mode], 4)) {
-            fprintf(stderr, "Unexpected retained or painted pixel in %s\n",
-                    modes[mode]);
+                    != SIXEL_OK || width != 2 || height != rows) {
             goto end;
+        }
+        for (y = 0; y < rows; y += 6) {
+            row = decoded + y * 8;
+            if (outside) {
+                if ((pass == 0 && row[3] != 0) ||
+                        (pass == 1 && memcmp(row, expected_hls[0], 4) != 0)) {
+                    fprintf(stderr, "ICC delta T0 pass %d: %u,%u,%u,%u\n",
+                        pass, row[0], row[1], row[2], row[3]);
+                    goto end;
+                }
+            } else if (row[3] != 0 || memcmp(row + 4,
+                    bands ? expected_hls[pass] : expected_rgb[pass], 4) != 0) {
+                fprintf(stderr, "Unexpected delta pixel in row %d\n", y);
+                goto end;
+            }
         }
         free(decoded);
         decoded = NULL;
@@ -768,6 +840,148 @@ end:
     sixel_dither_unref(source);
     sixel_dither_unref(target);
     sixel_allocator_unref(allocator);
+    return ok;
+}
+
+static int
+icco_cache_unrounded(char const *path)
+{
+    static unsigned char const expected[6] = {59, 18, 3, 43, 13, 2};
+    unsigned char bytes[6] = {150, 150, 150, 109, 109, 109};
+    float entries[6] = {.5913f, .5913f, .5913f, .4271f, .4271f, .4271f};
+    static double const factors[3] = {1.0, .30, .05};
+    sixel_dither_t *source;
+    sixel_dither_t *target;
+    sixel_color_def_t *profile;
+    sixel_palette_float32_entries_request_t request;
+    unsigned char const *codes;
+    unsigned char const *original;
+    float const *wire_rgb;
+    float const *original_float;
+    unsigned int count;
+    int channel;
+    int i;
+    int ok;
+
+    source = target = NULL;
+    profile = NULL;
+    ok = 0;
+    if (sixel_color_read_icc(path, &profile) != SIXEL_OK ||
+            sixel_dither_new(&source, 2, NULL) != SIXEL_OK ||
+            sixel_dither_new(&target, 2, NULL) != SIXEL_OK) {
+        goto end;
+    }
+    sixel_dither_set_palette(source, bytes);
+    sixel_dither_set_palette(target, bytes);
+    request.entries = entries;
+    request.colors = 2;
+    request.depth = 3 * sizeof(float);
+    if (source->palette->vtbl->init_entries_float32(source->palette,
+                &request) != SIXEL_OK ||
+            sixel_palette_prepare_output_definition(source->palette,
+                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_OK ||
+            sixel_palette_apply_icc_registers(source->palette,
+                SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_LINEAR,
+                NULL, SIXEL_PALETTETYPE_HLS, 0, 0) != SIXEL_OK ||
+            sixel_palette_copy_output_cache(target->palette, source->palette)
+                != SIXEL_OK) {
+        goto end;
+    }
+    sixel_dither_unref(source);
+    source = NULL;
+    sixel_cdef_free(profile);
+    profile = NULL;
+    if (sixel_palette_get_rgb101(target->palette, &codes, &count)
+                != SIXEL_OK || count != 2 ||
+            memcmp(codes, expected, sizeof(expected)) != 0 ||
+            sixel_palette_get_output_rgb(target->palette, &wire_rgb, &count)
+                != SIXEL_OK || count != 2 ||
+            !sixel_palette_get_icc_source(target->palette, &original,
+                &original_float) ||
+            memcmp(original, bytes, sizeof(bytes)) != 0 ||
+            memcmp(original_float, entries, sizeof(entries)) != 0) {
+        goto end;
+    }
+    /* Relative B2D is (Y, .30Y, .05Y) on this neutral input.
+     * RGB101 cannot reconstruct any of these unrounded triplets. */
+    for (i = 0; i < 6; ++i) {
+        channel = i % 3;
+        if (!isfinite(wire_rgb[i]) ||
+                fabs(wire_rgb[i] - entries[i] * factors[channel]) > 1e-6) {
+            goto end;
+        }
+    }
+    ok = 1;
+end:
+    sixel_cdef_free(profile);
+    sixel_dither_unref(source);
+    sixel_dither_unref(target);
+    return ok;
+}
+
+static int
+icco_cache_rounded_inverse(char const *path)
+{
+    static unsigned char const saved[6] = {20, 20, 20, 85, 85, 85};
+    unsigned char bytes[6] = {0};
+    float entries[6] = {.2f, .2f, .2f, .848f, .848f, .848f};
+    double continuous[3] = {.848, .848, 0};
+    double rounded[3] = {217.0 / 255, 217.0 / 255, 0};
+    double xyz[3];
+    double query[3] = {.25, .25, .25};
+    double out[3];
+    sixel_dither_t *dither;
+    sixel_color_def_t *profile;
+    sixel_color_def_t *good;
+    sixel_palette_float32_entries_request_t request;
+    unsigned char const *codes;
+    unsigned int count;
+    int ok;
+
+    dither = NULL;
+    good = NULL;
+    ok = 0;
+    profile = sixel_cdef_icc(icco_rounding_profile,
+                             sizeof(icco_rounding_profile));
+    /* The second color crosses FLT_MAX in PCS X only after rounding. */
+    if (profile == NULL || !sixel_cdef_output_ready(profile, 1, 1) ||
+            !(2e38 * (continuous[0] + continuous[1]) < FLT_MAX) ||
+            !(2e38 * (rounded[0] + rounded[1]) > FLT_MAX) ||
+            !sixel_cdef_to_xyz(profile, continuous, xyz, 1) ||
+            sixel_cdef_to_xyz(profile, rounded, xyz, 1) ||
+            sixel_dither_new(&dither, 2, NULL) != SIXEL_OK) {
+        goto end;
+    }
+    sixel_dither_set_palette(dither, bytes);
+    request.entries = entries;
+    request.colors = 2;
+    request.depth = 3 * sizeof(float);
+    if (dither->palette->vtbl->init_entries_float32(dither->palette,
+                &request) != SIXEL_OK ||
+            sixel_palette_prepare_output(dither->palette,
+                SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_LEGACY,
+                SIXEL_COLORSPACE_LINEAR) != SIXEL_OK ||
+            sixel_palette_prepare_output_definition(dither->palette,
+                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_GAMMA, profile) != SIXEL_BAD_INPUT ||
+            sixel_palette_get_rgb101(dither->palette, &codes, &count)
+                != SIXEL_OK || count != 2 ||
+            memcmp(codes, saved, sizeof(saved)) != 0 ||
+            !sixel_palette_to_output(dither->palette, out, query,
+                SIXEL_COLORSPACE_LINEAR) ||
+            memcmp(out, query, sizeof(out)) != 0 ||
+            sixel_color_read_icc(path, &good) != SIXEL_OK ||
+            sixel_palette_prepare_output_definition(dither->palette,
+                SIXEL_COLORSPACE_LINEAR, SIXEL_NAMED_COLOR_COUNT,
+                SIXEL_COLORSPACE_GAMMA, good) != SIXEL_OK) {
+        goto end;
+    }
+    ok = 1;
+end:
+    sixel_cdef_free(good);
+    sixel_cdef_free(profile);
+    sixel_dither_unref(dither);
     return ok;
 }
 
@@ -1049,10 +1263,19 @@ test_icc_output(int argc, char **argv)
     }
     mode = atoi(argv[2]);
     if (strcmp(argv[1], "delta-threshold") == 0) {
-        return !icco_delta_threshold(argv[3]);
+        return !icco_delta_threshold(argv[3], mode);
     }
     if (strcmp(argv[1], "delta-feedback") == 0) {
-        return !icco_delta_feedback(argv[3]);
+        if (mode >= 2 && !test_dither_parallel_available()) {
+            return 77;
+        }
+        return !icco_delta_feedback(argv[3], mode);
+    }
+    if (strcmp(argv[1], "cache-unrounded") == 0) {
+        return !icco_cache_unrounded(argv[3]);
+    }
+    if (strcmp(argv[1], "cache-rounded-inverse") == 0) {
+        return !icco_cache_rounded_inverse(argv[3]);
     }
     if (strcmp(argv[1], "cache-retry") == 0) {
         return !icco_cache_retry(argv[3], mode);
