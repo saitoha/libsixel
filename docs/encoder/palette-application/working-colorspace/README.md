@@ -269,6 +269,7 @@ python3 tools/check_working_colorspace_measurements.py \
 | WC-44 | Fixed-palette frames reuse the ICC FHEDT grid while the profile and lookup settings match. Changing the working ICC rebuilds the grid. | [tests/palette/working-space/0180_icc_work_fhedt_reuse.t](../../../../tests/palette/working-space/0180_icc_work_fhedt_reuse.t) |
 | WC-45 | Parallel raster Floyd–Steinberg propagates ICC residuals within each independent band. | [tests/palette/working-space/0181_icc_work_parallel_fs.t](../../../../tests/palette/working-space/0181_icc_work_parallel_fs.t) |
 | WC-46 | Delta Floyd–Steinberg converts the retained color back to ICC before diffuse mode, while skip mode omits the first residual. | [tests/palette/working-space/0182_icc_work_delta_fs.t](../../../../tests/palette/working-space/0182_icc_work_delta_fs.t) |
+| WC-47 | Parallel fixed-palette frames share one ICC FHEDT grid across bands and frames when the palette has an omission-only slot. | [tests/palette/working-space/0183_icc_work_fhedt_reserved_key.t](../../../../tests/palette/working-space/0183_icc_work_fhedt_reserved_key.t) |
 
 ### Coverage boundary
 
