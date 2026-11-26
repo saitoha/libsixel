@@ -7,13 +7,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 probe_status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-kmeans/resident-available || probe_status=$?
 test "$probe_status" -ne 77 || {
-    echo '1..0 # SKIP requires Metal'
+    echo '1..0 # SKIP requires a native GPU'
     exit 0
 }
 echo '1..1'
 set -v
 test "$probe_status" -eq 0 || {
-    printf '\n%s\n' 'not ok 1 - Metal availability probe failed'
+    printf '\n%s\n' 'not ok 1 - GPU availability probe failed'
     exit 0
 }
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
@@ -29,11 +29,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
 case "$trace" in
     *LSXHBRESIDENT1*backend=metal*colors=*snap=1*cover=3*soft=0*\
 sample_backend=metal*histogram_backend=metal*) true ;;
+    *LSXHBRESIDENT1*backend=vulkan*colors=*snap=1*cover=3*soft=0*\
+sample_backend=vulkan*histogram_backend=vulkan*) true ;;
     *) false ;;
 esac || {
-    printf '\n%s\n' 'not ok 1 - Heckbert snap and hard cover did not use resident Metal'
+    printf '\n%s\n' 'not ok 1 - Heckbert snap and hard cover did not use resident GPU'
     printf '# %s\n' "$trace"
     exit 0
 }
-printf '\n%s\n' 'ok 1 - Heckbert produces indexed output after Metal snap and hard cover'
+printf '\n%s\n' 'ok 1 - Heckbert produces indexed output after GPU snap and hard cover'
 exit 0

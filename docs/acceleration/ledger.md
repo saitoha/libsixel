@@ -23,15 +23,15 @@ Rows are sorted by ID. The prefix names the stage: `DECODE` for the SIXEL decode
 | HECKBERT-BOX-BOUNDS | Box bounds and weight over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
 | HECKBERT-BOX-SCORE | Squared-error score of a box over RGB tuples | done | done | planned | done | planned | n/a | n/a | |
 | HECKBERT-MEDIAN-CUT | Solve the median cut on the GPU | done | n/a | n/a | n/a | n/a | done | done | Vulkan uses a separate compute queue when available and the shared measured GPU headroom rule, with CPU median cut as the fallback. |
-| HECKBERT-RESIDENT-REP | Build the reversible RGB888 histogram, order SSE boxes, and compute representatives in the resident palette path | done | n/a | n/a | n/a | n/a | done | planned | |
+| HECKBERT-RESIDENT-REP | Build the reversible RGB888 histogram, order SSE boxes, and compute representatives in the resident palette path | done | n/a | n/a | n/a | n/a | done | done | |
 | ICC-PRODUCT-RESIDUAL | Recover the double-precision product residual for ICC arithmetic | done | n/a | done | n/a | n/a | n/a | n/a | The x86 128-bit implementation requires FMA3 and OS AVX support. |
-| KMEANS-RESIDENT-COVER | Select soft or hard RGB888 anchors and repair the palette before lookup | done | n/a | n/a | n/a | n/a | done | planned | |
-| KMEANS-RESIDENT-HISTOGRAM | Sample the adaptive grid and compact weighted RGB888 histogram bins | done | n/a | n/a | n/a | n/a | done | planned | |
-| KMEANS-RESIDENT-LOOKUP | Assign final pixel indexes with the resident 6bit palette table | done | n/a | n/a | n/a | n/a | done | planned | |
-| KMEANS-RESIDENT-OBJECTIVE | Score final weighted samples against the resident centers | done | n/a | n/a | n/a | n/a | done | planned | |
-| KMEANS-RESIDENT-PACK | Pack final byte centers into a resident RGB888 palette | done | n/a | n/a | n/a | n/a | done | planned | |
-| KMEANS-RESIDENT-PCA | Compute the principal axis and seed centers from weighted projection buckets | done | n/a | n/a | n/a | n/a | done | planned | |
-| KMEANS-RESIDENT-SNAP | Apply the final byte snap map before RGB888 cover repair | done | n/a | n/a | n/a | n/a | done | planned | |
+| KMEANS-RESIDENT-COVER | Select soft or hard RGB888 anchors and repair the palette before lookup | done | n/a | n/a | n/a | n/a | done | done | |
+| KMEANS-RESIDENT-HISTOGRAM | Sample the adaptive grid and compact weighted RGB888 histogram bins | done | n/a | n/a | n/a | n/a | done | done | |
+| KMEANS-RESIDENT-LOOKUP | Assign final pixel indexes with the resident 6bit palette table | done | n/a | n/a | n/a | n/a | done | done | |
+| KMEANS-RESIDENT-OBJECTIVE | Score final weighted samples against the resident centers | done | n/a | n/a | n/a | n/a | done | done | |
+| KMEANS-RESIDENT-PACK | Pack final byte centers into a resident RGB888 palette | done | n/a | n/a | n/a | n/a | done | done | |
+| KMEANS-RESIDENT-PCA | Compute the principal axis and seed centers from weighted projection buckets | done | n/a | n/a | n/a | n/a | done | done | |
+| KMEANS-RESIDENT-SNAP | Apply the final byte snap map before RGB888 cover repair | done | n/a | n/a | n/a | n/a | done | done | |
 | PUBLISH-INDEX-SCAN | Check published index rows for bytes that need correction | done | done | done | planned | planned | n/a | n/a | |
 | REFRESH-COARSE | Reduce the activity map to 4x4 tiles | done | planned | planned | done | planned | n/a | n/a | |
 | REFRESH-LUMA | Compute luma for spatial refresh | done | planned | planned | done | planned | n/a | n/a | |

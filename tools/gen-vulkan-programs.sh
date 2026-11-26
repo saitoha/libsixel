@@ -10,6 +10,8 @@
 #   builder:  BUILDER_PREFIX POLICY "\nvoid main()\n{\n    ENTRY();\n}\n"
 # A policy lists its builder entries on one " * vulkan-builders:" line.
 # A standalone component lists " * vulkan-stages:" and uses SOURCE + main.
+# An optional " * vulkan-companion:" adds one sibling GLSL fragment between
+# SOURCE and main; the host must append the identical fragment.
 #
 # usage: gen-vulkan-programs.sh GLSLC OUTPUT BUILDER_PREFIX \
 #            PREFIX:SUFFIX... -- POLICY.glsl...
@@ -69,9 +71,15 @@ emit() {
         entries=$(LC_ALL=C sed -n \
             's/^ \* vulkan-stages: *//p' "$policy")
         if test -n "$entries"; then
+            companion=$(LC_ALL=C sed -n                 's/^ \* vulkan-companion: *//p' "$policy")
+            component_dir=${policy%/*}
+            test "$component_dir" != "$policy" || component_dir=.
             for entry in $entries; do
                 {
                     cat "$policy"
+                    if test -n "$companion"; then
+                        cat "$component_dir/$companion"
+                    fi
                     printf '\nvoid main()\n{\n    %s();\n}\n' "$entry"
                 } > "$work/text.comp"
                 emit

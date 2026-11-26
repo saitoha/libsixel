@@ -129,6 +129,10 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_make_shared(
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_device(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
     VkDeviceSize size);
+/* Additional usage flags stay fixed for the lifetime of a reserved slot. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_buffer_reserve_device_usage(
+    sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer,
+    VkDeviceSize size, VkBufferUsageFlags usage);
 SIXEL_INTERNAL_API void sixel_vk_buffer_release(
     sixel_vk_runtime_t *runtime, sixel_vk_buffer_t *buffer);
 
