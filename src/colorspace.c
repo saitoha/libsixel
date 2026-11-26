@@ -2327,6 +2327,7 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
 {
     double input[3];
     double output[3];
+    float const *pixel;
     size_t index;
     int channel;
     int converted;
@@ -2354,9 +2355,11 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
                 continue;
             }
         }
-        for (channel = 0; channel < 3; ++channel) {
-            input[channel] = pixels[index * 3U + channel];
-        }
+        /* Keep each component's initialization visible to GCC's analyzer. */
+        pixel = pixels + index * 3U;
+        input[0] = pixel[0];
+        input[1] = pixel[1];
+        input[2] = pixel[2];
         if (colorspace_src == SIXEL_COLORSPACE_GAMMA) {
             for (channel = 0; channel < 3; ++channel) {
                 input[channel] = sixel_color_decode_srgb_float(input[channel]);
