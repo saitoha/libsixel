@@ -53,6 +53,8 @@ typedef struct sixel_legacy_encode_request {
  * source, dither, solution or retained-plane borrow crosses this boundary. */
 typedef struct sixel_output_resolved {
     sixel_indexed_frame_t *image;
+    unsigned char *serialized;  /* Owned palette definitions and body bytes. */
+    int serialized_size;
     sixel_encoder_core_options_t options;
     sixel_writer_image_header_t header;
     int threads;
@@ -85,6 +87,10 @@ sixel_output_write_packet(sixel_output_t *output, char const *bytes, int size);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_encode_resolved(sixel_output_t *output,
     sixel_output_resolved_t const *resolved);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_resident_body(sixel_output_t *output,
+    sixel_output_resolved_t *body, sixel_output_resolved_t *capture);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_prepare_deferred(sixel_legacy_encode_request_t const *request,

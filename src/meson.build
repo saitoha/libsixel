@@ -28,6 +28,7 @@ srcs = [
   'retained-plane-gpu.c',
   'retained-plane-gpu.h',
   'gpu-runtime-metal.h',
+  'encoder-body-gpu-metal.h',
   'dither-diffusion-webgpu.h',
   'gpu-runtime-vulkan.h',
   'gpu-compute-vulkan.h',

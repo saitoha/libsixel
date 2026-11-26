@@ -19,12 +19,13 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 case "$trace" in
-    *LSXWARDRESIDENT1*lloyd=3*LSXWARDRESIDENT1*lloyd=3*) true ;;
+    *LSXBODYRESIDENT1*LSXWARDRESIDENT1*lloyd=3*\
+LSXBODYRESIDENT1*LSXWARDRESIDENT1*lloyd=3*) true ;;
     *) false ;;
 esac || {
-    printf '\n%s\n' 'not ok 1 - direct and playback calls did not both use resident Ward'
+    printf '\n%s\n' 'not ok 1 - direct and playback calls did not both use resident Ward and SIXEL spelling'
     printf '# %s\n' "$trace"
     exit 0
 }
-printf '\n%s\n' 'ok 1 - direct and playback outputs match after resident Ward'
+printf '\n%s\n' 'ok 1 - direct and playback outputs match after resident Ward and SIXEL spelling'
 exit 0

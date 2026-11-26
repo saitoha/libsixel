@@ -21,6 +21,7 @@
 #include "options.h"
 #include "timer.h"
 #include "gpu-runtime-metal.h"
+#include "encoder-body-gpu-metal.h"
 #include "palette-common-cover.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -732,7 +733,8 @@ enum {
 };
 
 enum {
-    KM_RGB = 10, KM_HIST = 11, KM_GEOMETRY = 12, KM_OFFSETS = 13,
+    KM_PARAMS = 9, KM_RGB = 10, KM_HIST = 11, KM_GEOMETRY = 12,
+    KM_OFFSETS = 13,
     KM_DISPATCH = 14, KM_FIRST_KEYS = 17, KM_SECOND_KEYS = 18,
     KM_ARGUMENT = 19, KM_PALETTE = 21, KM_TABLE = 22, KM_INDICES = 23,
     KM_POLICY = 24, KM_SNAP_TABLE = 25, KM_COVER_BINS = 26,
@@ -742,6 +744,7 @@ enum {
 static pthread_mutex_t sixel_km_resident_lock = PTHREAD_MUTEX_INITIALIZER;
 static id<MTLDevice> sixel_km_resident_device;
 static id<MTLCommandQueue> sixel_km_resident_queue;
+static sixel_body_gpu_t *sixel_km_resident_body;
 static id<MTLComputePipelineState> sixel_km_resident_stages[KM_STAGE_COUNT];
 static id<MTLBuffer> sixel_km_resident_buffers[KM_BUFFER_COUNT];
 enum {
@@ -871,10 +874,13 @@ sixel_resident_buffers_allocate(id<MTLBuffer> *buffers,
     unsigned int i;
 
     for (i = 0; i < count; ++i) {
-        if (buffers[i].length >= lengths[i])
+        if (lengths[i] == 0)
             continue;
         mode = (shared & (1u << i)) != 0
             ? MTLResourceStorageModeShared : MTLResourceStorageModePrivate;
+        if (buffers[i].length >= lengths[i] &&
+                buffers[i].resourceOptions == mode)
+            continue;
         buffer = [sixel_km_resident_device newBufferWithLength:lengths[i]
                                                       options:mode];
         if (buffer == nil)
@@ -887,7 +893,8 @@ sixel_resident_buffers_allocate(id<MTLBuffer> *buffers,
 
 static int
 sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
-                          unsigned int colors, int heckbert, int ward)
+                          unsigned int colors, int heckbert, int ward,
+                          int spell)
 {
     NSUInteger padded, groups;
     NSUInteger lengths[KM_BUFFER_COUNT];
@@ -905,6 +912,8 @@ sixel_km_resident_storage(unsigned int samples, unsigned int pixels,
     groups = (padded + 511u) / 512u;
     shared = (1u << KM_RGB) | (1u << KM_INDICES) | (1u << KM_SNAP_TABLE) |
              (1u << KM_ANCHORS) | (1u << KM_RESULT);
+    if (spell)
+        shared &= ~(1u << KM_INDICES);
     memcpy(lengths, (NSUInteger[]){
         12*padded, 4*padded, 12*colors, 4*padded, 4*padded,
         16*colors*groups, 16*colors, 20, 68*groups, 24,
@@ -1070,8 +1079,10 @@ sixel_metal_record_binning(void *context,
 SIXELSTATUS
 sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
-    unsigned char *palette, unsigned int *colors)
+    unsigned char *palette, unsigned int *colors,
+    sixel_palette_resident_body_t *body)
 {
+    sixel_body_metal_palette_t body_palette;
     sixel_km_geometry_t geometry;
     sixel_filter_sample_grid_t const *grid;
     sixel_filter_binning_config_t binning;
@@ -1089,8 +1100,9 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     unsigned char *table;
     float value, target;
 
-    if (request == NULL || rgb == NULL || indices == NULL ||
-            palette == NULL || colors == NULL || request->colors == 0 ||
+    if (request == NULL || rgb == NULL ||
+            (body == NULL && (!indices || !palette || !colors)) ||
+            request->colors == 0 ||
             request->colors > SIXEL_PALETTE_MAX) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1121,6 +1133,12 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     buffers = sixel_km_resident_buffers;
     pthread_mutex_lock(&sixel_km_resident_lock);
     @autoreleasepool {
+        if (body != NULL && sixel_km_resident_body == NULL &&
+                sixel_body_metal_resident_new(&sixel_km_resident_body) !=
+                    SIXEL_OK) {
+            status = SIXEL_FALSE;
+            goto end;
+        }
         status = sixel_km_resident_prepare(heckbert, ward);
         if (ward && status == SIXEL_FEATURE_ERROR)
             status = SIXEL_FALSE;
@@ -1138,7 +1156,7 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
         }
         status = SIXEL_BAD_ALLOCATION;
         if (!sixel_km_resident_storage(samples, pixels, geometry.colors,
-                heckbert, ward))
+                heckbert, ward, body != NULL))
             goto end;
         memcpy(buffers[KM_RGB].contents, rgb, 3*(size_t)pixels);
         if (request->snap) {
@@ -1279,22 +1297,43 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
         RUN(KM_LUT, 262144, 128, -1, 0, 0);
         RUN(KM_APPLY, pixels, 128, -1, 0, 0);
 #undef RUN
-        /* Publish only after the entire indexed result is ready. */
-        blit = [command blitCommandEncoder];
-        if (blit == nil)
-            goto end;
-        [blit copyFromBuffer:buffers[KM_PALETTE] sourceOffset:0
-                    toBuffer:buffers[KM_RESULT] destinationOffset:8 size:768];
-        [blit copyFromBuffer:buffers[9] sourceOffset:4
-                    toBuffer:buffers[KM_RESULT] destinationOffset:0 size:4];
-        [blit copyFromBuffer:buffers[SIXEL_KM_STATE] sourceOffset:8
-                    toBuffer:buffers[KM_RESULT] destinationOffset:4 size:4];
-        [blit endEncoding];
+        if (body != NULL) {
+            body_palette = (sixel_body_metal_palette_t){
+                buffers[KM_PALETTE], buffers[KM_PARAMS],
+                buffers[SIXEL_KM_STATE],
+                offsetof(sixel_km_metal_params_t, centers),
+                offsetof(sixel_km_metal_state_t, failed)
+            };
+            status = sixel_body_metal_record(sixel_km_resident_body,
+                command, buffers[KM_INDICES], &body_palette, grid->width,
+                grid->height, request->body_gri_limit);
+            if (status != SIXEL_OK)
+                goto end;
+            status = SIXEL_RUNTIME_ERROR;
+        } else {
+            /* Publish only after the entire indexed result is ready. */
+            blit = [command blitCommandEncoder];
+            if (blit == nil)
+                goto end;
+            [blit copyFromBuffer:buffers[KM_PALETTE] sourceOffset:0
+                        toBuffer:buffers[KM_RESULT]
+                destinationOffset:8 size:768];
+            [blit copyFromBuffer:buffers[KM_PARAMS] sourceOffset:4
+                        toBuffer:buffers[KM_RESULT] destinationOffset:0 size:4];
+            [blit copyFromBuffer:buffers[SIXEL_KM_STATE] sourceOffset:8
+                        toBuffer:buffers[KM_RESULT] destinationOffset:4 size:4];
+            [blit endEncoding];
+        }
         [command commit];
         [command waitUntilCompleted];
         sixel_gpu_statistics_record_metal(command);
         if (command.status != MTLCommandBufferStatusCompleted)
             goto end;
+        if (body != NULL) {
+            status = sixel_body_metal_copy(sixel_km_resident_body,
+                &body->bytes, &body->size);
+            goto end;
+        }
         result = buffers[KM_RESULT].contents;
         if (result[1] || result[0] == 0 || result[0] > 256) {
             if (ward)

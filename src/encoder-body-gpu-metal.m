@@ -6,10 +6,11 @@
 #if defined(HAVE_METAL)
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "encoder-body-gpu.h"
+#include "encoder-body-gpu-metal.h"
 #include "gpu-runtime-metal.h"
 #include "loader-common.h"
 #include "timer.h"
@@ -39,17 +40,21 @@ enum {
     BODY_NODE_FIRST, BODY_MAP_FIRST, BODY_NODES, BODY_MAP, BODY_FIRST_SEEN,
     BODY_BAND_FIRST, BODY_LENGTHS, BODY_REGISTERS, BODY_COLUMNS, BODY_BITS,
     BODY_SORTED, BODY_ENTRIES, BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES,
-    BODY_KEYS, BODY_KEY_SLOTS, BODY_NODE_BAND, BODY_SLOTS
+    BODY_KEYS, BODY_KEY_SLOTS, BODY_NODE_BAND, BODY_MAP_BANDS,
+    BODY_SHAPE, BODY_EMIT_PARAMS, BODY_GRID, BODY_BYTE_COUNT, BODY_SLOTS
 };
 
 enum {
     BODY_CLASSIFY, BODY_SPANS, BODY_MAP_BUILD, BODY_LENGTH, BODY_ORDER,
-    BODY_ORDER_GROUP, BODY_BASES, BODY_WRITE, BODY_PIPELINES
+    BODY_ORDER_GROUP, BODY_BASES, BODY_WRITE, BODY_RESIDENT_LOCAL,
+    BODY_RESIDENT_PREFIX, BODY_RESIDENT_OFFSETS, BODY_RESIDENT_BASES,
+    BODY_PIPELINES
 };
 
 static char const *const sixel_body_gpu_kernels[BODY_PIPELINES] = {
     "body_classify", "body_spans", "body_map", "body_lengths", "body_order",
-    "body_order_group", "body_bases", "body_write"
+    "body_order_group", "body_bases", "body_write", "body_resident_local",
+    "body_resident_prefix", "body_resident_offsets", "body_resident_bases"
 };
 
 struct sixel_body_gpu {
@@ -59,6 +64,7 @@ struct sixel_body_gpu {
     void *buffers[BODY_SLOTS];  /* id<MTLBuffer>, grown on demand */
     size_t lengths[BODY_SLOTS];
     uint32_t group_limit;
+    int resident;
     uint32_t *band_first;
     size_t band_first_count;
 };
@@ -67,6 +73,7 @@ static id<MTLBuffer>
 sixel_body_gpu_buffer(sixel_body_gpu_t *context, int slot, size_t length)
 {
     id<MTLBuffer> buffer;
+    MTLResourceOptions storage;
 
     if (length == 0) {
         length = 16;
@@ -80,10 +87,12 @@ sixel_body_gpu_buffer(sixel_body_gpu_t *context, int slot, size_t length)
         context->lengths[slot] = 0;
     }
     /* Grow by half again so slowly growing frames do not reallocate each
-     * time. Shared storage lets the CPU read the result in place. */
+     * time. Only the final size and bytes are shared in resident mode. */
     length += length / 2;
+    storage = context->resident && slot != BODY_BYTES && slot != BODY_BYTE_COUNT
+        ? MTLResourceStorageModePrivate : MTLResourceStorageModeShared;
     buffer = [(__bridge id<MTLDevice>)context->device
-        newBufferWithLength:length options:MTLResourceStorageModeShared];
+        newBufferWithLength:length options:storage];
     if (buffer == nil) {
         return nil;
     }
@@ -92,8 +101,8 @@ sixel_body_gpu_buffer(sixel_body_gpu_t *context, int slot, size_t length)
     return buffer;
 }
 
-SIXELSTATUS
-sixel_body_gpu_new(sixel_body_gpu_t **result)
+static SIXELSTATUS
+sixel_body_metal_new(sixel_body_gpu_t **result, int resident)
 {
     sixel_body_gpu_t *context;
     SIXELSTATUS status;
@@ -105,6 +114,7 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
     if (context == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
+    context->resident = resident;
     status = SIXEL_FEATURE_ERROR;
     @autoreleasepool {
         id<MTLDevice> device;
@@ -140,7 +150,8 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
             goto end;
         }
         context->device = (void *)CFBridgingRetain(device);
-        for (i = 0; i < BODY_PIPELINES; ++i) {
+        for (i = 0; i < (resident ? BODY_PIPELINES : BODY_RESIDENT_LOCAL);
+                ++i) {
             sixel_trace_topic_message("metal_body", "%.6f pipeline %s begin",
                 sixel_timer_monotonic(), sixel_body_gpu_kernels[i]);
             pipeline = [device newComputePipelineStateWithFunction:
@@ -161,7 +172,14 @@ sixel_body_gpu_new(sixel_body_gpu_t **result)
                             SIXEL_BODY_GROUP_THREADS) continue;
                 context->group_limit = SIXEL_BODY_GROUP_NODES;
             }
-            if (pipeline == nil) {
+            if (pipeline == nil || (resident &&
+                    ((i == BODY_CLASSIFY &&
+                        pipeline.maxTotalThreadsPerThreadgroup < 256) ||
+                     ((i == BODY_MAP_BUILD || i == BODY_LENGTH ||
+                       i == BODY_WRITE || i == BODY_RESIDENT_OFFSETS) &&
+                        pipeline.maxTotalThreadsPerThreadgroup < 64) ||
+                     (i == BODY_RESIDENT_LOCAL &&
+                        pipeline.maxTotalThreadsPerThreadgroup < 32)))) {
                 goto end;
             }
             context->pipelines[i] = (void *)CFBridgingRetain(pipeline);
@@ -184,6 +202,18 @@ end:
     }
     *result = context;
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_body_gpu_new(sixel_body_gpu_t **result)
+{
+    return sixel_body_metal_new(result, 0);
+}
+
+SIXELSTATUS
+sixel_body_metal_resident_new(sixel_body_gpu_t **result)
+{
+    return sixel_body_metal_new(result, 1);
 }
 
 void
@@ -247,6 +277,30 @@ sixel_body_gpu_encode_spans(id<MTLComputeCommandEncoder> encoder,
        threadsPerThreadgroup:MTLSizeMake(group, 1, 1)];
 }
 
+/* All three node kernels use 64 lanes when the count comes from the
+ * device-side prefix. The same rounded dispatch grid serves each kernel. */
+static void
+sixel_body_metal_dispatch_nodes(id<MTLComputeCommandEncoder> encoder,
+                              sixel_body_gpu_t *context)
+{
+    [encoder dispatchThreadgroupsWithIndirectBuffer:(__bridge id<MTLBuffer>)
+        context->buffers[BODY_GRID] indirectBufferOffset:0
+        threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
+}
+
+static void
+sixel_body_metal_bind_emit(id<MTLComputeCommandEncoder> encoder,
+    sixel_body_gpu_t *context, sixel_body_gpu_emit_params_t const *params,
+    NSUInteger index)
+{
+    if (context->resident) {
+        [encoder setBuffer:(__bridge id<MTLBuffer>)
+            context->buffers[BODY_EMIT_PARAMS] offset:0 atIndex:index];
+    } else {
+        [encoder setBytes:params length:sizeof(*params) atIndex:index];
+    }
+}
+
 /* One lane per span writes its column map and reduces its first pixel. */
 static void
 sixel_body_gpu_encode_map(id<MTLComputeCommandEncoder> encoder,
@@ -272,6 +326,12 @@ sixel_body_gpu_encode_map(id<MTLComputeCommandEncoder> encoder,
     [encoder setBuffer:mask offset:0 atIndex:4];
     [encoder setBuffer:(__bridge id<MTLBuffer>)
         context->buffers[BODY_FIRST_SEEN] offset:0 atIndex:5];
+    if (context->resident) {
+        [encoder setBuffer:(__bridge id<MTLBuffer>)
+            context->buffers[BODY_SHAPE] offset:0 atIndex:6];
+        sixel_body_metal_dispatch_nodes(encoder, context);
+        return;
+    }
     [encoder setBytes:params length:sizeof(*params) atIndex:6];
     group = [pipeline maxTotalThreadsPerThreadgroup];
     if (group > 256) group = 256;
@@ -298,7 +358,11 @@ sixel_body_gpu_dispatch(id<MTLComputeCommandEncoder> encoder,
         [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[slots[i]]
                     offset:0 atIndex:i];
     }
-    [encoder setBytes:params length:sizeof(*params) atIndex:count];
+    sixel_body_metal_bind_emit(encoder, context, params, count);
+    if (context->resident && (kernel == BODY_LENGTH || kernel == BODY_WRITE)) {
+        sixel_body_metal_dispatch_nodes(encoder, context);
+        return;
+    }
     group = [pipeline maxTotalThreadsPerThreadgroup];
     if (group > 64) group = 64;
     [encoder dispatchThreads:MTLSizeMake(threads > 0 ? threads : 1, 1, 1)
@@ -310,7 +374,8 @@ sixel_body_gpu_dispatch(id<MTLComputeCommandEncoder> encoder,
 static void
 sixel_body_gpu_encode_emit(id<MTLComputeCommandEncoder> encoder,
                            sixel_body_gpu_t *context,
-                           sixel_body_gpu_emit_params_t const *params)
+                           sixel_body_gpu_emit_params_t const *params,
+                           sixel_body_metal_palette_t const *palette)
 {
     static int const lengths[] = { BODY_NODES, BODY_MAP, BODY_LENGTHS };
     static int const order[] = {
@@ -324,6 +389,7 @@ sixel_body_gpu_encode_emit(id<MTLComputeCommandEncoder> encoder,
         BODY_BAND_SIZE
     };
     static int const bases[] = { BODY_BAND_SIZE, BODY_BAND_BYTES, BODY_BYTES };
+    static int const trim[] = { BODY_BAND_FIRST, BODY_NODES, BODY_ENTRIES };
     id<MTLComputePipelineState> pipeline;
     NSUInteger i;
     static int const write[] = {
@@ -343,16 +409,55 @@ sixel_body_gpu_encode_emit(id<MTLComputeCommandEncoder> encoder,
             [encoder setBuffer:(__bridge id<MTLBuffer>)
                 context->buffers[group[i]] offset:0 atIndex:i];
         }
-        [encoder setBytes:params length:sizeof(*params)
-                  atIndex:sizeof(group) / sizeof(group[0])];
+        sixel_body_metal_bind_emit(encoder, context, params,
+            sizeof(group) / sizeof(group[0]));
         [encoder dispatchThreadgroups:MTLSizeMake(params->bands, 1, 1)
                 threadsPerThreadgroup:MTLSizeMake(
                     SIXEL_BODY_GROUP_THREADS, 1, 1)];
     }
-    sixel_body_gpu_dispatch(encoder, context, BODY_BASES, bases,
-        sizeof(bases) / sizeof(bases[0]), params, 1);
+    if (context->resident) {
+        [encoder setComputePipelineState:(__bridge id<MTLComputePipelineState>)
+            context->pipelines[BODY_RESIDENT_BASES]];
+        for (i = 0; i < sizeof(bases) / sizeof(bases[0]); ++i) {
+            [encoder setBuffer:(__bridge id<MTLBuffer>)
+                context->buffers[bases[i]] offset:0 atIndex:i];
+        }
+        [encoder setBuffer:palette->rgb offset:0 atIndex:3];
+        [encoder setBuffer:palette->count offset:palette->count_offset
+                    atIndex:4];
+        [encoder setBuffer:palette->state offset:palette->failure_offset
+                    atIndex:5];
+        [encoder setBuffer:(__bridge id<MTLBuffer>)
+            context->buffers[BODY_BYTE_COUNT] offset:0 atIndex:6];
+        sixel_body_metal_bind_emit(encoder, context, params, 7);
+        for (i = 0; i < sizeof(trim) / sizeof(trim[0]); ++i) {
+            [encoder setBuffer:(__bridge id<MTLBuffer>)
+                context->buffers[trim[i]] offset:0 atIndex:8u + i];
+        }
+        [encoder dispatchThreads:MTLSizeMake(1, 1, 1)
+            threadsPerThreadgroup:MTLSizeMake(1, 1, 1)];
+    } else {
+        sixel_body_gpu_dispatch(encoder, context, BODY_BASES, bases,
+            sizeof(bases) / sizeof(bases[0]), params, 1);
+    }
     sixel_body_gpu_dispatch(encoder, context, BODY_WRITE, write,
         sizeof(write) / sizeof(write[0]), params, params->nodes);
+}
+
+static void
+sixel_body_metal_classify(id<MTLComputeCommandEncoder> encoder,
+    sixel_body_gpu_t *context, sixel_body_gpu_params_t const *params,
+    id<MTLBuffer> indexes, id<MTLBuffer> mask)
+{
+    [encoder setComputePipelineState:(__bridge id<MTLComputePipelineState>)
+        context->pipelines[BODY_CLASSIFY]];
+    [encoder setBuffer:indexes offset:0 atIndex:0];
+    [encoder setBuffer:mask offset:0 atIndex:1];
+    [encoder setBuffer:(__bridge id<MTLBuffer>)
+        context->buffers[BODY_OCCUPANCY] offset:0 atIndex:2];
+    [encoder setBytes:params length:sizeof(*params) atIndex:3];
+    [encoder dispatchThreads:MTLSizeMake(params->width, params->height, 1)
+       threadsPerThreadgroup:MTLSizeMake(32, 8, 1)];
 }
 
 /* A commit can block before the command reaches the completion wait. */
@@ -425,7 +530,6 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         id<MTLCommandBuffer> command;
         id<MTLBlitCommandEncoder> blit;
         id<MTLComputeCommandEncoder> encoder;
-        id<MTLComputePipelineState> classify;
         id<MTLBuffer> indexes;
         id<MTLBuffer> mask;
         int staged;
@@ -485,8 +589,6 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
         }
 
         queue = (__bridge id<MTLCommandQueue>)context->queue;
-        classify = (__bridge id<MTLComputePipelineState>)
-            context->pipelines[BODY_CLASSIFY];
         sixel_trace_topic_message("metal_body", "%.6f classify-count encode",
             sixel_timer_monotonic());
         command = [queue commandBuffer];
@@ -496,14 +598,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
                    range:NSMakeRange(0, occupancy_words * 4U) value:0];
         [blit endEncoding];
         encoder = [command computeCommandEncoder];
-        [encoder setComputePipelineState:classify];
-        [encoder setBuffer:indexes offset:0 atIndex:0];
-        [encoder setBuffer:mask offset:0 atIndex:1];
-        [encoder setBuffer:(__bridge id<MTLBuffer>)
-            context->buffers[BODY_OCCUPANCY] offset:0 atIndex:2];
-        [encoder setBytes:&params length:sizeof(params) atIndex:3];
-        [encoder dispatchThreads:MTLSizeMake(params.width, params.height, 1)
-           threadsPerThreadgroup:MTLSizeMake(32, 8, 1)];
+        sixel_body_metal_classify(encoder, context, &params, indexes, mask);
         sixel_body_gpu_encode_spans(encoder, context, &params, 0U,
             indexes, mask);
         [encoder endEncoding];
@@ -630,7 +725,7 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
             indexes, mask);
         sixel_body_gpu_encode_map(encoder, context, &params, indexes, mask);
         if (spell) {
-            sixel_body_gpu_encode_emit(encoder, context, &emit);
+            sixel_body_gpu_encode_emit(encoder, context, &emit, NULL);
         }
         [encoder endEncoding];
         sixel_body_gpu_submit(command, "map-emit");
@@ -654,4 +749,152 @@ sixel_body_gpu_run(sixel_body_gpu_t *context,
     }
     return SIXEL_OK;
 }
+static void
+sixel_body_metal_bind(id<MTLComputeCommandEncoder> encoder,
+    sixel_body_gpu_t *context, int stage, int const *slots, NSUInteger count)
+{
+    NSUInteger i;
+
+    [encoder setComputePipelineState:(__bridge id<MTLComputePipelineState>)
+        context->pipelines[stage]];
+    for (i = 0; i < count; ++i) {
+        [encoder setBuffer:(__bridge id<MTLBuffer>)context->buffers[slots[i]]
+                    offset:0 atIndex:i];
+    }
+}
+
+/* Full-origin, unmasked RGB legacy output. The compact GPU dispatch can
+ * use bounded allocations without reading the number of spans first. */
+SIXELSTATUS
+sixel_body_metal_record(sixel_body_gpu_t *context, id<MTLCommandBuffer> command,
+    id<MTLBuffer> indices, sixel_body_metal_palette_t const *palette,
+    unsigned int width, unsigned int height, int limited)
+{
+    static int const local[] = { BODY_COUNTS, BODY_WIDTHS, BODY_NODE_FIRST,
+        BODY_MAP_FIRST, BODY_BAND_FIRST, BODY_MAP_BANDS };
+    static int const prefix[] = { BODY_BAND_FIRST, BODY_MAP_BANDS,
+        BODY_SHAPE, BODY_EMIT_PARAMS, BODY_GRID };
+    static int const offsets[] = { BODY_NODE_FIRST, BODY_MAP_FIRST,
+        BODY_BAND_FIRST, BODY_MAP_BANDS, BODY_REGISTERS };
+    sixel_body_gpu_params_t p;
+    sixel_body_gpu_emit_params_t emit;
+    id<MTLBlitCommandEncoder> blit;
+    id<MTLComputeCommandEncoder> encoder;
+    id<MTLBuffer> mask;
+    size_t lengths[BODY_SLOTS];
+    size_t pixels, pairs, map_bound, byte_bound, gap_bound, t;
+    unsigned int i;
+
+    if (!width || !height || width > 2048u || height > 2048u ||
+            width * height > 1024u * 1024u ||
+            indices.device != (__bridge id<MTLDevice>)context->device)
+        return SIXEL_FALSE;
+    p = (sixel_body_gpu_params_t){width, height, width, height, 0, 0,
+        SIXEL_PALETTE_MAX, -1, (width + 31u) / 32u, (height + 5u) / 6u,
+        0, 0};
+    emit = (sixel_body_gpu_emit_params_t){width, p.words, p.ncolors,
+        p.bands, 1u, limited != 0, 0u, context->group_limit};
+    pixels = (size_t)width * height;
+    pairs = (size_t)p.bands * p.ncolors;
+    /* Every span contains a painted column, and joining a gap adds at
+     * most nine empty columns per additional painted column. */
+    map_bound = 10u * pixels;
+    gap_bound = limited ? 5u * (width / 255u) + 2u : 2u;
+    for (t = width; t > 0; t /= 10u)
+        ++gap_bound;
+    byte_bound = p.bands + map_bound + pixels * (5u + gap_bound) +
+        18u * p.ncolors;
+    memcpy(lengths, (size_t[BODY_SLOTS]){
+        [BODY_MASK] = 16u,
+        [BODY_OCCUPANCY] = pairs * p.words * 4u,
+        [BODY_COUNTS] = pairs * 4u,
+        [BODY_WIDTHS] = pairs * 4u,
+        [BODY_NODE_FIRST] = pairs * 4u,
+        [BODY_MAP_FIRST] = pairs * 4u,
+        [BODY_NODES] = pixels * sizeof(sixel_body_gpu_node_t),
+        [BODY_NODE_BAND] = pixels * 4u,
+        [BODY_MAP] = map_bound,
+        [BODY_FIRST_SEEN] = pairs * 4u,
+        [BODY_BAND_FIRST] = (p.bands + 1u) * 4u,
+        [BODY_LENGTHS] = pixels * 4u,
+        [BODY_REGISTERS] = p.ncolors * 4u,
+        [BODY_COLUMNS] = p.bands * (2u * width + 1u) * 4u,
+        [BODY_BITS] = p.bands * p.words * 4u,
+        [BODY_SORTED] = pixels * 4u,
+        [BODY_ENTRIES] = pixels * 16u,
+        [BODY_BAND_SIZE] = p.bands * 4u,
+        [BODY_BAND_BYTES] = (p.bands + 1u) * 4u,
+        [BODY_BYTES] = byte_bound,
+        [BODY_KEYS] = (size_t)p.bands * emit.group_limit * 8u,
+        [BODY_KEY_SLOTS] = (size_t)p.bands * emit.group_limit * 2u,
+        [BODY_MAP_BANDS] = p.bands * 4u,
+        [BODY_SHAPE] = sizeof(p),
+        [BODY_EMIT_PARAMS] = sizeof(emit),
+        [BODY_GRID] = sizeof(MTLDispatchThreadgroupsIndirectArguments),
+        [BODY_BYTE_COUNT] = 4u
+    }, sizeof(lengths));
+    if (emit.group_limit == 0u)
+        lengths[BODY_KEYS] = lengths[BODY_KEY_SLOTS] = 16u;
+    for (i = BODY_MASK; i < BODY_SLOTS; ++i) {
+        if (sixel_body_gpu_buffer(context, i, lengths[i]) == nil)
+            return SIXEL_BAD_ALLOCATION;
+    }
+    mask = (__bridge id<MTLBuffer>)context->buffers[BODY_MASK];
+    blit = [command blitCommandEncoder];
+    if (blit == nil)
+        return SIXEL_RUNTIME_ERROR;
+    [blit fillBuffer:(__bridge id<MTLBuffer>)context->buffers[BODY_OCCUPANCY]
+        range:NSMakeRange(0, lengths[BODY_OCCUPANCY]) value:0];
+    [blit endEncoding];
+    encoder = [command computeCommandEncoder];
+    if (encoder == nil)
+        return SIXEL_RUNTIME_ERROR;
+    sixel_body_metal_classify(encoder, context, &p, indices, mask);
+    sixel_body_gpu_encode_spans(encoder, context, &p, 0u, indices, mask);
+
+    sixel_body_metal_bind(encoder, context, BODY_RESIDENT_LOCAL, local, 6);
+    [encoder setBytes:&p length:sizeof(p) atIndex:6];
+    [encoder dispatchThreads:MTLSizeMake(p.bands, 1, 1)
+        threadsPerThreadgroup:MTLSizeMake(32, 1, 1)];
+    sixel_body_metal_bind(encoder, context, BODY_RESIDENT_PREFIX, prefix, 5);
+    [encoder setBytes:&p length:sizeof(p) atIndex:5];
+    [encoder setBytes:&emit length:sizeof(emit) atIndex:6];
+    [encoder dispatchThreads:MTLSizeMake(1, 1, 1)
+        threadsPerThreadgroup:MTLSizeMake(1, 1, 1)];
+    sixel_body_metal_bind(encoder, context, BODY_RESIDENT_OFFSETS, offsets, 5);
+    [encoder setBytes:&p length:sizeof(p) atIndex:5];
+    [encoder dispatchThreads:MTLSizeMake(pairs, 1, 1)
+        threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
+    sixel_body_gpu_encode_spans(encoder, context, &p, 1u, indices, mask);
+    [encoder endEncoding];
+
+    encoder = [command computeCommandEncoder];
+    if (encoder == nil)
+        return SIXEL_RUNTIME_ERROR;
+    sixel_body_gpu_encode_map(encoder, context, &p, indices, mask);
+    sixel_body_gpu_encode_emit(encoder, context, &emit, palette);
+    [encoder endEncoding];
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_body_metal_copy(sixel_body_gpu_t *context, unsigned char **bytes,
+                      int *size)
+{
+    uint32_t count;
+    id<MTLBuffer> data;
+
+    count = *(uint32_t const *)[(__bridge id<MTLBuffer>)
+        context->buffers[BODY_BYTE_COUNT] contents];
+    data = (__bridge id<MTLBuffer>)context->buffers[BODY_BYTES];
+    if (count == 0 || count > INT_MAX || count > data.length)
+        return SIXEL_FALSE;
+    *bytes = malloc(count);
+    if (*bytes == NULL)
+        return SIXEL_BAD_ALLOCATION;
+    memcpy(*bytes, data.contents, count);
+    *size = (int)count;
+    return SIXEL_OK;
+}
+
 #endif /* HAVE_METAL */

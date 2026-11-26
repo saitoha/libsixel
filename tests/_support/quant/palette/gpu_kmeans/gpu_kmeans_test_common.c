@@ -57,7 +57,7 @@ test_resident_playback(int heckbert, int ward)
         char const *value;
     } const options[] = {
         { SIXEL_OPTFLAG_GPU_POLICY, "force" },
-        /* Keep body composition on the CPU when counting palette submits. */
+        /* Keep the output schedule identical for direct and queued calls. */
         { SIXEL_OPTFLAG_THREADING_POLICY, "greedy:global_budget=1" },
         { SIXEL_OPTFLAG_PRECISION_POLICY, "8bit" },
         { SIXEL_OPTFLAG_SAMPLING_POLICY, "adaptive-grid:solid=off" },

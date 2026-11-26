@@ -244,6 +244,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
 	$(srcdir)/retained-plane-gpu.c $(srcdir)/retained-plane-gpu.h \
 	$(srcdir)/gpu-runtime-metal.h $(srcdir)/encoder-body-gpu.h \
+	$(srcdir)/encoder-body-gpu-metal.h \
 	$(srcdir)/gpu-runtime-vulkan.h $(srcdir)/gpu-compute-vulkan.h \
 	$(srcdir)/gpu-palette-vulkan.h $(srcdir)/retained-plane-rows.c \
 	$(srcdir)/retained-plane-rows.h \
@@ -1772,6 +1773,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-metal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-body-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-body-gpu-metal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-compute-vulkan.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette-vulkan.h \

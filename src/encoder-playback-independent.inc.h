@@ -474,7 +474,8 @@ sixel_playback_independent_resolve(void *context)
             r->slot.status = sixel_encode_dag_node_dither_plan(&r->job.context);
             if (r->slot.status == SIXEL_OK)
                 r->slot.status = sixel_encode_dag_node_output(&r->job.context);
-            if (r->slot.status == SIXEL_OK && r->image.image == NULL)
+            if (r->slot.status == SIXEL_OK && r->image.image == NULL &&
+                    r->image.serialized == NULL)
                 r->slot.status = SIXEL_FEATURE_ERROR;
             if (r->slot.status == SIXEL_OK) {
                 sixel_encoder_frame_job_publish(encoder);
@@ -631,6 +632,7 @@ sixel_playback_independent_encode(void *context)
         }
         c->packet = NULL;
         sixel_indexed_frame_unref(r->image.image);
+        free(r->image.serialized);
         memset(&r->image, 0, sizeof(r->image));
         sixel_playback_independent_credit(c, 1, 0);
         r->encoded_at = sixel_timer_monotonic();

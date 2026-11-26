@@ -399,3 +399,112 @@ kernel void body_write(device const uint4 *nodes [[buffer(0)]],
     o = emit_run(out, o, (uchar)('?' + v), f - i, p.limited); i = f;
   }
 }
+
+/* Scan each band's register counts independently. The next pass combines
+ * the band totals without moving span counts back to the host. */
+/* Accel: BODY-RESIDENT metal */
+kernel void body_resident_local(device const uint *counts [[buffer(0)]],
+    device const uint *widths [[buffer(1)]],
+    device uint *node_first [[buffer(2)]], device uint *map_first [[buffer(3)]],
+    device uint *bands [[buffer(4)]], device uint *maps [[buffer(5)]],
+    constant body_params &p [[buffer(6)]], uint b [[thread_position_in_grid]])
+{
+    if (b >= p.bands) return;
+    uint nodes = 0, bytes = 0;
+    for (uint i = b * p.ncolors; i < (b + 1) * p.ncolors; ++i) {
+        node_first[i] = nodes;
+        map_first[i] = bytes;
+        nodes += counts[i];
+        bytes += widths[i];
+    }
+    bands[b] = nodes;
+    maps[b] = bytes;
+}
+
+/* Accel: BODY-RESIDENT metal */
+kernel void body_resident_prefix(device uint *bands [[buffer(0)]],
+    device uint *maps [[buffer(1)]], device body_params &p [[buffer(2)]],
+    device emit_params &e [[buffer(3)]],
+    device packed_uint3 &grid [[buffer(4)]],
+    constant body_params &shape [[buffer(5)]],
+    constant emit_params &options [[buffer(6)]])
+{
+    uint nodes = 0, bytes = 0;
+    for (uint b = 0; b < shape.bands; ++b) {
+        uint n = bands[b], m = maps[b];
+        bands[b] = nodes;
+        maps[b] = bytes;
+        nodes += n;
+        bytes += m;
+    }
+    bands[shape.bands] = nodes;
+    p = shape;
+    e = options;
+    p.nodes = e.nodes = nodes;
+    // Threads per group for the map, length, and spelling passes.
+    grid = packed_uint3(max(1u, (nodes + 63u) / 64u), 1u, 1u);
+}
+
+/* Accel: BODY-RESIDENT metal */
+kernel void body_resident_offsets(device uint *node_first [[buffer(0)]],
+    device uint *map_first [[buffer(1)]],
+    device const uint *bands [[buffer(2)]],
+    device const uint *maps [[buffer(3)]],
+    device uint *registers [[buffer(4)]], constant body_params &p [[buffer(5)]],
+    uint i [[thread_position_in_grid]])
+{
+    if (i >= p.bands * p.ncolors) return;
+    uint b = i / p.ncolors;
+    node_first[i] += bands[b];
+    map_first[i] += maps[b];
+    if (i < p.ncolors) registers[i] = i;
+}
+
+/* Put the legacy RGB definitions before the spelled bands. The only
+ * host-visible metadata is the final byte count (zero on a failed solve). */
+/* Accel: BODY-RESIDENT metal */
+kernel void body_resident_bases(device const uint *band_size [[buffer(0)]],
+    device uint *band_bytes [[buffer(1)]], device uchar *out [[buffer(2)]],
+    device const packed_uchar3 *palette [[buffer(3)]],
+    device const uint &colors [[buffer(4)]],
+    device const uint &bad [[buffer(5)]],
+    device uint &size [[buffer(6)]], constant emit_params &p [[buffer(7)]],
+    device const uint *first [[buffer(8)]],
+    device const uint4 *nodes [[buffer(9)]],
+    device uint4 *entries [[buffer(10)]])
+{
+    uint total = 0, active = 0xffffffffu;
+    bool valid = !bad && colors > 0 && colors <= p.ncolors;
+    if (valid) {
+        for (uint i = 0; i < colors; ++i) {
+            out[total++] = '#';
+            total = emit_number(out, total, i);
+            out[total++] = ';';
+            out[total++] = '2';
+            for (uint c = 0; c < 3; ++c) {
+                out[total++] = ';';
+                uint value = (uint(palette[i][c]) * 100 + 127) / 255;
+                total = emit_number(out, total, value);
+            }
+        }
+    }
+    for (uint b = 0; b < p.bands; ++b) {
+        uint start = first[b], end = first[b + 1u], trim = 0u;
+        if (start < end) {
+            uint reg = nodes[entries[start].x].x;
+            if (reg == active) {
+                // The serial writer keeps its active register across '-'.
+                // Move the band base back, preserving its leading separator
+                // and the first span's start but shifting subsequent spans.
+                trim = 1u + emit_digits(reg);
+                entries[start].y += trim;
+                entries[start].w &= ~2u;
+            }
+            active = nodes[entries[end - 1u].x].x;
+        }
+        band_bytes[b] = total - trim;
+        if (b > 0) out[total] = '-';
+        total += band_size[b] - trim;
+    }
+    size = valid ? total : 0;
+}

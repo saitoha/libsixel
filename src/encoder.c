@@ -5288,6 +5288,7 @@ typedef struct sixel_encode_dag_context {
     sixel_palette_job_failure_stage_t palette_job_failure_stage;
     SIXELSTATUS palette_job_failure_status;
     int resident_indexed;
+    sixel_output_resolved_t resident_body;
     int palette_ready;
     sixel_encoding_planner_t *planner;
     int clip_active;
@@ -5477,6 +5478,9 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
 {
     sixel_encoder_t *encoder;
     sixel_palette_resident_request_t request;
+#if defined(HAVE_METAL)
+    sixel_palette_resident_body_t body;
+#endif
     sixel_palette_frame_state_t state;
     sixel_palette_quantizer_resolver_input_t quantizer_input;
     sixel_palette_quantizer_selection_t quantizer;
@@ -5505,6 +5509,10 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
 
     encoder = context->encoder;
     merge_mode = sixel_resolve_final_merge_mode(encoder->final_merge_mode);
+#if !defined(HAVE_METAL)
+    if (merge_mode == SIXEL_FINAL_MERGE_WARD)
+        return SIXEL_FALSE;
+#endif
     if (context->latest || context->palette_source != NULL ||
             context->clip_active ||
             context->palette.sampling.phase != SIXEL_PALETTE_POLICY_RESOLVED ||
@@ -5768,6 +5776,43 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
     if (status != SIXEL_OK)
         goto end;
 
+#if defined(HAVE_METAL)
+    /* The legacy RGB body consumes the same private indexed buffers as
+     * the lookup. Other wire modes retain the indexed output entry point. */
+    if (!context->multiframe && context->delay <= 0 &&
+            !encoder->penetrate_multiplexer &&
+            encoder->transparent_offset_left == 0 &&
+            encoder->transparent_offset_top == 0 &&
+            encoder->palette_type != SIXEL_PALETTETYPE_HLS &&
+            encoder->encode_policy != SIXEL_ENCODEPOLICY_SIZE &&
+            width <= 2048 && height <= 2048 && count <= 1024u * 1024u) {
+        memset(&body, 0, sizeof(body));
+        request.body_gri_limit = encoder->has_gri_arg_limit;
+        status = sixel_palette_metal_resident(&request,
+            sixel_frame_get_pixels(context->frame), NULL, NULL, NULL, &body);
+        if (status == SIXEL_OK) {
+            context->resident_body.serialized = body.bytes;
+            context->resident_body.serialized_size = body.size;
+            context->resident_body.header.width = width;
+            context->resident_body.header.height = height;
+            context->resident_body.header.use_raster_attributes = 1;
+            colors = request.colors;
+            sixel_trace_topic_message("palette_contract",
+                "LSXBODYRESIDENT1|backend=metal|bytes=%d", body.size);
+            if (sixel_encoder_is_cancel_requested(encoder)) {
+                status = SIXEL_INTERRUPTED;
+                goto end;
+            }
+            goto publish;
+        }
+        if (status != SIXEL_FALSE) {
+            sixel_helper_set_additional_message(
+                "Metal resident encoder failed to produce SIXEL bytes.");
+            goto end;
+        }
+    }
+
+#endif
     pixels = sixel_allocator_malloc(encoder->allocator, count);
     palette = sixel_allocator_malloc(encoder->allocator, 3u*256u);
     status = SIXEL_BAD_ALLOCATION;
@@ -5775,10 +5820,12 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
         goto end;
 #if defined(HAVE_METAL)
     status = sixel_palette_metal_resident(&request,
+        sixel_frame_get_pixels(context->frame), pixels, palette, &colors,
+        NULL);
 #else
     status = sixel_palette_vulkan_resident(&request,
-#endif
         sixel_frame_get_pixels(context->frame), pixels, palette, &colors);
+#endif
     if (status != SIXEL_OK) {
         if (status != SIXEL_FALSE)
             sixel_helper_set_additional_message(
@@ -5821,11 +5868,14 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
         goto end;
     context->frame = indexed;
     context->dither = dither;
-    context->palette = state;
     context->current_pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    context->resident_indexed = 1;
     indexed = NULL;
     dither = NULL;
+#if defined(HAVE_METAL)
+publish:
+#endif
+    context->palette = state;
+    context->resident_indexed = 1;
     if (request.ward_colors)
         sixel_trace_topic_message("palette_contract",
             "LSXWARDRESIDENT1|backend=%s|provisional=%u|target=%u|lloyd=%u",
@@ -6805,7 +6855,10 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         }
     }
 
-    if (context->encoder->fuse_macro) {
+    if (context->resident_body.serialized != NULL) {
+        status = sixel_output_resident_body(context->output,
+            &context->resident_body, context->deferred.capture);
+    } else if (context->encoder->fuse_macro) {
         status = sixel_encoder_output_with_macro(context->frame,
                                                  context->dither,
                                                  context->output,
@@ -12711,6 +12764,8 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
         job->context.own_palette = NULL;
     }
     sixel_output_dispose_deferred(&job->context.deferred);
+    free(job->context.resident_body.serialized);
+    job->context.resident_body.serialized = NULL;
     if (job->context.dither != NULL &&
             job->context.dither->pipeline_logger == job->context.job_logger)
         job->context.dither->pipeline_logger = NULL;

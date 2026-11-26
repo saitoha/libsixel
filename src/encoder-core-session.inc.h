@@ -463,6 +463,33 @@ sixel_output_is_resolve_only(sixel_output_t const *output)
         output->deferred->capture != NULL;
 }
 
+static SIXELSTATUS
+sixel_output_emit_serialized(sixel_output_t *output,
+    sixel_output_resolved_t const *resolved)
+{
+    sixel_writer_t *writer;
+    int offset, length;
+    SIXELSTATUS status;
+
+    writer = output->writer;
+    status = writer->vtbl->begin_image(writer, &resolved->header, NULL);
+    if (status != SIXEL_OK)
+        return status;
+    /* Keep the existing packet-size bound for callback-backed streams. */
+    for (offset = 0; offset < resolved->serialized_size; offset += length) {
+        length = resolved->serialized_size - offset;
+        if (length > SIXEL_OUTPUT_PACKET_SIZE)
+            length = SIXEL_OUTPUT_PACKET_SIZE;
+        status = writer->vtbl->write(writer,
+            (char const *)resolved->serialized + offset, length);
+        if (status != SIXEL_OK) {
+            (void)writer->vtbl->abort_image(writer);
+            return status;
+        }
+    }
+    return writer->vtbl->end_image(writer, NULL);
+}
+
 /* E owns only this complete image and its private packet writer. Passing a
  * null identity avoids allocating an acceptance receipt that R never uses. */
 SIXELSTATUS
@@ -473,7 +500,10 @@ sixel_output_encode_resolved(sixel_output_t *output,
     SIXELSTATUS status;
     int opened;
 
-    if (output == NULL || resolved == NULL || resolved->image == NULL ||
+    if (output == NULL || resolved == NULL) return SIXEL_BAD_ARGUMENT;
+    if (resolved->serialized != NULL && resolved->serialized_size > 0)
+        return sixel_output_emit_serialized(output, resolved);
+    if (resolved->image == NULL ||
             sixel_indexed_frame_get_state(resolved->image) !=
                 SIXEL_INDEXED_COMPLETE) return SIXEL_BAD_ARGUMENT;
     opened = 0;
@@ -508,6 +538,26 @@ sixel_output_encode_resolved(sixel_output_t *output,
 end:
     if (status != SIXEL_OK) (void)output->core->vtbl->abort(output->core);
     if (opened) (void)output->writer->vtbl->abort_image(output->writer);
+    return status;
+}
+
+SIXELSTATUS
+sixel_output_resident_body(sixel_output_t *output,
+    sixel_output_resolved_t *body, sixel_output_resolved_t *capture)
+{
+    SIXELSTATUS status;
+
+    body->header.parameter_count = output->require_keep_header ? 2 : 0;
+    body->header.parameter1 = output->require_keep_header;
+    status = SIXEL_OK;
+    if (capture != NULL) {
+        *capture = *body;
+        body->serialized = NULL;
+    } else {
+        status = sixel_output_emit_serialized(output, body);
+    }
+    if (status == SIXEL_OK)
+        ++output->indexed_count;
     return status;
 }
 

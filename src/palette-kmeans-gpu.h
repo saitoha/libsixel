@@ -82,14 +82,21 @@ typedef struct sixel_palette_resident_request {
     unsigned int snap, cover, soft, grow;
     unsigned int ward_colors, ward_iterations, representative;
     double snap_rate;
+    int body_gri_limit;
 } sixel_palette_resident_request_t;
+
+typedef struct sixel_palette_resident_body {
+    unsigned char *bytes;
+    int size;
+} sixel_palette_resident_body_t;
 
 /* A single GPU submission owns every intermediate. Caller storage is
  * published only after a successful indexed solve. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
-    unsigned char *palette, unsigned int *colors);
+    unsigned char *palette, unsigned int *colors,
+    sixel_palette_resident_body_t *body);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_vulkan_resident(sixel_palette_resident_request_t const *request,
     unsigned char const *rgb, unsigned char *indices,
