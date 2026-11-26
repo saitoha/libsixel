@@ -401,7 +401,7 @@ destination_stages(int kind)
         }
         if (SIXEL_FAILED(sixel_palette_snap_begin(
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                SIXEL_QUANTIZE_MODEL_KMEANS, allocator)) ||
+                SIXEL_QUANTIZE_MODEL_KMEANS, allocator, 0)) ||
                 SIXEL_FAILED(sixel_palette_snap_stage_entries(entries, 1,
                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                     (enum sixel_palette_snap_stage)stage))) {

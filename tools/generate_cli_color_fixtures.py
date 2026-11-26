@@ -472,6 +472,23 @@ def icc_register_cases():
     return cases, fixtures
 
 
+def narrow_cluster_profile(profile):
+    """Contract the linear P3 primaries towards white at unchanged TRCs."""
+    blob = bytearray(profile)
+    offsets = {}
+    for index in range(struct.unpack_from('>I', blob, 128)[0]):
+        key, offset, size = struct.unpack_from('>4sII', blob, 132 + 12 * index)
+        offsets[key] = offset
+    primaries = [offsets[key] + 8 for key in (b'rXYZ', b'gXYZ', b'bXYZ')]
+    columns = [struct.unpack_from('>3i', blob, offset) for offset in primaries]
+    white = list(map(sum, zip(*columns)))
+    for offset, column in zip(primaries, columns):
+        # A half-strength primary plus half the neutral, in stored units.
+        struct.pack_into('>3i', blob, offset, *((3*c+w+3)//6
+                                               for c, w in zip(column, white)))
+    return bytes(blob)
+
+
 def build(inputs):
     png = json.loads(inputs['png-samples.json'])
     png_source = next(x for x in png['pngs']
@@ -654,7 +671,8 @@ def build(inputs):
         palette_header += '};\n'
     export = next(c['export_srgb8'] for c in cases if c['name'] == 'icc-heckbert-linear')
     pal = 'JASC-PAL\n0100\n2\n' + ''.join('%d %d %d\n' % tuple(row) for row in export)
-    return {'cli-color-wire.h': header.encode(),
+    return {'narrow-p3-cluster.icc': narrow_cluster_profile(inputs['display-p3.icc']),
+            'cli-color-wire.h': header.encode(),
             'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode(),
             'p3-palette.h': palette_header.encode(),
             'icc-heckbert-srgb8.pal': pal.encode(), **mixed_fixtures,

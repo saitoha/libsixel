@@ -5729,7 +5729,8 @@ batch_palette_mapfile_application_0001 = \
     palette/mapfile-application/0010_map_gamma_byte.c \
     palette/mapfile-application/0011_map_structured_byte.c \
     palette/mapfile-application/0012_map_clustering_reuse.c \
-    palette/mapfile-application/0013_map_animation_cache.c
+    palette/mapfile-application/0013_map_animation_cache.c \
+    palette/mapfile-application/0112_structured_map_icc_transition.c
 
 batch_palette_mapfile_application_0014 = \
     palette/mapfile-application/0014_map_palette_gamma.c \

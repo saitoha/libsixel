@@ -1637,6 +1637,7 @@ int test_map_cluster_0010(int argc, char **argv);
 int test_map_cluster_0011(int argc, char **argv);
 int test_map_cluster_0012(int argc, char **argv);
 int test_map_cluster_0013(int argc, char **argv);
+int test_map_cluster_0112(int argc, char **argv);
 int test_cluster_precision_0001(int argc, char **argv);
 int test_cluster_precision_0002(int argc, char **argv);
 int test_cluster_precision_0003(int argc, char **argv);
@@ -8462,6 +8463,8 @@ static test_entry_t const test_entries[] = {
       test_map_cluster_0012 },
     { "palette/map_cluster/0013_map_animation_cache",
       test_map_cluster_0013 },
+    { "palette/map_cluster/0112_structured_map_icc_transition",
+      test_map_cluster_0112 },
     { "palette/cluster_precision/0001_linear_mean",
       test_cluster_precision_0001 },
     { "palette/cluster_precision/0002_oklab_mean",

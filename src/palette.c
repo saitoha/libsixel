@@ -1225,11 +1225,38 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_palette_convert_icc_rgbf32(float *pixels, size_t count,
+    sixel_color_def_t const *source, sixel_color_def_t const *destination)
+{
+    double input[3];
+    double output[3];
+    size_t i;
+    int c;
+
+    for (i = 0; i < count; ++i, pixels += 3) {
+        for (c = 0; c < 3; ++c) {
+            input[c] = pixels[c];
+        }
+        if (!sixel_cdef_relative(source, destination, input, output)) {
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (fabs(output[c]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+            pixels[c] = (float)output[c];
+        }
+    }
+    return SIXEL_OK;
+}
+
 /* Publish cover in both palette views only after the native repair and
  * all required allocations have succeeded. The float view is authoritative. */
 static SIXELSTATUS
 sixel_palette_repair_native(sixel_palette_t *palette,
                             sixel_palette_generate_request_t const *request,
+                            sixel_palette_build_attempt_t const *attempt,
                             unsigned int *ncolors,
                             unsigned int capacity,
                             sixel_allocator_t *work_allocator)
@@ -1237,6 +1264,7 @@ sixel_palette_repair_native(sixel_palette_t *palette,
     sixel_palette_storage_t *storage;
     SIXELSTATUS status;
     float repaired[SIXEL_PALETTE_MAX * 3];
+    float const *samples;
     unsigned int repaired_count;
     unsigned int index;
     unsigned int channel;
@@ -1252,9 +1280,22 @@ sixel_palette_repair_native(sixel_palette_t *palette,
     }
     memcpy(repaired, storage->entries_float32,
         *ncolors * 3u * sizeof(float));
+    samples = request->data;
+    if (attempt != NULL && attempt->cover_icc != NULL) {
+        /* The solver uses encoded ICC RGB. Cover operates in sRGB and
+         * inserts colors which may be outside that ICC's device gamut. */
+        status = sixel_palette_convert_icc_rgbf32(repaired, *ncolors,
+            attempt->cover_icc, attempt->cover_linear);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (attempt->cover_samples != NULL) {
+            samples = attempt->cover_samples;
+        }
+    }
     repaired_count = *ncolors;
     status = sixel_palette_cover_float(repaired, &repaired_count,
-        request->data, request->length, request->pixelformat,
+        samples, request->length, request->pixelformat,
         sixel_palette_cover_policy(), sixel_palette_cover_mode(),
         sixel_palette_cover_grow_enabled(),
         capacity,
@@ -1382,7 +1423,8 @@ sixel_palette_generate_internal(
     storage->build_context = &context;
 
     status = sixel_palette_snap_begin(request->pixelformat,
-        context.quantize_model, work_allocator);
+        context.quantize_model, work_allocator,
+        context.attempt != NULL && context.attempt->cover_icc != NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1538,8 +1580,8 @@ success:
          * retain their coordinates unless the caller explicitly selects
          * application preparation below. Never rebuild this typed palette
          * from the RGB101 compatibility cache. */
-        status = sixel_palette_repair_native(palette, request, &ncolors,
-            color_capacity, work_allocator);
+        status = sixel_palette_repair_native(palette, request, context.attempt,
+            &ncolors, color_capacity, work_allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

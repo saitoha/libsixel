@@ -395,9 +395,10 @@ sixel_palette_snap_destination_active(void)
 
 SIXELSTATUS
 sixel_palette_snap_begin(int pixelformat, int quantizer,
-                          sixel_allocator_t *allocator)
+                          sixel_allocator_t *allocator, int cover_linear)
 {
     sixel_color_def_t *destination;
+    sixel_color_def_t const *cluster;
     char const *name;
 
     if (g_snap_grid != NULL) {
@@ -420,9 +421,16 @@ sixel_palette_snap_begin(int pixelformat, int quantizer,
         g_snap_status = SIXEL_BAD_ALLOCATION;
         return g_snap_status;
     }
+    /* The apply-only stage can receive a linear palette after ICC
+     * cover. Its grid must use the same coordinates as that palette. */
+    cluster = g_snap_cluster;
+    if (cover_linear && sixel_palette_should_snap(
+            SIXEL_PALETTE_SNAP_STAGE_APPLY)) {
+        cluster = NULL;
+    }
     g_snap_status = sixel_snap_grid_new_cluster(&g_snap_grid,
         g_snap_grid_policy, sixel_pixelformat_get_colorspace(pixelformat),
-        destination, g_snap_cluster, allocator);
+        destination, cluster, allocator);
     sixel_cdef_free(destination);
     return g_snap_status;
 }

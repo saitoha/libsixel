@@ -152,7 +152,7 @@ SIXEL_INTERNAL_API int
 sixel_palette_snap_destination_active(void);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_snap_begin(int pixelformat, int quantizer,
-                          sixel_allocator_t *allocator);
+                          sixel_allocator_t *allocator, int cover_linear);
 /* Merge/medoid solvers use nominal byte-scaled doubles, not typed units. */
 SIXEL_INTERNAL_API void
 sixel_palette_snap_scaled_triple(double *components, int pixelformat,

@@ -70,6 +70,13 @@ typedef struct sixel_palette_telemetry {
     int merge_mode;
 } sixel_palette_telemetry_t;
 
+/* Both construction buffers are private to the attempt and discarded
+ * if an invalid coordinate prevents completing their conversion. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_convert_icc_rgbf32(float *pixels, size_t count,
+    struct sixel_color_def const *source,
+    struct sixel_color_def const *destination);
+
 /* @classid quant/palette */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_factory_new(sixel_allocator_t *allocator, void **object);

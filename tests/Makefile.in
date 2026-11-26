@@ -9329,6 +9329,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_MAP_STRUCTURED_BYTE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_MAP_CLUSTERING_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_MAP_ANIMATION_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0112_STRUCTURED_MAP_ICC_TRANSITION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLUSTER_PRECISION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LINEAR_MEAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_OKLAB_MEAN \
@@ -19638,7 +19639,8 @@ batch_palette_mapfile_application_0001 = \
     palette/mapfile-application/0010_map_gamma_byte.c \
     palette/mapfile-application/0011_map_structured_byte.c \
     palette/mapfile-application/0012_map_clustering_reuse.c \
-    palette/mapfile-application/0013_map_animation_cache.c
+    palette/mapfile-application/0013_map_animation_cache.c \
+    palette/mapfile-application/0112_structured_map_icc_transition.c
 
 batch_palette_mapfile_application_0014 = \
     palette/mapfile-application/0014_map_palette_gamma.c \

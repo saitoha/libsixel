@@ -211,7 +211,7 @@ p3_grid_seed(int pca)
     if (SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
             NULL)) && SIXEL_SUCCEEDED(sixel_palette_snap_begin(
                 SIXEL_PIXELFORMAT_OKLABFLOAT32,
-                SIXEL_QUANTIZE_MODEL_KMEANS, allocator)) &&
+                SIXEL_QUANTIZE_MODEL_KMEANS, allocator, 0)) &&
             SIXEL_SUCCEEDED(sixel_kmeans_choose_initial_centroids(center, 1,
                 samples, weights, 2, 1, SIXEL_PIXELFORMAT_OKLABFLOAT32,
                 distances, allocator, pca ? SIXEL_PALETTE_KMEANS_INIT_PCA
@@ -255,7 +255,7 @@ p3_grid_scaled(int zero_origin)
             NULL)) && SIXEL_SUCCEEDED(sixel_palette_snap_begin(
                 SIXEL_PIXELFORMAT_CIELABFLOAT32, zero_origin
                     ? SIXEL_QUANTIZE_MODEL_MEDIANCUT
-                    : SIXEL_QUANTIZE_MODEL_KMEANS, allocator))) {
+                    : SIXEL_QUANTIZE_MODEL_KMEANS, allocator, 0))) {
         for (channel = 0; channel < 3; ++channel) {
             minimum = channel == 0 || zero_origin ? 0.0 : -1.5;
             range = channel == 0 ? 1.0 : 3.0;

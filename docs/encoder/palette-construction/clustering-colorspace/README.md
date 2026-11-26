@@ -36,9 +36,9 @@ This separation is why the three color-space controls are not aliases:
 - `-W` selects the working space used when the palette is applied; and
 - `-U` selects the output conversion policy.
 
-Fixed built-in palettes, mapfile palettes, monochrome output, already indexed
+Fixed built-in palettes, structured palette files, monochrome output, already indexed
 frames that can be used directly, and other paths that bypass palette
-construction do not acquire new clustering behavior from `-X`. The current
+construction do not acquire new clustering behavior from `-X`. [Float image maps](../external-palettes.md#selected-ordinary-srgb-output) apply `-X` when constructing their palette. The current
 alpha-key preservation branch also keeps the frame's existing color space so
 that its reserved transparency entry remains intact.
 
