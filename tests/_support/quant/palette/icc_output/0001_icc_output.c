@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Independent wire endpoints, parsed-state atomicity and ICC ownership. */
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +13,7 @@
 #include "src/options-registry.h"
 #include "src/encoder.h"
 #include "src/encode-result.h"
+#include "src/gamut.h"
 #include "src/decoder.h"
 #include "src/dither.h"
 #include "src/palette.h"
@@ -794,6 +796,91 @@ icco_progressive_reject(char const *argument)
     return ok;
 }
 
+static uintptr_t icco_watched_mapper;
+static unsigned int icco_mapper_frees;
+
+static void
+icco_watch_free(void *object)
+{
+    if (object != NULL && (uintptr_t)object == icco_watched_mapper) {
+        ++icco_mapper_frees;
+    }
+    free(object);
+}
+
+static int
+icco_progressive_retry(char const *argument)
+{
+    static double const outside[3] = {1.4, -.2, .3};
+    float samples[6] = {1.4f, -.2f, .3f, .2f, .2f, .2f};
+    double expected[3];
+    double mapped[3];
+    sixel_progressive_config_t config;
+    sixel_allocator_t *allocator;
+    sixel_encoder_t *encoder;
+    sixel_progressive_t *context;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    sixel_gamut_t *mapper;
+    int ok;
+
+    allocator = NULL;
+    encoder = NULL;
+    context = NULL;
+    frame = NULL;
+    output = NULL;
+    ok = 0;
+    icco_watched_mapper = 0;
+    icco_mapper_frees = 0;
+    if (sixel_allocator_new(&allocator, NULL, NULL, NULL, icco_watch_free)
+                != SIXEL_OK ||
+            sixel_encoder_new(&encoder, allocator) != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'W', "linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'G', "off") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'd', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, '~', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, '_', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'Z', "delta") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'U', "gamma:gamut=local-minde")
+                != SIXEL_OK ||
+            sixel_progressive_config_init(&config, sizeof(config))
+                != SIXEL_OK ||
+            sixel_progressive_new(&context, encoder, &config, allocator)
+                != SIXEL_OK) {
+        goto end;
+    }
+    mapper = encoder->gamut_mapper;
+    if (mapper == NULL || !sixel_gamut_apply(mapper, outside, expected,
+            SIXEL_COLORSPACE_LINEAR) ||
+            memcmp(outside, expected, sizeof(expected)) == 0) {
+        goto end;
+    }
+    icco_watched_mapper = (uintptr_t)mapper;
+    icco_size = 0;
+    if (sixel_encoder_setopt(encoder, 'U', argument) != SIXEL_BAD_ARGUMENT ||
+            icco_mapper_frees != 0 || encoder->gamut_mapper != mapper ||
+            encoder->output_icc != NULL ||
+            !sixel_gamut_apply(mapper, outside, mapped, SIXEL_COLORSPACE_LINEAR)
+                || memcmp(expected, mapped, sizeof(mapped)) != 0 ||
+            sixel_output_new(&output, icco_write, NULL, allocator)
+                != SIXEL_OK ||
+            sixel_frame_new(&frame, allocator) != SIXEL_OK ||
+            sixel_frame_init_borrowed(frame, samples, 2, 1,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1) != SIXEL_OK ||
+            sixel_encoder_encode_frame(encoder, frame, output) != SIXEL_OK ||
+            icco_size == 0 || icco_mapper_frees != 0) {
+        goto end;
+    }
+    ok = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_progressive_unref(context);
+    sixel_encoder_unref(encoder);
+    sixel_allocator_unref(allocator);
+    return ok && icco_mapper_frees == 1;
+}
+
 /* Distinguish the exact legacy result (42) from a fixed target (0).
  * A decoder error or any third result is a real failure. */
 static int
@@ -969,6 +1056,9 @@ test_icc_output(int argc, char **argv)
     }
     if (strcmp(argv[1], "cache-retry") == 0) {
         return !icco_cache_retry(argv[3], mode);
+    }
+    if (strcmp(argv[1], "progressive-retry") == 0) {
+        return !icco_progressive_retry(argv[3]);
     }
     if (strcmp(argv[1], "progressive-reject") == 0) {
         return !icco_progressive_reject(argv[3]);

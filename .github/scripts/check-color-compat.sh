@@ -314,6 +314,11 @@ set -- \
     encoder/progressive-refinement/0184_output_icc_context_reject.t \
     cli/progressive/0009_output_icc_reject.t \
     cli/progressive/0010_delta_repair_output_icc_reject.t \
+    cli/progressive/0011_icc_progressive_reset_full.t \
+    cli/progressive/0012_icc_delta_repair_reset.t \
+    cli/progressive/0013_progressive_output_reset_gamma.t \
+    cli/progressive/0014_icc_environment_progressive_reset.t \
+    encoder/progressive-refinement/0185_output_icc_gamut_retry.t \
     palette/snap-destination/0003_p3_unsnapped_palette_lookup.t \
     palette/working-space/0146_cli_cluster_gamma_centroid.t \
     palette/working-space/0147_cli_cluster_linear_centroid.t \
