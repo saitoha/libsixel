@@ -8,6 +8,11 @@ status=0
 # Instrumented pipelines can require more threadgroup memory. The resulting
 # body must still match the CPU bytes when Metal selects serial ordering.
 export MTL_DEBUG_LAYER=1 MTL_SHADER_VALIDATION=1 SIXEL_TRACE_TOPIC=metal_body
+# The Intel macOS CI virtual GPU can block while creating a pipeline with
+# shader validation. Keep API validation and run the same GPU comparison.
+test -n "${SIXEL_TEST_MACOS_PRODUCT_VERSION-}" &&
+    test "${SIXEL_TEST_HOST_ARCH-}" = x86_64 &&
+    export MTL_SHADER_VALIDATION=0
 test -x /usr/bin/sample && test -z "${SIXEL_RUNTIME-}" && {
     "${TEST_RUNNER_PATH}" encoder/indexed/0184_core_gpu_body &
     runner_pid=$!
