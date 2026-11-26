@@ -346,6 +346,10 @@ set -- \
     palette/working-space/0181_icc_work_parallel_fs.t \
     palette/working-space/0182_icc_work_delta_fs.t \
     palette/working-space/0183_icc_work_fhedt_reserved_key.t \
+    palette/working-space/0184_icc_work_pipeline_fs.t \
+    palette/working-space/0185_icc_work_delta_threshold.t \
+    palette/working-space/0186_icc_work_fhedt_equivalent_profile.t \
+    palette/working-space/0187_icc_cluster_work_option_order.t \
     palette/cover/0146_hard_icc_srgb_anchors.t \
     palette/cover/0147_soft_icc_srgb_anchors.t \
     palette/cover/0148_icc_cover_apply_snap.t \
