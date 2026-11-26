@@ -4,6 +4,10 @@ set -eux
 echo '1..1'
 set -v
 
+test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
+    printf '\n%s\n' 'ok 1 # SKIP internal threads unavailable'
+    exit 0
+}
 status=0
 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/icc_output/0001_icc_output \
     delta-feedback 2 "${TOP_SRCDIR}/tests/data/color-numeric" >/dev/null || status=$?

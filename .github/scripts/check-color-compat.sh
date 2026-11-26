@@ -319,6 +319,8 @@ set -- \
     cli/progressive/0013_progressive_output_reset_gamma.t \
     cli/progressive/0014_icc_environment_progressive_reset.t \
     encoder/progressive-refinement/0185_output_icc_gamut_retry.t \
+    encoder/progressive-refinement/0186_direct_frame_output_icc.t \
+    encoder/progressive-refinement/0187_direct_bytes_output_icc.t \
     palette/output-diffusion/0132_icc_delta_working_guard.t \
     palette/output-diffusion/0133_icc_delta_hls_outside.t \
     palette/output-diffusion/0134_icc_delta_hls_staged.t \

@@ -8780,16 +8780,10 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     char message[256];
     sixel_color_def_t *linear;
 
-    if (encoder->progressive_enabled) {
-        /* The final endpoint is known here, after option overrides. */
-        if (sixel_repair_validate_output(encoder) != SIXEL_OK) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        if (encoder->working_icc != NULL) {
-            sixel_helper_set_additional_message(
-                "Progressive repair does not support ICC working coordinates.");
-            return SIXEL_BAD_ARGUMENT;
-        }
+    if (encoder->working_icc != NULL && encoder->progressive_enabled) {
+        sixel_helper_set_additional_message(
+            "Progressive repair does not support ICC working coordinates.");
+        return SIXEL_BAD_ARGUMENT;
     }
     if (encoder->output_bpc &&
             encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
@@ -19621,6 +19615,14 @@ sixel_encoder_encode_owned(
     status = sixel_presentation_validate(encoder);
     if (status != SIXEL_OK) {
         return status;
+    }
+    /* Only file presentation runs automatic repair. Check the final
+     * endpoint before opening the destination or writing a baseline. */
+    if (encoder->progressive_enabled) {
+        status = sixel_repair_validate_output(encoder);
+        if (status != SIXEL_OK) {
+            return status;
+        }
     }
     sixel_encoder_ref(encoder);
     effective_static = encoder->fstatic ||

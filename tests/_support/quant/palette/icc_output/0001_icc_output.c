@@ -986,6 +986,99 @@ end:
 }
 
 static int
+icco_direct_delta(char const *profile, char const *path)
+{
+    static unsigned char const expected[12] = {
+        255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255
+    };
+    float pixels[9];
+    sixel_encoder_t *encoder;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    unsigned char *decoded;
+    FILE *capture;
+    size_t offset;
+    int i;
+    int width;
+    int height;
+    int ok;
+
+    encoder = NULL;
+    frame = NULL;
+    output = NULL;
+    decoded = NULL;
+    capture = NULL;
+    icco_size = 0;
+    ok = 0;
+    /* The shared Decimal oracle stores the target P3 primaries in
+     * linear sRGB. These inputs must decode to the three P3 primaries. */
+    for (i = 0; i < 9; ++i) {
+        pixels[i] = (float)color_vectors[i / 3][9 + i % 3];
+    }
+    if (sixel_encoder_new(&encoder, NULL) != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'W', "linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'X', "linear") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'G', "off") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'd', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'F', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'a', "off") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, '_', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, '~', "none") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'Z', "delta:P1") != SIXEL_OK ||
+            sixel_encoder_setopt(encoder, 'U', profile) != SIXEL_OK) {
+        goto end;
+    }
+    /* Neither direct call attaches a repair context. */
+    if (path != NULL) {
+        if (sixel_encoder_setopt(encoder, 'o', path) != SIXEL_OK ||
+                sixel_encoder_encode_bytes(encoder, (unsigned char *)pixels,
+                    3, 1, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, 0)
+                    != SIXEL_OK) {
+            goto end;
+        }
+        sixel_encoder_unref(encoder);
+        encoder = NULL;
+        capture = sixel_compat_fopen(path, "rb");
+        if (capture == NULL) {
+            goto end;
+        }
+        icco_size = fread(icco_bytes, 1, sizeof(icco_bytes), capture);
+        if (ferror(capture) || icco_size == sizeof(icco_bytes)) {
+            goto end;
+        }
+    } else if (sixel_output_new(&output, icco_write, NULL, NULL) != SIXEL_OK ||
+            sixel_frame_new(&frame, NULL) != SIXEL_OK ||
+            sixel_frame_init_borrowed(frame, pixels, 3, 1,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, -1) != SIXEL_OK ||
+            sixel_encoder_encode_frame(encoder, frame, output) != SIXEL_OK) {
+        goto end;
+    }
+    for (offset = 0; offset + 1 < icco_size; ++offset) {
+        if (icco_bytes[offset] == 0x1b && icco_bytes[offset + 1] == 'P') {
+            break;
+        }
+    }
+    ok = offset + 1 < icco_size &&
+        sixel_decode_direct(icco_bytes + offset, (int)(icco_size - offset),
+            &decoded, &width, &height, NULL) == SIXEL_OK &&
+        width == 3 && height == 1 &&
+        memcmp(decoded, expected, sizeof(expected)) == 0;
+end:
+    if (!ok) {
+        fprintf(stderr, "direct ICC delta: %s\n",
+                sixel_helper_get_additional_message());
+    }
+    if (capture != NULL) {
+        fclose(capture);
+    }
+    free(decoded);
+    sixel_frame_unref(frame);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return ok;
+}
+
+static int
 icco_progressive_reject(char const *argument)
 {
     sixel_progressive_config_t config;
@@ -1260,6 +1353,10 @@ test_icc_output(int argc, char **argv)
     }
     if (strcmp(argv[1], "output-target") == 0) {
         return icco_output_target(strcmp(argv[2], "cluster") == 0, argv[3]);
+    }
+    if (strcmp(argv[1], "direct-delta") == 0) {
+        return !icco_direct_delta(argv[2],
+            strcmp(argv[3], "-") == 0 ? NULL : argv[3]);
     }
     mode = atoi(argv[2]);
     if (strcmp(argv[1], "delta-threshold") == 0) {
