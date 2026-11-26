@@ -19,15 +19,29 @@ actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     printf '\n%s\n' 'not ok 1 - ICC palette export'
     exit 0
 }
-# Compare the PAL header and both RGB8 entries independently of solver order.
-awk '{ sub(/\r$/, "") }
-    NR == FNR { expected[FNR] = $0; next }
-    FNR <= 3 && $0 != expected[FNR] { exit 1 }
-    FNR > 3 { seen[$0]++ }
-    END { if (FNR != 5 || seen[expected[4]] != 1 || seen[expected[5]] != 1) exit 1 }
-' "${TOP_SRCDIR}/tests/data/color-numeric/icc-heckbert-srgb8.pal" - <<EOF || {
-$actual
-EOF
+# Compare the same two RGB8 entries in either order.
+{
+    IFS= read -r magic
+    IFS= read -r version
+    IFS= read -r count
+    IFS= read -r first
+    IFS= read -r second
+} < "${TOP_SRCDIR}/tests/data/color-numeric/icc-heckbert-srgb8.pal" || {
+    printf '\n%s\n' 'not ok 1 - read expected sRGB8 palette'
+    exit 0
+}
+actual=$(printf '%s' "$actual" | tr -d '\015')
+cr=$(printf '\r')
+header="${magic%"$cr"}
+${version%"$cr"}
+${count%"$cr"}"
+first=${first%"$cr"}
+second=${second%"$cr"}
+test "$actual" = "$header
+$first
+$second" || test "$actual" = "$header
+$second
+$first" || {
     printf '%s\n' "$actual" >&2
     printf '\n%s\n' 'not ok 1 - exported ICC representatives differ from sRGB8'
     exit 0
