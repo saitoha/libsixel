@@ -16685,6 +16685,12 @@ sixel_encoder_setopt_owned(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    if (destination->progressive_context != NULL) {
+        status = sixel_repair_validate_output(encoder);
+        if (status != SIXEL_OK) {
+            goto end;
+        }
+    }
     status = sixel_encoder_validate_residual(encoder,
         destination->progressive_context != NULL);
     if (status != SIXEL_OK) goto end;

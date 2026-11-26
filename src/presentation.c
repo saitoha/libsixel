@@ -122,7 +122,8 @@ sixel_presentation_validate(sixel_encoder_t const *encoder)
             "output without macros, OR, offsets or multiplexer wrapping.");
         return SIXEL_BAD_ARGUMENT;
     }
-    return SIXEL_OK;
+    /* Reject unsupported repair endpoints before writing the baseline. */
+    return sixel_repair_validate_output(encoder);
 }
 
 /* Both cursor controls and image bytes use this one selected sink. Complete

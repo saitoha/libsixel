@@ -169,6 +169,17 @@ sixel_repair_config_init(sixel_repair_config_t *config, size_t size)
 }
 
 SIXELSTATUS
+sixel_repair_validate_output(sixel_encoder_t const *encoder)
+{
+    if (encoder->output_icc != NULL) {
+        sixel_helper_set_additional_message(
+            "Progressive repair does not support ICC output (-U icc).");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
 sixel_repair_context_new_owned(sixel_repair_context_t **context,
                          sixel_encoder_t *encoder,
                          sixel_repair_config_t const *config,
@@ -187,6 +198,10 @@ sixel_repair_context_new_owned(sixel_repair_context_t **context,
     status = SIXEL_BAD_ARGUMENT;
     if (!encoder->sixdelta_enabled || encoder->revision_exhausted ||
             encoder->residual_enabled || encoder->progressive_context != NULL) {
+        goto end;
+    }
+    status = sixel_repair_validate_output(encoder);
+    if (status != SIXEL_OK) {
         goto end;
     }
     if (allocator == NULL) {
