@@ -316,7 +316,12 @@ set -- \
     palette/working-space/0159_cluster_icc_wire_unsnapped.t \
     palette/working-space/0160_cluster_icc_wire_reversible.t \
     palette/working-space/0161_matrix_icc_auto_binning.t \
-    palette/working-space/0162_matrix_icc_reset_auto.t
+    palette/working-space/0162_matrix_icc_reset_auto.t \
+    palette/working-space/0163_icc_center_linear_lookup.t \
+    palette/working-space/0164_icc_medoids_linear_lookup.t \
+    palette/working-space/0165_icc_heckbert_linear_lookup.t \
+    palette/working-space/0166_icc_heckbert_linear_fs.t \
+    palette/export/0007_matrix_icc_heckbert_srgb8.t
 
 # Only the precise observed legacy behavior is an expected failure. Promote
 # each witness to the PASS group when its corresponding work is complete.
