@@ -323,6 +323,8 @@ set -- \
     palette/working-space/0164_icc_medoids_linear_lookup.t \
     palette/working-space/0165_icc_heckbert_linear_lookup.t \
     palette/working-space/0166_icc_heckbert_linear_fs.t \
+    palette/working-space/0167_icc_alpha_serial.t \
+    palette/working-space/0168_icc_alpha_worker.t \
     palette/cover/0146_hard_icc_srgb_anchors.t \
     palette/cover/0147_soft_icc_srgb_anchors.t \
     palette/cover/0148_icc_cover_apply_snap.t \

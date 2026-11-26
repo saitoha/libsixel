@@ -15,9 +15,9 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1 -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wlinear --snap-policy=none -aoff -dnone \
     --binning-policy=none --sampling-policy=full-frame 2>&1 <<'PNM'
 P3
-3 1
+1 1
 255
-241 168 181  88 220 201  147 61 180
+215 215 173
 PNM
 ) || {
     printf '%s\n' "$trace" >&2

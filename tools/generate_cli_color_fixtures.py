@@ -18,7 +18,7 @@ INPUTS = ('png-samples.json', 'png-p3-16-rgba.png', 'tiff-layout.json',
           'tiff-layout-rgb16-o6.tif', 'display-p3.icc', 'tiff-ycbcr.json',
           'png-p3-8-rgb.png', 'png-p3-16-rgb.png', 'png-raw-8-rgb.png',
           'icc-center-samples.ppm', 'icc-medoids-samples.ppm',
-          'icc-heckbert-samples.ppm')
+          'icc-heckbert-samples.ppm', 'icc-heckbert-fs-samples.ppm')
 
 
 def embedded_profile(blob):
@@ -137,8 +137,8 @@ def raster_owners(points, palette, taps=FS_TAPS):
 
 
 def cli_space_cases(inputs):
-    def coordinates(rgb, linear):
-        encoded = [D(component) / 255 for component in rgb]
+    def coordinates(rgb, linear, maximum=255):
+        encoded = [D(component) / maximum for component in rgb]
         if not linear:
             return encoded
         return [x / D('12.92') if x <= D('.04045') else
@@ -241,21 +241,47 @@ def cli_space_cases(inputs):
             return (byte * 100 + 127) // 255
         return int(x * 100 + D('.5'))
 
-    for mode in ('unsnapped', 'reversible'):
-        codes = [[register(x, mode) for x in center] for center in centers]
-        yield case('pnm-cluster-device-' + mode, samples, owners=owners,
-                   wire=[codes[i] for i in owners])
+    codes = [[register(x, 'reversible') for x in center] for center in centers]
+    yield case('pnm-cluster-device-reversible', samples, owners=owners,
+               wire=[codes[i] for i in owners])
 
-    # Separated warm and cyan groups keep the optimum stable when automatic
-    # binning changes point order and the solver initializes from bins.
-    samples = [[223, 31, 25], [72, 57, 29], [16, 169, 221]]
-    linear, centers, palette, wire = profile_centroids(samples)
-    owners = [nearest(rgb, palette)[0] for rgb in linear]
-    assert owners == [0, 0, 1]
-    yield case('pnm-cluster-icc-binning', samples, owners=owners,
-               wire=[wire[i] for i in owners])
+    # One center and its six axial neighbors. Changing the scoring space
+    # changes the chosen blue register even with identical ICC endpoints.
+    samples = [[215, 215, 173]]
+    center = device_rgb(coordinates(samples[0], True))
+    rounded = [register(x, 'unsnapped') for x in center]
+    candidates = [rounded]
+    for axis in range(3):
+        for step in (-1, 1):
+            candidate = rounded[:]
+            candidate[axis] += step
+            candidates.append(candidate)
 
-    for model in ('center', 'medoids', 'heckbert'):
+    def register_score(candidate, transform):
+        return squared_distance(transform(center),
+                                transform([D(v)/100 for v in candidate]))
+
+    code = min(candidates, key=lambda c: register_score(c, lambda x: x))
+    assert code != min(candidates, key=lambda c: register_score(c, linear_rgb))
+    yield case('pnm-cluster-device-unsnapped', samples, wire=[code])
+
+    # Four-bit hard binning merges these levels. Safe-tone evidence lifts
+    # that collapse before two-color clustering. The first two levels
+    # share a center, the brightest retains its own.
+    samples = [[level]*3 for level in (243, 245, 247)]
+    points = [device_rgb(coordinates(rgb, True)) for rgb in samples]
+    mean = [(x+y)/2 for x, y in zip(points[0], points[1])]
+    wire = [wire_color(linear_rgb(point)) for point in (mean, points[2])]
+    yield case('pnm-cluster-icc-binning', samples, wire=[wire[0], wire[0], wire[1]])
+
+    # The input PNG alternates two visible colors with hidden extremes.
+    visible = [[40,80,120], [191,170,100]]
+    wire = [wire_color(coordinates(rgb, True)) for rgb in visible]
+    yield dict(name='icc-cluster-alpha', source='icc-cluster-alpha.png',
+               width=4, height=1, source_width=4, scale=1, p2=1,
+               hidden=[0,1,0,1], wire=[wire[0], [0]*3, wire[1], [0]*3])
+
+    for model in ('center', 'medoids', 'heckbert', 'heckbert-fs'):
         name = 'icc-' + model + '-linear'
         filename = 'icc-' + model + '-samples.ppm'
         words = inputs[filename].split()
@@ -263,8 +289,9 @@ def cli_space_cases(inputs):
         linear = [coordinates(map(int, words[i:i + 3]), True)
                   for i in range(4, len(words), 3)]
         points = list(map(device_rgb, linear))
-        groups = solver_groups(model, points)
-        assert groups != solver_groups(model, linear)
+        solver = model.split('-')[0]
+        groups = solver_groups(solver, points)
+        assert groups != solver_groups(solver, linear)
         centers = [[sum(points[i][c] for i in group) / len(group)
                     for c in range(3)] for group in groups]
         palette = list(map(linear_rgb, centers))
@@ -277,13 +304,18 @@ def cli_space_cases(inputs):
         lookup = dict(base, name=name, owners=owners, wire=[wire[i] for i in owners])
         if model == 'heckbert':
             lookup['export_srgb8'] = [wire_color(rgb, 255) for rgb in palette]
-        yield lookup
-        if model == 'heckbert':
+        if model != 'heckbert-fs':
+            yield lookup
+        else:
             fs, margins = raster_owners(linear, palette)
             assert fs != owners
             assert fs != raster_owners(linear, palette, taps=FS_TAPS[:1])[0]
             assert fs != raster_owners(points, centers)[0]
-            yield dict(base, name=name + '-fs', owners=fs,
+            for scale in (100, 255):
+                rounded = [coordinates(wire_color(rgb, scale), True, scale)
+                           for rgb in palette]
+                assert fs != raster_owners(linear, rounded)[0]
+            yield dict(base, name='icc-heckbert-linear-fs', owners=fs,
                        fs_lookup_distance_margins=margins,
                        wire=[wire[i] for i in fs])
 
@@ -671,7 +703,15 @@ def build(inputs):
         palette_header += '};\n'
     export = next(c['export_srgb8'] for c in cases if c['name'] == 'icc-heckbert-linear')
     pal = 'JASC-PAL\n0100\n2\n' + ''.join('%d %d %d\n' % tuple(row) for row in export)
-    return {'narrow-p3-cluster.icc': narrow_cluster_profile(inputs['display-p3.icc']),
+    from generate_color_fixtures import chunk
+    alpha_png = b'\x89PNG\r\n\x1a\n' + b''.join((
+        chunk(b'IHDR', struct.pack('>IIBBBBB', 4, 1, 8, 6, 0, 0, 0)),
+        chunk(b'IDAT', zlib.compress(bytes((0, 40,80,120,255, 0,255,0,0,
+                                           191,170,100,255, 255,255,255,0)))),
+        chunk(b'IEND', b''),
+    ))
+    return {'icc-cluster-alpha.png': alpha_png,
+            'narrow-p3-cluster.icc': narrow_cluster_profile(inputs['display-p3.icc']),
             'cli-color-wire.h': header.encode(),
             'cli-color-wire.json': (json.dumps(record, indent=2) + '\n').encode(),
             'p3-palette.h': palette_header.encode(),

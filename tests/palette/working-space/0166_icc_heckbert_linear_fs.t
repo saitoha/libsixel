@@ -16,7 +16,7 @@ trace=$(SIXEL_TRACE_TOPIC=loader,palette_contract,dither_contract ${SIXEL_RUNTIM
     -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" \
     -Wlinear -aoff -dfs:scan=raster:deadzone=0 -0none \
     --binning-policy=none --sampling-policy=full-frame \
-    "${TOP_SRCDIR}/tests/data/color-numeric/icc-heckbert-samples.ppm" 2>&1) || {
+    "${TOP_SRCDIR}/tests/data/color-numeric/icc-heckbert-fs-samples.ppm" 2>&1) || {
     printf '%s\n' "$trace" >&2
     printf '\n%s\n' 'not ok 1 - heckbert ICC encode'
     exit 0
