@@ -169,6 +169,11 @@ set -- \
     encoder/pipeline/0129_encode_frame_g1_levels.t \
     encoder/pipeline/0130_encode_frame_g2_levels.t \
     encoder/pipeline/0131_encode_frame_g4_levels.t \
+    encoder/planning/0118_default_colorspace_auto.t \
+    encoder/planning/0119_reset_colorspace_auto.t \
+    encoder/planning/0120_explicit_clustering_auto_working.t \
+    encoder/planning/0121_byte_precision_auto.t \
+    encoder/planning/0122_explicit_working_auto_clustering.t \
     encoder/planning/0197_default_display_p3_pixels.t \
     encoder/planning/0198_gamma_display_p3_pixels.t \
     encoder/planning/0199_gamma_display_p3_preserve_resize.t \

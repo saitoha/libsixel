@@ -640,6 +640,7 @@ struct sixel_palette_build_request {
     uint64_t configuration_revision;
     sixel_palette_frame_state_t initial_state;
     sixel_palette_quantizer_selection_t quantizer;
+    sixel_color_geometry_t const *working;
     sixel_color_geometry_t const *clustering;
     sixel_color_def_t *clustering_icc;
     sixel_color_def_t *linear_srgb;
@@ -821,7 +822,6 @@ struct sixel_palette_build_request {
     int snap_policy_override;
     int snap_policy_timing;
     int snap_policy_timing_override;
-    int working_colorspace;
 };
 
 /* The completed builder is never applied or mutated. Its FHEDT wrapper and
@@ -1363,7 +1363,7 @@ sixel_encoder_gpu_diffusion_eligible(sixel_encoder_t const *encoder,
           encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA)) &&
         encoder->precision_requested != SIXEL_OPTION_PRECISION_FLOAT32 &&
         !encoder->prefer_float32 &&
-        encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
+        encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
         encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR;
 }
 
@@ -1757,7 +1757,7 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
             sixel_encoder_palette_model_name(encoder->quantize_model),
             sixel_encoder_palette_merge_name(encoder->final_merge_mode),
             sixel_encoder_palette_lut_name(encoder->lut_policy),
-            encoder->working_colorspace,
+            encoder->working->space,
             sixel_encoder_cluster_space(encoder),
             kmeans_seed_set,
             kmeans_seed);
@@ -1804,7 +1804,7 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
     } else {
         sixel_encoder_emit_contract_code(stderr, &first, "LUT_AUTO");
     }
-    if (encoder->working_colorspace_set != 0) {
+    if (encoder->working_override != NULL) {
         sixel_encoder_emit_contract_code(stderr, &first, "WORKING_SET");
     }
     if (encoder->clustering_override != NULL) {
@@ -3028,7 +3028,7 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
         sixel_encoder_delta_metric(encoder) == SIXEL_DELTA_METRIC_RGB241;
     diffuse = encoder->method_for_diffuse;
     if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
-            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->palette_type == SIXEL_PALETTETYPE_HLS ||
@@ -4115,7 +4115,8 @@ sixel_encoder_update_precision(sixel_encoder_t *encoder)
 {
     /* Output requirements affect the effective format, never the request. */
     encoder->prefer_float32 = encoder->precision_prefer_float32 ||
-        encoder->force_float32_colorspace ||
+        (encoder->working_override != NULL &&
+         encoder->working_override->space != SIXEL_COLORSPACE_GAMMA) ||
         encoder->gamut_mapper != NULL ||
         encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY;
 }
@@ -4143,10 +4144,10 @@ sixel_encoder_apply_precision_override(
      */
     encoder->precision_requested = mode;
     if (mode == SIXEL_OPTION_PRECISION_8BIT &&
-            !encoder->working_colorspace_set) {
+            encoder->working_override == NULL) {
         /* An encoder reused after float input must not validate against
          * that input's resolved space before the next frame is available. */
-        encoder->working_colorspace = SIXEL_COLORSPACE_GAMMA;
+        encoder->working = sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
     }
     sixel_encoder_update_precision(encoder);
 
@@ -4812,8 +4813,8 @@ sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder)
         !encoder->prefer_float32 &&
         encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
         encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
-        (!encoder->working_colorspace_set ||
-         encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA) &&
+        (encoder->working_override == NULL ||
+         encoder->working_override->space == SIXEL_COLORSPACE_GAMMA) &&
         (!encoder->clustering_override ||
          sixel_encoder_cluster_space(encoder) == SIXEL_COLORSPACE_GAMMA) &&
         (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
@@ -4825,50 +4826,55 @@ sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder)
  * query while an output worker may still be encoding the preceding frame.
  * Profile-defined RGB and SMPTE-C need conversion to linear sRGB before
  * clustering and palette lookup can use their coordinates. */
-int
-sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
-                                      sixel_frame_t const *frame)
+sixel_color_geometry_t const *
+sixel_encoder_frame_working_geometry(sixel_encoder_t const *encoder,
+                                    sixel_frame_t const *frame)
 {
     int colorspace;
 
-    if (encoder->working_colorspace_set) {
-        return encoder->working_colorspace;
+    if (encoder->working_override != NULL) {
+        return encoder->working_override;
     }
     /* Explicit byte application only supports gamma coordinates. AUTO
      * satisfies that requested boundary; an explicit non-gamma -W still
      * reports its existing conflict instead of silently changing space. */
     if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
             sixel_encoder_force_byte_apply(encoder)) {
-        return SIXEL_COLORSPACE_GAMMA;
+        return sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
     }
     colorspace = sixel_frame_get_colorspace((sixel_frame_t *)frame);
     if (colorspace == SIXEL_FRAME_COLORSPACE_PROFILE_RGB ||
         colorspace == SIXEL_COLORSPACE_SMPTEC) {
-        return SIXEL_COLORSPACE_LINEAR;
+        colorspace = SIXEL_COLORSPACE_LINEAR;
     }
-    return colorspace;
+    return sixel_color_geometry(colorspace);
 }
 
 /* Resolve only at a frame boundary. Prepare-ahead leaves a different AUTO
  * workspace to the serial owner; equal spaces must not write shared state.
  * Palette requests snapshot these resolved coordinates before async work. */
-static void
-sixel_encoder_resolve_frame_colorspaces(sixel_encoder_t *encoder,
-                                        sixel_frame_t const *frame)
+static SIXELSTATUS
+sixel_encoder_resolve_working_geometry(sixel_encoder_t *encoder,
+                                       sixel_frame_t const *frame)
 {
-    int working;
+    sixel_color_geometry_t const *working;
 
-    working = sixel_encoder_frame_working_colorspace(encoder, frame);
-    if (working == encoder->working_colorspace) {
-        return;
+    working = sixel_encoder_frame_working_geometry(encoder, frame);
+    if (working == NULL) {
+        sixel_helper_set_additional_message("Unsupported frame colorspace.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (working == encoder->working) {
+        return SIXEL_OK;
     }
     /* Keep the source palette: stdin/mapfile input may be non-rewindable.
      * Only its working-space application is invalidated at this boundary. */
     sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
     encoder->dither_cache = NULL;
     memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
-    encoder->working_colorspace = working;
+    encoder->working = working;
     sixel_encoder_revision_advance(encoder, &encoder->configuration_revision);
+    return SIXEL_OK;
 }
 
 static int
@@ -4940,7 +4946,7 @@ sixel_encoder_loader_prefers_float32(sixel_encoder_t const *encoder)
     if (encoder->prefer_float32 != 0) {
         return 1;
     }
-    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (encoder->working->space != SIXEL_COLORSPACE_GAMMA) {
         return 1;
     }
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
@@ -6344,7 +6350,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         if (context->async_dither->use_rgb101_palette &&
                 context->encoder->palette_output != NULL) {
             status = sixel_encoder_capture_palette(context->encoder,
-                context->async_dither, context->encoder->working_colorspace);
+                context->async_dither, context->encoder->working->space);
         }
     }
     if (context->palette_job_initialized != 0) {
@@ -7423,7 +7429,7 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
     size_t index;
 
     if (!preserve_float &&
-            encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
+            encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
             encoder->output_color_definition ==
                 SIXEL_PALETTE_OUTPUT_LEGACY) {
         return SIXEL_OK;
@@ -7448,7 +7454,7 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
         return status;
     }
     return sixel_encoder_convert_palette_colorspace(dither->palette,
-        SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace, NULL);
+        SIXEL_COLORSPACE_GAMMA, encoder->working->space, NULL);
 }
 
 /* Create a palette from a structured file or an image mapfile. */
@@ -7680,7 +7686,7 @@ palette_cleanup:
     callback_context.dither = NULL;
     callback_context.allocator = encoder->allocator;
     callback_context.encoder = encoder;
-    callback_context.working_colorspace = encoder->working_colorspace;
+    callback_context.working_colorspace = encoder->working->space;
     callback_context.gpu_policy = encoder->gpu_policy;
     callback_context.gpu_palette_threshold =
         encoder->gpu_palette_threshold;
@@ -7823,7 +7829,7 @@ end_loader:
     }
 
     *dither = callback_context.dither;
-    *palette_colorspace = encoder->working_colorspace;
+    *palette_colorspace = encoder->working->space;
 
     sixel_encoder_log_stage(encoder,
                             NULL,
@@ -8556,14 +8562,9 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
      * cache. They do not introduce another palette or coordinate domain. */
     /* Generated palettes and image maps share the supported solver families;
      * structured maps, built-in tables and monochrome endpoints skip
-     * construction but retain the working palette.
-     * All five typed spaces use the extended common transform. SMPTE-C
-     * remains an output-only legacy definition, not a working geometry.
-     * A zero snap approach is identity and must choose the same precision
-     * path as NONE, independently of its otherwise enabled policy name. */
-    if (sixel_color_geometry(encoder->working_colorspace) == NULL) {
-        return "display-p3 does not support this clustering/working space.";
-    }
+     * construction but retain the working palette. All resolved working
+     * geometries support the extended transform. A zero snap approach is
+     * identity and chooses the same precision path as NONE. */
     if (quantize_model != SIXEL_QUANTIZE_MODEL_KMEANS &&
             quantize_model != SIXEL_QUANTIZE_MODEL_KCENTER &&
             quantize_model != SIXEL_QUANTIZE_MODEL_KMEDOIDS &&
@@ -8677,10 +8678,7 @@ sixel_encoder_rgb101_alpha(sixel_encoder_t const *encoder,
 static int
 sixel_encoder_highcolor_options(sixel_encoder_t const *encoder)
 {
-    return encoder->working_colorspace >= SIXEL_COLORSPACE_GAMMA &&
-        encoder->working_colorspace <= SIXEL_COLORSPACE_DIN99D &&
-        encoder->working_colorspace != SIXEL_COLORSPACE_SMPTEC &&
-        encoder->gpu_policy == SIXEL_GPU_POLICY_OFF &&
+    return encoder->gpu_policy == SIXEL_GPU_POLICY_OFF &&
         (encoder->palette_type == SIXEL_PALETTETYPE_AUTO ||
          encoder->palette_type == SIXEL_PALETTETYPE_RGB ||
          encoder->palette_type == SIXEL_PALETTETYPE_HLS) &&
@@ -8789,7 +8787,7 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
      * the extended palette coordinates that the bytes cannot hold. */
     if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT &&
             encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+        if (encoder->working->space != SIXEL_COLORSPACE_GAMMA) {
             sixel_helper_set_additional_message(
                 "precision-policy=8bit requires the gamma working "
                 "colorspace (-W gamma).");
@@ -8866,8 +8864,8 @@ sixel_encoder_validate_output_definition_frame(sixel_encoder_t const *encoder,
             encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
             (pixelformat & (SIXEL_FORMATTYPE_PALETTE |
                             SIXEL_FORMATTYPE_GRAYSCALE)) == 0) {
-        if (encoder->working_colorspace_set &&
-                encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+        if (encoder->working_override != NULL &&
+                encoder->working_override->space != SIXEL_COLORSPACE_GAMMA) {
             sixel_helper_set_additional_message(
                 "forced GPU palette application requires -W gamma.");
             return SIXEL_BAD_ARGUMENT;
@@ -8969,13 +8967,13 @@ sixel_encoder_copy_fixed_palette(sixel_encoder_t *encoder,
                                                            &request);
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_encoder_convert_palette_colorspace(copy->palette,
-                source_colorspace, encoder->working_colorspace, NULL);
+                source_colorspace, encoder->working->space, NULL);
         }
     } else if (source_colorspace == SIXEL_COLORSPACE_GAMMA) {
         status = sixel_encoder_import_srgb_palette(encoder, copy, native);
     } else {
         status = sixel_encoder_convert_palette_colorspace(copy->palette,
-            source_colorspace, encoder->working_colorspace, NULL);
+            source_colorspace, encoder->working->space, NULL);
     }
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(copy);
@@ -9095,7 +9093,8 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->native_palette = sixel_encoder_rgb101_frame(encoder, frame);
     request->native_candidate = sixel_encoder_rgb101_candidate(encoder, frame);
     request->consumer_pixelformat = consumer_pixelformat;
-    request->clustering = encoder->clustering_override;
+    request->working = encoder->working;
+    request->clustering = sixel_encoder_cluster_geometry(encoder);
     if (encoder->clustering_icc != NULL) {
         request->linear_srgb = sixel_color_def_new_named("linear-srgb");
         request->clustering_icc = sixel_cdef_clone(encoder->clustering_icc);
@@ -9103,13 +9102,6 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
             sixel_palette_build_request_free(request);
             return SIXEL_BAD_ALLOCATION;
         }
-    }
-    if (request->clustering == NULL) {
-        request->clustering = sixel_color_geometry(encoder->working_colorspace);
-    }
-    if (request->clustering == NULL) {
-        sixel_palette_build_request_free(request);
-        return SIXEL_BAD_ARGUMENT;
     }
     request->cover_policy = encoder->cover_policy;
     request->cover_policy_grow = encoder->cover_policy_grow;
@@ -9415,7 +9407,6 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     request->snap_policy_override = encoder->snap_policy_override;
     request->snap_policy_timing = encoder->snap_policy_timing;
     request->snap_policy_timing_override = encoder->snap_policy_timing_override;
-    request->working_colorspace = encoder->working_colorspace;
     if (encoder->bgcolor != NULL) {
         memcpy(request->background, encoder->bgcolor, 3);
         request->bgcolor = request->background;
@@ -9507,14 +9498,13 @@ sixel_encoder_attach_reserved_palette(
         memcpy(native + count * 3U, floats.entries,
             (size_t)dither->ncolors * 3U * sizeof(float));
     }
-    format = sixel_pixelformat_for_colorspace(
-        request->working_colorspace, 1);
+    format = sixel_geometry_format(request->working, 1);
     for (i = 0U; i < count; ++i) {
         for (c = 0U; c < 3U; ++c) {
             source[c] = request->reserved_palette[i * 3U + c] / 255.0;
         }
         if (!sixel_color_convert(working, source, SIXEL_COLORSPACE_GAMMA,
-                                request->working_colorspace)) {
+                                request->working->space)) {
             return SIXEL_BAD_INPUT;
         }
         for (c = 0U; c < 3U; ++c) {
@@ -9767,7 +9757,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     }
 
     clustering_colorspace = request->clustering->space;
-    working_colorspace = request->working_colorspace;
+    working_colorspace = request->working->space;
     /* The clustering view must preserve precision retained by the planner,
      * including CMS output when the base preference is auto or 8bit. */
     prefer_float32 = request->prefer_float32 ||
@@ -10323,7 +10313,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     }
     if (reserve_alpha_key) {
         status = sixel_encoder_attach_alpha_keycolor(request->bgcolor,
-            request->working_colorspace, *dither);
+            request->working->space, *dither);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -10381,12 +10371,11 @@ end:
          * history. The ordered owner captures only the palette it applies. */
         (*dither)->use_rgb101_palette = 1;
         status = sixel_palette_map_gamut((*dither)->palette,
-            request->gamut_mapper, request->working_colorspace,
-            sixel_pixelformat_for_colorspace(
-                request->working_colorspace, 1));
+            request->gamut_mapper, request->working->space,
+            sixel_geometry_format(request->working, 1));
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_palette_prepare_output_definition(
-                (*dither)->palette, request->working_colorspace,
+                (*dither)->palette, request->working->space,
                 request->output_color_definition, request->output_colorspace,
                 request->output_icc);
         }
@@ -10399,7 +10388,7 @@ end:
                 ? request->reserved_palette_count
                 : (unsigned int)sixel_dither_lookup_ncolors(*dither);
             status = sixel_palette_apply_icc_registers((*dither)->palette,
-                request->working_colorspace, clustering_colorspace,
+                request->working->space, clustering_colorspace,
                 request->clustering_icc, request->output_palette_type,
                 request->reserved_palette_count, icc_score_end);
         }
@@ -10540,8 +10529,7 @@ sixel_encoder_prepare_palette(
             if (encoder->dither_cache != NULL &&
                     ((sixel_dither_t *)encoder->dither_cache)
                         ->use_rgb101_palette == fixed_native &&
-                    encoder->fixed_palette_working ==
-                        encoder->working_colorspace &&
+                    encoder->fixed_palette_working == encoder->working &&
                     encoder->fixed_palette_output ==
                         encoder->output_colorspace &&
                     encoder->fixed_palette_definition ==
@@ -10675,7 +10663,7 @@ sixel_encoder_prepare_palette(
     if (SIXEL_SUCCEEDED(status) && !from_map_image &&
             (*dither)->use_rgb101_palette && encoder->palette_output != NULL) {
         status = sixel_encoder_capture_palette(encoder, *dither,
-                                                encoder->working_colorspace);
+                                                encoder->working->space);
     }
     if (SIXEL_FAILED(status)) {
         sixel_encoder_release_dither_output(dither);
@@ -10687,7 +10675,7 @@ end:
     if (SIXEL_SUCCEEDED(status) && dither_cache_hit &&
             encoder->output_icc != NULL && encoder->palette_output != NULL) {
         status = sixel_encoder_capture_palette(encoder, *dither,
-                                                encoder->working_colorspace);
+                                                encoder->working->space);
     }
     if (SIXEL_SUCCEEDED(status) && *dither != NULL && !from_map_image &&
             (!dither_cache_hit || encoder->output_icc == NULL) &&
@@ -10698,22 +10686,21 @@ end:
          * alternative codes in the clustering coordinates. */
         (*dither)->use_rgb101_palette = 1;
         status = sixel_palette_map_gamut((*dither)->palette,
-            encoder->gamut_mapper, encoder->working_colorspace,
-            sixel_pixelformat_for_colorspace(
-                encoder->working_colorspace, 1));
+            encoder->gamut_mapper, encoder->working->space,
+            sixel_geometry_format(encoder->working, 1));
         if (SIXEL_SUCCEEDED(status) && encoder->palette_output != NULL) {
             status = sixel_encoder_capture_palette(encoder,
-                *dither, encoder->working_colorspace);
+                *dither, encoder->working->space);
         }
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_palette_prepare_output_definition(
-                (*dither)->palette, encoder->working_colorspace,
+                (*dither)->palette, encoder->working->space,
                 encoder->output_color_definition, encoder->output_colorspace,
                 encoder->output_icc);
         }
         if (SIXEL_SUCCEEDED(status) && encoder->output_icc != NULL) {
             status = sixel_palette_apply_icc_registers((*dither)->palette,
-                encoder->working_colorspace, encoder->working_colorspace,
+                encoder->working->space, encoder->working->space,
                 NULL, encoder->palette_type, 0U, 0U);
         }
         sixel_dither_set_optimize_palette(*dither, 0);
@@ -10744,7 +10731,7 @@ end:
              * current application for legacy state and diagnostics only. */
             sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
             encoder->dither_cache = *dither;
-            encoder->fixed_palette_working = encoder->working_colorspace;
+            encoder->fixed_palette_working = encoder->working;
             encoder->fixed_palette_output = encoder->output_colorspace;
             encoder->fixed_palette_definition =
                 encoder->output_color_definition;
@@ -11047,8 +11034,8 @@ sixel_palette_snapshot_take(sixel_palette_snapshot_t **out,
     }
     snapshot->ref = 1U;
     snapshot->built = *built;
-    snapshot->profile.working_colorspace = request->working_colorspace;
-    snapshot->profile.clustering_colorspace = request->clustering->space;
+    snapshot->profile.working = request->working;
+    snapshot->profile.clustering = request->clustering;
     snapshot->profile.output_colorspace = request->output_colorspace;
     snapshot->profile.output_color_definition =
         request->output_color_definition;
@@ -11202,7 +11189,7 @@ sixel_palette_snapshot_clone(sixel_palette_snapshot_t const *snapshot,
                                                      source->palette);
         } else {
             status = sixel_palette_prepare_output_definition(copy->palette,
-                snapshot->profile.working_colorspace,
+                snapshot->profile.working->space,
                 snapshot->profile.output_color_definition,
                 snapshot->profile.output_colorspace, NULL);
         }
@@ -11790,7 +11777,10 @@ sixel_encoder_frame_job_prepare(
             "reserved palette requires direct-color input.");
         return SIXEL_BAD_ARGUMENT;
     }
-    sixel_encoder_resolve_frame_colorspaces(encoder, frame);
+    status = sixel_encoder_resolve_working_geometry(encoder, frame);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     /* A PNG destination must not prepare a delta palette on a fresh
      * snapshot canvas, even if private state bypassed option validation. */
     status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
@@ -11952,7 +11942,7 @@ sixel_encoder_frame_job_prepare(
             encoder->prefer_float32 ||
             encoder->output_color_definition !=
                 SIXEL_PALETTE_OUTPUT_LEGACY ||
-            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
             (encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
              sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA));
         if (SIXEL_FAILED(status)) {
@@ -12056,7 +12046,7 @@ sixel_encoder_frame_job_prepare(
          (pipeline->independent && pipeline->playback != NULL &&
           pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST &&
           !encoder->prefer_float32 &&
-          encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
+          encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
           encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY)) &&
         !encoder->fdrcs &&
         encoder->presentation == NULL && encoder->progressive_context == NULL &&
@@ -12285,9 +12275,8 @@ sixel_encoder_latest_profile_matches(sixel_encode_dag_context_t *context,
     encoder = context->encoder;
     source_alpha = sixel_encoder_frame_preserves_alpha_key(context->frame);
     if (profile->consumer_pixelformat != context->planner->working_pixelformat
-            || profile->working_colorspace != encoder->working_colorspace
-            || profile->clustering_colorspace !=
-                sixel_encoder_cluster_space(encoder)
+            || profile->working != encoder->working
+            || profile->clustering != sixel_encoder_cluster_geometry(encoder)
             || profile->output_colorspace != encoder->output_colorspace
             || profile->output_color_definition !=
                 encoder->output_color_definition
@@ -12540,7 +12529,7 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
                 /* Native export captures the selected working palette;
                  * builder completion must never overwrite this capture. */
                 status = sixel_encoder_capture_palette(encoder,
-                    context->dither, encoder->working_colorspace);
+                    context->dither, encoder->working->space);
             }
         }
     }
@@ -12753,9 +12742,12 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
             domain == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    sixel_encoder_resolve_frame_colorspaces(encoder, source);
     *prepared = NULL;
     *domain = NULL;
+    status = sixel_encoder_resolve_working_geometry(encoder, source);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     mask = NULL;
     memset(&context, 0, sizeof(context));
     context.encoder = encoder;
@@ -12778,7 +12770,7 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
             encoder->prefer_float32 ||
             encoder->output_color_definition ==
                 SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
-            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
             sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -12832,7 +12824,7 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
                  view.pixels[i] == transparency.transparent));
     }
     colors.target_layout = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    colors.target_colorspace = encoder->working_colorspace;
+    colors.target_colorspace = encoder->working->space;
     status = sixel_filter_colors_convert(&colors, context.frame, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -13211,9 +13203,8 @@ sixel_encoder_new(
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
     (*ppencoder)->clustering_override = NULL;
     (*ppencoder)->clustering_icc = NULL;
-    (*ppencoder)->working_colorspace    = SIXEL_COLORSPACE_GAMMA;
-    (*ppencoder)->working_colorspace_set = 0;
-    (*ppencoder)->force_float32_colorspace = 0;
+    (*ppencoder)->working = sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
+    (*ppencoder)->working_override = NULL;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->output_bpc            = 0;
     (*ppencoder)->output_bpc_black      = 0.0;
@@ -13284,7 +13275,7 @@ sixel_encoder_new(
     (*ppencoder)->dither_cache          = NULL;
     (*ppencoder)->fixed_palette_source  = NULL;
     (*ppencoder)->fixed_palette_colorspace = SIXEL_COLORSPACE_GAMMA;
-    (*ppencoder)->fixed_palette_working = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->fixed_palette_working = NULL;
     (*ppencoder)->fixed_palette_output = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->fixed_palette_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->fixed_palette_hls = 0;
@@ -14619,15 +14610,42 @@ sixel_encoder_parse_choice_argument(
 }
 
 
-/* Render the builtin geometry names through the same prefix matcher as
- * other selectors. AUTO is a selection policy, resolved per input frame. */
+/* Both selectors resolve the same named geometries. AUTO is represented
+ * by an absent override, outside the geometry table. */
 static SIXELSTATUS
-sixel_encoder_parse_geometry(char const *value, char const *message, int *id)
+sixel_encoder_parse_geometry(char const *value, int arg,
+                             sixel_color_geometry_t const **out)
 {
     sixel_option_choice_t choices[SIXEL_COLORSPACE_DIN99D + 2];
     sixel_color_geometry_t const *geometry;
+    char const *label;
+    char lowered[16];
+    char message[96];
+    size_t len;
+    size_t i;
     size_t count;
     int space;
+    SIXELSTATUS status;
+
+    label = arg == SIXEL_OPTFLAG_CLUSTERING_COLORSPACE
+        ? "clustering" : "working";
+    if (value == NULL) {
+        (void)snprintf(message, sizeof(message),
+            "%s-colorspace requires an argument.", label);
+        sixel_helper_set_additional_message(message);
+        return SIXEL_BAD_ARGUMENT;
+    }
+    len = strlen(value);
+    if (len >= sizeof(lowered)) {
+        (void)snprintf(message, sizeof(message),
+            "specified %s colorspace name is too long.", label);
+        sixel_helper_set_additional_message(message);
+        return SIXEL_BAD_ARGUMENT;
+    }
+    for (i = 0; i < len; ++i) {
+        lowered[i] = (char)tolower((unsigned char)value[i]);
+    }
+    lowered[len] = '\0';
 
     choices[0].name = "auto";
     choices[0].value = -1;
@@ -14639,8 +14657,14 @@ sixel_encoder_parse_geometry(char const *value, char const *message, int *id)
             choices[count++].value = space;
         }
     }
-    return sixel_encoder_parse_choice_argument(value, choices, count,
-                                               message, id);
+    (void)snprintf(message, sizeof(message),
+        "unsupported %s colorspace specified.", label);
+    status = sixel_encoder_parse_choice_argument(lowered, choices, count,
+                                                 message, &space);
+    if (SIXEL_SUCCEEDED(status)) {
+        *out = sixel_color_geometry(space);
+    }
+    return status;
 }
 
 static SIXELSTATUS
@@ -15914,9 +15938,7 @@ sixel_encoder_setopt_owned(
     char const      /* in */ *value)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char lowered[16];
-    size_t len;
-    size_t i;
+    sixel_color_geometry_t const *geometry;
     sixel_encoder_setopt_context_t setopt_context;
     sixel_encoder_t candidate;
     sixel_encoder_t *destination;
@@ -16488,77 +16510,28 @@ sixel_encoder_setopt_owned(
         }
         break;
     case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:  /* X */
-        if (value == NULL) {
-            sixel_helper_set_additional_message(
-                "clustering-colorspace requires an argument.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        } else if (strncmp(value, "icc:", 4) == 0) {
+    case SIXEL_OPTFLAG_WORKING_COLORSPACE:     /* W */
+        if (arg == SIXEL_OPTFLAG_CLUSTERING_COLORSPACE &&
+                value != NULL && strncmp(value, "icc:", 4) == 0) {
             status = sixel_encoder_set_cluster_icc(encoder, value + 4);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-        } else {
-            len = strlen(value);
-
-            if (len >= sizeof(lowered)) {
-                sixel_helper_set_additional_message(
-                    "specified clustering colorspace name is too long.");
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
-            }
-            for (i = 0; i < len; ++i) {
-                lowered[i] = (char)tolower((unsigned char)value[i]);
-            }
-            lowered[len] = '\0';
-
-            status = sixel_encoder_parse_geometry(lowered,
-                "unsupported clustering colorspace specified.",
-                &match_value);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            encoder->clustering_icc = NULL;
-            encoder->clustering_override = sixel_color_geometry(match_value);
-            /*
-             * Clustering space only controls palette construction.  Do not
-             * promote the main image path here; fixed palettes such as -b,
-             * -m, and -e have no clustering step, so -X must not change their
-             * emitted pixels or palette interpretation.
-             */
+            break;
         }
-        break;
-    case SIXEL_OPTFLAG_WORKING_COLORSPACE:  /* W */
-        if (value == NULL) {
-            sixel_helper_set_additional_message(
-                "working-colorspace requires an argument.");
-            status = SIXEL_BAD_ARGUMENT;
+        status = sixel_encoder_parse_geometry(value, arg, &geometry);
+        if (SIXEL_FAILED(status)) {
             goto end;
+        }
+        if (arg == SIXEL_OPTFLAG_CLUSTERING_COLORSPACE) {
+            /* Clustering changes the solver's coordinates only. Fixed
+             * palettes bypass construction, so do not promote application. */
+            encoder->clustering_icc = NULL;
+            encoder->clustering_override = geometry;
         } else {
-            len = strlen(value);
-
-            if (len >= sizeof(lowered)) {
-                sixel_helper_set_additional_message(
-                    "specified working colorspace name is too long.");
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
-            }
-            for (i = 0; i < len; ++i) {
-                lowered[i] = (char)tolower((unsigned char)value[i]);
-            }
-            lowered[len] = '\0';
-
-            status = sixel_encoder_parse_geometry(lowered,
-                "unsupported working colorspace specified.",
-                &match_value);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            encoder->working_colorspace_set = match_value >= 0;
-            encoder->working_colorspace = match_value >= 0
-                ? match_value : SIXEL_COLORSPACE_GAMMA;
-            encoder->force_float32_colorspace =
-                match_value >= 0 && match_value != SIXEL_COLORSPACE_GAMMA;
+            encoder->working_override = geometry;
+            encoder->working = geometry != NULL ? geometry
+                : sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
             sixel_encoder_update_precision(encoder);
         }
         break;
@@ -16746,8 +16719,7 @@ end:
                   encoder->residual_keep_threshold !=
                     destination->residual_keep_threshold ||
                   encoder->residual_frames != destination->residual_frames ||
-                  encoder->working_colorspace !=
-                    destination->working_colorspace ||
+                  encoder->working != destination->working ||
                   encoder->output_colorspace !=
                     destination->output_colorspace))) {
             memset(&encoder->residual_state, 0,
@@ -17527,8 +17499,8 @@ sixel_encoder_prepare_ahead_main(void *arg)
          * after the owner has finished that emission. Same-space streams
          * retain their usual overlap without a per-frame settings write. */
         if (SIXEL_SUCCEEDED(status) &&
-                sixel_encoder_frame_working_colorspace(ahead->encoder,
-                    slot->work_frame) != ahead->encoder->working_colorspace) {
+                sixel_encoder_frame_working_geometry(ahead->encoder,
+                    slot->work_frame) != ahead->encoder->working) {
             status = SIXEL_FALSE;
         }
         /* Without a pristine copy a missed prediction could not be
@@ -18145,7 +18117,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
              (playback &&
               pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST
               && !encoder->prefer_float32 &&
-              encoder->working_colorspace == SIXEL_COLORSPACE_GAMMA &&
+              encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
               encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY))
             && !encoder->fdrcs &&
             encoder->presentation == NULL &&
@@ -20306,7 +20278,10 @@ sixel_encoder_encode_frame_owned(
             "ICC output bpc=1 requires a loaded PNG with an embedded ICC.");
         return SIXEL_BAD_ARGUMENT;
     }
-    sixel_encoder_resolve_frame_colorspaces(encoder, frame);
+    status = sixel_encoder_resolve_working_geometry(encoder, frame);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     encoder->sixdelta_refinement_needed = 0;
     encoder->sixdelta_painted_pixels = 0u;
     /* A PNG destination must not prepare a delta palette on a fresh

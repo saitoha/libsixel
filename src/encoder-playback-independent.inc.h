@@ -254,8 +254,9 @@ sixel_playback_independent_prepare(void *context)
                 &r->slot.frame, &r->slot.metadata) != 1) break;
         if (sixel_frame_format(r->slot.frame) !=
                 SIXEL_PIXELFORMAT_RGB888 ||
-                sixel_encoder_frame_working_colorspace(encoder,
-                    r->slot.frame) != SIXEL_COLORSPACE_GAMMA) {
+                sixel_encoder_frame_working_geometry(encoder,
+                    r->slot.frame) !=
+                    sixel_color_geometry(SIXEL_COLORSPACE_GAMMA)) {
             sixel_playback_independent_return(c, r);
             break;
         }
@@ -670,7 +671,7 @@ sixel_encoder_frame_pipeline_run_deferred(
             pipeline->output == NULL ||
             encoder->gpu_policy == SIXEL_GPU_POLICY_OFF ||
             encoder->prefer_float32 || encoder->gamut_mapper != NULL ||
-            encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->ormode || encoder->fuse_macro ||
             encoder->macro_number >= 0 || encoder->output_is_png ||

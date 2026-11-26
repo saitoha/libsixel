@@ -434,13 +434,12 @@ struct sixel_encoder {
     int macro_number;
     int penetrate_multiplexer;
     int encode_policy;
-    /* NULL follows the current frame's resolved working coordinates. */
+    /* The resolved working geometry is stable over the frame. An absent
+     * override lets working follow the source or clustering follow working. */
+    sixel_color_geometry_t const *working;
+    sixel_color_geometry_t const *working_override;
     sixel_color_geometry_t const *clustering_override;
     sixel_color_def_t *clustering_icc;
-    int working_colorspace;
-    /* Zero selects AUTO; coordinate fields hold the last resolved values. */
-    int working_colorspace_set;
-    int force_float32_colorspace;
     int output_colorspace;
     /* Base precision request, independent of float-only colorspaces. */
     int precision_prefer_float32;
@@ -540,7 +539,7 @@ struct sixel_encoder {
     /* Immutable fixed source, separate from frame application state. */
     void *fixed_palette_source;
     int fixed_palette_colorspace;
-    int fixed_palette_working;
+    sixel_color_geometry_t const *fixed_palette_working;
     int fixed_palette_output;
     int fixed_palette_definition;
     int fixed_palette_hls;
@@ -575,11 +574,17 @@ struct sixel_encoder {
     int precision_requested;
 };
 
+static inline sixel_color_geometry_t const *
+sixel_encoder_cluster_geometry(sixel_encoder_t const *encoder)
+{
+    return encoder->clustering_override ? encoder->clustering_override
+                                        : encoder->working;
+}
+
 static inline int
 sixel_encoder_cluster_space(sixel_encoder_t const *encoder)
 {
-    return encoder->clustering_override ? encoder->clustering_override->space
-                                        : encoder->working_colorspace;
+    return sixel_encoder_cluster_geometry(encoder)->space;
 }
 
 
@@ -613,9 +618,9 @@ SIXEL_INTERNAL_API int
 sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder);
 
 /* Pure per-source AUTO resolution, also safe for loader planner snapshots. */
-SIXEL_INTERNAL_API int
-sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
-                                      sixel_frame_t const *frame);
+SIXEL_INTERNAL_API sixel_color_geometry_t const *
+sixel_encoder_frame_working_geometry(sixel_encoder_t const *encoder,
+                                    sixel_frame_t const *frame);
 
 #endif /* LIBSIXEL_ENCODER_H */
 

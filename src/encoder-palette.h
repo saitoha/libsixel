@@ -15,8 +15,9 @@ typedef struct sixel_palette_snapshot sixel_palette_snapshot_t;
 struct sixel_palette_scheduler;
 
 typedef struct sixel_palette_snapshot_profile {
-    int working_colorspace;
-    int clustering_colorspace;
+    /* Both geometry definitions have static lifetime. */
+    struct sixel_color_geometry const *working;
+    struct sixel_color_geometry const *clustering;
     int output_colorspace;
     int output_color_definition;
     int consumer_pixelformat;
