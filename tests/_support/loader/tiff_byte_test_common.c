@@ -200,7 +200,7 @@ tiff_byte_test(int argc, char **argv, int fixture, int engine, int mode)
     int background;
     int i;
     int sample;
-    char const *targets[] = { "cielab", "oklab", "din99d" };
+    char const *targets[] = { "lab-d65", "oklab", "din99d" };
     int const formats[] = { SIXEL_PIXELFORMAT_CIELABFLOAT32,
         SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_DIN99DFLOAT32 };
     int const spaces[] = { SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_OKLAB,
@@ -238,7 +238,7 @@ tiff_byte_test(int argc, char **argv, int fixture, int engine, int mode)
                     for (sample = 1; ok && sample <= 4; sample += 3) {
                         snprintf(suffix, sizeof(suffix), "o%d-s%d",
                                  ctx.orientation, sample);
-                        ok = tb_load(argv[1], &ctx, suffix, "linear", 0,
+                        ok = tb_load(argv[1], &ctx, suffix, "srgb-linear", 0,
                                      background);
                     }
                 }
@@ -246,12 +246,12 @@ tiff_byte_test(int argc, char **argv, int fixture, int engine, int mode)
         } else if (mode == 2 || mode == 3) {
             for (ctx.fixture = 0; ok && ctx.fixture < 3; ++ctx.fixture) {
                 ok = tb_load(argv[1], &ctx, "icc",
-                             mode == 2 ? "gamma" : "linear", mode == 3,
+                             mode == 2 ? "srgb" : "srgb-linear", mode == 3,
                              background);
             }
         } else {
             ok = tb_load(argv[1], &ctx, "icc",
-                         mode == 2 ? "gamma" : "linear", mode == 3,
+                         mode == 2 ? "srgb" : "srgb-linear", mode == 3,
                          background);
         }
     }
@@ -261,7 +261,7 @@ tiff_byte_test(int argc, char **argv, int fixture, int engine, int mode)
         ctx.fixture = 0;
         for (i = 0; ok && i < 3; ++i) {
             ctx.mode = 7;
-            ok = tb_load(argv[1], &ctx, "icc", "linear", 0, 0);
+            ok = tb_load(argv[1], &ctx, "icc", "srgb-linear", 0, 0);
             ctx.mode = 6;
             ctx.target_format = formats[i];
             ctx.target_space = spaces[i];

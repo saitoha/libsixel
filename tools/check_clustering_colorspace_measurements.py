@@ -11,17 +11,20 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
-from measurement_commands import COLORSPACE_NAMES, canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
 
 
 COLORS = (8, 16, 32, 64, 128, 256)
 BINBITS = (4, 5, 6, 7, 8)
 OCCUPANCY_COLORS = 64
 COLORSPACES: Tuple[Tuple[str, str, int], ...] = (
-    ("gamma", "gamma sRGB", 0),
-    ("linear", "linear RGB", 1),
+    ("srgb", "gamma sRGB", 0),
+    ("srgb-linear", "linear RGB", 1),
     ("oklab", "OKLab", 2),
-    ("cielab", "CIELAB", 4),
+    ("lab-d65", "CIELAB", 4),
     ("din99d", "DIN99d", 5),
 )
 PLOTS = (
@@ -45,7 +48,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement file: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement file has no rows: {path}")
     return rows
@@ -68,7 +71,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 2:
         fail(f"unsupported measurement metadata schema: {path}")
     source = payload.get("source")
@@ -97,7 +100,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "quantize_model": "kmeans:seed=1:binbits=6",
         "merge_policy": "none",
         "cover_policy": "off",
-        "working_colorspace": "gamma",
+        "working_colorspace": "srgb",
         "diffusion": "none",
         "lookup_policy": "none",
         "gpu_policy": "off",
@@ -186,7 +189,7 @@ def validate_command(row: Dict[str, str],
         "--sampling-policy=full-frame",
         f"--binning-policy={binning_policy}",
         f"--quantize-model=kmeans:seed=1:binbits={binbits}",
-        "-X" + COLORSPACE_NAMES.get(colorspace, colorspace),
+        "-X" + colorspace,
         "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
@@ -384,7 +387,7 @@ def validate_size(path: Path, revision: str) -> None:
             raise ValueError(f"invalid size value in {path}: {key}") from exc
         if encoded_bytes <= 0 or not math.isfinite(ratio) or ratio <= 0.0:
             fail(f"invalid size value in {path}: {key}")
-        if row["colorspace"] == "gamma" and not math.isclose(
+        if row["colorspace"] == "srgb" and not math.isclose(
                 ratio, 1.0, rel_tol=1e-12):
             fail(f"gamma size baseline is not 1.0 in {path}: {key}")
 
@@ -417,7 +420,7 @@ def validate_speed(path: Path, revision: str, expected_runs: int) -> None:
             median, q1, q3, minimum, maximum = values
             if not minimum <= q1 <= median <= q3 <= maximum:
                 fail(f"invalid {domain} interval in {path}: {key}")
-        if row["colorspace"] == "gamma":
+        if row["colorspace"] == "srgb":
             if not math.isclose(palette_speedup, 1.0, rel_tol=1e-12):
                 fail(f"palette gamma baseline is not 1.0: {key}")
             if not math.isclose(end_speedup, 1.0, rel_tol=1e-12):

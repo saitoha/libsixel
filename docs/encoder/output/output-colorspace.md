@@ -32,7 +32,7 @@ Adobe RGB and DCI-P3 follow the selected CPU palette/high-color admission below.
 
 Explicit choices do not negotiate with a terminal. CLI `-Uauto` still resolves only named sRGB/Display P3; receiving Adobe RGB, a simple definition or ICC does not activate these explicit modes automatically. CLI prefixes `-Ua` (auto/a98-rgb), `-Ud` (display-p3/dci-p3), and `-Us` (srgb/srgb-linear/smpte-c) are ambiguous; use unambiguous prefixes or full names. The library has no auto choice, so its prefix set differs accordingly.
 
-`sixel2png -T` and `lsqa -R/-T` accept Adobe RGB (1998) as `adobe-rgb` for explicit decoded-input interpretation. Encoder PNG snapshots carry the selected named destination's ICC, preserving decoded numbers. Legacy mapfile `-M` remains sRGB8 independent of `-U`; this does not introduce a color-bearing palette exchange format. Raw SIXEL decode APIs still return numbers without color policy.
+`sixel2png -T` and `lsqa -R/-T` use `a98-rgb` to interpret decoded RGB values as Adobe RGB (1998). Encoder PNG snapshots carry the selected named destination's ICC, preserving decoded numbers. Legacy mapfile `-M` remains sRGB8 independent of `-U`; this does not introduce a color-bearing palette exchange format. Raw SIXEL decode APIs still return numbers without color policy.
 
 ## ICC file endpoints
 
@@ -136,7 +136,7 @@ The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged 
 
 ```sh
 ./converters/img2sixel --threading-policy=greedy:global_budget=1 \
-  -L 'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+  -L 'libpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!' \
   -j scalar:resize_precision=float --precision-policy=auto \
   -Q kmeans:seed=1 -X srgb-linear -W srgb -U display-p3 \
   --sampling-policy=full-frame --binning-policy=none \
@@ -691,54 +691,54 @@ The independent fixture generator in `tools/generate_palette_space_fixtures.py` 
 | OC-107 | P3 cielab immutable lookup. | [tests/palette/working-space/0027_p3_cielab_immutable_lookup.t](../../../tests/palette/working-space/0027_p3_cielab_immutable_lookup.t) |
 | OC-108 | Srgb din99d immutable lookup. | [tests/palette/working-space/0028_srgb_din99d_immutable_lookup.t](../../../tests/palette/working-space/0028_srgb_din99d_immutable_lookup.t) |
 | OC-109 | P3 din99d immutable lookup. | [tests/palette/working-space/0029_p3_din99d_immutable_lookup.t](../../../tests/palette/working-space/0029_p3_din99d_immutable_lookup.t) |
-| OC-110 | Srgb X gamma W gamma wire. | [tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t) |
-| OC-111 | P3 X gamma W gamma wire. | [tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t) |
-| OC-112 | Srgb X gamma W linear wire. | [tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t) |
-| OC-113 | P3 X gamma W linear wire. | [tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t) |
-| OC-114 | Srgb X gamma W oklab wire. | [tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t) |
-| OC-115 | P3 X gamma W oklab wire. | [tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t) |
-| OC-116 | Srgb X gamma W cielab wire. | [tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t) |
-| OC-117 | P3 X gamma W cielab wire. | [tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t) |
-| OC-118 | Srgb X gamma W din99d wire. | [tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t) |
-| OC-119 | P3 X gamma W din99d wire. | [tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t) |
-| OC-120 | Srgb X linear W gamma wire. | [tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t) |
-| OC-121 | P3 X linear W gamma wire. | [tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t) |
-| OC-122 | Srgb X linear W linear wire. | [tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t) |
-| OC-123 | P3 X linear W linear wire. | [tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t) |
-| OC-124 | Srgb X linear W oklab wire. | [tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t) |
-| OC-125 | P3 X linear W oklab wire. | [tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t) |
-| OC-126 | Srgb X linear W cielab wire. | [tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t) |
-| OC-127 | P3 X linear W cielab wire. | [tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t) |
-| OC-128 | Srgb X linear W din99d wire. | [tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t) |
-| OC-129 | P3 X linear W din99d wire. | [tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t) |
-| OC-130 | Srgb X oklab W gamma wire. | [tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t) |
-| OC-131 | P3 X oklab W gamma wire. | [tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t) |
-| OC-132 | Srgb X oklab W linear wire. | [tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t) |
-| OC-133 | P3 X oklab W linear wire. | [tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t) |
+| OC-110 | Srgb X srgb W srgb wire. | [tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t) |
+| OC-111 | P3 X srgb W srgb wire. | [tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t) |
+| OC-112 | Srgb X srgb W srgb-linear wire. | [tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t) |
+| OC-113 | P3 X srgb W srgb-linear wire. | [tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t) |
+| OC-114 | Srgb X srgb W oklab wire. | [tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t) |
+| OC-115 | P3 X srgb W oklab wire. | [tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t) |
+| OC-116 | Srgb X srgb W lab-d65 wire. | [tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t) |
+| OC-117 | P3 X srgb W lab-d65 wire. | [tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t) |
+| OC-118 | Srgb X srgb W din99d wire. | [tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t) |
+| OC-119 | P3 X srgb W din99d wire. | [tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t) |
+| OC-120 | Srgb X srgb-linear W srgb wire. | [tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t) |
+| OC-121 | P3 X srgb-linear W srgb wire. | [tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t) |
+| OC-122 | Srgb X srgb-linear W srgb-linear wire. | [tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t) |
+| OC-123 | P3 X srgb-linear W srgb-linear wire. | [tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t) |
+| OC-124 | Srgb X srgb-linear W oklab wire. | [tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t) |
+| OC-125 | P3 X srgb-linear W oklab wire. | [tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t) |
+| OC-126 | Srgb X srgb-linear W lab-d65 wire. | [tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t) |
+| OC-127 | P3 X srgb-linear W lab-d65 wire. | [tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t) |
+| OC-128 | Srgb X srgb-linear W din99d wire. | [tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t) |
+| OC-129 | P3 X srgb-linear W din99d wire. | [tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t) |
+| OC-130 | Srgb X oklab W srgb wire. | [tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t) |
+| OC-131 | P3 X oklab W srgb wire. | [tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t) |
+| OC-132 | Srgb X oklab W srgb-linear wire. | [tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t) |
+| OC-133 | P3 X oklab W srgb-linear wire. | [tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t) |
 | OC-134 | Srgb X oklab W oklab wire. | [tests/palette/working-space/0054_srgb_X_oklab_W_oklab_wire.t](../../../tests/palette/working-space/0054_srgb_X_oklab_W_oklab_wire.t) |
 | OC-135 | P3 X oklab W oklab wire. | [tests/palette/working-space/0055_p3_X_oklab_W_oklab_wire.t](../../../tests/palette/working-space/0055_p3_X_oklab_W_oklab_wire.t) |
-| OC-136 | Srgb X oklab W cielab wire. | [tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t) |
-| OC-137 | P3 X oklab W cielab wire. | [tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t) |
+| OC-136 | Srgb X oklab W lab-d65 wire. | [tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t) |
+| OC-137 | P3 X oklab W lab-d65 wire. | [tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t) |
 | OC-138 | Srgb X oklab W din99d wire. | [tests/palette/working-space/0058_srgb_X_oklab_W_din99d_wire.t](../../../tests/palette/working-space/0058_srgb_X_oklab_W_din99d_wire.t) |
 | OC-139 | P3 X oklab W din99d wire. | [tests/palette/working-space/0059_p3_X_oklab_W_din99d_wire.t](../../../tests/palette/working-space/0059_p3_X_oklab_W_din99d_wire.t) |
-| OC-140 | Srgb X cielab W gamma wire. | [tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t) |
-| OC-141 | P3 X cielab W gamma wire. | [tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t) |
-| OC-142 | Srgb X cielab W linear wire. | [tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t) |
-| OC-143 | P3 X cielab W linear wire. | [tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t) |
-| OC-144 | Srgb X cielab W oklab wire. | [tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t) |
-| OC-145 | P3 X cielab W oklab wire. | [tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t) |
-| OC-146 | Srgb X cielab W cielab wire. | [tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t) |
-| OC-147 | P3 X cielab W cielab wire. | [tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t) |
-| OC-148 | Srgb X cielab W din99d wire. | [tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t) |
-| OC-149 | P3 X cielab W din99d wire. | [tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t) |
-| OC-150 | Srgb X din99d W gamma wire. | [tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t) |
-| OC-151 | P3 X din99d W gamma wire. | [tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t) |
-| OC-152 | Srgb X din99d W linear wire. | [tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t) |
-| OC-153 | P3 X din99d W linear wire. | [tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t) |
+| OC-140 | Srgb X lab-d65 W srgb wire. | [tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t) |
+| OC-141 | P3 X lab-d65 W srgb wire. | [tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t) |
+| OC-142 | Srgb X lab-d65 W srgb-linear wire. | [tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t) |
+| OC-143 | P3 X lab-d65 W srgb-linear wire. | [tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t) |
+| OC-144 | Srgb X lab-d65 W oklab wire. | [tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t) |
+| OC-145 | P3 X lab-d65 W oklab wire. | [tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t) |
+| OC-146 | Srgb X lab-d65 W lab-d65 wire. | [tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t) |
+| OC-147 | P3 X lab-d65 W lab-d65 wire. | [tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t) |
+| OC-148 | Srgb X lab-d65 W din99d wire. | [tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t) |
+| OC-149 | P3 X lab-d65 W din99d wire. | [tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t) |
+| OC-150 | Srgb X din99d W srgb wire. | [tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t) |
+| OC-151 | P3 X din99d W srgb wire. | [tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t) |
+| OC-152 | Srgb X din99d W srgb-linear wire. | [tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t) |
+| OC-153 | P3 X din99d W srgb-linear wire. | [tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t) |
 | OC-154 | Srgb X din99d W oklab wire. | [tests/palette/working-space/0074_srgb_X_din99d_W_oklab_wire.t](../../../tests/palette/working-space/0074_srgb_X_din99d_W_oklab_wire.t) |
 | OC-155 | P3 X din99d W oklab wire. | [tests/palette/working-space/0075_p3_X_din99d_W_oklab_wire.t](../../../tests/palette/working-space/0075_p3_X_din99d_W_oklab_wire.t) |
-| OC-156 | Srgb X din99d W cielab wire. | [tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t) |
-| OC-157 | P3 X din99d W cielab wire. | [tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t) |
+| OC-156 | Srgb X din99d W lab-d65 wire. | [tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t) |
+| OC-157 | P3 X din99d W lab-d65 wire. | [tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t) |
 | OC-158 | Srgb X din99d W din99d wire. | [tests/palette/working-space/0078_srgb_X_din99d_W_din99d_wire.t](../../../tests/palette/working-space/0078_srgb_X_din99d_W_din99d_wire.t) |
 | OC-159 | P3 X din99d W din99d wire. | [tests/palette/working-space/0079_p3_X_din99d_W_din99d_wire.t](../../../tests/palette/working-space/0079_p3_X_din99d_W_din99d_wire.t) |
 | OC-160 | Srgb oklab atkinson residual. | [tests/palette/output-diffusion/0069_srgb_oklab_atkinson_residual.t](../../../tests/palette/output-diffusion/0069_srgb_oklab_atkinson_residual.t) |

@@ -6,7 +6,7 @@ echo "1..1"
 set -v
 
 value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
-    -W gamma -P float32 -m VIF-P,GMSD \
+    -W srgb -P float32 -m VIF-P,GMSD \
     "${TOP_SRCDIR}/tests/data/assessment/vif-p-flat.pgm" "${TOP_SRCDIR}/tests/data/assessment/vif-p-flat.pgm") || {
     printf '\n%s\n' "not ok 1 - VIF-P unavailable JSON"
     exit 0

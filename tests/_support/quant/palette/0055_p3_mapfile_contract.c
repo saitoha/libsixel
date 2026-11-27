@@ -96,7 +96,8 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
         goto end;
     }
     if (image && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L',
-            "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!"))) {
+            "builtin:cms_engine=builtin:cms_target=srgb-linear:"
+            "prefer_8bit=0!"))) {
         goto end;
     }
     for (phase = 0; phase < (reuse ? 3 : 1); ++phase) {

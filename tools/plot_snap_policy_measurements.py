@@ -42,10 +42,10 @@ HIGH_K_COLORS = tuple(range(200, 257, 2))
 HIGH_K_SPEED_COLORS = (200, 208, 216, 224, 232, 240, 248, 256)
 CONTROL_COLORS = 64
 COLORSPACES: Tuple[Tuple[str, str, str], ...] = (
-    ("gamma", "sRGB gamma", "rgb-f32"),
-    ("linear", "linear RGB", "linear-f32"),
+    ("srgb", "sRGB gamma", "rgb-f32"),
+    ("srgb-linear", "linear RGB", "linear-f32"),
     ("oklab", "OKLab", "oklab-f32"),
-    ("cielab", "CIELAB", "cielab-f32"),
+    ("lab-d65", "CIELAB", "cielab-f32"),
     ("din99d", "DIN99d", "din99d-f32"),
 )
 MAIN_CONFIGS: Tuple[
@@ -92,7 +92,7 @@ MAIN_CONFIGS: Tuple[
 RATES = (0.0, 0.25, 0.5, 0.75, 1.0)
 TIMINGS = ("once", "polish", "merge", "resolve", "all")
 CHANNEL_FACTORS = (0.0, 0.25, 0.5, 0.75, 1.0)
-LAB_COLORSPACES = ("oklab", "cielab", "din99d")
+LAB_COLORSPACES = ("oklab", "lab-d65", "din99d")
 CONFIG_STYLES = {
     "off": ("#4D4D4D", "o", "--"),
     "nearest-quarter": ("#E69F00", "D", "-."),
@@ -101,10 +101,10 @@ CONFIG_STYLES = {
     "reversible-all": ("#009E73", "v", ":"),
 }
 SPACE_STYLES = {
-    "gamma": ("#0072B2", "o", "-"),
-    "linear": ("#E69F00", "s", "--"),
+    "srgb": ("#0072B2", "o", "-"),
+    "srgb-linear": ("#E69F00", "s", "--"),
     "oklab": ("#009E73", "D", "-"),
-    "cielab": ("#7A5195", "^", "-."),
+    "lab-d65": ("#7A5195", "^", "-."),
     "din99d": ("#CC79A7", "v", ":"),
 }
 QUALITY_FIELDS = (
@@ -214,10 +214,8 @@ def make_command(
         "--quantize-model=kmeans:seed=1:binbits=6",
         f"--merge-policy={merge_policy}",
         "--cover-policy=off",
-        "-X" + {"gamma": "srgb", "linear": "srgb-linear",
-                "cielab": "lab-d65"}.get(colorspace, colorspace),
-        "-W" + {"gamma": "srgb", "linear": "srgb-linear",
-                "cielab": "lab-d65"}.get(colorspace, colorspace),
+        "-X" + colorspace,
+        "-W" + colorspace,
         "--diffusion=fs:scan=raster",
         "--gpu-policy=off",
         "--lookup-policy=none",

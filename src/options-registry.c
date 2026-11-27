@@ -1054,7 +1054,7 @@ static sixel_option_value_schema_t const g_output_color_values[] = {
 static sixel_option_value_schema_t const g_input_color_values[] = {
     { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u },
     { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u },
-    { "adobe-rgb", SIXEL_OPTION_INPUT_A98_RGB, 0u },
+    { "a98-rgb", SIXEL_OPTION_INPUT_A98_RGB, 0u },
     { "dci-p3", SIXEL_OPTION_INPUT_DCI_P3, 0u },
     { "icc", SIXEL_NAMED_COLOR_COUNT, 0u }
 };
@@ -1746,15 +1746,15 @@ static sixel_suboption_choice_t const g_loader_background_policy_choices[] = {
 
 static sixel_suboption_choice_t const
 g_loader_background_colorspace_choices[] = {
-    { "gamma", SIXEL_COLORSPACE_SRGB },
-    { "linear", SIXEL_COLORSPACE_SRGB_LINEAR }
+    { "srgb", SIXEL_COLORSPACE_SRGB },
+    { "srgb-linear", SIXEL_COLORSPACE_SRGB_LINEAR }
 };
 
 static sixel_suboption_choice_t const
 g_loader_cms_target_colorspace_choices[] = {
-    { "gamma", SIXEL_COLORSPACE_SRGB },
-    { "linear", SIXEL_COLORSPACE_SRGB_LINEAR },
-    { "cielab", SIXEL_COLORSPACE_LAB_D65 },
+    { "srgb", SIXEL_COLORSPACE_SRGB },
+    { "srgb-linear", SIXEL_COLORSPACE_SRGB_LINEAR },
+    { "lab-d65", SIXEL_COLORSPACE_LAB_D65 },
     { "oklab", SIXEL_COLORSPACE_OKLAB },
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
@@ -1769,20 +1769,8 @@ static sixel_suboption_choice_t const g_loader_cms_intent_choices[] = {
 };
 
 static sixel_suboption_choice_t const g_loader_hdr_fallback_choices[] = {
-    { "linear-srgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
+    { "srgb-linear", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
     { "srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB }
-};
-
-static sixel_suboption_choice_t const g_loader_hdr_fallback_env_choices[] = {
-    { "linear-srgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
-    { "linear_srgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
-    { "linearsrgb", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
-    { "linear", SIXEL_BUILTIN_HDR_FALLBACK_LINEAR_SRGB },
-    { "srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
-    { "gamma-srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
-    { "gamma_srgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
-    { "gammasrgb", SIXEL_BUILTIN_HDR_FALLBACK_SRGB },
-    { "gamma", SIXEL_BUILTIN_HDR_FALLBACK_SRGB }
 };
 
 static sixel_suboption_choice_t const g_loader_hdr_source_choices[] = {
@@ -2902,7 +2890,7 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,
         "hdr_fallback_profile", 'F',
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE", NULL, NULL,
-        g_loader_hdr_fallback_choices, g_loader_hdr_fallback_env_choices,
+        g_loader_hdr_fallback_choices, g_loader_hdr_fallback_choices,
         hdr_fallback_profile),
     SIXEL_REGISTRY_LOADER_DOUBLE(
         SIXEL_OPTION_SCHEMA_LOADERS, NULL,

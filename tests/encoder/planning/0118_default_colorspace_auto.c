@@ -187,7 +187,7 @@ check_linear_palette(int mode)
     SIXELSTATUS status;
     int result = EXIT_FAILURE;
 
-    linear = sixel_color_def_new_named("linear-srgb");
+    linear = sixel_color_def_new_named("srgb-linear");
     different = sixel_color_def_new_named(mode == 2 ? "srgb" : "display-p3");
     if (!linear || !different || sixel_frame_new(&image, NULL) ||
             sixel_frame_new(&source, NULL) ||

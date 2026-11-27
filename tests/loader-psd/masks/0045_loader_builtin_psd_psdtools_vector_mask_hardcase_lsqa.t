@@ -43,7 +43,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W srgb-linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
     printf '\n%s\n' "not ok 1 - vector-mask decode fell below MS-SSIM ${lsqa_floor}"

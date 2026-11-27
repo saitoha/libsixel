@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {

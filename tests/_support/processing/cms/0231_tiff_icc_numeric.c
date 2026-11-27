@@ -168,7 +168,7 @@ test_cms_0231(int argc, char **argv)
             goto end;
         }
         status = sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER,
-            "libtiff:cms_engine=builtin:cms_target=linear:prefer_8bit=0!");
+            "libtiff:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!");
         if (SIXEL_FAILED(status)) {
             goto end;
         }

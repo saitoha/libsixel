@@ -477,7 +477,8 @@ test_libpng_indexed_precision(int argc, char **argv)
     }
     n = snprintf(order, sizeof(order),
         "libpng:cms_engine=%s:cms_target=%s:prefer_8bit=%d!",
-        sixel_cms_engine_to_string(engine), probe.target ? "gamma" : "linear",
+        sixel_cms_engine_to_string(engine),
+        probe.target ? "srgb" : "srgb-linear",
         probe.target == 2);
     if (n < 0 || (size_t)n >= sizeof(order)) {
         status = SIXEL_BAD_ARGUMENT;

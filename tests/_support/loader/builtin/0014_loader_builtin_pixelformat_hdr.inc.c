@@ -102,7 +102,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr exposure numeric",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "1",
         "none",
         "1",
@@ -120,7 +120,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr tonemap numeric",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "reinhard",
         "1",
@@ -138,7 +138,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr header exposure numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -156,7 +156,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr header exposure multi numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2x4.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -174,7 +174,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr header exposure disabled numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "0",
@@ -192,7 +192,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr xyze numeric",
         "/tests/data/inputs/formats/stbi_midtones_xyze.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -210,7 +210,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr colorcorr single numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_colorcorr_2_4_8.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -229,7 +229,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "/tests/data/inputs/formats/"
         "stbi_midtones_hdrmeta_colorcorr_2x4x8_multiline.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -247,7 +247,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin hdr exposure overflow none",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "200",
         "none",
         "1",
@@ -265,7 +265,7 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin hdr exposure overflow reinhard",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "200",
         "reinhard",
         "1",
@@ -1075,7 +1075,7 @@ typedef enum hdr_numeric_compare_case_id {
 
 static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1092,7 +1092,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1109,7 +1109,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1125,7 +1125,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1142,7 +1142,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0012f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1158,7 +1158,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1174,7 +1174,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1190,7 +1190,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1485,7 +1485,7 @@ hdr_test_parse_fallback_mode(char const *text,
                              hdr_test_fallback_mode_t *out_mode)
 {
     static char const * const keys[] = {
-        "linear-srgb",
+        "srgb-linear",
         "srgb"
     };
     static int const values[] = {
@@ -1621,7 +1621,7 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
     }
 
     if (fallback_text == NULL || fallback_text[0] == '\0') {
-        fallback_text = "linear-srgb";
+        fallback_text = "srgb-linear";
     }
     if (tonemap_text == NULL || tonemap_text[0] == '\0') {
         tonemap_text = "none";

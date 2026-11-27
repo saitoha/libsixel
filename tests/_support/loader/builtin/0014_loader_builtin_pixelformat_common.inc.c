@@ -333,7 +333,7 @@ hdr_test_configure_loader_env(char const *fallback_profile,
 static int
 hdr_test_configure_loader_env_default(char const *use_header_exposure)
 {
-    return hdr_test_configure_loader_env("linear-srgb",
+    return hdr_test_configure_loader_env("srgb-linear",
                                          "0",
                                          "none",
                                          use_header_exposure);

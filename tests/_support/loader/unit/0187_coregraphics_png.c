@@ -136,7 +136,7 @@ test_loader_0187_coregraphics_png(int argc, char **argv)
     probe.policy = atoi(argv[5]);
     if (snprintf(order, sizeof(order),
         "coregraphics:background_colorspace=%s!",
-        probe.background == 2 ? "linear" : "gamma") >=
+        probe.background == 2 ? "srgb-linear" : "srgb") >=
         (int)sizeof(order)) {
         return 1;
     }

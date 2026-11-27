@@ -54,10 +54,10 @@ The PCS is a connection used during a conversion, not a space that libsixel's en
 | --- | --- | --- |
 | ICC PCS | XYZ or Lab, D50 | Connect source and destination profile interpretations. |
 | XYZ in the internal sRGB/Oklab route | XYZ D65 | Relate the sRGB primary basis to other color coordinates. |
-| libsixel `linear` | Linear sRGB, D65 | Common internal RGB conversion basis and light-mixing coordinates. |
-| libsixel `cielab` | Project-normalized CIELAB derived using D65 | Palette/CMS-target working coordinates; distinct from ICC Lab PCS encoding and white point. |
+| libsixel `srgb-linear` | Linear sRGB, D65 | Common internal RGB conversion basis and light-mixing coordinates. |
+| libsixel `lab-d65` | Project-normalized CIELAB derived using D65 | Palette/CMS-target working coordinates; distinct from ICC Lab PCS encoding and white point. |
 
-An intermediate PCS is therefore neither the loader's requested `cms_target` nor the encoder's `-W`. In particular, `cms_target=cielab` does not request that the loader expose its raw ICC Lab PCS.
+An intermediate PCS is therefore neither the loader's requested `cms_target` nor the encoder's `-W`. In particular, `cms_target=lab-d65` does not request that the loader expose its raw ICC Lab PCS.
 
 ## Chromatic adaptation
 

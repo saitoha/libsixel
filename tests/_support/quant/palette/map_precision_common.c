@@ -47,7 +47,7 @@ test_map_precision_run(int mode, int space, char const *precision,
         "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static char const managed[] =
-        "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!";
+        "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!";
     static char const unmanaged[] = "builtin:cms_engine=none!";
     unsigned char pixels[3] = { 255, 0, 0 };
     sixel_encoder_t *encoder;
@@ -362,6 +362,6 @@ int
 test_map_animation(int mode, int space, char const *path)
 {
     return test_map_precision_run(mode, space, "auto", "kmeans:seed=1",
-        "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",
+        "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!",
         path, 1);
 }

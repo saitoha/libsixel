@@ -334,7 +334,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     arguments[count++] = "-7";
     arguments[count++] = "-z0";
     arguments[count++] =
-        "-Llibpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!";
+        "-Llibpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!";
     if (color_auto_is(name, "loader-bpc")) {
         /* Input BPC is active; the ICC-output default has no auto scope. */
         setenv("SIXEL_OUTPUT_COLORSPACE_ICC_BPC", "1", 1);

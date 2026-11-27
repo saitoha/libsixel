@@ -269,7 +269,7 @@ at_load(char const *directory, at_context_t *ctx, char const *suffix,
         ctx->space = SIXEL_COLORSPACE_SRGB;
     } else if (ctx->managed && ctx->target == 3) {
         ctx->space = strcmp(target, "oklab") == 0 ? SIXEL_COLORSPACE_OKLAB
-            : strcmp(target, "cielab") == 0 ? SIXEL_COLORSPACE_LAB_D65
+            : strcmp(target, "lab-d65") == 0 ? SIXEL_COLORSPACE_LAB_D65
                                             : SIXEL_COLORSPACE_DIN99D;
         ctx->format = ctx->space == SIXEL_COLORSPACE_OKLAB
             ? SIXEL_PIXELFORMAT_OKLABFLOAT32
@@ -322,7 +322,7 @@ at_basis(char const *directory, at_context_t *ctx)
     ctx->target = 0;
     ctx->orientation = 0;
     ctx->capture = 1;
-    ok = at_load(directory, ctx, "icc", "linear", 0,
+    ok = at_load(directory, ctx, "icc", "srgb-linear", 0,
                  SIXEL_ALPHA_POLICY_COMPOSITE);
     ctx->capture = 0;
     return ok;
@@ -336,7 +336,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
     at_context_t ctx;
     sixel_cms_engine_t previous;
     char const *suffixes[] = { "none", "invalid", "mismatch", "icc" };
-    char const *targets[] = { "oklab", "cielab", "din99d" };
+    char const *targets[] = { "oklab", "lab-d65", "din99d" };
     int const spaces[] = { SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
                            SIXEL_COLORSPACE_DIN99D };
     int old_policy;
@@ -383,14 +383,14 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
                 ctx.engine = SIXEL_CMS_ENGINE_NONE;
                 ctx.managed = 0;
                 ctx.background = ctx.target = 0;
-                ok = at_load(argv[1], &ctx, "icc", "linear", 0, 0);
+                ok = at_load(argv[1], &ctx, "icc", "srgb-linear", 0, 0);
                 ctx.engine = saved_engine;
                 ctx.managed = 1;
             }
             ok = ok && at_basis(argv[1], &ctx);
             for (background = 0; ok && background < 3; ++background) {
                 ctx.background = background;
-                ok = at_load(argv[1], &ctx, "icc", "linear", 0, 0);
+                ok = at_load(argv[1], &ctx, "icc", "srgb-linear", 0, 0);
             }
         }
     } else if (mode == 1) {
@@ -411,7 +411,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
                      * have a high-depth float publication contract. */
                     ctx.engine = SIXEL_CMS_ENGINE_NONE;
                     ctx.background = 0;
-                    ok = at_load(argv[1], &ctx, "noalpha", "linear", 0, 0);
+                    ok = at_load(argv[1], &ctx, "noalpha", "srgb-linear", 0, 0);
                 }
             }
         }
@@ -420,7 +420,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
             ctx.fixture = offset + i;
             ok = at_basis(argv[1], &ctx);
             ctx.orientation = orientations[i];
-            ok = ok && at_load(argv[1], &ctx, "layout", "linear", 0, 0);
+            ok = ok && at_load(argv[1], &ctx, "layout", "srgb-linear", 0, 0);
         }
     } else if (mode == 2) {
         for (ctx.fixture = 0; ok && ctx.fixture < 6; ctx.fixture += 2) {
@@ -430,7 +430,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
                 for (sample = 1; ok && sample <= 4; sample += 3) {
                     snprintf(suffix, sizeof(suffix), "o%d-s%d",
                              ctx.orientation, sample);
-                    ok = at_load(argv[1], &ctx, suffix, "linear", 0, 0);
+                    ok = at_load(argv[1], &ctx, suffix, "srgb-linear", 0, 0);
                 }
             }
         }
@@ -444,7 +444,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
                 for (policy = -1; ok && policy <= SIXEL_ALPHA_POLICY_AUTO;
                      ++policy) {
                     ok = at_load(argv[1], &ctx, i == 0 ? "icc" : "none",
-                                 "linear", 0, policy);
+                                 "srgb-linear", 0, policy);
                 }
             }
         }
@@ -459,7 +459,7 @@ at_test(int argc, char **argv, int photo, int engine, int mode, int bits)
                 ctx.target = mode == 4 ? 1 : mode == 5 ? 2 : 3;
                 if (mode != 6) {
                     ok = at_load(argv[1], &ctx, "icc",
-                        mode == 4 ? "gamma" : "linear", mode == 5, 0);
+                        mode == 4 ? "srgb" : "srgb-linear", mode == 5, 0);
                 } else {
                     for (kind = 0; ok && kind < 3; ++kind) {
                         ctx.keep = 0;

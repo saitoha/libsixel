@@ -11,7 +11,7 @@ echo "1..1"
 set -v
 
 result=0
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/0210_png_arith_loader 1 "libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0:chrm_arithmetic=double!" 0 || result=$?
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" loader/0210_png_arith_loader 1 "libpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0:chrm_arithmetic=double!" 0 || result=$?
 test "$result" -ne 77 || {
     printf '\n%s\n' "ok 1 # SKIP required arithmetic representation is unavailable"
     exit 0

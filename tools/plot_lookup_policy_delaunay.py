@@ -18,7 +18,10 @@ import statistics
 import subprocess
 from pathlib import Path
 
-from measurement_commands import canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    encoder_precision_matches,
+)
 
 
 POLICIES = ("vptree", "delaunay", "5bit", "6bit")
@@ -198,6 +201,10 @@ def load_validated(directory):
         raise ValueError("unexpected hyperfine sampling protocol")
     if protocol["sixel_environment_removed"] is not True:
         raise ValueError("missing SIXEL environment isolation")
+    # The published run requested byte precision for both representations.
+    # The palette lookup trace establishes what actually ran.
+    archived = source["revision"] == "d1acd91280d9e97247aaf6f2f96abe7b8e60345b"
+    precision = "8bit" if archived else "auto"
     expected = set(itertools.product(REPRESENTATIONS, IMAGES, DIFFUSIONS, COLORS, POLICIES))
     actual = set()
     for row in data["results"]:
@@ -228,14 +235,8 @@ def load_validated(directory):
         required += ["--cms-engine=none"] if rep == "8bit" else ["-Xoklab"]
         recorded = shlex.split(command)
         arguments = canonical_encoder_arguments(recorded)
-        # The archived protocol used this explicit request in both
-        # representations. The separately checked selected class records
-        # the palette lookup representation that actually ran.
-        precision = ("--precision-policy=8bit"
-                     if "-Wgamma" in recorded and "--precision=8bit" in recorded
-                     else "--precision-policy=auto")
-        required.append(precision)
-        if any(flag not in arguments for flag in required):
+        if (not encoder_precision_matches(arguments, precision)
+                or any(flag not in arguments for flag in required)):
             raise ValueError("command differs from the comparison protocol")
         if "-p" not in arguments or arguments[arguments.index("-p") + 1] != str(colors):
             raise ValueError("command palette size differs from its result")

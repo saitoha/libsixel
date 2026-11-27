@@ -159,7 +159,7 @@ The same equality holds for the Oklab pair. It shows that automatic precision do
 
 ### Output color definition
 
-A [named RGB output destination](../../encoder/output/output-colorspace.md#named-destination-definitions) requires an effective float working format, even with `-Wsrgb`, because its palette is converted and rounded to the sent destination values with extended intermediate coordinates; `--precision-policy=8bit` therefore rejects it. The requested precision is kept separately, so leaving named output restores the format required by the remaining settings. The legacy `gamma`, `linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
+A [named RGB output destination](../../encoder/output/output-colorspace.md#named-destination-definitions) requires an effective float working format, even with `-Wsrgb`, because its palette is converted and rounded to the sent destination values with extended intermediate coordinates; `--precision-policy=8bit` therefore rejects it. The requested precision is kept separately, so leaving named output restores the format required by the remaining settings. The `srgb`, `srgb-linear` and `smpte-c` outputs convert only the final palette and do not request a float image buffer. See [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ### Loader CMS output
 

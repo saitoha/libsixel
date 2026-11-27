@@ -23,14 +23,14 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tm3n3p02.png"
 output_gamma="${ARTIFACT_LOCAL_DIR}/libpng_bgcs_indexed_gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/libpng_bgcs_indexed_linear.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
     printf '\n%s\n' "not ok 1 - libpng indexed gamma background composition failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb-linear \
               -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_linear}" || {
     printf '\n%s\n' "not ok 1 - libpng indexed linear background composition failed"

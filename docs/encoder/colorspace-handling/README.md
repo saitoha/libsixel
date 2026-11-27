@@ -133,7 +133,7 @@ When an enabled loader recognizes usable color metadata, it first resolves the f
 The common loader suboption is:
 
 ```text
-cms_target=gamma|linear|cielab|oklab|din99d
+cms_target=srgb|srgb-linear|lab-d65|oklab|din99d
 ```
 
 Its short suboption form is `Tvalue`, its environment fallback is `SIXEL_LOADER_CMS_TARGET_COLORSPACE`, and its default is `srgb-linear`. This target controls the frame representation produced after a successful CMS conversion. It does not set `-X`, `-W`, or `-U`; the encoder still performs any conversions required by those later boundaries.
@@ -141,13 +141,13 @@ Its short suboption form is `Tvalue`, its environment fallback is `SIXEL_LOADER_
 For example, this command asks the builtin loader to apply an available CMS backend and leave the managed frame in linear-light float32 before the encoder keeps those coordinates under default `-Wauto -Xauto` and converts the output palette to gamma sRGB:
 
 ```sh
-img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' image.png
+img2sixel --cms-engine=auto --loaders='builtin:cms_target=srgb-linear!' image.png
 ```
 
 This command keeps palette construction and palette application in Oklab after the same loader-side normalization, then converts the palette to gamma-encoded sRGB for SIXEL output:
 
 ```sh
-img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' -Xoklab -Woklab -Usrgb image.png
+img2sixel --cms-engine=auto --loaders='builtin:cms_target=srgb-linear!' -Xoklab -Woklab -Usrgb image.png
 ```
 
 ### Adopted native source definitions

@@ -1121,7 +1121,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               (:Rvalue); when final, use !! to\n"
         "                               also disable loader fallbacks.\n"
         "                               :hdr_fallback_profile=PROFILE\n"
-        "                               (:Fvalue) selects linear-srgb or\n"
+        "                               (:Fvalue) selects srgb-linear or\n"
         "                               srgb; :hdr_exposure=EV (:Xvalue)\n"
         "                               applies finite EV stops;\n"
         "                               :hdr_tonemap=MODE (:Hvalue)\n"
@@ -1555,7 +1555,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "overrides this setting. Defaults to off, but\n"
         "img2sixel sets it to '1' when the variable is unset.\n"
         "Only effective alpha-policy=composite probes the terminal.\n"
-        "When OSC11 succeeds, background colorspace is forced to gamma."
+        "When OSC11 succeeds, background colorspace is forced to srgb."
     },
     {
         "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS",
@@ -1673,7 +1673,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DECODER_INPUT_COLORSPACE",
-        "sixel2png RGB interpretation: srgb, display-p3, adobe-rgb, "
+        "sixel2png RGB interpretation: srgb, display-p3, a98-rgb, "
         "dci-p3, icc.\n"
         "Overridden by -T. Encoder PNG profiles follow named or ICC -U "
         "choices; otherwise sRGB."
@@ -1917,7 +1917,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_BACKGROUND_COLORSPACE",
         "set how loader background colors are interpreted during alpha\n"
-        "composition. Accepts gamma (default) or linear.\n"
+        "composition. Accepts srgb (default) or srgb-linear.\n"
         "Ignored when background color comes from OSC11 query."
     },
     {
@@ -2068,13 +2068,13 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
         "set loader CMS output colorspace after loader-side CMS conversion.\n"
-        "Accepts gamma, linear, cielab, oklab, or din99d.\n"
-        "Default is linear."
+        "Accepts srgb, srgb-linear, lab-d65, oklab, or din99d.\n"
+        "Default is srgb-linear."
     },
     {
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE",
         "set builtin HDR source-profile fallback when GAMMA/PRIMARIES are\n"
-        "missing or unusable. Accepts linear-srgb (default) or srgb.\n"
+        "missing or unusable. Accepts srgb-linear (default) or srgb.\n"
         "Header-derived metadata takes precedence. Override with\n"
         "-Lloader:hdr_fallback_profile=PROFILE or :Fvalue."
     },

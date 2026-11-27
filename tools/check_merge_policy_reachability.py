@@ -24,7 +24,10 @@ from plot_merge_policy_reachability import (
     STUCK_RATIO,
 )
 
-from measurement_commands import canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
 
 
 SUMMARY_CSV = "merge-policy-reachability-summary.csv"
@@ -70,13 +73,13 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing CSV: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"empty CSV: {path}")
     return rows
 
 
-def validate_command(command_text: str, name: str) -> None:
+def validate_command(command_text: str, name: str, precision: str) -> None:
     """Require the controlled palette-build options in one command template."""
     try:
         tokens = canonical_encoder_arguments(shlex.split(command_text))
@@ -100,7 +103,7 @@ def validate_command(command_text: str, name: str) -> None:
         "{img2sixel}",
         "{input}",
         "--threading-policy=greedy:global_budget=1",
-        "--precision-policy=auto",
+        f"--precision-policy={precision}",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",
@@ -137,7 +140,7 @@ def validate_command(command_text: str, name: str) -> None:
         fail(f"palette capture path is not reproducible for {name}")
 
 
-def validate_summary(rows: List[Dict[str, str]]) -> None:
+def validate_summary(rows: List[Dict[str, str]], precision: str) -> None:
     """Validate the exact policy grid and all reachability layers."""
     if len(rows) != len(MERGE_NAMES):
         fail("summary CSV does not contain exactly one row per policy")
@@ -215,7 +218,7 @@ def validate_summary(rows: List[Dict[str, str]]) -> None:
             if value + 1.0e-9 < previous:
                 fail("Delta E00 threshold coverage is not monotonic")
             previous = value
-        validate_command(row.get("command", ""), name)
+        validate_command(row.get("command", ""), name, precision)
     if actual != set(MERGE_NAMES):
         fail("summary policy grid is incomplete")
 
@@ -257,12 +260,12 @@ def validate_patch_rows(rows: List[Dict[str, str]]) -> int:
 
 def validate_metadata(path: Path,
                       summary_rows: List[Dict[str, str]],
-                      sample_count: int) -> None:
+                      sample_count: int) -> str:
     """Validate provenance and the exact measurement protocol."""
     if not path.is_file():
         fail(f"missing metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail("unsupported reachability metadata schema")
     source = payload.get("source")
@@ -277,6 +280,9 @@ def validate_metadata(path: Path,
     revision = source.get("revision")
     if not isinstance(revision, str) or len(revision) < 7:
         fail("measurement source revision is missing")
+    precision = protocol.get("precision")
+    if precision not in ("8bit", "auto"):
+        fail("metadata has invalid precision")
     expected = {
         "colors": COLORS,
         "quantizer": "heckbert:profile=compat",
@@ -287,10 +293,9 @@ def validate_metadata(path: Path,
         "lookup_policy": "none",
         "gpu_policy": "off",
         "threads": 1,
-        "precision": "auto",
         "clustering_colorspace": "oklab",
-        "working_colorspace": "gamma",
-        "output_colorspace": "gamma",
+        "working_colorspace": "srgb",
+        "output_colorspace": "srgb",
         "cover_policy": "off",
         "snap_policy": "none",
         "lab_cell_width": LAB_CELL_WIDTH,
@@ -315,7 +320,7 @@ def validate_metadata(path: Path,
     if not isinstance(commands, dict) or not isinstance(plane_counts, dict):
         fail("metadata lacks commands or supporting-plane counts")
     for name in MERGE_NAMES:
-        validate_command(str(commands.get(name, "")), name)
+        validate_command(str(commands.get(name, "")), name, precision)
         if int(plane_counts.get(name, 0)) < 4:
             fail(f"too few supporting planes for {name}")
     for name in ("img2sixel", "libsixel"):
@@ -340,6 +345,7 @@ def validate_metadata(path: Path,
     if chart.get("non_color_distinction") != (
             "line style, marker shape, hatch, labels, and panel position"):
         fail("chart contract lacks non-color distinctions")
+    return precision
 
 
 def validate_png(path: Path) -> None:
@@ -366,11 +372,11 @@ def main() -> None:
     args = parse_args()
     summary_rows = read_csv(args.directory / SUMMARY_CSV)
     patch_rows = read_csv(args.directory / PATCH_CSV)
-    validate_summary(summary_rows)
     sample_count = validate_patch_rows(patch_rows)
-    validate_metadata(
+    precision = validate_metadata(
         args.directory / METADATA, summary_rows, sample_count
     )
+    validate_summary(summary_rows, precision)
     for name in PLOTS:
         validate_png(args.directory / name)
 

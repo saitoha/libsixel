@@ -855,7 +855,7 @@ sixel_builtin_hdr_fallback_profile_name(
     if (profile == SIXEL_BUILTIN_HDR_FALLBACK_SRGB) {
         return "srgb";
     }
-    return "linear-srgb";
+    return "srgb-linear";
 }
 
 static char const *
@@ -1487,8 +1487,8 @@ sixel_builtin_hdr_apply_dynamic_range(unsigned char *pixels,
             gamma_label = "srgb";
             primaries_label = "srgb";
         } else {
-            gamma_label = "linear-srgb";
-            primaries_label = "linear-srgb";
+            gamma_label = "srgb-linear";
+            primaries_label = "srgb-linear";
         }
         fallback_label = sixel_builtin_hdr_fallback_profile_name(
             profile_trace->fallback_profile);

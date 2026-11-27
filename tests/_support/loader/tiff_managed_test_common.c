@@ -190,7 +190,7 @@ tiff_managed_values(int argc, char **argv, int fixture, int engine,
     ok = (native != 1 && native != 3) || tm_native(&context);
     fprintf(stderr, "TMVALUE|reference=%d|case-begin\n", ok);
     snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!",
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!",
         sixel_cms_engine_to_string((sixel_cms_engine_t)engine));
     loader = NULL;
     status = sixel_loader_new(&loader, NULL);

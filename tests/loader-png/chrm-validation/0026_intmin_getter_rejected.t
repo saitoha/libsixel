@@ -3,7 +3,7 @@
 # Verify external libpng withholds intmin cHRM.
 set -eux
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0199_png_chrm_getter_reject 120 2>&1) || result=$?
 test "$result" -ne 77 || {

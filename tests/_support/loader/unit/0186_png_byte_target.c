@@ -118,7 +118,7 @@ test_loader_0186_png_byte_target(int argc, char **argv)
         length = snprintf(order, sizeof(order),
             "%s:cms_engine=%s:cms_target=%s:prefer_8bit=%d!", argv[1],
             probe.stage == 0 ? "none" : "builtin",
-            probe.stage == 1 ? "linear" : "gamma",
+            probe.stage == 1 ? "srgb-linear" : "srgb",
             probe.stage == 0 || probe.stage == 3);
         if (length < 0 || (size_t)length >= sizeof(order)) {
             status = SIXEL_BAD_ARGUMENT;

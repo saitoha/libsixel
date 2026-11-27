@@ -25,7 +25,7 @@ control_output="${artifact_dir}/0112-loader-hdr-fallback-control-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=invalid" \
-    "-Lbuiltin:Tlinear:Fsrgb!" "${input_image}" \
+    "-Lbuiltin:Tsrgb-linear:Fsrgb!" "${input_image}" \
     2>&1 >"${short_output}") || {
     printf '\n%s\n' "not ok 1 - hdr_fallback_profile short conversion failed"
     exit 0
@@ -44,7 +44,7 @@ case "${short_trace}" in *builtin\ HDR:\ final\ controls*fallback=srgb**) true ;
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=srgb" \
-    "-Lbuiltin:Tlinear!" "${input_image}" 2>&1 >"${env_output}") || {
+    "-Lbuiltin:Tsrgb-linear!" "${input_image}" 2>&1 >"${env_output}") || {
     printf '\n%s\n' "not ok 1 - hdr_fallback_profile environment conversion failed"
     exit 0
 }
@@ -65,8 +65,8 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
-    --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=linear-srgb" \
-    "-Lbuiltin:Tlinear!" "${input_image}" >"${control_output}" || {
+    --env "SIXEL_LOADER_HDR_FALLBACK_PROFILE=srgb-linear" \
+    "-Lbuiltin:Tsrgb-linear!" "${input_image}" >"${control_output}" || {
     printf '\n%s\n' "not ok 1 - hdr_fallback_profile control conversion failed"
     exit 0
 }

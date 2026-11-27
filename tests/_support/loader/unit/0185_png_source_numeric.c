@@ -244,8 +244,9 @@ test_loader_0185_png_source_numeric(int argc, char **argv)
                        "%s:cms_engine=%s:background_colorspace=%s:"
                        "cms_target=%s:prefer_8bit=%d!",
                        argv[1], argv[2],
-                       probe.background == 3 ? "linear" : "gamma",
-                       probe.target ? "gamma" : "linear", probe.target == 2);
+                       probe.background == 3 ? "srgb-linear" : "srgb",
+                       probe.target ? "srgb" : "srgb-linear",
+                       probe.target == 2);
     if (length < 0 || (size_t)length >= sizeof(order)) {
         sixel_cms_set_engine(previous);
         return 1;
@@ -289,8 +290,8 @@ test_loader_0185_png_source_numeric(int argc, char **argv)
          * to check the target. Both loads must deliver the requested frame. */
         length = snprintf(reference_order, sizeof(reference_order),
             "%s:cms_engine=%s:background_colorspace=%s:"
-            "cms_target=linear:prefer_8bit=0!", argv[1], argv[2],
-            probe.background == 3 ? "linear" : "gamma");
+            "cms_target=srgb-linear:prefer_8bit=0!", argv[1], argv[2],
+            probe.background == 3 ? "srgb-linear" : "srgb");
         if (length < 0 || (size_t)length >= sizeof(reference_order)) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;

@@ -11,7 +11,11 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
-from measurement_commands import canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    encoder_precision_matches,
+    recorded_colorspace_fields,
+)
 
 
 COLORS = (8, 16, 32, 64, 128, 256)
@@ -47,7 +51,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement file: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement file has no rows: {path}")
     return rows
@@ -71,7 +75,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail(f"unsupported measurement metadata schema: {path}")
     source = payload.get("source")
@@ -88,14 +92,15 @@ def read_metadata(path: Path) -> Dict[str, object]:
     revision = source.get("revision")
     if not isinstance(revision, str) or not revision or revision == "unknown":
         fail("measurement source revision is missing")
+    if protocol.get("precision") not in ("8bit", "auto"):
+        fail("measurement metadata has unexpected precision")
     expected_protocol = {
         "comparison_scope": "complete explicit -Q configurations",
         "threads": 1,
-        "precision": "auto",
         "quality": "full",
         "loader": "libpng!",
         "clustering_colorspace": "oklab",
-        "working_colorspace": "gamma",
+        "working_colorspace": "srgb",
         "diffusion": "none",
         "lookup_policy": "none",
         "gpu_policy": "off",
@@ -139,7 +144,8 @@ def read_metadata(path: Path) -> Dict[str, object]:
 
 def validate_command(row: Dict[str, str],
                      path: Path,
-                     timeline: bool = False) -> None:
+                     timeline: bool = False,
+                     precision: str = "auto") -> None:
     """Check one recorded command and its row identity."""
     config = row.get("config", "")
     expected = {
@@ -158,9 +164,10 @@ def validate_command(row: Dict[str, str],
         tokens = canonical_encoder_arguments(shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(f"invalid {field} in {path}: {config}") from exc
+    if not encoder_precision_matches(tokens, precision):
+        fail(f"command precision differs from the recorded protocol in {path}")
     required = {
         "--threading-policy=greedy:global_budget=1",
-        "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",
         f"--quantize-model={option}",
@@ -201,12 +208,12 @@ def expected_points() -> Set[Tuple[str, int]]:
     }
 
 
-def validate_rows(path: Path, revision: str) -> List[Dict[str, str]]:
+def validate_rows(path: Path, revision: str, precision: str) -> List[Dict[str, str]]:
     """Validate common row identity and completeness."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
     for row in rows:
-        validate_command(row, path)
+        validate_command(row, path, precision=precision)
         try:
             key = (row.get("config", ""), int(row.get("colors", "")))
         except ValueError as exc:
@@ -226,9 +233,9 @@ def validate_rows(path: Path, revision: str) -> List[Dict[str, str]]:
     return rows
 
 
-def validate_quality(path: Path, revision: str) -> None:
+def validate_quality(path: Path, revision: str, precision: str) -> None:
     """Validate all quality values."""
-    for row in validate_rows(path, revision):
+    for row in validate_rows(path, revision, precision):
         key = (row["config"], row["colors"])
         try:
             ms_ssim = float(row.get("MS-SSIM", ""))
@@ -241,9 +248,9 @@ def validate_quality(path: Path, revision: str) -> None:
             fail(f"invalid Delta E00 in {path}: {key}")
 
 
-def validate_size(path: Path, revision: str) -> None:
+def validate_size(path: Path, revision: str, precision: str) -> None:
     """Validate exact stream lengths and compatibility ratios."""
-    for row in validate_rows(path, revision):
+    for row in validate_rows(path, revision, precision):
         key = (row["config"], row["colors"])
         try:
             encoded_bytes = int(row.get("encoded_bytes", ""))
@@ -257,10 +264,10 @@ def validate_size(path: Path, revision: str) -> None:
             fail(f"compatibility size baseline is not 1.0 in {path}: {key}")
 
 
-def validate_speed(path: Path, revision: str, expected_runs: int) -> None:
+def validate_speed(path: Path, revision: str, expected_runs: int, precision: str) -> None:
     """Validate both speed domains and their intervals."""
-    for row in validate_rows(path, revision):
-        validate_command(row, path, True)
+    for row in validate_rows(path, revision, precision):
+        validate_command(row, path, True, precision)
         key = (row["config"], row["colors"])
         try:
             runs = int(row.get("runs", ""))
@@ -315,13 +322,15 @@ def main() -> int:
     directory = args.directory.resolve()
     metadata = read_metadata(directory / "quantize-model-run.json")
     revision = str(metadata["source"]["revision"])
+    precision = str(metadata["protocol"]["precision"])
     runs = int(metadata["protocol"]["speed_runs"])
-    validate_quality(directory / "quantize-model-quality.csv", revision)
-    validate_size(directory / "quantize-model-size.csv", revision)
+    validate_quality(directory / "quantize-model-quality.csv", revision, precision)
+    validate_size(directory / "quantize-model-size.csv", revision, precision)
     validate_speed(
         directory / "quantize-model-speed.csv",
         revision,
         runs,
+        precision,
     )
     validate_plots(directory)
     return 0

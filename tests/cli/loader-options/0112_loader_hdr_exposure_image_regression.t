@@ -25,7 +25,7 @@ control_output="${artifact_dir}/0113-loader-hdr-exposure-control-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_EXPOSURE_EV=invalid" \
-    "-Lbuiltin:Tlinear:X1!" "${input_image}" \
+    "-Lbuiltin:Tsrgb-linear:X1!" "${input_image}" \
     2>&1 >"${short_output}") || {
     printf '\n%s\n' "not ok 1 - hdr_exposure short conversion failed"
     exit 0
@@ -44,7 +44,7 @@ case "${short_trace}" in *builtin\ HDR:\ final\ controls*env_ev=1.000000**) true
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_EXPOSURE_EV=1" \
-    "-Lbuiltin:Tlinear!" "${input_image}" 2>&1 >"${env_output}") || {
+    "-Lbuiltin:Tsrgb-linear!" "${input_image}" 2>&1 >"${env_output}") || {
     printf '\n%s\n' "not ok 1 - hdr_exposure environment conversion failed"
     exit 0
 }
@@ -66,7 +66,7 @@ cmp -s "${short_output}" "${env_output}" || {
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_EXPOSURE_EV=0" \
-    "-Lbuiltin:Tlinear!" "${input_image}" >"${control_output}" || {
+    "-Lbuiltin:Tsrgb-linear!" "${input_image}" >"${control_output}" || {
     printf '\n%s\n' "not ok 1 - hdr_exposure control conversion failed"
     exit 0
 }

@@ -143,8 +143,8 @@ tiff_logluv_values_test(int argc, char **argv, int variant)
         (unsigned char *)control, 1, 1, SIXEL_PIXELFORMAT_RGBFLOAT32,
         tlog_icc, sizeof(tlog_icc));
     fprintf(stderr, "TLOGLUV|native-begin\n");
-    target = variant == 10 ? "gamma" : variant == 12 ? "cielab" :
-             variant == 13 ? "oklab" : variant == 14 ? "din99d" : "linear";
+    target = variant == 10 ? "srgb" : variant == 12 ? "lab-d65" :
+             variant == 13 ? "oklab" : variant == 14 ? "din99d" : "srgb-linear";
     byte_view = variant == 11;
     snprintf(order, sizeof(order),
         "libtiff:cms_engine=%s:cms_target=%s:prefer_8bit=%d!",

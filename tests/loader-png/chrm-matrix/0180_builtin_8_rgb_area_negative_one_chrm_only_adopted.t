@@ -3,7 +3,7 @@
 # Verify builtin 8-rgb-area-negative-one-chrm-only matrix adoption and finite frame.
 set -eux
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0202_png_chrm_accept 233 builtin 2>&1) || result=$?
 test "$result" -ne 77 || {

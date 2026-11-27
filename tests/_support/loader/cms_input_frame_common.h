@@ -110,8 +110,8 @@ cms_input_frame(int argc, char **argv, int mode)
     }
     status = sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER,
         mode == 3
-        ? "libtiff:cms_engine=lcms2:cms_target=linear:prefer_8bit=0!"
-        : "builtin:cms_engine=lcms2:cms_target=linear:prefer_8bit=0!");
+        ? "libtiff:cms_engine=lcms2:cms_target=srgb-linear:prefer_8bit=0!"
+        : "builtin:cms_engine=lcms2:cms_target=srgb-linear:prefer_8bit=0!");
     if (SIXEL_FAILED(status)) {
         goto end;
     }

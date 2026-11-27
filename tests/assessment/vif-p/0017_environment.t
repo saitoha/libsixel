@@ -7,7 +7,7 @@ set -v
 
 export LSQA_METRICS=vif-p LSQA_BASELINE=VIF-P:min=1
 value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
-    -W gamma -P float32  \
+    -W srgb -P float32  \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp" "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp") || {
     printf '\n%s\n' "not ok 1 - VIF-P environment"
     exit 0

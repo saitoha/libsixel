@@ -1719,7 +1719,7 @@ sixel_color_def_new_named(char const *name)
     sixel_color_def_t *srgb;
     sixel_color_def_t *linear;
 
-    if (name == NULL || strcmp(name, "linear-srgb") != 0) {
+    if (name == NULL || strcmp(name, "srgb-linear") != 0) {
         return sixel_cdef_name(name);
     }
     srgb = sixel_cdef_name("srgb");

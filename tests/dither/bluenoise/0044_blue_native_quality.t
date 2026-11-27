@@ -35,7 +35,7 @@ esac || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -Tsrgb -Wlinear -Pfloat32 \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -Tsrgb -Wsrgb-linear -Pfloat32 \
     -b MS-SSIM:0.98 "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" \
     "${ARTIFACT_LOCAL_DIR}/output.six" >/dev/null || {
     printf '\n%s\n' "not ok 1 - native bluenoise quality"

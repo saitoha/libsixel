@@ -3,7 +3,7 @@
 # Verify colorsync 8-rgb-area-negative-large-chrm-only matrix adoption and finite frame.
 set -eux
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0202_png_chrm_accept 235 colorsync 2>&1) || result=$?
 test "$result" -ne 77 || {

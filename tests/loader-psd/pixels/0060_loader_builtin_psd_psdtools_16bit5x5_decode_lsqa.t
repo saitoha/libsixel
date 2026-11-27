@@ -45,7 +45,7 @@ case "${trace_output}" in
         ;;
 esac
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W srgb-linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
     printf '\n%s\n' "not ok 1 - psd-tools 16bit5x5 decode fell below MS-SSIM ${lsqa_floor}: ${lsqa_msg}"

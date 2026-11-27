@@ -11,7 +11,7 @@ echo "1..1"
 set -v
 
 result=0
-trace=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env "SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC=double" loader/0210_png_arith_loader 8 "libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" 1 2>&1) || result=$?
+trace=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --env "SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC=double" loader/0210_png_arith_loader 8 "libpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!" 1 2>&1) || result=$?
 test "$result" -ne 77 || {
     printf '\n%s\n' "ok 1 # SKIP required arithmetic representation is unavailable"
     exit 0

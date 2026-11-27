@@ -10,7 +10,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 SIXEL_DECODER_INPUT_COLORSPACE=srgb ${SIXEL_RUNTIME-} \
-    "${SIXEL2PNG_PATH}" -T adobe-rgb -D \
+    "${SIXEL2PNG_PATH}" -T a98-rgb -D \
     <"${TOP_SRCDIR}/tests/writer/png/colors.six" | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "writer/png/0028_adobe_rgb_direct" || {
     printf '\n%s\n' "not ok 1 - adobe_rgb_direct"

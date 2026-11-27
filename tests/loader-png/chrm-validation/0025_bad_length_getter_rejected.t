@@ -3,7 +3,7 @@
 # Verify external libpng withholds bad-length cHRM.
 set -eux
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0199_png_chrm_getter_reject 116 2>&1) || result=$?
 test "$result" -ne 77 || {

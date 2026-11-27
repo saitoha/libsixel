@@ -203,7 +203,7 @@ The independent oracle generator derives RGB primary matrices from chromaticitie
 
 ## Display P3 auto measurements
 
-An arm64 macOS comparison uses 100 standard 640×480 photos, plus separate snake and saturated-P3 fixtures, builtin CMS with linear loader output, P3 emission, seeded K-means, Ward O1.8/C0.9, FHEDT lookup, LSO2 diffusion, two workers, default sampling/binning, and matched clustering/working spaces. Assessment uses decoded RGB8 interpreted as P3 through `lsqa -Tdisplay-p3 -Pfloat32 -Wlinear`. The photo-only means below compare nearest final snap against none; positive MS-SSIM changes and negative regional DE00 changes improve the respective measures.
+An arm64 macOS comparison uses 100 standard 640×480 photos, plus separate snake and saturated-P3 fixtures, builtin CMS with linear loader output, P3 emission, seeded K-means, Ward O1.8/C0.9, FHEDT lookup, LSO2 diffusion, two workers, default sampling/binning, and matched clustering/working spaces. Assessment uses decoded RGB8 interpreted as P3 through `lsqa -Tdisplay-p3 -Pfloat32 -Wsrgb-linear`. The photo-only means below compare nearest final snap against none; positive MS-SSIM changes and negative regional DE00 changes improve the respective measures.
 
 | Space | Colors | Mean ΔMS-SSIM | Wins/losses | Worst ΔMS-SSIM | Mean Δregional DE00 | Mean Δpixel DE00 | Mean size change |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |

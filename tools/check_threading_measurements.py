@@ -23,7 +23,6 @@ DECODER_SIZES = (
     ("1920x1080", 1920, 1080, "decoder-thread8.jsonl"),
 )
 ENCODER_COMMAND_SUFFIX = (
-    "--precision-policy=auto",
     "--quality=full",
     "--sampling-policy=full-frame",
     "--binning-policy=hard",
@@ -71,11 +70,13 @@ REQUIRED_FILES = (
 
 
 def expected_encoder_command(threads: object,
-                             ncolors: object = 256) -> List[str]:
+                             ncolors: object = 256,
+                             precision: str = "auto") -> List[str]:
     """Return the canonical controlled img2sixel command tokens."""
     command = [
         "{img2sixel}",
         f"--threading-policy=greedy:global_budget={threads}",
+        f"--precision-policy={precision}",
         *ENCODER_COMMAND_SUFFIX,
     ]
     command[command.index("-p") + 1] = str(ncolors)
@@ -148,7 +149,8 @@ def validate_png(path: Path) -> None:
 
 def validate_budget(path: Path,
                     revision: str,
-                    commands: Sequence[str]) -> None:
+                    commands: Sequence[str],
+                    precision: str) -> None:
     """Validate the current encoder allocation contract and observations."""
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
@@ -162,7 +164,7 @@ def validate_budget(path: Path,
         encode = int(row["planned_encode_threads"])
         if row["revision"] != revision:
             raise ValueError("CSV and metadata revisions differ")
-        expected_command = expected_encoder_command(threads)
+        expected_command = expected_encoder_command(threads, precision=precision)
         recorded = canonical_encoder_arguments(shlex.split(row["command"]))
         if recorded != expected_command:
             raise ValueError("encoder budget policy is stale")
@@ -395,7 +397,8 @@ def validate_encoder_scaling(path: Path,
                              threads_values: Sequence[int],
                              warmups: int,
                              repeats: int,
-                             command_template: str) -> None:
+                             command_template: str,
+                             precision: str) -> None:
     """Validate the complete scheduled img2sixel scaling experiment."""
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
@@ -404,7 +407,7 @@ def validate_encoder_scaling(path: Path,
     if len(rows) != expected_rows:
         raise ValueError("encoder scaling CSV has an unexpected row count")
     recorded = canonical_encoder_arguments(shlex.split(command_template))
-    if recorded != expected_encoder_command("{threads}"):
+    if recorded != expected_encoder_command("{threads}", precision=precision):
         raise ValueError("encoder scaling protocol command is stale")
     width = len(threads_values)
     for round_index in range(1, total_rounds + 1):
@@ -450,7 +453,7 @@ def validate_encoder_scaling(path: Path,
                 or int(row["pixels"]) != 1920 * 1080):
             raise ValueError("encoder scaling fixture is not Full HD")
         recorded = canonical_encoder_arguments(shlex.split(row["command"]))
-        if recorded != expected_encoder_command(threads):
+        if recorded != expected_encoder_command(threads, precision=precision):
             raise ValueError("encoder scaling command provenance is stale")
         for field in (
                 "encoder_wall_seconds",
@@ -508,7 +511,8 @@ def validate_encoder_color_scaling(path: Path,
                                    colors_values: Sequence[int],
                                    warmups: int,
                                    repeats: int,
-                                   command_template: str) -> None:
+                                   command_template: str,
+                                   precision: str) -> None:
     """Validate the scheduled color-count by worker-budget experiment."""
     with path.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
@@ -523,7 +527,7 @@ def validate_encoder_color_scaling(path: Path,
         raise ValueError("encoder color scaling has an unexpected row count")
     recorded = canonical_encoder_arguments(shlex.split(command_template))
     if recorded != expected_encoder_command(
-            "{threads}", "{ncolors}"):
+            "{threads}", "{ncolors}", precision):
         raise ValueError("encoder color scaling protocol command is stale")
     width = len(conditions)
     for round_index in range(1, total_rounds + 1):
@@ -578,7 +582,7 @@ def validate_encoder_color_scaling(path: Path,
             raise ValueError("encoder color scaling fixture is not Full HD")
         recorded = canonical_encoder_arguments(shlex.split(row["command"]))
         if recorded != expected_encoder_command(
-                threads, ncolors):
+                threads, ncolors, precision):
             raise ValueError("encoder color scaling command is stale")
         for field in (
                 "encoder_wall_seconds",
@@ -767,10 +771,17 @@ def main() -> int:
         if f"-w {width} -h {height}" not in str(command):
             raise ValueError("decoder fixture command dimensions changed")
     encoder_commands = metadata["protocol"]["encoder_commands"]
+    # Schema 7 includes archives whose encoder protocol explicitly selected
+    # byte work. All encoder stages must agree with the first budget command.
+    if not encoder_commands:
+        raise ValueError("encoder budget command list is empty")
+    recorded = canonical_encoder_arguments(shlex.split(encoder_commands[0]))
+    precision = "8bit" if "--precision-policy=8bit" in recorded else "auto"
     validate_budget(
         root / "thread-budget.csv",
         revision,
         encoder_commands,
+        precision,
     )
     with (root / "thread-budget.csv").open(
             "r", encoding="utf-8", newline="") as handle:
@@ -806,6 +817,7 @@ def main() -> int:
         encoder_warmups,
         encoder_repeats,
         encoder_scaling["command"],
+        precision,
     )
     color_scaling = metadata["protocol"]["encoder_color_scaling"]
     color_threads = tuple(
@@ -836,6 +848,7 @@ def main() -> int:
         color_warmups,
         color_repeats,
         color_scaling["command"],
+        precision,
     )
     for _, _, _, log_name in DECODER_SIZES:
         validate_decoder(root / log_name)

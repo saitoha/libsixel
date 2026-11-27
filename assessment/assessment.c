@@ -494,13 +494,13 @@ sixel_assessment_colorspace_name(int colorspace)
 {
     switch (colorspace) {
     case SIXEL_COLORSPACE_SRGB:
-        return "gamma";
+        return "srgb";
     case SIXEL_COLORSPACE_SRGB_LINEAR:
-        return "linear";
+        return "srgb-linear";
     case SIXEL_COLORSPACE_OKLAB:
         return "oklab";
     case SIXEL_COLORSPACE_LAB_D65:
-        return "cielab";
+        return "lab-d65";
     case SIXEL_COLORSPACE_DIN99D:
         return "din99d";
     case SIXEL_COLORSPACE_SMPTEC:

@@ -241,8 +241,9 @@ test_cg_expanded_values(int argc, char **argv)
     status = sixel_loader_new(&loader, allocator);
     if (SIXEL_FAILED(status)) { goto end; }
     status = sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER,
-        probe.background == 2 ? "coregraphics:background_colorspace=linear!" :
-                                "coregraphics:background_colorspace=gamma!");
+        probe.background == 2 ?
+        "coregraphics:background_colorspace=srgb-linear!" :
+        "coregraphics:background_colorspace=srgb!");
     if (SIXEL_FAILED(status)) { goto end; }
     (void)sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_CONTEXT, &probe);
     if (probe.background) {

@@ -12,10 +12,16 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Sequence, Tuple
 
-from measurement_commands import canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    encoder_precision_matches,
+    recorded_colorspace_fields,
+)
 
 
 PALETTE_COLORS = 64
+# This published run predates the Delaunay lookup configuration.
+PRE_DELAUNAY_REVISION = "85a2674e53a2d7b75c6944b5a87b04ee9ea182b1"
 PRECISIONS: Tuple[Tuple[str, str, str], ...] = (
     ("8bit", "8-bit", "rgb888"),
     ("float32", "float32", "rgb-f32"),
@@ -148,7 +154,7 @@ def load_metadata(path: Path,
     if not path.is_file():
         fail(f"missing precision metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        metadata = json.load(handle)
+        metadata = recorded_colorspace_fields(json.load(handle))
     if int(metadata.get("schema_version", 0)) != 1:
         fail("precision metadata schema is not version 1")
     source = metadata.get("source", {})
@@ -164,7 +170,12 @@ def load_metadata(path: Path,
         fail("precision metadata has no source revision")
     if protocol.get("colors") != PALETTE_COLORS:
         fail("precision metadata has an unexpected palette size")
-    if protocol.get("domains") != list(expected_records):
+    records = list(expected_records)
+    if source["revision"] == PRE_DELAUNAY_REVISION:
+        records = [record for record in records
+                   if (record["domain"], record["config"])
+                   != ("lookup", "delaunay")]
+    if protocol.get("domains") != records:
         fail("precision metadata configuration manifest is stale")
     expected_precisions = [
         {
@@ -178,7 +189,7 @@ def load_metadata(path: Path,
         fail("precision metadata work-format contract is stale")
     if (protocol.get("threads") != 1
             or protocol.get("loader") != "builtin!"
-            or protocol.get("working_colorspace") != "gamma"
+            or protocol.get("working_colorspace") != "srgb"
             or protocol.get("gpu_policy") != "off"):
         fail("precision metadata controlled axes are stale")
     if not protocol.get("sixel_environment_removed"):
@@ -198,7 +209,6 @@ def require_command_contract(row: Dict[str, str]) -> None:
     required = (
         "{img2sixel}",
         "--threading-policy=greedy:global_budget=1",
-        f"--precision-policy={row['precision']}",
         "--quality=full",
         "--loaders=builtin!",
         "-Wsrgb",
@@ -207,18 +217,22 @@ def require_command_contract(row: Dict[str, str]) -> None:
         str(PALETTE_COLORS),
         "{input}",
     )
-    if not all(token in command for token in required):
+    if (not encoder_precision_matches(command, row["precision"])
+            or not all(token in command for token in required)):
         fail(
             "precision CSV command violates its controlled contract: "
             f"{row['domain']}/{row['config']}/{row['precision']}"
         )
     if "-v" in command or "-o" in command:
         fail("quality command unexpectedly enables diagnostics or discards output")
-    speed_command = (shlex.split(row["speed_command"]))
-    if ("-o" not in speed_command
-            or "{devnull}" not in speed_command
-            or "-v" in speed_command):
-        fail("speed command does not discard output without instrumentation")
+    speed_command = canonical_encoder_arguments(shlex.split(row["speed_command"]))
+    if speed_command.count("-o") != 1:
+        fail("speed command must have exactly one output destination")
+    index = speed_command.index("-o")
+    if speed_command[index:index + 2] != ["-o", "{devnull}"]:
+        fail("speed command does not discard output")
+    if speed_command[:index] + speed_command[index + 2:] != command:
+        fail("quality and speed command controls differ")
     assessment = (shlex.split(row["assessment_command"]))
     if assessment != ["{lsqa}", "{input}", "-"]:
         fail("precision CSV has an unexpected assessment command")
@@ -232,7 +246,7 @@ def validate_rows(path: Path,
     if not path.is_file():
         fail(f"missing precision CSV: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     expected_count = len(expected_records) * len(PRECISIONS)
     if len(rows) != expected_count:
         fail(f"precision CSV has {len(rows)} rows, expected {expected_count}")
@@ -251,9 +265,15 @@ def validate_rows(path: Path,
         precision: work_format
         for precision, _label, work_format in PRECISIONS
     }
+    records_by_key = {(record["domain"], record["config"]): record
+                      for record in expected_records}
     pairs: Dict[Tuple[str, str], Dict[str, Dict[str, str]]] = {}
     for row in rows:
         key = (row["domain"], row["config"])
+        record = records_by_key.get(key)
+        if record is None or any(row[name] != record[name]
+                                 for name in ("label", "option")):
+            fail(f"precision CSV configuration differs from metadata: {key}")
         precision = row["precision"]
         if precision not in expected_formats:
             fail(f"unknown precision in CSV: {precision}")
@@ -285,11 +305,7 @@ def validate_rows(path: Path,
         if not 0.0 < minimum <= q1 <= median <= q3 <= maximum:
             fail(f"precision CSV timing summary is inconsistent: {key}")
         require_command_contract(row)
-    expected_keys = {
-        (record["domain"], record["config"])
-        for record in expected_records
-    }
-    if set(pairs) != expected_keys:
+    if pairs.keys() != records_by_key.keys():
         fail("precision CSV configuration coverage is stale")
     if any(set(pair) != set(expected_formats) for pair in pairs.values()):
         fail("precision CSV does not contain complete precision pairs")
@@ -350,7 +366,7 @@ def main() -> int:
     pairs = validate_rows(
         directory / "precision-comparison.csv",
         metadata,
-        expected_records,
+        metadata["protocol"]["domains"],
     )
     validate_pair_comparisons(pairs)
     for domain in DOMAIN_ORDER:

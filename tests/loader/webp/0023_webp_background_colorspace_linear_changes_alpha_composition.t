@@ -21,7 +21,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-
 output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-alpha-gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-bgcs-alpha-linear.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
@@ -29,7 +29,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=g
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb-linear \
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_linear}" || {

@@ -5,7 +5,7 @@
 set -eux
 result=0
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract \
-    SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma \
+    SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb \
     SIXEL_LOADER_CMS_RENDERING_INTENT='relative!' \
     SIXEL_BACKGROUND_POLICY=explicit_first \
     SIXEL_LOADER_PREFER_8BIT=0 \

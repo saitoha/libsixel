@@ -3,8 +3,8 @@
 set -eux
 
 SIXEL_HDR_CASE_ID='015'
-SIXEL_HDR_CASE_LABEL='hdr matrix sample range case=015 target=gamma ev=-2 tonemap=reinhard cms=auto fallback=srgb'
-SIXEL_HDR_TARGET='gamma'
+SIXEL_HDR_CASE_LABEL='hdr matrix sample range case=015 target=srgb ev=-2 tonemap=reinhard cms=auto fallback=srgb'
+SIXEL_HDR_TARGET='srgb'
 SIXEL_HDR_EXPOSURE_EV='-2'
 SIXEL_HDR_TONEMAP='reinhard'
 SIXEL_HDR_CMS_ENGINE='auto'

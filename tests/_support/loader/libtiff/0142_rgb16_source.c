@@ -151,7 +151,7 @@ test_tiff_0142(int argc, char **argv)
     no = 0;
     ok = 0;
     length = snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!", argv[1]);
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!", argv[1]);
     if (length < 0 || (size_t)length >= sizeof(order)) {
         goto end;
     }

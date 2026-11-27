@@ -1960,7 +1960,7 @@ test_rgbf32_public_retry(void)
     int channel;
     int result = EXIT_FAILURE;
 
-    linear = sixel_color_def_new_named("linear-srgb");
+    linear = sixel_color_def_new_named("srgb-linear");
     gamma = sixel_color_def_new_named("srgb");
     if (linear == NULL || gamma == NULL ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
@@ -2040,7 +2040,7 @@ test_rgbf32_owned_slice(void)
     int offset;
     int result = EXIT_FAILURE;
 
-    linear = sixel_color_def_new_named("linear-srgb");
+    linear = sixel_color_def_new_named("srgb-linear");
     gamma = sixel_color_def_new_named("srgb");
     if (!linear || !gamma || sixel_frame_new(&frame, NULL) != SIXEL_OK) {
         goto end;

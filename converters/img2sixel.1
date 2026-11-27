@@ -1318,8 +1318,8 @@ coregraphics, and builtin loaders accept
 \fBorientation=0|1\fP (short form \fBO0\fP or \fBO1\fP, default 1).
 All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 (short form \fBPvalue\fP) and
-\fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP),
-\fBcms_target=gamma|linear|cielab|oklab|din99d\fP
+\fBbackground_colorspace=srgb|srgb-linear\fP (short form \fBCvalue\fP),
+\fBcms_target=srgb|srgb-linear|lab-d65|oklab|din99d\fP
 (short form \fBTvalue\fP), and \fBprefer_8bit=0|1\fP
 (short form \fBV0\fP or \fBV1\fP), and
 \fBcms_intent=INTENT[+INTENT][!]\fP (short form \fBRvalue\fP).
@@ -1332,7 +1332,7 @@ This does not reorder intents. Use cms_intent=relative! to require relative.
 Builtin requires usable RGB/Gray relative forward black points at both ends;
 unsupported or singular points fail that intent candidate. Native CMS engines
 use their own relative BPC option, without builtin pre-adjustment.
-All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
+All loaders accept \fBhdr_fallback_profile=srgb-linear|srgb\fP
 (short form \fBFvalue\fP) for builtin HDR fallback decode and
 \fBhdr_exposure=EV\fP (short form \fBXvalue\fP) for finite EV stops.
 All loaders also accept \fBhdr_tonemap=auto|none|reinhard\fP
@@ -1994,7 +1994,7 @@ provided. Use 0 or 1. The loader suboption
 setting. Default is off.
 \fIimg2sixel\fP sets this variable to \(dq1\(dq only when it is unset.
 The loader probes only when the effective alpha policy is composite. When
-probing succeeds, it treats the returned background as gamma.
+probing succeeds, it interprets the returned background as sRGB.
 .TP 5
 .B SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
 .br
@@ -2029,7 +2029,7 @@ not recover higher source bit depth from the loader.
 .TP 5
 .B SIXEL_DECODER_INPUT_COLORSPACE
 .br
-set decoded RGB interpretation: srgb, display-p3, adobe-rgb, dci-p3 or icc.
+set decoded RGB interpretation: srgb, display-p3, a98-rgb, dci-p3 or icc.
 The sixel2png \fB\-T\fP option takes precedence.
 Encoder-generated PNG snapshots use the profile selected by named or ICC
 \fB\-U\fP and sRGB otherwise, independently of this default.
@@ -2219,7 +2219,7 @@ command-line option is present.
 .B SIXEL_LOADER_BACKGROUND_COLORSPACE
 .br
 set how loader background colors are interpreted during alpha composition.
-accepts "gamma" (default) or "linear".
+accepts "srgb" (default) or "srgb-linear".
 ignored when OSC11 query supplies the background color.
 .TP 5
 .B SIXEL_BACKGROUND_POLICY
@@ -2372,7 +2372,7 @@ file. Accepts only "0" or "1"; "1" enables spooling.
 .B SIXEL_LOADER_HDR_FALLBACK_PROFILE
 .br
 set the builtin HDR source profile when GAMMA and PRIMARIES metadata are
-missing or unusable. Accepts "linear-srgb" (default) or "srgb".
+missing or unusable. Accepts "srgb-linear" (default) or "srgb".
 Header-derived metadata takes precedence. Override with
 \fB-Lloader:hdr_fallback_profile=PROFILE\fP or short form
 \fB-Lloader:FPROFILE\fP.
@@ -2476,8 +2476,8 @@ Other CMS engines and linear-to-P3 output conversion are unaffected.
 .TP 5
 .B SIXEL_LOADER_CMS_TARGET_COLORSPACE
 .br
-set the loader CMS output colorspace. Accepts "gamma", "linear", "cielab",
-"oklab", or "din99d". The default is "linear". Override with
+set the loader CMS output colorspace. Accepts "srgb", "srgb-linear", "lab-d65",
+"oklab", or "din99d". The default is "srgb-linear". Override with
 \fB-Lloader:cms_target=SPACE\fP or short form \fB-Lloader:TSPACE\fP.
 .TP 5
 .B SIXEL_LOADER_PREFER_8BIT

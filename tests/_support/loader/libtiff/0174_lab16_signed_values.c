@@ -120,7 +120,7 @@ test_loader_0174_lab16(int argc, char **argv)
     no = 0;
     ok = 0;
     snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!", name);
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!", name);
     status = sixel_loader_new(&loader, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;

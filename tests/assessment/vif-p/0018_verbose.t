@@ -7,7 +7,7 @@ set -v
 
 export LSQA_VERBOSE=1
 value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
-    -W gamma -P float32 -m VIF-P \
+    -W srgb -P float32 -m VIF-P \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp" "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp" 2>&1) || {
     printf '\n%s\n' "not ok 1 - VIF-P verbose report"
     exit 0

@@ -144,14 +144,14 @@ The generated SVG and stage/test manifest are maintained by [`plot_builtin_loade
 ## Options and observable differences
 
 ```console
-img2sixel -Lbuiltin:cms_engine=auto:cms_target=linear:prefer_8bit=0! document.psd
+img2sixel -Lbuiltin:cms_engine=auto:cms_target=srgb-linear:prefer_8bit=0! document.psd
 img2sixel -x code:psd_trace=1:psd_header_only=1 -Lbuiltin! document.psb
 ```
 
 | Control | Exact effect on PSD/PSB |
 | --- | --- |
 | `cms_engine=none|auto|builtin|lcms2|colorsync` | `none` disables ICC conversion. Other values select an available engine for domain-compatible process profiles, including Gray on the explicit process-plus-spot route. Device/fallback conversion remains for uncovered or failed transforms. |
-| `cms_target=gamma|linear|cielab|oklab|din99d` | Selects the typed destination after a successful transform. It does not alter the document color-mode number. |
+| `cms_target=srgb|srgb-linear|lab-d65|oklab|din99d` | Selects the typed destination after a successful transform. It does not alter the document color-mode number. |
 | `cms_intent=...` | Controls ordered rendering-intent attempts for applicable ICC transforms. |
 | `prefer_8bit=0|1` | Requests byte storage where the CMS target/path permits. It does not force 16/32-bit source decode through the old eight-bit PSD path. |
 | `-B`, `background_colorspace`, `-A auto|composite|clear|keep` | Control final handling of merged or reconstructed alpha. PSD does not provide the shared PNG/GIF file-background candidate, so `background_policy` has no competing source. |

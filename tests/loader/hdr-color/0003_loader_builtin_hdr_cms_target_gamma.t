@@ -10,7 +10,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env "SIXEL_TEST_BUILTIN_PIXELFORMAT_BASELINE=1" \
-    --env "SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma" \
+    --env "SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb" \
     --env "SIXEL_LOADER_PREFER_8BIT=0" \
     --env "SIXEL_TEST_EXPECT_HDR_CMS_PIXELFORMAT=RGBFLOAT32" \
     "loader/0014_loader_builtin_pixelformat" || {

@@ -91,7 +91,7 @@ img2sixel -Lbuiltin:background_policy=explicit_first! -B '#202020' animation.gif
 | `-g`, `--ignore-delay` | Leaves parsed delays intact but makes the encoder skip presentation sleeps. It does not alter GIF parsing or disposal. |
 | `-B COLOR` | Supplies an explicit composition/disposal background. Without one, transparent pixels can remain transparent and the file background can participate according to policy. |
 | `background_policy=file_first|explicit_first` | Chooses whether a valid Logical Screen background or `-B` wins where GIF requires a background. |
-| `background_colorspace=gamma|linear` | Selects how an explicit background is interpreted when alpha composition is performed. |
+| `background_colorspace=srgb|srgb-linear` | Selects how an explicit background is interpreted when alpha composition is performed. |
 | `-A auto|composite|clear|keep` | Controls whether zero-alpha output remains transparent or is flattened after GIF composition. It cannot create partial alpha because GIF has none. |
 | `-p COLORS` and operations that disable palette fusion | The requested palette limit can keep or prevent the composed `PAL8` fast path. Scaling and non-default encoder color modes disable loader palette fusion and force RGB expansion. |
 | `cms_engine`, `cms_target`, `prefer_8bit` | Select embedded ICC interpretation and final target negotiation. `cms_engine=none` retains the unmanaged byte route. |

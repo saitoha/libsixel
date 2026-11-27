@@ -104,7 +104,7 @@ profile_format_frame(int argc, char **argv, int mode)
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_loader_setopt(loader,
                 SIXEL_LOADER_OPTION_LOADER_ORDER,
-                "builtin:cms_engine=colorsync:cms_target=linear:"
+                "builtin:cms_engine=colorsync:cms_target=srgb-linear:"
                 "prefer_8bit=0!");
         }
         if (SIXEL_SUCCEEDED(status)) {

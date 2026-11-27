@@ -21,7 +21,7 @@ producer | lsqa --target-colorspace=display-p3 reference.six -
 | `auto` | Keep the legacy loader's metadata and fallback policy. Plain SIXEL is interpreted as sRGB by this adapter. |
 | `srgb` | sRGB primaries, D65 white, sRGB transfer function. |
 | `display-p3` | Display P3 primaries, D65 white, sRGB transfer function. |
-| `adobe-rgb` | Adobe RGB (1998), D65 white, decoding exponent 563/256. |
+| `a98-rgb` | Adobe RGB (1998), D65 white, decoding exponent 563/256. |
 | `dci-p3` | P3 primaries, DCI white, decoding exponent 2.6. |
 | `rgb:wx,wy,rx,ry,gx,gy,bx,by:srgb` | Custom white and RGB primary xy coordinates with the sRGB transfer function. |
 | `rgb:wx,wy,rx,ry,gx,gy,bx,by:gamma=r,g,b` | The same xy layout with three positive per-channel decoding exponents, each at most 10. |
@@ -47,9 +47,9 @@ The encoder's `-Udisplay-p3` selects an output definition; the corresponding eva
 ```sh
 input=tests/data/color-numeric/png-p3-16-rgb.png
 converters/img2sixel "$input" --threading-policy=greedy:global_budget=1 \
-    -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+    -L'builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!' \
     -Udisplay-p3 -_none > output.six
-assessment/lsqa -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+assessment/lsqa -L'builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!' \
     -Tdisplay-p3 "$input" output.six
 ```
 
@@ -87,9 +87,9 @@ Either input with zero chroma has hue zero by the CIEDE2000 convention. The eval
 | Selection | Signal |
 | --- | --- |
 | `reference` | Follow the reference's current coordinate; gamma uses encoded luma, other supported coordinates use linear Y. |
-| `gamma` | Encoded sRGB luma, `0.2126 R' + 0.7152 G' + 0.0722 B'`. |
-| `linear` | Linear sRGB Y with the same coefficients. |
-| `oklab`, `cielab`, `din99d` | Recover linear sRGB and use Y. Opponent components are never weighted as RGB. |
+| `srgb` | Encoded sRGB luma, `0.2126 R' + 0.7152 G' + 0.0722 B'`. |
+| `srgb-linear` | Linear sRGB Y with the same coefficients. |
+| `oklab`, `lab-d65`, `din99d` | Recover linear sRGB and use Y. Opponent components are never weighted as RGB. |
 
 Unchanged sRGB gamma/linear samples retain the existing luma coefficients and float32 representation. The coefficients are the historical metric definition; they are distinct from the full-precision primary matrix used for PCS.
 

@@ -1773,7 +1773,7 @@ sixel_frame_init_borrowed(
 );
 
 /* Immutable RGB sample definitions. Constructors return NULL on failure.
- * Named definitions accept srgb, linear-srgb, display-p3, a98-rgb and
+ * Named definitions accept srgb, srgb-linear, display-p3, a98-rgb and
  * dci-p3. The ICC constructor copies the supplied RGB profile bytes.
  * Release the returned definition with sixel_color_def_free(). */
 SIXELAPI sixel_color_def_t *

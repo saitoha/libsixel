@@ -10,7 +10,7 @@ set -v
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+    -L'libpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!' \
     --threading-policy=greedy:global_budget=1 -.auto -Qheckbert -Fnone -aoff -_none '-~none' -dnone \
     -Xsrgb-linear -Wsrgb-linear -Udci-p3 -trgb -p2 \
     "${TOP_SRCDIR}/tests/data/color-numeric/named-output-p3.png" | \

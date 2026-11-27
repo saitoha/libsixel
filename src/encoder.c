@@ -9110,7 +9110,7 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     cluster = encoder->clustering_override != NULL
         ? encoder->clustering_icc : encoder->working_icc;
     if (cluster != NULL) {
-        request->linear_srgb = sixel_color_def_new_named("linear-srgb");
+        request->linear_srgb = sixel_color_def_new_named("srgb-linear");
         request->clustering_icc = sixel_cdef_clone(cluster);
         if (!request->linear_srgb || !request->clustering_icc) {
             sixel_palette_build_request_free(request);
@@ -14332,7 +14332,7 @@ sixel_encoder_set_geometry_icc(sixel_encoder_t *encoder, int option,
         return SIXEL_BAD_ARGUMENT;
     }
     if (option == SIXEL_OPTFLAG_WORKING_COLORSPACE) {
-        encoder->working_linear = sixel_color_def_new_named("linear-srgb");
+        encoder->working_linear = sixel_color_def_new_named("srgb-linear");
         if (!encoder->working_linear) {
             sixel_cdef_free(profile);
             return SIXEL_BAD_ALLOCATION;

@@ -183,7 +183,7 @@ lab_linear_frame_test(int argc, char **argv, int engine, int words)
     no = 0;
     ok = 0;
     snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!",
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!",
         sixel_cms_engine_to_string((sixel_cms_engine_t)engine));
     status = sixel_loader_new(&loader, NULL);
     if (SIXEL_FAILED(status)) { goto cleanup; }

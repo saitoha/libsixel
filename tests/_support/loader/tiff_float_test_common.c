@@ -128,7 +128,7 @@ tiff_float_values_test(int argc, char **argv, int variant)
     sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
     control = tuf_trace_control();
     fprintf(stderr, "TFLOAT|control=%d|case-begin\n", control);
-    target = variant == 15 ? "gamma" : variant == 17 ? "oklab" : "linear";
+    target = variant == 15 ? "srgb" : variant == 17 ? "oklab" : "srgb-linear";
     snprintf(order, sizeof(order),
         "libtiff:cms_engine=%s:cms_target=%s:prefer_8bit=%d!",
         variant == 10 ? "none" : "builtin", target, variant == 16);

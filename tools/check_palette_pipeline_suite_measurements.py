@@ -108,6 +108,8 @@ def validate_single_protocol(protocol: object,
     """Validate the single-fixture protocol nested in suite metadata."""
     if not isinstance(protocol, dict):
         fail("suite metadata lacks the single-fixture protocol")
+    if protocol.get("precision") not in ("8bit", "auto"):
+        fail("suite single-fixture precision is invalid")
     expected = {
         "measurement_mode": mode,
         "comparison_scope": (
@@ -117,7 +119,6 @@ def validate_single_protocol(protocol: object,
         "configurations": expected_config_records(),
         "comparison_facets": COMPARISON_FACETS,
         "threads": 1,
-        "precision": "auto",
         "quality": "full",
         "loader": CMS_LOADER_ORDER,
         "quality_reference_loader": CMS_REFERENCE_LOADER_ORDER,
@@ -348,7 +349,8 @@ def validate_points(path: Path,
                     fixtures: Sequence[Dict[str, object]],
                     revision: str,
                     platform_name: str,
-                    metric: str) -> int:
+                    metric: str,
+                    precision: str) -> int:
     """Validate quality or size point rows in exact executed order."""
     rows = read_csv(path)
     by_id = {str(fixture["id"]): fixture for fixture in fixtures}
@@ -359,7 +361,8 @@ def validate_points(path: Path,
         if fixture is None:
             fail(f"suite row has unknown fixture in {path}: {fixture_id}")
         validate_row_identity(row, path, fixture, revision, platform_name)
-        validate_command(row, path, loader_order=CMS_LOADER_ORDER)
+        validate_command(row, path, loader_order=CMS_LOADER_ORDER,
+                         precision=precision)
         if metric == "quality":
             validate_assessment_command(
                 row, path, CMS_LOADER_ORDER, True
@@ -441,7 +444,8 @@ def validate_speed(path: Path,
                    revision: str,
                    platform_name: str,
                    warmups: int,
-                   runs: int) -> int:
+                   runs: int,
+                   precision: str) -> int:
     """Validate every raw suite timing row and exact schedule."""
     rows = read_csv(path)
     by_id = {str(fixture["id"]): fixture for fixture in fixtures}
@@ -459,6 +463,7 @@ def validate_speed(path: Path,
             domain == "palette-build",
             True,
             CMS_LOADER_ORDER,
+            precision,
         )
         try:
             identity = (
@@ -529,6 +534,7 @@ def main() -> int:
     platform_name = str(host["platform"])
     warmups = int(protocol["speed_warmups"])
     runs = int(protocol["speed_runs"])
+    precision = str(protocol["single_fixture_protocol"]["precision"])
     counts = {
         "quality": validate_points(
             directory / "palette-pipeline-suite-quality.csv",
@@ -536,6 +542,7 @@ def main() -> int:
             revision,
             platform_name,
             "quality",
+            precision,
         ),
         "size": validate_points(
             directory / "palette-pipeline-suite-size.csv",
@@ -543,6 +550,7 @@ def main() -> int:
             revision,
             platform_name,
             "size",
+            precision,
         ),
         "speed": validate_speed(
             directory / "palette-pipeline-suite-speed.csv",
@@ -551,6 +559,7 @@ def main() -> int:
             platform_name,
             warmups,
             runs,
+            precision,
         ),
     }
     if metadata["artifacts"].get("row_counts") != counts:

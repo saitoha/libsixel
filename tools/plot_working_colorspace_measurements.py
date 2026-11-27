@@ -42,17 +42,17 @@ from plot_quantize_model_measurements import (
 COLORS = (8, 16, 32, 64, 128, 256)
 DIFFUSIONS = ("none", "fs")
 COLORSPACES: Tuple[Tuple[str, str, int, str], ...] = (
-    ("gamma", "gamma sRGB", 0, "rgb-f32"),
-    ("linear", "linear RGB", 1, "linear-f32"),
+    ("srgb", "gamma sRGB", 0, "rgb-f32"),
+    ("srgb-linear", "linear RGB", 1, "linear-f32"),
     ("oklab", "Oklab", 2, "oklab-f32"),
-    ("cielab", "CIELAB", 4, "cielab-f32"),
+    ("lab-d65", "CIELAB", 4, "cielab-f32"),
     ("din99d", "DIN99d", 5, "din99d-f32"),
 )
 STYLES = {
-    "gamma": ("#0072B2", "o", "-"),
-    "linear": ("#E69F00", "s", "--"),
+    "srgb": ("#0072B2", "o", "-"),
+    "srgb-linear": ("#E69F00", "s", "--"),
     "oklab": ("#009E73", "^", "-."),
-    "cielab": ("#CC79A7", "D", ":"),
+    "lab-d65": ("#CC79A7", "D", ":"),
     "din99d": ("#D55E00", "v", (0, (5, 1))),
 }
 
@@ -91,8 +91,7 @@ def make_command(img2sixel: str,
         "-a",
         "off",
         "-Xsrgb",
-        "-W" + {"gamma": "srgb", "linear": "srgb-linear",
-                "cielab": "lab-d65"}.get(colorspace, colorspace),
+        "-W" + colorspace,
         "-Usrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
@@ -213,7 +212,7 @@ def measure_quality_and_size(
             gamma_bytes = int(next(
                 row["encoded_bytes"]
                 for row in group
-                if row["colorspace"] == "gamma"
+                if row["colorspace"] == "srgb"
             ))
             for row in group:
                 row["size_ratio_vs_gamma"] = (
@@ -272,7 +271,7 @@ def measure_speed(img2sixel: str,
             medians = {
                 name: statistics.median(samples[name]) for name in names
             }
-            gamma_median = medians["gamma"]
+            gamma_median = medians["srgb"]
             for name in names:
                 values = samples[name]
                 result[(diffusion, colors, name)] = {
@@ -341,7 +340,7 @@ def plot_series(axis: plt.Axes,
             linestyle=linestyle,
             linewidth=1.8,
             markersize=5.5,
-            markerfacecolor="white" if colorspace in ("linear", "cielab")
+            markerfacecolor="white" if colorspace in ("srgb-linear", "lab-d65")
             else color,
             label=str(record["label"]),
         )
@@ -378,7 +377,7 @@ def plot_timing_series(axis: plt.Axes,
             elinewidth=0.8,
             capsize=2.0,
             markersize=5.5,
-            markerfacecolor="white" if colorspace in ("linear", "cielab")
+            markerfacecolor="white" if colorspace in ("srgb-linear", "lab-d65")
             else color,
             label=str(record["label"]),
         )
@@ -517,8 +516,8 @@ def write_metadata(path: Path,
             "quantize_model": "kmeans:seed=1:binbits=6",
             "merge_policy": "none",
             "cover_policy": "off",
-            "clustering_colorspace": "gamma",
-            "output_colorspace": "gamma",
+            "clustering_colorspace": "srgb",
+            "output_colorspace": "srgb",
             "lookup_policy": "none",
             "gpu_policy": "off",
             "palette_type": "rgb",

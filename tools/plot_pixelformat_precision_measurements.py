@@ -29,16 +29,16 @@ OUTPUT_WIDTH = 300
 OUTPUT_HEIGHT = 225
 PALETTE_COLORS = 256
 PATH_CASES: Tuple[Tuple[str, str, str, str, str, str], ...] = (
-    ("gamma-8bit", "Gamma, requested 8-bit", "8bit", "gamma", "gamma", "plain"),
-    ("gamma-float32", "Gamma, requested float32", "float32", "gamma", "gamma", "plain"),
-    ("working-linear-auto", "Linear, requested auto", "auto", "linear", "linear", "plain"),
-    ("working-linear-float32", "Linear, requested float32", "float32", "linear", "linear", "plain"),
+    ("gamma-8bit", "Gamma, requested 8-bit", "8bit", "srgb", "srgb", "plain"),
+    ("gamma-float32", "Gamma, requested float32", "float32", "srgb", "srgb", "plain"),
+    ("working-linear-auto", "Linear, requested auto", "auto", "srgb-linear", "srgb-linear", "plain"),
+    ("working-linear-float32", "Linear, requested float32", "float32", "srgb-linear", "srgb-linear", "plain"),
     ("working-oklab-auto", "Oklab, requested auto", "auto", "oklab", "oklab", "plain"),
     ("working-oklab-float32", "Oklab, requested float32", "float32", "oklab", "oklab", "plain"),
-    ("cms-gamma-byte", "CMS gamma, prefer 8-bit", "8bit", "gamma", "gamma", "cms-gamma-byte"),
-    ("cms-gamma-float", "CMS gamma, retain float32", "8bit", "gamma", "gamma", "cms-gamma-float"),
-    ("cms-linear-byte", "CMS linear via RGB888", "auto", "linear", "linear", "cms-linear-byte"),
-    ("cms-linear-float", "CMS linear float32", "auto", "linear", "linear", "cms-linear-float"),
+    ("cms-gamma-byte", "CMS gamma, prefer 8-bit", "8bit", "srgb", "srgb", "cms-gamma-byte"),
+    ("cms-gamma-float", "CMS gamma, retain float32", "8bit", "srgb", "srgb", "cms-gamma-float"),
+    ("cms-linear-byte", "CMS linear via RGB888", "auto", "srgb-linear", "srgb-linear", "cms-linear-byte"),
+    ("cms-linear-float", "CMS linear float32", "auto", "srgb-linear", "srgb-linear", "cms-linear-float"),
     ("cms-oklab-auto", "CMS Oklab, requested auto", "auto", "oklab", "oklab", "cms-oklab-float"),
     ("cms-oklab-float32", "CMS Oklab, requested float32", "float32", "oklab", "oklab", "cms-oklab-float"),
 )
@@ -120,16 +120,16 @@ def loader_option(kind: str) -> str:
     choices = {
         "plain": "builtin!",
         "cms-gamma-byte": (
-            "builtin:cms_engine=builtin:cms_target=gamma:prefer_8bit=1!"
+            "builtin:cms_engine=builtin:cms_target=srgb:prefer_8bit=1!"
         ),
         "cms-gamma-float": (
-            "builtin:cms_engine=builtin:cms_target=gamma:prefer_8bit=0!"
+            "builtin:cms_engine=builtin:cms_target=srgb:prefer_8bit=0!"
         ),
         "cms-linear-byte": (
-            "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=1!"
+            "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=1!"
         ),
         "cms-linear-float": (
-            "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!"
+            "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!"
         ),
         "cms-oklab-float": (
             "builtin:cms_engine=builtin:cms_target=oklab:prefer_8bit=0!"
@@ -157,10 +157,8 @@ def encoder_command(img2sixel: Path,
         "--quantize-model=kmeans:seed=1:binbits=6",
         "-Fnone",
         "-aoff",
-        "-X" + {"gamma": "srgb", "linear": "srgb-linear",
-                "cielab": "lab-d65"}.get(clustering, clustering),
-        "-W" + {"gamma": "srgb", "linear": "srgb-linear",
-                "cielab": "lab-d65"}.get(working, working),
+        "-X" + clustering,
+        "-W" + working,
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",
@@ -186,8 +184,8 @@ def resize_command(img2sixel: Path,
         input_path,
         output_path,
         "8bit",
-        "gamma",
-        "gamma",
+        "srgb",
+        "srgb",
         "plain",
     )
     resize_options = ["-w50%", "-rbilinear"]

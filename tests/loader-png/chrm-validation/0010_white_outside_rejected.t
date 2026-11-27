@@ -6,7 +6,7 @@ echo "1..1"
 set -v
 
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0197_png_chrm_reject 0 2>&1) || result=$?
 test "$result" -eq 0 || {

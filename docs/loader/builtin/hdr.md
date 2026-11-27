@@ -47,7 +47,7 @@ The format predicate selects the HDR path before residual stb dispatch. `fromhdr
 When CMS is disabled, that linear decode result remains `LINEARRGBFLOAT32`. When CMS is enabled, the loader builds a source interpretation in this order:
 
 1. usable header `GAMMA` and/or `PRIMARIES`, with missing pieces filled from sRGB;
-2. `hdr_fallback_profile`, defaulting to `linear-srgb`, when usable header profile data is absent;
+2. `hdr_fallback_profile`, defaulting to `srgb-linear`, when usable header profile data is absent;
 3. the decode-linear result if profile construction or application fails.
 
 An applicable transform writes the configured typed CMS target: gamma RGB, linear RGB, CIELAB, OKLab, or DIN99d. HDR starts as float32 and is not reduced to an eight-bit source decoder merely because another path prefers byte storage.
@@ -86,18 +86,18 @@ The generated SVG and stage/test manifest are maintained by [`plot_builtin_loade
 ## Options and observable differences
 
 ```console
-img2sixel -Lbuiltin:hdr_fallback_profile=linear-srgb:hdr_exposure=1.5:hdr_tonemap=reinhard! image.hdr
+img2sixel -Lbuiltin:hdr_fallback_profile=srgb-linear:hdr_exposure=1.5:hdr_tonemap=reinhard! image.hdr
 img2sixel -Lbuiltin:cms_engine=auto:cms_target=oklab:prefer_8bit=0! image.hdr
 ```
 
 | Control | Exact effect on Radiance HDR |
 | --- | --- |
-| `hdr_fallback_profile=linear-srgb|srgb` (`Fvalue`) | Chooses the assumed source profile only when usable header gamma/primaries are absent. Default is `linear-srgb`. The `srgb` value interprets decoded numeric components through the sRGB transfer curve and can materially change midtones. |
+| `hdr_fallback_profile=srgb-linear|srgb` (`Fvalue`) | Chooses the assumed source profile only when usable header gamma/primaries are absent. Default is `srgb-linear`. The `srgb` value interprets decoded numeric components through the sRGB transfer curve and can materially change midtones. |
 | `hdr_exposure=EV` (`Xvalue`) | Multiplies all channels by `2^EV`. Default is `0`. The parser requires a finite number; a scale that overflows is replaced by 1. |
 | `hdr_header_exposure=0|1` (`U0`/`U1`) | Default `1` divides by the product of valid header `EXPOSURE` values. `0` leaves those values informational. It does not disable `COLORCORR` compensation. |
 | `hdr_tonemap=none|reinhard` (`Hvalue`) | Default `none` preserves HDR magnitude. `reinhard` compresses each channel independently after exposure and correction. |
 | `cms_engine=none|auto|builtin|lcms2|colorsync` | `none` bypasses header/fallback profile conversion and retains linear RGB float. Other values select an available engine; failure falls back to decoded linear values. |
-| `cms_target=gamma|linear|cielab|oklab|din99d` | Selects the destination representation when CMS application succeeds. |
+| `cms_target=srgb|srgb-linear|lab-d65|oklab|din99d` | Selects the destination representation when CMS application succeeds. |
 | `cms_intent=...` | Controls ordered rendering-intent attempts for the applicable transform; it does not affect header parsing or exposure math. |
 | `prefer_8bit=0|1` | Does not choose an eight-bit HDR decoder. The source and dynamic-range path remain float32; target storage follows the HDR/CMS implementation. |
 | `-p COLORS`, resize, crop, sampling, and encoder colorspace options | Operate after the HDR loader has returned its float frame. They can cause later colorspace conversions but do not change RGBE/XYZE parsing. |

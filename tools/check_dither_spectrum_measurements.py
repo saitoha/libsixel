@@ -13,7 +13,10 @@ from typing import Dict, List, Set, Tuple
 
 from PIL import Image
 
-from measurement_commands import canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
 
 
 RADIAL_BINS = 64
@@ -55,7 +58,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement file: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement file has no rows: {path}")
     return rows
@@ -66,7 +69,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail(f"unsupported measurement metadata schema: {path}")
     source = payload.get("source")
@@ -95,7 +98,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "threads": 1,
         "precision": "8bit",
         "loader": "builtin!",
-        "working_colorspace": "gamma",
+        "working_colorspace": "srgb",
         "lookup_policy": "none",
         "scan": "raster",
         "gpu_policy": "off",

@@ -6,7 +6,7 @@ echo "1..1"
 set -v
 
 value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
-    -W gamma -P float32 -m vIf-p -b vIf-p:min=1 \
+    -W srgb -P float32 -m vIf-p -b vIf-p:min=1 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp" "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp") || {
     printf '\n%s\n' "not ok 1 - VIF-P identity selection"
     exit 0

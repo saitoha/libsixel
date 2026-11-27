@@ -18,7 +18,10 @@ from plot_merge_policy_measurements import (
     quantizer_records,
 )
 
-from measurement_commands import canonical_encoder_arguments
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
 
 
 CSV_NAME = "merge-policy-comparison.csv"
@@ -40,7 +43,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail("unsupported merge-policy metadata schema")
     source = payload.get("source")
@@ -56,6 +59,8 @@ def read_metadata(path: Path) -> Dict[str, object]:
     revision = source.get("revision")
     if not isinstance(revision, str) or len(revision) < 7:
         fail("measurement source revision is missing")
+    if protocol.get("precision") not in ("8bit", "auto"):
+        fail("measurement metadata has invalid precision")
     expected = {
         "comparison_scope": (
             "final merge policy within each controlled quantizer"
@@ -64,14 +69,13 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "quantizers": quantizer_records(),
         "merge_configurations": merge_records(),
         "threads": 1,
-        "precision": "auto",
         "required_work_format": "rgb888",
         "quality": "full",
         "loader": "builtin!",
         "sampling_policy": "full-frame",
         "clustering_colorspace": "oklab",
-        "working_colorspace": "gamma",
-        "output_colorspace": "gamma",
+        "working_colorspace": "srgb",
+        "output_colorspace": "srgb",
         "diffusion": "none",
         "lookup_policy": "none",
         "gpu_policy": "off",
@@ -125,7 +129,7 @@ def expected_points() -> Set[Tuple[str, int, str]]:
     }
 
 
-def validate_command(row: Dict[str, str], timeline: bool) -> None:
+def validate_command(row: Dict[str, str], timeline: bool, precision: str) -> None:
     """Validate all controlled options in one recorded command."""
     quantizers = {
         str(record["quantizer"]): record
@@ -156,7 +160,7 @@ def validate_command(row: Dict[str, str], timeline: bool) -> None:
         raise ValueError(f"invalid {field}") from exc
     required = {
         "--threading-policy=greedy:global_budget=1",
-        "--precision-policy=auto",
+        f"--precision-policy={precision}",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",
@@ -203,16 +207,16 @@ def finite_float(row: Dict[str, str], field: str) -> float:
     return value
 
 
-def read_rows(path: Path, revision: str) -> List[Dict[str, str]]:
+def read_rows(path: Path, revision: str, precision: str) -> List[Dict[str, str]]:
     """Read and validate all measurement rows."""
     if not path.is_file():
         fail(f"missing measurement CSV: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     actual: Set[Tuple[str, int, str]] = set()
     for row in rows:
-        validate_command(row, False)
-        validate_command(row, True)
+        validate_command(row, False, precision)
+        validate_command(row, True, precision)
         try:
             key = (
                 row["quantizer"],
@@ -351,7 +355,8 @@ def main() -> int:
     args = parser.parse_args()
     metadata = read_metadata(args.directory / "merge-policy-run.json")
     revision = str(metadata["source"]["revision"])
-    rows = read_rows(args.directory / CSV_NAME, revision)
+    precision = str(metadata["protocol"]["precision"])
+    rows = read_rows(args.directory / CSV_NAME, revision, precision)
     check_derived_values(rows)
     for name in PLOTS:
         check_png(args.directory / name)

@@ -247,7 +247,7 @@ test_fixed_mask_run(int space, int mode, char const *path, int animated)
                 '.', "float32"))) ||
             ((mode == 17 || mode == 18) &&
              SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L',
-                "builtin:cms_engine=builtin:cms_target=linear:"
+                "builtin:cms_engine=builtin:cms_target=srgb-linear:"
                 "prefer_8bit=0!")))) {
         goto end;
     }

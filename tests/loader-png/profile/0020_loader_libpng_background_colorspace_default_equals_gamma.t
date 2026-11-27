@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng:cms_engine=none! -B#808080 "${inp
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Llibpng:cms_engine=none! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
     printf '\n%s\n' "not ok 1 - libpng gamma background colorspace conversion failed"

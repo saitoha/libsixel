@@ -2,14 +2,14 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 set -eux
 
-SIXEL_HDR_CASE_LABEL='hdr matrix numeric case=132 target=gamma gamma=none primaries=bt2020 ev=0 tonemap=reinhard cms=none fallback=linear-srgb'
-SIXEL_HDR_TARGET='gamma'
+SIXEL_HDR_CASE_LABEL='hdr matrix numeric case=132 target=srgb gamma=none primaries=bt2020 ev=0 tonemap=reinhard cms=none fallback=srgb-linear'
+SIXEL_HDR_TARGET='srgb'
 SIXEL_HDR_GAMMA='none'
 SIXEL_HDR_PRIMARIES='bt2020'
 SIXEL_HDR_EXPOSURE_EV='0'
 SIXEL_HDR_TONEMAP='reinhard'
 SIXEL_HDR_CMS_ENGINE='none'
-SIXEL_HDR_FALLBACK_PROFILE='linear-srgb'
+SIXEL_HDR_FALLBACK_PROFILE='srgb-linear'
 
 echo "1..1"
 set -v
