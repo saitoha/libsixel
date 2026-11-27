@@ -49,6 +49,7 @@
 #include "colorspace.h"
 #include "compat_stub.h"
 #include "loader-common.h"
+#include "options.h"
 #include "scale.h"
 #include "sixel_atomic.h"
 
@@ -57,6 +58,7 @@
 struct sixel_ycbcr_def {
     sixel_atomic_u32_t ref;
     int encoding, range, chroma_location;
+    int nearest_chroma;
     sixel_color_def_t *rgb;
 };
 
@@ -1841,6 +1843,8 @@ sixel_ycbcr_def_new(int encoding, int range, int chroma_location,
                     sixel_color_def_t const *rgb)
 {
     sixel_ycbcr_def_t *definition;
+    sixel_suboption_value_t chroma;
+    char diagnostic[96] = {0};
 
     if ((encoding != SIXEL_YCBCR_ENCODING_BT601 &&
          encoding != SIXEL_YCBCR_ENCODING_BT709 &&
@@ -1849,6 +1853,14 @@ sixel_ycbcr_def_new(int encoding, int range, int chroma_location,
         || (chroma_location != SIXEL_CHROMA_LOCATION_LEFT &&
             chroma_location != SIXEL_CHROMA_LOCATION_CENTER) ||
         !sixel_cdef_frame_input_ready(rgb)) {
+        return NULL;
+    }
+    /* Read the stream's policy once before any frame is initialized. */
+    chroma.int_value = 0;
+    if (sixel_option_resolve_scalar_environment(
+            SIXEL_OPTION_SCHEMA_YCBCR422_CHROMA, &chroma,
+            diagnostic, sizeof(diagnostic)) < SIXEL_OPTION_ENVIRONMENT_UNSET) {
+        sixel_helper_set_additional_message(diagnostic);
         return NULL;
     }
     definition = malloc(sizeof(*definition));
@@ -1862,6 +1874,7 @@ sixel_ycbcr_def_new(int encoding, int range, int chroma_location,
         definition->encoding = encoding;
         definition->range = range;
         definition->chroma_location = chroma_location;
+        definition->nearest_chroma = chroma.int_value;
     }
     return definition;
 }
@@ -2622,12 +2635,117 @@ sixel_frame_convert_workformat(sixel_frame_t *frame, int pixelformat)
 }
 
 
+/* Reconstruct one RGB triplet without applying the source RGB transfer. */
+static void
+sixel_frame_decode_ycbcr_sample(float *out, float y, float cb, float cr,
+                              float const coefficients[4])
+{
+    out[0] = y + coefficients[0] * cr;
+    out[1] = y - coefficients[1] * cb - coefficients[2] * cr;
+    out[2] = y + coefficients[3] * cb;
+}
+
+static SIXELSTATUS
+sixel_frame_decode_ycbcr422(sixel_frame_t *frame)
+{
+    /* Luma weights from the 601, 709 and 2020 NCL encodings. */
+    static double const weights[][2] = {
+        {0.2990, 0.1140}, {0.2126, 0.0722}, {0.2627, 0.0593}
+    };
+    sixel_ycbcr_def_t const *definition;
+    sixel_color_def_t *rgb;
+    unsigned char const *row, *pair, *previous, *next;
+    float *pixels, *out;
+    float coefficients[4];
+    double kr, kb, kg, chroma_divisor;
+    float luma_scale, luma_offset, left_weight, right_weight;
+    float cb, cr, odd_cb, odd_cr;
+    size_t bytes;
+    int y, x, uyvy, cb_offset, cr_offset, limited, centered;
+    SIXELSTATUS status;
+
+    status = sixel_frame_validate_size("packed YCbCr conversion",
+        frame->width, frame->height, SIXEL_PIXELFORMAT_RGBFLOAT32,
+        NULL, &bytes, NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    pixels = sixel_allocator_malloc(frame->allocator, bytes);
+    if (pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    definition = frame->ycbcr;
+    rgb = sixel_cdef_clone(definition->rgb);
+    if (rgb == NULL) {
+        sixel_allocator_free(frame->allocator, pixels);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    kr = weights[definition->encoding - 1][0];
+    kb = weights[definition->encoding - 1][1];
+    kg = 1.0 - kr - kb;
+    limited = definition->range == SIXEL_YCBCR_RANGE_LIMITED;
+    luma_scale = limited ? 1.0f / 219.0f : 1.0f / 255.0f;
+    luma_offset = limited ? 16.0f : 0.0f;
+    chroma_divisor = limited ? 224.0 : 255.0;
+    coefficients[0] = (float)(2.0 * (1.0 - kr) / chroma_divisor);
+    coefficients[1] = (float)(2.0 * kb * (1.0 - kb) / (kg * chroma_divisor));
+    coefficients[2] = (float)(2.0 * kr * (1.0 - kr) / (kg * chroma_divisor));
+    coefficients[3] = (float)(2.0 * (1.0 - kb) / chroma_divisor);
+    uyvy = frame->format.layout == SIXEL_PIXELFORMAT_UYVY;
+    cb_offset = 1 - uyvy;
+    cr_offset = 3 - uyvy;
+    centered = definition->chroma_location == SIXEL_CHROMA_LOCATION_CENTER;
+    left_weight = centered ? 0.25f : 0.0f;
+    right_weight = centered ? 0.25f : 0.5f;
+
+    out = pixels;
+    for (y = 0; y < frame->height; ++y) {
+        row = frame->pixels.u8ptr + (size_t)y * frame->stride_bytes;
+        pair = row;
+        for (x = 0; x < frame->width; x += 2, pair += 4, out += 6) {
+            /* Even/odd luma samples fall on different sides of a centered
+             * chroma sample. Extend the edge sample within each row. */
+            cb = pair[cb_offset] - 128.0f;
+            cr = pair[cr_offset] - 128.0f;
+            odd_cb = cb;
+            odd_cr = cr;
+            if (!definition->nearest_chroma) {
+                previous = centered && x > 0 ? pair - 4 : pair;
+                next = x + 2 < frame->width ? pair + 4 : pair;
+                cb += left_weight * (previous[cb_offset] - pair[cb_offset]);
+                cr += left_weight * (previous[cr_offset] - pair[cr_offset]);
+                odd_cb += right_weight * (next[cb_offset] - pair[cb_offset]);
+                odd_cr += right_weight * (next[cr_offset] - pair[cr_offset]);
+            }
+            /* For left-sited chroma, a nearest-neighbor tie uses the
+             * preceding sample, so both lumas share this pair's chroma. */
+            sixel_frame_decode_ycbcr_sample(out,
+                (pair[uyvy] - luma_offset) * luma_scale, cb, cr, coefficients);
+            sixel_frame_decode_ycbcr_sample(out + 3,
+                (pair[uyvy + 2] - luma_offset) * luma_scale,
+                odd_cb, odd_cr, coefficients);
+        }
+    }
+
+    sixel_frame_release_owned_pixels(frame);
+    sixel_frame_assign_layout(frame, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                              SIXEL_FRAME_COLORSPACE_PROFILE_RGB);
+    frame->pixels.f32ptr = pixels;
+    frame->pixel_extent = bytes;
+    frame->format.rgb = rgb;
+    return SIXEL_OK;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
-    if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-            frame->format.layout == pixelformat) {
-        return SIXEL_OK;
+    if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        if (frame->ycbcr != NULL) {
+            return sixel_frame_decode_ycbcr422(frame);
+        }
+        if (frame->format.layout == pixelformat) {
+            return SIXEL_OK;
+        }
     }
     return sixel_frame_convert_workformat(frame, pixelformat);
 }

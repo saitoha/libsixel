@@ -2494,6 +2494,12 @@ Override with \fB-Lloader:cms_intent=INTENT[+INTENT][!]\fP or short form
 \fB-Lloader:Rvalue\fP. When cms_intent is the final suboption, append a
 second "!" to also disable fallback loaders.
 .TP 5
+.B SIXEL_FRAME_YCBCR422_CHROMA
+.br
+set packed 4:2:2 frame API chroma reconstruction to linear (default)
+or nearest. The value is read when creating the stream definition.
+Unset and empty values use linear. Invalid values reject the definition.
+.TP 5
 .B SIXEL_LOADER_CMS_COLORSYNC_NATIVE_GAMMA
 .br
 set to 1 to preserve original pure-gamma curve tag payloads during native

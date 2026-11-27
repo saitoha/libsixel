@@ -225,6 +225,13 @@ set -- \
     frame/storage/0083_ycbcr422_retry.t \
     frame/storage/0084_ycbcr422_unsupported.t \
     frame/storage/0085_ycbcr422_definition.t \
+    frame/storage/0086_ycbcr422_rgb_bt601.t \
+    frame/storage/0087_ycbcr422_rgb_bt709.t \
+    frame/storage/0088_ycbcr422_rgb_bt2020.t \
+    frame/storage/0089_ycbcr422_rgb_nearest.t \
+    frame/storage/0090_ycbcr422_rgb_transfer.t \
+    frame/storage/0091_ycbcr422_rgb_retry.t \
+    frame/storage/0092_ycbcr422_rgb_invalid.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

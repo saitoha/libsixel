@@ -1833,7 +1833,9 @@ typedef struct sixel_ycbcr_def sixel_ycbcr_def_t;
  * after YCbCr decoding. LIMITED means 16..235 luma and 16..240 chroma;
  * LEFT and CENTER locate chroma at luma indices 2*k and 2*k+0.5.
  * The constructor copies RGB once and returns NULL on invalid input or
- * allocation failure. Each initialized frame retains its own reference. */
+ * allocation failure. Each initialized frame retains its own reference.
+ * SIXEL_FRAME_YCBCR422_CHROMA selects linear (default) or nearest when
+ * the definition is created. Unrecognized values reject the definition. */
 SIXELAPI sixel_ycbcr_def_t *
 sixel_ycbcr_def_new(int encoding, int range, int chroma_location,
                     sixel_color_def_t const *rgb);
@@ -1849,7 +1851,8 @@ sixel_ycbcr_def_free(sixel_ycbcr_def_t *definition);
  * release or reinitialization. Failure preserves the previous frame.
  * Logical dimension setters accept positive sizes within the acquired
  * rectangle, with even widths. Other values leave that dimension unchanged.
- * These layouts currently support storage and cloning only. */
+ * Use sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGBFLOAT32)
+ * to decode into frame-owned RGB storage using the supplied definition. */
 SIXELAPI SIXELSTATUS
 sixel_frame_init_ycbcr422_borrowed(sixel_frame_t *frame,
     unsigned char *pixels, size_t buffer_bytes, int width, int height,
@@ -1908,7 +1911,10 @@ SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
 
 /* Set the pixel layout. Reapplying RGBFLOAT32 preserves float samples
- * and their current color definition. */
+ * and their current color definition. For YUYV or UYVY, RGBFLOAT32 decodes
+ * the declared range, horizontal chroma position and YCbCr encoding.
+ * The owned float samples retain the supplied RGB definition and extended
+ * range. Borrowed bytes are untouched. Failure leaves the frame unchanged. */
 SIXELAPI SIXELSTATUS
 sixel_frame_set_pixelformat(
     sixel_frame_t /* in */ *frame,

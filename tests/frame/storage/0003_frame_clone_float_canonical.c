@@ -2764,6 +2764,191 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static int
+test_ycbcr422_rgb(int matrix, int limited, int centered, int uyvy, int nearest)
+{
+    /* Chroma values reconstructed by hand in code units relative to 128.
+     * Include both row edges and a change of direction in the second row. */
+    static double const chroma[][8][2] = {
+        {{-112,112}, {-8,16}, {96,-80}, {96,-80},
+         {32,-32}, {-16,16}, {-64,64}, {-64,64}},
+        {{-112,112}, {-60,64}, {44,-32}, {96,-80},
+         {32,-32}, {8,-8}, {-40,40}, {-64,64}},
+        {{-112,112}, {-112,112}, {96,-80}, {96,-80},
+         {32,-32}, {32,-32}, {-64,64}, {-64,64}}
+    };
+    /* Reference inverse matrices applied to normalized color differences.
+     * Green coefficients are expanded independently of the frame kernel. */
+    static double const inverse[][4] = {
+        {1.402, -0.344136286, -0.714136286, 1.772},
+        {1.5748, -0.187324273, -0.468124273, 1.8556},
+        {1.4746, -0.164553127, -0.571353127, 1.8814}
+    };
+    static int const encodings[] = {
+        SIXEL_YCBCR_ENCODING_BT601, SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_ENCODING_BT2020_NCL
+    };
+    static unsigned char const luma[] = {0, 255, 126, 235, 16, 126, 192, 64};
+    unsigned char yuyv[] = {99, 0, 16, 255, 240, 126, 224, 235, 48, 255, 1,
+                             16, 160, 126, 96, 192, 64, 64, 192};
+    unsigned char uyvy_bytes[] = {99, 16, 0, 240, 255, 224, 126, 48, 235,
+                                   255, 1, 160, 16, 96, 126, 64, 192, 192, 64};
+    unsigned char *input = uyvy ? uyvy_bytes : yuyv;
+    unsigned char original[19];
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition;
+    double y, cb, cr, expected[3];
+    int i, c, location, range, format;
+    int pass = 0;
+
+    memcpy(original, input, sizeof(original));
+    location = centered ? SIXEL_CHROMA_LOCATION_CENTER :
+                          SIXEL_CHROMA_LOCATION_LEFT;
+    range = limited ? SIXEL_YCBCR_RANGE_LIMITED : SIXEL_YCBCR_RANGE_FULL;
+    format = uyvy ? SIXEL_PIXELFORMAT_UYVY : SIXEL_PIXELFORMAT_YUYV;
+    rgb = sixel_color_def_new_named("display-p3");
+    definition = sixel_ycbcr_def_new(encodings[matrix], range, location, rgb);
+    if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input + 1, 18,
+            4, 2, 10, format, definition))) {
+        goto end;
+    }
+    sixel_ycbcr_def_free(definition);
+    definition = NULL;
+    iface = sixel_frame_as_interface(frame);
+    if (SIXEL_FAILED(sixel_frame_set_pixelformat(frame,
+                     SIXEL_PIXELFORMAT_RGBFLOAT32)) ||
+        SIXEL_FAILED(iface->vtbl->get_pixels(iface, &view)) ||
+        view.pixels_float32 == NULL ||
+        view.pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        view.colorspace != SIXEL_FRAME_COLORSPACE_PROFILE_RGB ||
+        !sixel_cdef_same_rgb(view.rgb_definition, rgb) ||
+        memcmp(input, original, sizeof(original)) != 0) {
+        goto end;
+    }
+    for (i = 0; i < 8; ++i) {
+        y = limited ? (luma[i] - 16) / 219.0 : luma[i] / 255.0;
+        cb = chroma[nearest ? 2 : centered][i][0] / (limited ? 224.0 : 255.0);
+        cr = chroma[nearest ? 2 : centered][i][1] / (limited ? 224.0 : 255.0);
+        expected[0] = y + inverse[matrix][0] * cr;
+        expected[1] = y + inverse[matrix][1] * cb + inverse[matrix][2] * cr;
+        expected[2] = y + inverse[matrix][3] * cb;
+        for (c = 0; c < 3; ++c) {
+            if (!(fabs(view.pixels_float32[3 * i + c] - expected[c]) < 2e-7)) {
+                fprintf(stderr, "pixel %d channel %d: %.9g expected %.9g\n",
+                        i, c, view.pixels_float32[3 * i + c], expected[c]);
+                goto end;
+            }
+        }
+    }
+    pass = 1;
+end:
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int fail_ycbcr422_pixels;
+
+static void *
+ycbcr422_test_malloc(size_t size)
+{
+    return fail_ycbcr422_pixels && size == 6 * sizeof(float) ?
+        NULL : malloc(size);
+}
+
+static int
+test_ycbcr422_rgb_transfer(int retry)
+{
+    unsigned char input[] = {126, 128, 235, 128};
+    unsigned char const expected[] = {188, 188, 188, 255, 255, 255};
+    sixel_frame_t *frame = NULL;
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+    int pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb-linear");
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_LIMITED, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    if (definition == NULL ||
+        SIXEL_FAILED(sixel_allocator_new(&allocator, ycbcr422_test_malloc,
+                                         calloc, realloc, free)) ||
+        SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
+        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input, 4,
+            2, 1, SIZE_MAX, SIXEL_PIXELFORMAT_YUYV, definition))) {
+        goto end;
+    }
+    if (retry) {
+        fail_ycbcr422_pixels = 1;
+        status = sixel_frame_set_pixelformat(frame,
+                                              SIXEL_PIXELFORMAT_RGBFLOAT32);
+        fail_ycbcr422_pixels = 0;
+        if (status != SIXEL_BAD_ALLOCATION ||
+            sixel_frame_get_pixels(frame) != input ||
+            sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_YUYV ||
+            sixel_frame_get_colorspace(frame) != SIXEL_FRAME_COLORSPACE_YCBCR) {
+            goto end;
+        }
+    }
+    /* Mid-gray comes from linear 110/219. Applying the sRGB transfer once
+     * at the subsequent byte conversion rounds to 188. The white is 255. */
+    pass = SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_RGBFLOAT32)) &&
+           SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_RGB888)) &&
+           memcmp(sixel_frame_get_pixels(frame), expected, sizeof(expected))
+               == 0;
+end:
+    sixel_frame_unref(frame);
+    sixel_allocator_unref(allocator);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_ycbcr422_rgb_cases(char const *scenario)
+{
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *def;
+    int matrix, limited, centered, uyvy, nearest, rejected;
+
+    if (strcmp(scenario, "transfer") == 0 || strcmp(scenario, "retry") == 0) {
+        return test_ycbcr422_rgb_transfer(strcmp(scenario, "retry") == 0);
+    }
+    if (strcmp(scenario, "invalid") == 0) {
+        rgb = sixel_color_def_new_named("srgb");
+        def = sixel_ycbcr_def_new(
+            SIXEL_YCBCR_ENCODING_BT709, SIXEL_YCBCR_RANGE_LIMITED,
+            SIXEL_CHROMA_LOCATION_LEFT, rgb);
+        rejected = rgb != NULL && def == NULL;
+
+        sixel_ycbcr_def_free(def);
+        sixel_color_def_free(rgb);
+        return rejected ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+    nearest = strcmp(scenario, "nearest") == 0;
+    matrix = strcmp(scenario, "bt601") == 0 ? 0 :
+             strcmp(scenario, "bt2020") == 0 ? 2 : 1;
+    for (limited = 0; limited < 2; ++limited) {
+        for (centered = 0; centered < 2; ++centered) {
+            for (uyvy = 0; uyvy < 2; ++uyvy) {
+                if (test_ycbcr422_rgb(matrix, limited, centered, uyvy,
+                                      nearest) != EXIT_SUCCESS) {
+                    return EXIT_FAILURE;
+                }
+            }
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
@@ -2784,6 +2969,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr422-rgb") == 0) {
+        return test_ycbcr422_rgb_cases(argv[2]);
+    }
     if (argc == 3 && strcmp(argv[1], "ycbcr422") == 0) {
         if (strcmp(argv[2], "definition") == 0) {
             return test_ycbcr422_definition();
