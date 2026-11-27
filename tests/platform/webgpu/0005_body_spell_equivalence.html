@@ -1,0 +1,11 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MIT -->
+<meta charset="utf-8">
+<title>WebGPU body spelling equivalence</title>
+<pre id="tap">1..1
+</pre>
+<script src="webgpu-test.js"></script>
+<script type="module">
+import {runTest} from './webgpu-tests.mjs';
+document.getElementById('tap').append(await runTest('bodySpellEquivalence', globalThis.createConverter) + '\n');
+</script>

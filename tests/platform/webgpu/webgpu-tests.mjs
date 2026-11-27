@@ -10,7 +10,8 @@ for (let i = header.length; i < image.length; ++i) {
 }
 
 function convert(createConverter, policy, method, lookup = 'none',
-                 palette = 'xterm256', input = image, extra = []) {
+                 palette = 'xterm256', input = image, extra = [],
+                 inputName = 'input.ppm', viaStdout = false) {
     return new Promise((resolve, reject) => {
         let fs;
         createConverter({
@@ -18,11 +19,21 @@ function convert(createConverter, policy, method, lookup = 'none',
                 '--precision-policy=8bit', '-d' + method,
                 ...(palette ? ['-b' + palette] :
                     ['-Qheckbert', '-4adaptive-grid:solid=on', '-p16']),
-                ...extra, '-o', 'output.six', 'input.ppm'],
+                ...extra, ...(viaStdout ? [] : ['-o', 'output.six']),
+                inputName],
             preRun: [module => {
                 fs = module.FS;
-                fs.writeFile('input.ppm', input);
+                fs.writeFile(inputName, input);
             }],
+            onRuntimeInitialized: () => {
+                // Writing -o output.six fails with EBADF in some Emscripten
+                // releases. Callers that must not depend on that path
+                // capture stdout in MEMFS, after Emscripten opens its
+                // standard streams.
+                if (!viaStdout) return;
+                fs.close(fs.getStream(1));
+                fs.open('output.six', 'w');
+            },
             onAbort: reason => reject(Error(String(reason))),
             onExit: status => {
                 if (status) reject(Error(method + ' exited with ' + status));
@@ -292,13 +303,197 @@ async function autoOutputFallback(createConverter) {
     }
 }
 
+function bodyAnimation(width, height, frames) {
+    const pixels = width * height;
+    // GIF LZW uses little-endian codes. Clear the dictionary before it
+    // grows past nine bits so only literal, clear and end codes are needed.
+    const lzw = new Uint8Array(Math.ceil((pixels + Math.ceil(pixels / 254) + 1) * 9 / 8));
+    const screen = [width & 255, width >> 8, height & 255, height >> 8];
+    const gif = new Uint8Array(13 + 256 * 3 + 1 +
+        frames * (20 + lzw.length + Math.ceil(lzw.length / 255)));
+    gif.set(new TextEncoder().encode('GIF89a'));
+    gif.set([...screen, 0xf7, 0, 0], 6);
+    // Use exact xterm16 RGB values in the required 256-entry global table.
+    gif.set([
+        0, 0, 0, 128, 0, 0, 0, 128, 0, 128, 128, 0,
+        0, 0, 128, 128, 0, 128, 0, 128, 128, 192, 192, 192,
+        128, 128, 128, 255, 0, 0, 0, 255, 0, 255, 255, 0,
+        0, 0, 255, 255, 0, 255, 0, 255, 255, 255, 255, 255,
+    ], 13);
+    let at = 13 + 256 * 3;
+    for (let frame = 0; frame < frames; ++frame) {
+        // The built-in GIF loader composites descriptors onto the logical
+        // screen. Each descriptor is opaque, full-canvas, and leaves the
+        // canvas in place. Adjacent frames use disjoint half-palettes in
+        // each band so every pixel changes even if emission uses a diff.
+        const descriptor = [
+            0x21, 0xf9, 4, 4, 0, 0, 0, 0, // Keep canvas, no transparency.
+            0x2c, 0, 0, 0, 0, ...screen, 0, 8,
+        ];
+        gif.set(descriptor, at);
+        at += descriptor.length;
+        let out = 0, bits = 0, pending = 0;
+        const code = value => {
+            pending |= value << bits;
+            bits += 9;
+            while (bits >= 8) {
+                lzw[out++] = pending & 255;
+                pending >>>= 8;
+                bits -= 8;
+            }
+        };
+        for (let i = 0; i < pixels; ++i) {
+            if (i % 254 === 0) code(256);
+            const x = i % width, y = Math.floor(i / width);
+            const base = 8 * ((Math.floor(y / 6) + frame) & 1);
+            // Fine patterns give the first CPU frame many mask bytes to
+            // spell, but gaps <= 9 merge to eight spans per band. The
+            // 12-column stripes on frame two give 86 spans at width 1024.
+            const color = frame === 1 ? Math.floor(x / 12) : x + 3 * y + frame;
+            code(base + (color & 7));
+        }
+        code(257);
+        if (bits) lzw[out++] = pending;
+        for (let i = 0; i < out; i += 255) {
+            const block = lzw.subarray(i, i + 255);
+            gif[at++] = block.length;
+            gif.set(block, at);
+            at += block.length;
+        }
+        gif[at++] = 0;
+    }
+    gif[at] = 0x3b;
+    return gif;
+}
+
+async function bodySpellEquivalence(createConverter) {
+    const device = GPUDevice.prototype;
+    const pass = GPUComputePassEncoder.prototype;
+    const encoder = GPUCommandEncoder.prototype;
+    const create = device.createComputePipeline;
+    const createAsync = device.createComputePipelineAsync;
+    const setPipeline = pass.setPipeline;
+    const dispatch = pass.dispatchWorkgroups;
+    const copy = encoder.copyBufferToBuffer;
+    const bodyStages = new Set([
+        'classify', 'count_spans', 'span_offsets', 'span_bases', 'write_spans',
+        'span_lengths', 'span_order', 'span_order_group', 'byte_offsets', 'span_write',
+    ]);
+    const pipelines = new WeakMap(), passes = new WeakMap();
+    const dispatches = new Map(), bandReadbacks = [];
+    let bodyDevice;
+    device.createComputePipeline = function (descriptor) {
+        const pipeline = create.call(this, descriptor);
+        const entry = descriptor.compute.entryPoint;
+        pipelines.set(pipeline, entry);
+        if (entry === 'span_write') bodyDevice = this;
+        return pipeline;
+    };
+    device.createComputePipelineAsync = async function (descriptor) {
+        const pipeline = await createAsync.call(this, descriptor);
+        const entry = descriptor.compute.entryPoint;
+        pipelines.set(pipeline, entry);
+        if (entry === 'span_write') bodyDevice = this;
+        return pipeline;
+    };
+    pass.setPipeline = function (pipeline) {
+        passes.set(this, pipelines.get(pipeline));
+        return setPipeline.call(this, pipeline);
+    };
+    pass.dispatchWorkgroups = function (...groups) {
+        const entry = passes.get(this);
+        if (bodyStages.has(entry))
+            dispatches.set(entry, (dispatches.get(entry) ?? 0) + 1);
+        return dispatch.apply(this, groups);
+    };
+    encoder.copyBufferToBuffer = function (source, offset, target, targetOffset, size) {
+        // The host dispatches both ordering pipelines for every frame.
+        // Read the first two band bases alongside its length readback to
+        // tell which shader actually handled the first band.
+        if (bandReadbacks.length < (dispatches.get('span_write') ?? 0) &&
+                size === 4 && offset === source.size - 8) {
+            const bands = bodyDevice.createBuffer({
+                size: 20, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+            });
+            copy.call(this, source, 0, bands, 0, 20);
+            bandReadbacks.push(bands);
+        }
+        return copy.call(this, source, offset, target, targetOffset, size);
+    };
+    const encode = (policy, input, extra) => convert(createConverter, policy,
+        'none', 'none', 'xterm16', input, ['-7', '-g', ...extra], 'input.gif',
+        true);
+    try {
+        const frames = 5;
+        const animation = bodyAnimation(1024, 1024, frames);
+        const cpu = await encode('off', animation, []);
+        let images = 0;
+        for (let at = cpu.indexOf(0x1b); at !== -1; at = cpu.indexOf(0x1b, at + 1)) {
+            if (cpu[at + 1] === 0x50) ++images;
+        }
+        if (images !== frames)
+            throw Error('CPU SIXEL animation emitted ' + images + ' of ' + frames + ' frames');
+        if (dispatches.size) throw Error('policy off dispatched a WebGPU body pipeline');
+        const gpu = await encode('force', animation, []);
+        if (await sha256(cpu) !== await sha256(gpu))
+            throw Error('CPU and WebGPU SIXEL animation digests differ');
+        if (!dispatches.has('classify'))
+            throw Error('WebGPU body did not dispatch classify');
+        if (!dispatches.has('span_write'))
+            throw Error('WebGPU body did not dispatch span_write');
+        if (!dispatches.has('span_order_group'))
+            throw Error('WebGPU body did not dispatch span_order_group');
+        if (!dispatches.has('span_order'))
+            throw Error('WebGPU body did not dispatch span_order');
+        // A third attempt proves neither warm-up frame failed and put
+        // the consumer back on the CPU for the rest of the animation.
+        if (bandReadbacks.length < 3)
+            throw Error('WebGPU body did not complete both warm-up frames');
+        const [groupSpans, singleSpans] = await Promise.all(
+            bandReadbacks.slice(0, 2).map(async bands => {
+                await bands.mapAsync(GPUMapMode.READ);
+                const bases = new Uint32Array(bands.getMappedRange());
+                const count = bases[4] - bases[0];
+                bands.unmap();
+                return count;
+            }));
+        if (groupSpans !== 86)
+            throw Error('span_order_group fixture expected 86 spans, got ' + groupSpans);
+        if (singleSpans !== 8)
+            throw Error('span_order fixture expected 8 spans, got ' + singleSpans);
+        for (const [label, width, height, extra] of [
+            ['below pixel threshold', 1023, 1024, []],
+            ['over width limit', 2049, 512, []],
+            ['OR mode', 1024, 1024, ['-O']],
+        ]) {
+            dispatches.clear();
+            const input = bodyAnimation(width, height, 2);
+            const off = await encode('off', input, extra);
+            const force = await encode('force', input, extra);
+            if (dispatches.size)
+                throw Error(label + ' dispatched WebGPU body stages: ' +
+                    [...dispatches.keys()].join(', '));
+            if (!off.length || await sha256(off) !== await sha256(force))
+                throw Error(label + ' CPU fallback SIXEL digest differs');
+        }
+        return 'ok 1 - WebGPU body composition and spelling preserve SIXEL bytes';
+    } finally {
+        encoder.copyBufferToBuffer = copy;
+        pass.dispatchWorkgroups = dispatch;
+        pass.setPipeline = setPipeline;
+        device.createComputePipelineAsync = createAsync;
+        device.createComputePipeline = create;
+        for (const bands of bandReadbacks) bands.destroy();
+    }
+}
+
 // Both entry points report the same TAP result, including capability skips.
 export async function runTest(name, createConverter) {
     try {
         if (!await globalThis.navigator?.gpu?.requestAdapter())
             return 'ok 1 # SKIP no WebGPU adapter';
         const tests = {paletteByteEquivalence, forceExitStatus,
-                       diffusionEquivalence, autoOutputFallback};
+                       diffusionEquivalence, autoOutputFallback, bodySpellEquivalence};
         return await tests[name](createConverter);
     } catch (error) {
         return 'not ok 1 - ' + String(error).replace(/[\r\n]+/g, ' ');
