@@ -165,10 +165,10 @@ If you get stuck, these are the usual mistakes:
 <!-- measurements:begin:first-codec -->
 | Input | Encode | Decode | Stream |
 | --- | --- | --- | --- |
-| Photograph, 600×450 | 25.4 ms | 6.86 ms | 394,217 bytes |
-| Photograph, 1920×1080 | 181.4 ms | 53.4 ms | 1,784,680 bytes |
-| Two colors, 1920×1080 | 1.68 ms | 2.27 ms | 692,322 bytes |
-| Random noise, 1920×1080 | 275.1 ms | 156.1 ms | 9,942,096 bytes |
+| Photograph, 600×450 | 25.6 ms | 6.88 ms | 394,217 bytes |
+| Photograph, 1920×1080 | 183.7 ms | 54.1 ms | 1,784,680 bytes |
+| Two colors, 1920×1080 | 1.69 ms | 2.33 ms | 692,322 bytes |
+| Random noise, 1920×1080 | 279.8 ms | 158.5 ms | 9,942,096 bytes |
 <!-- measurements:end -->
 
 Look at the two 1920×1080 pictures with the same number of pixels. The two-color pattern takes 1.7 ms to encode, the 255-color photograph 181 ms, more than 100 times as long. That is the plan's weak point: the encoder walks over every band once **per color**, so its work grows with colors × pixels. The stream suffers too: every band contains a `$` and a `#n` for every color, even colors that do not appear in that band, and empty runs for colors that appear only on the right.

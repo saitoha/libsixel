@@ -15,7 +15,8 @@ O = .
 CHAPTERS = $(O)/first-codec $(O)/nodes $(O)/packing $(O)/full-decoder \
 	$(O)/fewer-questions $(O)/masks $(O)/next-node $(O)/occupancy \
 	$(O)/direct-writes $(O)/word-decoder $(O)/vector-lanes $(O)/transpose \
-	$(O)/parallel-bands $(O)/parallel-decoder $(O)/overpaint
+	$(O)/number-load $(O)/literal-lanes $(O)/wide-stores \
+	$(O)/parallel-bands $(O)/parallel-decoder $(O)/thread-pool $(O)/overpaint
 
 all: $(CHAPTERS)
 
@@ -44,10 +45,18 @@ $(O)/vector-lanes: vector-lanes.c
 	$(CC) $(CFLAGS) -o $@ common.c vector-lanes.c $(LDLIBS)
 $(O)/transpose: transpose.c
 	$(CC) $(CFLAGS) -o $@ common.c transpose.c $(LDLIBS)
-$(O)/parallel-bands: parallel-bands.c transpose.c
+$(O)/number-load: number-load.c
+	$(CC) $(CFLAGS) -o $@ common.c number-load.c $(LDLIBS)
+$(O)/literal-lanes: literal-lanes.c
+	$(CC) $(CFLAGS) -o $@ common.c literal-lanes.c $(LDLIBS)
+$(O)/wide-stores: wide-stores.c
+	$(CC) $(CFLAGS) -o $@ common.c wide-stores.c $(LDLIBS)
+$(O)/parallel-bands: parallel-bands.c wide-stores.c
 	$(CC) $(CFLAGS) -o $@ common.c parallel-bands.c $(LDLIBS)
-$(O)/parallel-decoder: parallel-decoder.c transpose.c
+$(O)/parallel-decoder: parallel-decoder.c wide-stores.c
 	$(CC) $(CFLAGS) -o $@ common.c parallel-decoder.c $(LDLIBS)
+$(O)/thread-pool: thread-pool.c wide-stores.c
+	$(CC) $(CFLAGS) -o $@ common.c thread-pool.c $(LDLIBS)
 $(O)/overpaint: overpaint.c
 	$(CC) $(CFLAGS) -o $@ common.c overpaint.c $(LDLIBS)
 

@@ -45,10 +45,10 @@ Replacing a branch with a mask is a general technique of branch-free programming
 <!-- measurements:begin:masks -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.82 ms | 1.0× | 0.79 ms | 2.1× | 328,750 bytes |
-| Photograph, 1920×1080 | 21.8 ms | 1.0× | 4.29 ms | 2.3× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.27 ms | 1.0× | 1.51 ms | 0.6× | 692,322 bytes |
-| Random noise, 1920×1080 | 151.3 ms | 1.0× | 18.6 ms | 1.4× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.79 ms | 1.0× | 0.75 ms | 2.3× | 328,750 bytes |
+| Photograph, 1920×1080 | 22.2 ms | 1.0× | 4.30 ms | 2.3× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.37 ms | 1.0× | 1.50 ms | 0.6× | 692,322 bytes |
+| Random noise, 1920×1080 | 152.2 ms | 1.0× | 18.9 ms | 1.4× | 9,316,560 bytes |
 <!-- measurements:end -->
 
 On the photograph and on random noise the masks win clearly. On the two-color pattern they make the decoder *slower*: its bits follow a regular pattern that the processor can guess, so the extra memory work buys nothing. That fits the explanation above, although this tutorial did not count wrong guesses directly.
@@ -58,10 +58,10 @@ Splitting the last two chapters shows how their ideas work together. The table g
 <!-- measurements:begin:attribution -->
 | Decoder | Photograph, 1920×1080 | Two colors, 1920×1080 | Random noise, 1920×1080 |
 | --- | --- | --- | --- |
-| full-decoder | 10.3 | 2.14 | 30.1 |
-| full-decoder with masks for single characters | 5.44 | 2.04 | 23.3 |
-| fewer-questions (inner loop, no masks) | 10.0 | 0.96 | 25.4 |
-| masks (inner loop and masks) | 4.29 | 1.51 | 18.6 |
+| full-decoder | 10.4 | 2.19 | 30.5 |
+| full-decoder with masks for single characters | 5.61 | 2.08 | 24.0 |
+| fewer-questions (inner loop, no masks) | 9.93 | 0.94 | 25.6 |
+| masks (inner loop and masks) | 4.30 | 1.50 | 18.9 |
 <!-- measurements:end -->
 
 Masks alone nearly halve the photograph's time, and the inner loop alone saves little, but together they are faster than either. Once the bits no longer cost wrong guesses, the questions about each byte are what remains. The [measurement record](measurements.md) has the method.

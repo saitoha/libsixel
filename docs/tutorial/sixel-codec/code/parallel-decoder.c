@@ -8,8 +8,8 @@
  * time with vector compares. At each '-' it searches backwards for the last
  * '#', which names the color the next band starts with. Trusting the raster
  * attributes for the canvas size, threads then paint disjoint band ranges
- * with the transpose chapter's loop and transpose their own bands into the
- * image. They also collect the color definitions they pass, which are
+ * with the literal-lanes chapter's loop and transpose their own bands into
+ * the image. They also collect the color definitions they pass, which are
  * applied in stream order once all threads have finished. A stream without
  * raster attributes, or one that paints outside them, is decoded again by
  * the serial decoder, so the result is always the same.
@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 #define TUTORIAL_THREADED
-#include "transpose.c"
+#include "wide-stores.c"
 
 #define MAX_THREADS 64
 
@@ -202,8 +202,8 @@ static int add_def(decode_job_t *job, int color, int const *a)
     return 0;
 }
 
-/* The transpose paint loop for bands [first_band, end_band), followed by the
- * transpose of those bands. */
+/* The literal-lanes paint loop for bands [first_band, end_band), followed by
+ * the transpose of those bands. */
 static void *decode_worker(void *arg)
 {
     decode_job_t *job = arg;
@@ -217,6 +217,14 @@ static void *decode_worker(void *arg)
     while (p < end) {
         if (band < d->bands) {
             col = d->columns + (size_t)band * d->width;
+#ifdef HAVE_SIMD
+            while (end - p >= 16 && d->width - x >= 16) {
+                int lane = -1, n = paint_block(p, col + x, color6, &band_rows, &lane);
+                p += n;
+                x += n;
+                if (n < 16) break;
+            }
+#endif
             while (p < end && *p >= '?' && *p <= '~' && x < d->width) {
                 bits = *p++ - '?';
                 mask = row_mask((unsigned int)bits);

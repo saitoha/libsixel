@@ -8,15 +8,15 @@
  * joined in order. The stream is the packing chapter's for any number of
  * threads.
  *
- * The decoder is the transpose chapter's serial one. Set TUTORIAL_THREADS to
- * override the thread count.
+ * The decoder is the literal-lanes chapter's serial one. Set
+ * TUTORIAL_THREADS to override the thread count.
  */
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #define TUTORIAL_THREADED
-#include "transpose.c"
+#include "wide-stores.c"
 
 #define MAX_THREADS 64
 

@@ -99,13 +99,13 @@ Which SIXEL encoder first classified columns with vector compares is not known. 
 <!-- measurements:begin:vector-lanes -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.90 ms | 0.9× | 0.61 ms | 1.0× | 328,750 bytes |
-| Photograph, 1920×1080 | 8.60 ms | 1.0× | 3.09 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 1.73 ms | 2.4× | 1.21 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 65.7 ms | 0.9× | 15.7 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.91 ms | 0.9× | 0.58 ms | 1.0× | 328,750 bytes |
+| Photograph, 1920×1080 | 8.70 ms | 1.0× | 3.11 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 1.81 ms | 2.3× | 1.23 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 66.0 ms | 0.9× | 15.7 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-On the photograph SIMD gains almost nothing: classifying takes 2.2 ms instead of 2.4 ms, and classifying is not where most of the time goes. Writing out the stream takes about half of the time, and no vector compare helps with that. The two-color pattern gains 2.4 times, because each block holds only two colors: classifying takes 0.9 ms instead of 3.3 ms, which wins back what the [occupancy](occupancy.md) chapter lost there. Random noise loses a little, because the number of colors per block approaches the number of pixels. SIMD pays only where the data is regular and the time is actually spent, which is why this chapter comes after the cheaper ideas.
+On the photograph SIMD gains almost nothing: classifying takes 2.3 ms instead of 2.5 ms, and classifying is not where most of the time goes. Writing out the stream takes about half of the time, and no vector compare helps with that. The two-color pattern gains 2.3 times, because each block holds only two colors: classifying takes 0.9 ms instead of 3.3 ms, which wins back what the [occupancy](occupancy.md) chapter lost there. Random noise loses a little, because the number of colors per block approaches the number of pixels. SIMD pays only where the data is regular and the time is actually spent, which is why this chapter comes after the cheaper ideas.
 
 libsixel's [encoder](../../encoder/output/encode-policy/README.md) uses NEON to classify sparse mask bytes, and SIMD in [color-space conversion](../../encoder/colorspace-handling/README.md) and [resampling](../../encoder/preprocessing/resampling/README.md).
 

@@ -1,6 +1,6 @@
 # Encode Bands in Parallel
 
-After the [transpose](transpose.md) chapter, most of the encoder's time goes into work that is done one byte after another: classifying, cutting nodes and writing the stream. A modern computer has many cores, so let several of them work at the same time, each on its own part of the picture. Each part is a **thread**. For the encoder, SIXEL's bands are the natural parts. The decoder is the transpose chapter's serial one. The source is [`code/parallel-bands.c`](code/parallel-bands.c). It includes `transpose.c` and reuses its band encoder; its output is byte for byte the packing chapter's for any number of threads.
+After the [wide-stores](wide-stores.md) chapter, most of the encoder's time goes into work that is done one byte after another: classifying, cutting nodes and writing the stream. A modern computer has many cores, so let several of them work at the same time, each on its own part of the picture. Each part is a **thread**. For the encoder, SIXEL's bands are the natural parts. The decoder is the [literal-lanes](literal-lanes.md) chapter's serial one. The source is [`code/parallel-bands.c`](code/parallel-bands.c). It includes `wide-stores.c` and reuses its band encoder; its output is byte for byte the packing chapter's for any number of threads.
 
 **You will learn:**
 
@@ -64,12 +64,12 @@ chafa's SIXEL encoder divided the image into batches of rows, built them in a th
 <!-- measurements:begin:parallel-bands -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.91 ms | 1.0× | 0.57 ms | 0.9× | 328,750 bytes |
-| Photograph, 1920×1080 | 1.88 ms | 4.6× | 2.69 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 0.35 ms | 4.9× | 0.81 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 10.4 ms | 6.3× | 15.2 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.68 ms | 1.0× | 0.50 ms | 1.0× | 328,750 bytes |
+| Photograph, 1920×1080 | 1.50 ms | 4.8× | 2.81 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 0.30 ms | 4.8× | 0.55 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 10.2 ms | 6.2× | 13.4 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The speed-up in the table compares with the transpose chapter. The Full HD photograph encodes 4.6 times faster with the default number of threads, and the [thread sweep](measurements.md#thread-scaling) shows the curve: it keeps gaining up to 14 threads and reaches almost 9 times. Random noise gains 6.3 times with the default number of threads. The small photograph encodes on one thread, because it is too small to be worth splitting. The machine has 10 performance cores and 4 slower efficiency cores, and each thread gets a fixed range of bands, so the slowest range decides the finish.
+The speed-up in the table compares with the wide-stores chapter. The Full HD photograph encodes 4.8 times faster with the default number of threads, and the [thread sweep](measurements.md#thread-scaling) shows the curve: it keeps gaining up to 14 threads and reaches almost 7 times. Random noise gains 6.2 times with the default number of threads. The small photograph encodes on one thread, because it is too small to be worth splitting. The machine has 10 performance cores and 4 slower efficiency cores, and each thread gets a fixed range of bands, so the slowest range decides the finish.
 
-Previous: [Turn columns back into rows](transpose.md) · Next: [Decode bands in parallel](parallel-decoder.md)
+Previous: [Write a node in wide stores](wide-stores.md) · Next: [Decode bands in parallel](parallel-decoder.md)

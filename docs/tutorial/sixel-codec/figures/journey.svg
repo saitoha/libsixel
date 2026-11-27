@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="634" viewBox="0 0 720 634" role="img" aria-labelledby="figure-title figure-description">
 <title id="figure-title">The journey</title>
-<desc id="figure-description">The chapters grouped into parts: A working codec: by-hand, first-codec; A better plan: nodes, packing, full-decoder; Less wasted work: fewer-questions, masks, next-node, occupancy, direct-writes; Wider words: word-decoder, vector-lanes, transpose; More cores: parallel-bands, parallel-decoder; Fewer bytes: overpaint.</desc>
+<desc id="figure-description">The chapters grouped into parts: A working codec: by-hand, first-codec; A better plan: nodes, packing, full-decoder; Less wasted work: fewer-questions, masks, next-node, occupancy, direct-writes; Wider words: word-decoder, vector-lanes, transpose, number-load, literal-lanes, wide-stores; More cores: parallel-bands, parallel-decoder, thread-pool; Fewer bytes: overpaint.</desc>
 <defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
 <rect x="0.0" y="0.0" width="720.0" height="634.0" fill="#F8FAFC" stroke="none"/>
 <text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The journey</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">One idea per chapter, grouped into parts.</text>
@@ -36,12 +36,18 @@
 <rect x="32.0" y="334.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
 <rect x="32.0" y="334.0" width="8.0" height="62.0" rx="4.0" fill="#BE185D" stroke="none"/>
 <text x="56.0" y="371.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Wider words</text>
-<rect x="240.0" y="352.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="296.2" y="369.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">word-decoder</text>
-<rect x="360.4" y="352.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="416.6" y="369.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">vector-lanes</text>
-<rect x="480.8" y="352.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
-<text x="524.7" y="369.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">transpose</text>
+<rect x="240.0" y="339.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="296.2" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">word-decoder</text>
+<rect x="360.4" y="339.0" width="112.4" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="416.6" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">vector-lanes</text>
+<rect x="480.8" y="339.0" width="87.8" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="524.7" y="356.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">transpose</text>
+<rect x="240.0" y="367.0" width="104.2" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="292.1" y="384.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">number-load</text>
+<rect x="352.2" y="367.0" width="120.6" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="412.5" y="384.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">literal-lanes</text>
+<rect x="480.8" y="367.0" width="104.2" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#BE185D" stroke-width="1.2"/>
+<text x="532.9" y="384.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">wide-stores</text>
 <rect x="32.0" y="408.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
 <rect x="32.0" y="408.0" width="8.0" height="62.0" rx="4.0" fill="#D97706" stroke="none"/>
 <text x="56.0" y="445.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">More cores</text>
@@ -49,6 +55,8 @@
 <text x="304.4" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">parallel-bands</text>
 <rect x="376.8" y="426.0" width="145.2" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#D97706" stroke-width="1.2"/>
 <text x="449.4" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">parallel-decoder</text>
+<rect x="530.0" y="426.0" width="104.2" height="24.0" rx="12.0" fill="#F8FAFC" stroke="#D97706" stroke-width="1.2"/>
+<text x="582.1" y="443.0" fill="#172033" font-size="13" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" xml-space="preserve">thread-pool</text>
 <rect x="32.0" y="482.0" width="656.0" height="62.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
 <rect x="32.0" y="482.0" width="8.0" height="62.0" rx="4.0" fill="#0F766E" stroke="none"/>
 <text x="56.0" y="519.0" fill="#172033" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Fewer bytes</text>

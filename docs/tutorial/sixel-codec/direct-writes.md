@@ -56,12 +56,12 @@ Reserving the worst case once and then writing without checks is an old habit of
 <!-- measurements:begin:direct-writes -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.72 ms | 1.2× | 0.80 ms | 1.0× | 328,750 bytes |
-| Photograph, 1920×1080 | 8.73 ms | 1.2× | 4.26 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 4.19 ms | 1.2× | 1.50 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 60.5 ms | 1.1× | 18.7 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.71 ms | 1.2× | 0.82 ms | 0.9× | 328,750 bytes |
+| Photograph, 1920×1080 | 8.87 ms | 1.2× | 4.33 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 4.12 ms | 1.2× | 1.52 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 61.2 ms | 1.1× | 18.9 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-Writing the photograph's stream gets about a third faster, and the whole encoder about 1.2 times. Random noise, with its many short runs, gains about 1.1 times. Together with the previous chapter, the photograph now encodes 2.4 times faster than with [next node](next-node.md). The encoder is done with the ideas that need no special instructions; the decoder's turn comes next.
+Writing the photograph's stream gets about a third faster, and the whole encoder about 1.2 times. Random noise, with its many short runs, gains about 1.1 times. Together with the previous chapter, the photograph now encodes 2.3 times faster than with [next node](next-node.md). The encoder is done with the ideas that need no special instructions; the decoder's turn comes next.
 
 Previous: [Remember where each color is](occupancy.md) · Next: [Decode into column words](word-decoder.md)

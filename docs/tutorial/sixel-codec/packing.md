@@ -69,10 +69,10 @@ Packing nodes greedily onto shared lines is, like the nodes themselves, the desi
 <!-- measurements:begin:packing -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.77 ms | 0.8× | 2.31 ms | 2.9× | 328,750 bytes |
-| Photograph, 1920×1080 | 21.3 ms | 0.9× | 14.3 ms | 3.7× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.34 ms | 0.9× | 2.32 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 148.1 ms | 0.4× | 38.9 ms | 4.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.68 ms | 0.9× | 2.31 ms | 2.9× | 328,750 bytes |
+| Photograph, 1920×1080 | 22.1 ms | 0.9× | 14.4 ms | 3.7× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.31 ms | 0.9× | 2.30 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 151.8 ms | 0.4× | 37.9 ms | 4.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
 The encoder got *slower*, a little on the photograph and more than twice on random noise. The list walk visits every remaining node once per line, and a band of noise has thousands of nodes and many lines. [Next node](next-node.md) removes that walk.

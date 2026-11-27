@@ -136,8 +136,12 @@ site/
 /docs/tutorial/sixel-codec/code/word-decoder
 /docs/tutorial/sixel-codec/code/vector-lanes
 /docs/tutorial/sixel-codec/code/transpose
+/docs/tutorial/sixel-codec/code/number-load
+/docs/tutorial/sixel-codec/code/literal-lanes
+/docs/tutorial/sixel-codec/code/wide-stores
 /docs/tutorial/sixel-codec/code/parallel-bands
 /docs/tutorial/sixel-codec/code/parallel-decoder
+/docs/tutorial/sixel-codec/code/thread-pool
 /docs/tutorial/sixel-codec/code/overpaint
 /docs/tutorial/sixel-codec/code/mysixel
 /docs/tutorial/sixel-codec/code/mine

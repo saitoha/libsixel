@@ -39,10 +39,11 @@ INPUTS = (
 CHAPTERS = (
     "first-codec", "nodes", "packing", "full-decoder", "fewer-questions",
     "masks", "next-node", "occupancy", "direct-writes", "word-decoder",
-    "vector-lanes", "transpose", "parallel-bands", "parallel-decoder",
+    "vector-lanes", "transpose", "number-load", "literal-lanes",
+    "wide-stores", "parallel-bands", "parallel-decoder", "thread-pool",
 )
 PHASE_CHAPTERS = ("packing", "next-node", "occupancy", "direct-writes",
-                  "vector-lanes")
+                  "vector-lanes", "wide-stores")
 PAGES = {
     "README.md": ("summary",),
     **{f"{chapter}.md": (chapter,) for chapter in CHAPTERS},
@@ -269,9 +270,10 @@ def measure_phases(code: Path, out: Path, cc: str, cflags: str) -> dict:
         patches[chapter] = [("    classify(e, img, y, rows);\n",
                              f"    {begin} classify(e, img, y, rows);\n")
                             ] + band
-    patches["vector-lanes"] = [("#ifdef HAVE_SIMD\n    from = e->width & ~15;\n",
-                         f"    {begin}\n#ifdef HAVE_SIMD\n"
-                         "    from = e->width & ~15;\n")] + band
+    for chapter in ("vector-lanes", "wide-stores"):
+        patches[chapter] = [("#ifdef HAVE_SIMD\n    from = e->width & ~15;\n",
+                             f"    {begin}\n#ifdef HAVE_SIMD\n"
+                             "    from = e->width & ~15;\n")] + band
     phases: dict[str, dict] = {}
     for chapter, replacements in patches.items():
         binary = build(code, chapter, replacements, f"phases-{chapter}",
@@ -362,13 +364,13 @@ def measure_attribution(code: Path, out: Path, cc: str, cflags: str) -> dict:
 
 
 def measure_threads(out: Path) -> dict:
-    """Sweep the thread count of the parallel decoder program."""
+    """Sweep the thread count of the thread-pool program."""
     sweep: dict[str, dict] = {}
     for threads in (1, 2, 4, 8, 10, 14):
         env = dict(os.environ, TUTORIAL_THREADS=str(threads))
         sweep[str(threads)] = {}
         for name, _ in INPUTS[1:]:
-            result = run([str(out / "parallel-decoder"), "bench",
+            result = run([str(out / "thread-pool"), "bench",
                           str(out / f"{name}.ppm"), "1", "15"], env=env)
             sweep[str(threads)][name] = parse_bench(result.stdout)
     return sweep
@@ -666,7 +668,7 @@ def render_libsixel(results: dict) -> str:
     rows = []
     report = results["libsixel"]
     for name, label in INPUTS[1:]:
-        serial = results["bench"]["transpose"][name]
+        serial = results["bench"]["wide-stores"][name]
         threaded = results["threads"]["14"][name]
         rows.append([label, "1", ms(serial["encode_ms"]),
                      ms(report[name]["1"]["encode_ms"]),
