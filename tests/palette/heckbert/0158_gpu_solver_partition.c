@@ -18,9 +18,10 @@
 enum {
     PARTITION_COUNT = 2000,
     PARTITION_COLORS = 64,
-    VULKAN_LIMIT = 4096,
-    UNTOUCHED = 0xdeadbeefu
+    VULKAN_LIMIT = 4096
 };
+
+#define PARTITION_UNTOUCHED 0xdeadbeefu
 
 typedef struct partition_case {
     double *tuples;
@@ -50,9 +51,9 @@ partition_fill(partition_case_t *c, unsigned int count, unsigned int weight)
             c->tuples[i * 3u + plane] = (double)((state >> 16) & 0xffu);
         }
         c->weights[i] = weight != 0u ? weight : 1u + i % 16u;
-        c->order[i] = UNTOUCHED;
+        c->order[i] = PARTITION_UNTOUCHED;
     }
-    c->box_count = UNTOUCHED;
+    c->box_count = PARTITION_UNTOUCHED;
 }
 
 static void
@@ -118,9 +119,9 @@ partition_untouched(partition_case_t const *c, unsigned int count)
 {
     unsigned int i;
 
-    if (c->box_count != UNTOUCHED) return 0;
+    if (c->box_count != PARTITION_UNTOUCHED) return 0;
     for (i = 0u; i < count; ++i) {
-        if (c->order[i] != UNTOUCHED) return 0;
+        if (c->order[i] != PARTITION_UNTOUCHED) return 0;
     }
     return 1;
 }
