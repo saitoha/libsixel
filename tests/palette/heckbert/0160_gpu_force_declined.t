@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/quantization/README.md
 # A histogram the Vulkan Heckbert solver declines stays on the CPU under
 # the force policy and yields the CPU-only palette.
 set -eux

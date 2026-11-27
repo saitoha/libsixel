@@ -129,6 +129,37 @@ After the palette component returns, the encoder converts generated entries from
 
 Monochrome, built-in, map-file, grayscale-preserving, and qualifying indexed-input paths bypass some or all sampling, binning, solver, merge, snap, and cover work. They still proceed to the working image, lookup/dither, and wire-output stages that apply to their representation. A fixed palette must not be drawn as though it passed through `-Q`.
 
+### GPU construction and load headroom
+
+Palette construction keeps the CPU as its reference. A GPU stage replaces one bounded step and hands its result back: Heckbert can split its histogram with the [GPU median-cut solver](../palette-construction/quantization/README.md#gpu-median-cut-solver), K-means can iterate with the [GPU K-means backend](../palette-construction/gpu-kmeans.md), and Ward can select its merge pairs on the device as described in the [merge policy](../palette-construction/merge-policy/README.md). Each declines unsupported input before writing output, and the CPU then performs that step.
+
+Some Vulkan stages run on the device only while the device has spare time. Each such stage keeps its own GPU load headroom state and reads the process-wide count of device busy nanoseconds that every Vulkan submission records:
+
+| Stage | Choice made from its headroom |
+| --- | --- |
+| Solid sample-region scan | Scan on the device or on the CPU |
+| Heckbert median cut | Solve on the device or on the CPU; `force` skips the choice |
+| SIXEL body | Spell the body on the device or only compose it there |
+
+The first observation starts a window and selects the CPU. After every eight observations spanning at least 20 ms, the stage averages the device load of that window with the previous average. From the second window on, an average below 0.50 selects the device, and the choice stays there until the average exceeds 0.70. Policy `off` clears the state. The two thresholds keep a stage from alternating when the load sits near one of them. The test-only `_SIXEL_TEST_GPU_HEADROOM=gpu|cpu` pins the automatic choice, because profilers distort the wall-time window.
+
+### Forced resident palette path
+
+Under `--gpu-policy=force`, Metal and Vulkan provide a narrower path that keeps one still frame on the device from the sampling grid to the indexed image, and for the legacy RGB body also to the SIXEL body bytes. Sampling, Heckbert or K-means construction, optional Ward merge with its Lloyd passes, snap, cover, 6bit lookup and, when admitted, body spelling all run in one submission; caller storage receives only a completed result.
+
+The encoder admits a frame before output only when every one of these conditions holds; any other request uses the ordinary stages:
+
+| Area | Required |
+| --- | --- |
+| Frame | One still frame without a separate palette source, clip, scaling, transparency, 6delta, OR mode, progressive or macro output |
+| Color | RGB888 gamma working, clustering and output space, legacy palette output, no ICC profile or gamut mapper |
+| Palette | Adaptive-grid sampling, no forced or reserved entries, no palette export, `-d none`, `--lookup-policy=6bit` |
+| Heckbert | Norm split, SSE cut and order, explicit reversible snap, `auto` or `none` binning; Ward or the `average` representative |
+| K-means | GPU backend, PCA seeds, hard 5bit binning, explicit iteration count, one restart, uniform mapping, no polish, feedback or AABB, Elkan or Yinyang pruning |
+| Body bytes | Single image without delay, RGB palette, no multiplexer or size policy, sides of at most 2048 and at most 2^20 pixels |
+
+A backend that declines the admitted request returns control to the ordinary stages. A failure after admission fails the frame.
+
 For the mathematical objective and detailed sub-algorithms of each family, see [Palette Quantization](../palette-construction/quantization/README.md). [Palette Construction Pipeline](../palette-construction/pipeline/README.md), [Final Palette Merge Policy](../palette-construction/merge-policy/README.md), [Palette Snap Policy](../palette-construction/snap-policy/README.md), and [Palette Cover Policy](../palette-construction/cover-policy/README.md) define the surrounding policies.
 
 ## 4. Lookup, per-pixel application, and output

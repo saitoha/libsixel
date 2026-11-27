@@ -102,7 +102,7 @@ Adaptive sampling owns its sample and runs before preprocessing can mutate the l
 
 Resize can introduce colors absent from the loaded-frame sample, so `full-frame` remains useful when the output distribution should determine the palette. Clip limits the adaptive grid and the centers of solid-region checks to the crop. A solid-region check can read neighbors across the crop edge within the full frame. Both operations preserve automatic policy selection.
 
-For eligible unmasked RGB888 frames, Metal, Vulkan and WebGPU can build the integer solid-color histogram on the device. WebGPU reads the histogram back for the shared CPU color selection, so the feature preserves the adaptive sample and its tie order.
+For eligible unmasked RGB888 frames, Metal, Vulkan and WebGPU can build the integer solid-color histogram on the device. WebGPU reads the histogram back for the shared CPU color selection, so the feature preserves the adaptive sample and its tie order. By default the device scan needs a clip of at least 524,288 pixels, or 1,048,576 on WebGPU, whose separate upload and readback cost more; greedy threading removes that floor. Vulkan also scans only while [measured device headroom](../../execution-map/README.md#gpu-construction-and-load-headroom) selects the GPU. When the sample comes from the unchanged loaded frame, the Vulkan scan keeps its upload for the dither of that frame; a separate palette source, which no dither consumes, is scanned from the scanner's own input buffer.
 
 Resolution and scheduling are ordered explicitly:
 

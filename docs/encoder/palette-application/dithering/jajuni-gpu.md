@@ -11,7 +11,7 @@ img2sixel --gpu-policy=auto --precision-policy=8bit \
 
 The encoder selects this component when the GPU policy admits an available GPU, the image is RGB8 gamma, and the request has no perturbation and no `clamp=none` carry. Otherwise `jajuni` stays on its CPU component. The dither keeps `method_for_diffuse` as `jajuni` and marks the frame's diffusion as running on the GPU; the trace reports `diffuse=jajuni` with `diffuse_on_gpu=1`. The component accepts raster and serpentine scans and keeps the CPU raster default.
 
-Metal, gamma RGB8 source storage and the indexed output component path are required. A GPU policy of `off`, an unavailable device, or an incompatible lookup returns an error before output rather than substituting another dither. All named GPU lookup policies accept its fractional corrected queries under their [declared search semantics](../lookup-policy/README.md).
+A GPU device of the build's backend (Metal, Vulkan or WebGPU), gamma RGB8 source storage and the indexed output component path are required. A GPU policy of `off`, an unavailable device, or an incompatible lookup returns an error before output rather than substituting another dither. All named GPU lookup policies accept its fractional corrected queries under their [declared search semantics](../lookup-policy/README.md).
 
 ## Kernel and carry
 

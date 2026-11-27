@@ -29,6 +29,8 @@ The ledger has one column for the scalar reference and one for each acceleration
 | Metal | Metal kernels |
 | Vulkan | GLSL programs compiled for Vulkan |
 
+WebGPU has no column. Its WGSL programs and the Emscripten host code that dispatches them are not scanned and carry no tags, so the ledger does not record which operations have a WebGPU port. The documents that own each operation describe its WebGPU behavior, and the WASM column covers only WebAssembly SIMD128 on the CPU.
+
 Each cell holds one of four states:
 
 | State | Meaning | Tag in source |
@@ -88,4 +90,4 @@ Code written before the ledger existed is listed in [`tests/_static/data/accel-u
 
 ### Coverage boundary
 
-The check recognizes acceleration by vector types, intrinsic names and kernel declarations. It does not detect a scalar optimization, a SIMD path reached only through a macro defined in another file, or GPU work written in a language it does not scan. It does not decide whether a `planned`, `n/a` or `rejected` state is correct, and it does not verify that a tagged implementation produces the scalar result; the behavioral tests of each operation own that.
+The check recognizes acceleration by vector types, intrinsic names and kernel declarations. It does not detect a scalar optimization, a SIMD path reached only through a macro defined in another file, or GPU work written in a language it does not scan, which includes every WGSL program. It does not decide whether a `planned`, `n/a` or `rejected` state is correct, and it does not verify that a tagged implementation produces the scalar result; the behavioral tests of each operation own that.
