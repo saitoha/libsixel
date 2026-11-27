@@ -2960,6 +2960,8 @@ int test_sample_vulkan_edge(int argc, char **argv);
 int test_gpu_headroom(int argc, char **argv);
 int test_gpu_headroom_pin(int argc, char **argv);
 int test_sample_vulkan_separate_source(int argc, char **argv);
+int test_gpu_solver_partition(int argc, char **argv);
+int test_gpu_force_declined(int argc, char **argv);
 int test_score_avx2_edge(int argc, char **argv);
 int test_bounds_avx2_random(int argc, char **argv);
 int test_bounds_avx2_edge(int argc, char **argv);
@@ -13019,6 +13021,10 @@ static test_entry_t const test_entries[] = {
     { "palette/heckbert/0151_score_avx2_edge", test_score_avx2_edge },
     { "palette/heckbert/0152_bounds_avx2_random", test_bounds_avx2_random },
     { "palette/heckbert/0153_bounds_avx2_edge", test_bounds_avx2_edge },
+    { "palette/heckbert/0158_gpu_solver_partition",
+      test_gpu_solver_partition },
+    { "palette/heckbert/0160_gpu_force_declined",
+      test_gpu_force_declined },
     { "palette/heckbert_policy/reassignment",
       test_policy_heckbert_reassignment },
     { "palette/heckbert_policy/api_initial",

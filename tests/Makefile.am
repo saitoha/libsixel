@@ -4044,6 +4044,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0151_SCORE_AVX2_EDGE \
     -DBUILD_TEST_0152_BOUNDS_AVX2_RANDOM \
     -DBUILD_TEST_0153_BOUNDS_AVX2_EDGE \
+    -DBUILD_TEST_0158_GPU_SOLVER_PARTITION \
+    -DBUILD_TEST_0160_GPU_FORCE_DECLINED \
     -DBUILD_TEST_0062_HECKBERT_AXIS_RGB \
     -DBUILD_TEST_0063_HECKBERT_AXIS_CIELAB \
     -DBUILD_TEST_0064_HECKBERT_AXIS_DIN99D \
@@ -6653,6 +6655,8 @@ test_runner_SOURCES = \
     palette/sampling/0108_gpu_headroom_pin.c \
     palette/sampling/0109_palette_colors_clone_allocation_failure.c \
     palette/sampling/0110_sample_vulkan_separate_source.c \
+    palette/heckbert/0158_gpu_solver_partition.c \
+    palette/heckbert/0160_gpu_force_declined.c \
     encoder/pipeline/0128_count_table.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
     _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
