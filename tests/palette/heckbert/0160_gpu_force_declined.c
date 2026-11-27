@@ -38,7 +38,7 @@ declined_palette(unsigned char *pixels, int gpu_policy,
     unsigned char *palette, int *ncolors)
 {
     sixel_dither_t *dither;
-    unsigned char *entries;
+    sixel_palette_entries_view_t view;
     int ok;
 
     dither = NULL;
@@ -49,10 +49,13 @@ declined_palette(unsigned char *pixels, int gpu_policy,
             DECLINED_SIDE, SIXEL_PIXELFORMAT_RGB888, SIXEL_LARGE_NORM,
             SIXEL_REP_AUTO, SIXEL_QUALITY_AUTO)))
         goto end;
-    *ncolors = sixel_dither_get_num_of_palette_colors(dither);
-    entries = sixel_dither_get_palette(dither);
-    if (entries == NULL || *ncolors <= 0 || *ncolors > 256) goto end;
-    memcpy(palette, entries, (size_t)*ncolors * 3u);
+    memset(&view, 0, sizeof(view));
+    if (SIXEL_FAILED(dither->palette->vtbl->get_entries(dither->palette,
+            &view)) || view.entries == NULL || view.depth != 3u ||
+            view.entry_count == 0u || view.entry_count > 256u)
+        goto end;
+    *ncolors = (int)view.entry_count;
+    memcpy(palette, view.entries, (size_t)view.entry_count * 3u);
     ok = 1;
 end:
     sixel_dither_unref(dither);
