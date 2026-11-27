@@ -26,6 +26,7 @@
 #define LIBSIXEL_FRAME_NORMALIZE_H
 
 #include <6cells.h>
+#include "sixel_atomic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +41,18 @@ sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
 /* Resolve an internal output/work format to an explicit conversion target. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_convert_workformat(sixel_frame_t *frame, int format);
+
+/* Optional per-source observation for the packed-frame regression tests.
+ * Install before handing the frame to an encoder and keep the counters
+ * alive until all operations have joined. Read the counts after joining. */
+typedef struct sixel_ycbcr422_counts {
+    sixel_atomic_u32_t packed_copies;
+    sixel_atomic_u32_t rgb_conversions;
+} sixel_ycbcr422_counts_t;
+
+SIXEL_INTERNAL_API void
+sixel_frame_observe_ycbcr422(sixel_frame_t *frame,
+                            sixel_ycbcr422_counts_t *counts);
 
 /* Produce a private RGB frame directly from packed rows. */
 SIXEL_INTERNAL_API SIXELSTATUS

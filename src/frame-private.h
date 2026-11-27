@@ -87,6 +87,7 @@ struct sixel_frame {
     float *alpha;                  /* owned straight fractional coverage */
     size_t alpha_count;            /* one finite [0,1] sample per pixel */
     sixel_allocator_t *allocator;   /* allocator object */
+    struct sixel_ycbcr422_counts *ycbcr_counts; /* optional observer */
 };
 
 #ifdef __cplusplus

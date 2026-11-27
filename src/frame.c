@@ -1354,6 +1354,10 @@ sixel_frame_clone(sixel_frame_t const *frame,
             status = SIXEL_BAD_ALLOCATION;
             goto error;
         }
+        if (frame->ycbcr != NULL && frame->ycbcr_counts != NULL) {
+            (void)sixel_atomic_fetch_add_u32(
+                &frame->ycbcr_counts->packed_copies, 1U);
+        }
         if (frame->ycbcr != NULL &&
                 frame->stride_bytes != clone->stride_bytes) {
             for (row = 0; row < view.height; ++row) {
@@ -1410,6 +1414,13 @@ error:
     sixel_allocator_free(clone->allocator, mask);
     sixel_frame_unref(clone);
     return status;
+}
+
+SIXEL_INTERNAL_API void
+sixel_frame_observe_ycbcr422(sixel_frame_t *frame,
+                            sixel_ycbcr422_counts_t *counts)
+{
+    frame->ycbcr_counts = counts;
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -2733,6 +2744,10 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
     left_weight = centered ? 0.25f : 0.0f;
     right_weight = centered ? 0.25f : 0.5f;
 
+    if (frame->ycbcr_counts != NULL) {
+        (void)sixel_atomic_fetch_add_u32(
+            &frame->ycbcr_counts->rgb_conversions, 1U);
+    }
     out = pixels;
     for (y = 0; y < frame->height; ++y) {
         row = frame->pixels.u8ptr + (size_t)y * frame->stride_bytes;

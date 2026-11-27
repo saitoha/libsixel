@@ -2981,7 +2981,8 @@ y422_playback_done(sixel_playback_result_t const *result, void *private)
 static SIXELSTATUS
 y422_fixture(sixel_frame_t **frame, int layout, int crop, int variant,
              sixel_ycbcr_def_t *definition, sixel_color_def_t *rgb,
-             unsigned char bytes[18], float samples[24])
+             unsigned char bytes[18], float samples[24],
+             sixel_ycbcr422_counts_t *operations)
 {
     static unsigned char const yuyv[] = {
         70, 112, 106, 150, 130, 160, 175, 108, 255, 0,
@@ -3024,6 +3025,7 @@ y422_fixture(sixel_frame_t **frame, int layout, int crop, int variant,
         *out++ = (float)(y + 1.8556 * cb);
     }
     if (layout != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        sixel_frame_observe_ycbcr422(*frame, operations);
         return sixel_frame_init_ycbcr422_borrowed(*frame, bytes, sizeof(yuyv),
             4, 2, 10, layout, definition);
     }
@@ -3044,6 +3046,7 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
     sixel_playback_config_t config;
     sixel_playback_options_t options;
     sixel_playback_stats_t stats = {0};
+    sixel_ycbcr422_counts_t operations[3] = {{0}};
     unsigned char bytes[3][18] = {{0}}, original[3][18];
     float samples[3][24];
     SIXELSTATUS status;
@@ -3078,7 +3081,8 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
     }
     for (i = 0; i < count; ++i) {
         if (y422_fixture(&image[i], layout, mode == Y422_CROP && !packed,
-                         i, definition, rgb, bytes[i], samples[i])) {
+                         i, definition, rgb, bytes[i], samples[i],
+                         &operations[i])) {
             goto end;
         }
         sixel_frame_set_frame_no(image[i], i);
@@ -3094,7 +3098,7 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
     if ((mode == Y422_PALETTE || mode == Y422_PALETTE_REJECT) &&
         y422_fixture(&source, layout, 0, 2,
                       different != NULL ? different : definition,
-                      rgb, bytes[2], samples[2])) {
+                      rgb, bytes[2], samples[2], &operations[2])) {
         goto end;
     }
     memcpy(original, bytes, sizeof(original));
@@ -3139,14 +3143,26 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
 
     if (packed) {
         for (i = 0; i < count; ++i) {
+            if (operations[i].packed_copies != 0 ||
+                operations[i].rgb_conversions != 1) {
+                fprintf(stderr,
+                        "Image %d: %u packed copies, %u conversions\n",
+                        i, (unsigned)operations[i].packed_copies,
+                        (unsigned)operations[i].rgb_conversions);
+                goto end;
+            }
             if (sixel_frame_get_pixels(image[i]) != bytes[i] ||
                 sixel_frame_get_pixelformat(image[i]) != layout ||
                 memcmp(bytes[i], original[i], sizeof(bytes[i])) != 0) {
                 goto end;
             }
         }
+        /* The same palette source receives one conversion per admission.
+         * A range mismatch must leave its bytes and counters untouched. */
         if (source != NULL &&
-            (sixel_frame_get_pixels(source) != bytes[2] ||
+            (operations[2].packed_copies != 0 ||
+             operations[2].rgb_conversions != (mode == Y422_PALETTE ? 2 : 0) ||
+             sixel_frame_get_pixels(source) != bytes[2] ||
              sixel_frame_get_pixelformat(source) != layout ||
              memcmp(bytes[2], original[2], sizeof(bytes[2])) != 0)) {
             goto end;
@@ -3273,6 +3289,50 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* Positive controls keep the count assertions from passing with an
+ * observer that misses the actual copy or the conversion loop. */
+static int
+test_y422_operation_observer(void)
+{
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition;
+    sixel_ycbcr422_counts_t operations = {0};
+    unsigned char bytes[18];
+    float samples[24];
+    int pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb");
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    if (definition == NULL ||
+        y422_fixture(&frame, SIXEL_PIXELFORMAT_YUYV, 0, 0, definition, rgb,
+                     bytes, samples, &operations)) {
+        goto end;
+    }
+    if (operations.packed_copies != 0 || operations.rgb_conversions != 0) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    if (iface->vtbl->clone(iface, NULL, &clone) || clone == NULL ||
+        operations.packed_copies != 1 || operations.rgb_conversions != 0 ||
+        sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGBFLOAT32) ||
+        sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGBFLOAT32) ||
+        operations.packed_copies != 1 || operations.rgb_conversions != 1) {
+        goto end;
+    }
+    pass = 1;
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
@@ -3293,6 +3353,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 2 && strcmp(argv[1], "ycbcr422-operation-observer") == 0) {
+        return test_y422_operation_observer();
+    }
     if (argc == 3 && strcmp(argv[1], "ycbcr422-encode") == 0) {
         return test_y422_encode(argv[2]);
     }
