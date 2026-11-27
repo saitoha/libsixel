@@ -187,6 +187,22 @@ The three `-s` choices retain their distinct meanings: `center` is the midpoint 
 
 This exact native histogram may contain more entries than the legacy 5bit/6bit histogram. Its initial deterministic sort costs `O(N log N)` time after upstream sampling. It sorts borrowed source references using `N * sizeof(float *)` bytes, then allocates double tuple storage for the `U` distinct triples, preserving exact occurrence counts. On a typical 64-bit host that tuple pool costs `40 * U` bytes; it is not allocated for all `N` samples before deduplication. The references and tuple pool coexist during construction; when nearly every sample is distinct, their combined peak can exceed a per-pixel table. The temporary references are freed before median cut. Existing allocator limits still apply to each allocation: a sufficiently large distinct-color set can exceed the tuple-pool limit and reports an allocation error without lossy fallback. The legacy byte path keeps its bounded histogram and integer representative rounding. The `speed` profile's lookup preference applies to palette application but does not coarsen the native histogram. `-Qauto` uses this arithmetic when it resolves to Heckbert with typed float input. Default/AUTO cover admits the native path with repair off. Output caching and cover follow the [current output admission rules](../../output/output-colorspace.md#selected-ordinary-srgb-float-path). Ordinary sRGB representative and final snap use typed coordinates and their requested timing/rate; histogram collection itself does not snap float inputs. The separately documented [byte histogram and early merge snap defects](../snap-policy/README.md#known-contract-violations) remain scoped to their consumers.
 
+### GPU median-cut solver
+
+With `--gpu-policy=auto|force`, the byte RGB histogram can be split on the GPU by the `quant/heckbert.gpu` component, implemented on Metal and on Vulkan builds without Metal. The device solves only the partition: it returns the histogram order and each box's start, size, population and SSE priority. Representatives, cover, the wire palette and every later stage still run on the CPU with the result.
+
+| Condition | GPU solve |
+| --- | --- |
+| Three channels, no extended coordinates, no reversible mapping | Required |
+| `-f norm` (the `auto` default), `cut=sse`, `order=sse`, at most 256 colors | Required |
+| `-F ward` final merge | Stays on the CPU; Ward has its own [GPU merge](../merge-policy/README.md) |
+| Vulkan `auto` | Also needs [GPU load headroom](../../execution-map/README.md#gpu-construction-and-load-headroom) |
+| Vulkan `force` | Skips the headroom estimate |
+
+The solver declines a histogram outside its numeric domain before writing any output: the total population must stay within 2^24, the FP32 integer range, and Vulkan also requires at most 4096 entries, finite channels in `[0, 255]`, complete compute subgroups of 8 to 64 lanes with ballot, shuffle and arithmetic operations, at least 256 workgroup lanes and 32 KiB of shared memory. A declined histogram, or a build or host without a device, is split by the CPU loop even under `force`: the solver is optional, and declining it does not disable later GPU palette stages. Any other device failure fails palette construction.
+
+The host rejects a GPU result unless its order is a permutation of the histogram and its boxes tile that order; a rejected result also falls back to the CPU loop. The device computes cut moments in FP32, so its partition is not guaranteed to equal the CPU partition for the same histogram. Vulkan submits the solve on a compute-only queue family when the device has one, otherwise on a second queue of the main family when available, otherwise on the shared queue, and releases the shared runtime lock while it waits for the fence.
+
 ## `kmeans`: centroid optimization
 
 ```text
@@ -254,6 +270,8 @@ Plain and Hamerly assignment need `O(S + K)` auxiliary storage, while
 per-center bounds can require up to `O(S K + K^2)`. Bound pruning can save most
 distance calculations on well-separated data, but its worst case remains a
 full sample-center scan.
+
+An empty cluster takes the sample with the largest weighted residual, with the lowest sample index on ties, including when every residual is zero. For more than 32 and at most 16384 points, CPU repair keeps the maximum of each 32-point block and of each 16-block tile, the same tile layout as the [GPU solver](../gpu-kmeans.md#pipeline-boundary). A fresh assignment rebuilds every entry; a repair zeroes only the consumed donor's residual and rescans only its block and tile. The selected donors are those of a full scan; other point counts use that scan directly.
 
 ## `medoids`: sample-anchored clustering
 
@@ -789,6 +807,9 @@ For the surrounding data flow, start with
 | HQ-57 | Reversible bucket means retain the reversible tone grid. | [tests/palette/heckbert/0124_heckbert_bucket_reversible_mean.t](../../../../tests/palette/heckbert/0124_heckbert_bucket_reversible_mean.t) |
 | HQ-58 | Axis splits order fractional means inside integer buckets. | [tests/palette/heckbert/0125_heckbert_bucket_fractional_axis.t](../../../../tests/palette/heckbert/0125_heckbert_bucket_fractional_axis.t) |
 | HQ-59 | Sparse four-channel 5bit statistics stay within a 5 MiB allocation budget. | [tests/palette/heckbert/0126_heckbert_bucket_sparse_rgba.t](../../../../tests/palette/heckbert/0126_heckbert_bucket_sparse_rgba.t) |
+| HQ-60 | The GPU median-cut solver returns a complete partition with matching box populations and declines an out-of-domain histogram without writing output. | [tests/palette/heckbert/0158_gpu_solver_partition.t](../../../../tests/palette/heckbert/0158_gpu_solver_partition.t) |
+| HQ-61 | Vulkan `force` sends a supported histogram to the GPU solver without the headroom estimate. | [tests/palette/heckbert/0159_gpu_force_vulkan.t](../../../../tests/palette/heckbert/0159_gpu_force_vulkan.t) |
+| HQ-62 | Under Vulkan `force`, a histogram the solver declines yields the CPU-only palette. | [tests/palette/heckbert/0160_gpu_force_declined.t](../../../../tests/palette/heckbert/0160_gpu_force_declined.t) |
 
 ### Automatic native-path selection
 

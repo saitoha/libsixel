@@ -41,6 +41,10 @@ Buffers the CPU only writes, such as uploaded pixels or palettes, take the oppos
 
 A shader that reads system RAM on a discrete GPU crosses PCIe on every access. When a buffer's host-visible memory is not device-local, the runtime keeps that memory as a staging copy and gives the shader a separate device-local buffer. Uploads and downloads are transfer commands recorded in the same submission as the compute work. If the device runs out of VRAM, the shader binds the host buffer directly, which is slow but still correct. A device without separate VRAM keeps one buffer.
 
+## Waiting for a submission
+
+Each Vulkan stage owns a submission gate that guards its command buffer, descriptors, staging buffers and fence for as long as one submission is in flight. A stage takes its gate before the shared runtime lock, records and submits under both, and releases only the runtime lock while it waits on its fence. Another stage can therefore record and submit on the shared queue while the first one waits, and the runtime lock still serializes `vkQueueSubmit` and buffer reservations. A stage with a ring of command buffers keeps one fence per slot and waits the same way. The median-cut solver submits on the runtime's compute queue, which differs from the shared queue unless the device offers neither a compute-only family nor a second queue in the main family; see [the GPU median-cut solver](../encoder/palette-construction/quantization/README.md#gpu-median-cut-solver).
+
 ## Sharing indexed frames
 
 Palette application produces an indexed frame: one index byte and one skip byte per pixel. The CPU encoder then reads both planes to emit SIXEL, and GPU stages such as band composition read them again. Copying the planes between private GPU buffers and the frame would cost two full-frame copies per stage.
@@ -75,6 +79,7 @@ The retained plane of delta encoding owns coherent RGB and validity buffers for 
 - Every Vulkan stage chooses one of four allocation kinds from the runtime: host-written, readback, host-shared and device-only. Buffers that Metal stages share with the CPU use shared storage, which is always cached and coherent, so they need no such choice.
 - Indexed frames are shared through the GPU device interface. The encoder asks the device whether it shares frames before allocating one, and the frame falls back to allocator memory on any failure.
 - GPU band composition, the error-diffusion dither kernels and GPU palette application all accept both shared and ordinary frames. Their CPU fallbacks do not depend on the memory kind.
+- The Vulkan sample scan writes its RGB input into a device-local slot that the LSO2 dither of the same frame can borrow, so that frame is uploaded once. When the palette is built from a separate source that no dither stage consumes, the scan copies that source into its own input buffer, which stays valid until its fence completes.
 
 ## Implementation map
 
@@ -84,3 +89,5 @@ The retained plane of delta encoding owns coherent RGB and validity buffers for 
 - [src/encode-result.c](../../src/encode-result.c): indexed frames on a device, their fallback to allocator memory, and the idle slots that reuse frame storage.
 - [src/encoder-body-gpu-vulkan.c](../../src/encoder-body-gpu-vulkan.c) and [src/encoder-body-gpu-metal.m](../../src/encoder-body-gpu-metal.m): band composition reading shared frames and writing nodes the CPU emits from.
 - [src/retained-plane-vulkan.c](../../src/retained-plane-vulkan.c): retained-plane staging and cached readback of its paint and statistics.
+- [src/gpu-compute-vulkan.c](../../src/gpu-compute-vulkan.c): per-stage submission gates, and fence waits that release the shared runtime lock.
+- [src/filter-sample-vulkan.c](../../src/filter-sample-vulkan.c): the sample-scan input and the slots it lends to the LSO2 dither.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/quantization/README.md
 # Force sends a supported Vulkan histogram to the GPU solver without the
 # headroom choice.
 set -eux

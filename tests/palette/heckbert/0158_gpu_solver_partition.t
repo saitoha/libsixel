@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/quantization/README.md
 # The GPU Heckbert solver partitions the histogram and declines inputs
 # outside its domain without writing any output.
 set -eux
