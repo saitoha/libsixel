@@ -1149,6 +1149,8 @@ typedef struct sixel_encoder_frame_handoff_meta {
     uint64_t palette_sequence;
     uint64_t user_tag;
     sixel_frame_t *palette_source;
+    /* Reused if speculation has to prepare this submission again. */
+    sixel_frame_t *decoded_palette_source;
     int option_flags;
     int origin_x;
     int origin_y;
@@ -12157,8 +12159,9 @@ sixel_encoder_frame_job_prepare(
     job->context.independent = pipeline != NULL && pipeline->independent;
     job->context.sequence = metadata != NULL ? metadata->sequence : 0;
     job->context.frame = frame;
-    job->context.palette_source = metadata != NULL
-        ? metadata->palette_source : NULL;
+    job->context.palette_source = metadata == NULL ? NULL :
+        metadata->decoded_palette_source != NULL
+            ? metadata->decoded_palette_source : metadata->palette_source;
     job->context.output = output;
     job->context.status = SIXEL_FALSE;
     job->context.dither = NULL;
@@ -17529,6 +17532,7 @@ sixel_encoder_playback_frame_done(
     if (playback->threaded) sixel_mutex_unlock(&pipeline->mutex);
     /* Sample construction has joined, including cancellation/failure.
      * Release the wrapper before the caller recycles its borrowed pixels. */
+    sixel_frame_unref(meta->decoded_palette_source);
     sixel_frame_unref(meta->palette_source);
     if (playback->done != NULL) {
         playback->done(&result, playback->done_context);
@@ -17716,6 +17720,33 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
     return status;
 }
 
+/* Decode after dequeue, before a job can clone, crop or sample the frame.
+ * The original packed storage stays with the caller. A speculative retry
+ * works from the pristine RGB copy and reuses the same palette source. */
+static SIXELSTATUS
+sixel_encoder_pipeline_decode_packed(
+    sixel_encoder_frame_pipeline_t *pipeline, sixel_frame_t *frame,
+    sixel_encoder_frame_handoff_meta_t *meta, sixel_frame_t **decoded)
+{
+    SIXELSTATUS status;
+
+    *decoded = NULL;
+    if (!sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
+        return SIXEL_OK;
+    }
+    status = sixel_frame_decode_ycbcr422_copy(frame,
+        pipeline->encoder->allocator, decoded);
+    if (status == SIXEL_OK && meta->palette_source != NULL) {
+        status = sixel_frame_decode_ycbcr422_copy(meta->palette_source,
+            pipeline->encoder->allocator, &meta->decoded_palette_source);
+        if (status != SIXEL_OK) {
+            sixel_frame_unref(*decoded);
+            *decoded = NULL;
+        }
+    }
+    return status;
+}
+
 /* Serial counterpart of the prepare-ahead worker for one frame. */
 static SIXELSTATUS
 sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
@@ -17724,7 +17755,18 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
 {
     sixel_encoder_frame_job_t job;
     SIXELSTATUS status;
+    sixel_frame_t *decoded;
 
+    status = sixel_encoder_pipeline_decode_packed(pipeline, frame, meta,
+                                                  &decoded);
+    if (status != SIXEL_OK) {
+        pipeline->encoder->sixdelta_refinement_needed = 0;
+        pipeline->encoder->sixdelta_painted_pixels = 0u;
+        return status;
+    }
+    if (decoded != NULL) {
+        frame = decoded;
+    }
     job.delta_alpha_key = -1;
     status = sixel_encoder_pipeline_prepare_job(pipeline, &job, frame,
         meta, NULL, pipeline->palette_auto.effective);
@@ -17736,12 +17778,14 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
         pipeline->encoder->sixdelta_painted_pixels = 0u;
     }
     if (job.active == 0) {
+        sixel_frame_unref(decoded);
         return status;
     }
 
     meta->palette_sequence = job.context.latest || status == SIXEL_OK
         ? job.context.palette_sequence : 0;
     status = sixel_encoder_frame_job_finish(&job, status);
+    sixel_frame_unref(decoded);
     sixel_encoder_auto_complete(pipeline, &job, status,
         job.context.auto_eligible ? sixel_timer_monotonic() : 0.0);
     return status;
@@ -17938,9 +17982,25 @@ static void
 sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
                                  sixel_encoder_pipeline_slot_t *slot)
 {
+    sixel_frame_t *decoded;
+
     slot->work_frame = slot->frame;
     slot->work_is_clone = 0;
     slot->bind_status = SIXEL_OK;
+    if (slot->metadata.cancelled != 0) {
+        return;
+    }
+    slot->bind_status = sixel_encoder_pipeline_decode_packed(
+        pipeline, slot->frame, &slot->metadata, &decoded);
+    if (SIXEL_FAILED(slot->bind_status)) {
+        slot->work_frame = NULL;
+        return;
+    }
+    if (decoded != NULL) {
+        slot->work_frame = decoded;
+        slot->work_is_clone = 1;
+        return;
+    }
     if (sixel_encoder_frame_get_handoff_shareable(slot->frame) != 0 &&
             slot->metadata.needs_preplan_clone != 0) {
         slot->bind_status = sixel_encoder_frame_clone(
@@ -20824,9 +20884,6 @@ sixel_encoder_encode_frame_owned(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
-        return SIXEL_NOT_IMPLEMENTED;
-    }
     if (encoder->output_bpc) {
         sixel_helper_set_additional_message(
             "ICC output bpc=1 requires a loaded PNG with an embedded ICC.");
@@ -21606,13 +21663,28 @@ sixel_encoder_encode_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
 {
     sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
+    sixel_frame_t *decoded;
 
     status = sixel_encoder_operation_enter(encoder, 0);
     if (status != SIXEL_OK) {
         return status;
     }
     sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
-    status = sixel_encoder_encode_frame_owned(encoder, frame, output);
+    decoded = NULL;
+    if (frame != NULL &&
+        sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
+        status = sixel_frame_decode_ycbcr422_copy(frame, encoder->allocator,
+                                                &decoded);
+        if (SIXEL_FAILED(status)) {
+            encoder->sixdelta_refinement_needed = 0;
+            encoder->sixdelta_painted_pixels = 0u;
+        }
+    }
+    if (status == SIXEL_OK) {
+        status = sixel_encoder_encode_frame_owned(encoder,
+            decoded != NULL ? decoded : frame, output);
+    }
+    sixel_frame_unref(decoded);
     sixel_thread_budget_leave(&policy_scope);
     sixel_encoder_operation_leave(encoder);
     return status;
@@ -22017,6 +22089,9 @@ sixel_playback_palette_source_matches(sixel_frame_t *frame,
     if (image_layout != palette_layout) {
         return 0;
     }
+    if (sixel_pixelformat_is_ycbcr422(image_layout)) {
+        return sixel_frame_ycbcr422_matches(frame, source);
+    }
     if (image.rgb_definition == NULL && palette.rgb_definition == NULL) {
         return image.colorspace == palette.colorspace;
     }
@@ -22057,12 +22132,6 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     if (options != NULL) {
         memcpy(&defaults, options, options->struct_size < sizeof(defaults)
             ? options->struct_size : sizeof(defaults));
-    }
-    if (sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame)) ||
-        (defaults.palette_source != NULL && sixel_pixelformat_is_ycbcr422(
-            sixel_frame_get_pixelformat(defaults.palette_source)))) {
-        sixel_playback_release_reservation(playback, ticket);
-        return SIXEL_NOT_IMPLEMENTED;
     }
     if (defaults.palette_source != NULL &&
         !sixel_playback_palette_source_matches(frame,

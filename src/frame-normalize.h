@@ -41,6 +41,17 @@ sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_convert_workformat(sixel_frame_t *frame, int format);
 
+/* Produce a private RGB frame directly from packed rows. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
+                                sixel_allocator_t *allocator,
+                                sixel_frame_t **frame_out);
+
+/* Match storage layout, decoding policy and RGB definition. */
+SIXEL_INTERNAL_API int
+sixel_frame_ycbcr422_matches(sixel_frame_t const *frame,
+                            sixel_frame_t const *source);
+
 /* Normalize packed gamma RGB/gray alpha for the native float encoder.
  * Metadata still decides whether alpha is interpreted. Fractional blending
  * retains the legacy gamma-domain/background-gray convention, without byte

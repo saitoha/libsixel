@@ -2715,8 +2715,6 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
         }
     } else if (strcmp(scenario, "unsupported") == 0) {
         if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
-            sixel_encoder_encode_frame(encoder, frame, NULL) !=
-                SIXEL_NOT_IMPLEMENTED ||
             sixel_encoder_encode_bytes(encoder, input, 2, 2, format,
                 NULL, -1) != SIXEL_BAD_ARGUMENT ||
             SIXEL_SUCCEEDED(sixel_frame_clip(frame, 0, 0, 1, 1)) ||
@@ -2949,6 +2947,332 @@ test_ycbcr422_rgb_cases(char const *scenario)
     return EXIT_SUCCESS;
 }
 
+enum {
+    Y422_DIRECT,
+    Y422_CROP,
+    Y422_PLAYBACK,
+    Y422_PALETTE,
+    Y422_PALETTE_REJECT,
+    Y422_DELTA
+};
+
+typedef struct y422_capture {
+    playback_test_buffer_t stream;
+    size_t painted[2];
+    int completed;
+    int failed;
+} y422_capture_t;
+
+static void
+y422_playback_done(sixel_playback_result_t const *result, void *private)
+{
+    y422_capture_t *capture = private;
+
+    if (result->status != SIXEL_OK || capture->completed >= 2) {
+        capture->failed = 1;
+        return;
+    }
+    capture->painted[capture->completed++] = result->painted_pixels;
+}
+
+/* The reference has manually interpolated chroma codes per pixel and
+ * independent BT.709 inverse matrix coefficients. Pre-crop the reference
+ * in RGB, so it also detects resetting chroma phase at an odd crop origin. */
+static SIXELSTATUS
+y422_fixture(sixel_frame_t **frame, int layout, int crop, int variant,
+             sixel_ycbcr_def_t *definition, sixel_color_def_t *rgb,
+             unsigned char bytes[18], float samples[24])
+{
+    static unsigned char const yuyv[] = {
+        70, 112, 106, 150, 130, 160, 175, 108, 255, 0,
+        84, 144, 110, 100, 142, 116, 160, 150
+    };
+    static double const cb_codes[] = {-16, -4, 20, 32, 16, 9, -5, -12};
+    static double const cr_codes[] = {22, 11.5, -9.5, -20, -28, -15.5, 9.5, 22};
+    unsigned char luma[] = {70, 106, 130, 175, 84, 110, 142, 160};
+    float *out = samples;
+    double y, cb, cr;
+    int i, offset;
+    SIXELSTATUS status;
+
+    status = sixel_frame_new(frame, NULL);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    memcpy(bytes, yuyv, sizeof(yuyv));
+    if (variant == 1) {
+        luma[1] = 152;
+    }
+    for (i = 0; i < 8; ++i) {
+        if (variant == 2) {
+            luma[i] += 30;
+        }
+        offset = 10 * (i / 4) + 2 * (i % 4);
+        bytes[offset] = luma[i];
+        if (layout == SIXEL_PIXELFORMAT_UYVY) {
+            bytes[offset] = yuyv[offset + 1];
+            bytes[offset + 1] = luma[i];
+        }
+        if (crop && i % 4 == 0) {
+            continue;
+        }
+        y = luma[i] / 255.0;
+        cb = cb_codes[i] / 255.0;
+        cr = cr_codes[i] / 255.0;
+        *out++ = (float)(y + 1.5748 * cr);
+        *out++ = (float)(y - 0.18732427293 * cb - 0.46812427293 * cr);
+        *out++ = (float)(y + 1.8556 * cb);
+    }
+    if (layout != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        return sixel_frame_init_ycbcr422_borrowed(*frame, bytes, sizeof(yuyv),
+            4, 2, 10, layout, definition);
+    }
+    return sixel_frame_init_rgbf32_borrowed(*frame, samples,
+                                            crop ? 3 : 4, 2, rgb);
+}
+
+static int
+y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
+{
+    sixel_frame_t *image[2] = {NULL, NULL};
+    sixel_frame_t *source = NULL;
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition, *different = NULL;
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    sixel_playback_t *playback = NULL;
+    sixel_playback_config_t config;
+    sixel_playback_options_t options;
+    sixel_playback_stats_t stats = {0};
+    unsigned char bytes[3][18] = {{0}}, original[3][18];
+    float samples[3][24];
+    SIXELSTATUS status;
+    int i, count, packed, pass = 0;
+
+    packed = layout != SIXEL_PIXELFORMAT_RGBFLOAT32;
+    count = mode >= Y422_PLAYBACK ? 2 : 1;
+    rgb = sixel_color_def_new_named("srgb");
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    if (definition == NULL || sixel_encoder_new(&encoder, NULL) ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_PALETTE_TYPE, "rgb") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "16") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SAMPLING_POLICY,
+                             "full-frame") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+            ahead ? "greedy:B2:prepare=ahead" : "greedy:B2:prepare=serial") ||
+        sixel_output_new(&output, playback_test_write, &capture->stream,
+                         NULL)) {
+        goto end;
+    }
+    if (mode == Y422_CROP && packed &&
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_CROP, "3x2+1+0")) {
+        goto end;
+    }
+    if (mode == Y422_DELTA &&
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+                             "delta:T0")) {
+        goto end;
+    }
+    for (i = 0; i < count; ++i) {
+        if (y422_fixture(&image[i], layout, mode == Y422_CROP && !packed,
+                         i, definition, rgb, bytes[i], samples[i])) {
+            goto end;
+        }
+        sixel_frame_set_frame_no(image[i], i);
+        sixel_frame_set_multiframe(image[i], count > 1);
+    }
+    if (mode == Y422_PALETTE_REJECT) {
+        different = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+            SIXEL_YCBCR_RANGE_LIMITED, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+        if (different == NULL) {
+            goto end;
+        }
+    }
+    if ((mode == Y422_PALETTE || mode == Y422_PALETTE_REJECT) &&
+        y422_fixture(&source, layout, 0, 2,
+                      different != NULL ? different : definition,
+                      rgb, bytes[2], samples[2])) {
+        goto end;
+    }
+    memcpy(original, bytes, sizeof(original));
+
+    if (mode >= Y422_PLAYBACK) {
+        if (sixel_playback_config_init(&config, sizeof(config)) ||
+            sixel_playback_options_init(&options, sizeof(options))) {
+            goto end;
+        }
+        config.done = y422_playback_done;
+        config.done_context = capture;
+        if (sixel_playback_new(&playback, encoder, output, &config, NULL)) {
+            goto end;
+        }
+        options.palette_source = source;
+        if (mode == Y422_PALETTE_REJECT) {
+            status = sixel_playback_submit(playback, image[0],
+                                           SIXEL_PLAYBACK_WAIT, -1, &options);
+            stats.struct_size = sizeof(stats);
+            if (status != SIXEL_BAD_ARGUMENT ||
+                sixel_playback_get_stats(playback, &stats) ||
+                stats.depth != 0 ||
+                stats.submitted != 0 || capture->completed != 0 ||
+                capture->stream.size != 0) {
+                goto end;
+            }
+            options.palette_source = NULL;
+        }
+        for (i = 0; i < count; ++i) {
+            if (sixel_playback_submit(playback, image[i], SIXEL_PLAYBACK_WAIT,
+                                       -1, &options)) {
+                goto end;
+            }
+        }
+        if (sixel_playback_drain(playback, -1) || capture->failed ||
+            capture->completed != count) {
+            goto end;
+        }
+    } else if (sixel_encoder_encode_frame(encoder, image[0], output)) {
+        goto end;
+    }
+
+    if (packed) {
+        for (i = 0; i < count; ++i) {
+            if (sixel_frame_get_pixels(image[i]) != bytes[i] ||
+                sixel_frame_get_pixelformat(image[i]) != layout ||
+                memcmp(bytes[i], original[i], sizeof(bytes[i])) != 0) {
+                goto end;
+            }
+        }
+        if (source != NULL &&
+            (sixel_frame_get_pixels(source) != bytes[2] ||
+             sixel_frame_get_pixelformat(source) != layout ||
+             memcmp(bytes[2], original[2], sizeof(bytes[2])) != 0)) {
+            goto end;
+        }
+    }
+    pass = capture->stream.size > 0;
+end:
+    if (!pass) {
+        fprintf(stderr, "packed 4:2:2 %d (layout %d): %s\n", mode, layout,
+                sixel_helper_get_additional_message());
+    }
+    sixel_playback_unref(playback);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(image[0]);
+    sixel_frame_unref(image[1]);
+    sixel_frame_unref(source);
+    sixel_ycbcr_def_free(different);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass;
+}
+
+static int
+y422_capture_pixels(y422_capture_t const *capture, unsigned char rgba[2][32],
+                    int width, int count)
+{
+    sixel_sequence_decoder_t *decoder = NULL;
+    unsigned char const *pixels;
+    int actual_width, height, i;
+    size_t end;
+    SIXELSTATUS status;
+    int pass = 0;
+
+    if (sixel_sequence_open(&decoder, capture->stream.bytes,
+                            capture->stream.size, 1, NULL)) {
+        goto end;
+    }
+    for (i = 0; i < count; ++i) {
+        status = sixel_sequence_next(decoder, &pixels, &actual_width,
+                                     &height, &end);
+        if (status != SIXEL_OK || actual_width != width || height != 2) {
+            fprintf(stderr, "Decode frame %d: %s\n", i,
+                    sixel_helper_get_additional_message());
+            goto end;
+        }
+        memcpy(rgba[i], pixels, (size_t)width * 2u * 4u);
+    }
+    pass = sixel_sequence_next(decoder, &pixels, &actual_width, &height,
+                                &end) == SIXEL_FALSE;
+    if (!pass) {
+        fprintf(stderr, "Expected end of capture: %s\n",
+                sixel_helper_get_additional_message());
+    }
+end:
+    sixel_sequence_close(decoder);
+    return pass;
+}
+
+static int
+test_y422_encode(char const *mode_arg)
+{
+    static char const *const names[] = {
+        "encode", "odd-crop", "playback", "palette-source",
+        "palette-mismatch", "delta"
+    };
+    y422_capture_t packed = {0}, reference = {0}, control = {0};
+    unsigned char actual[2][32] = {{0}}, expected[2][32] = {{0}};
+    unsigned char without_palette[2][32] = {{0}};
+    int mode, width, count, layout, reference_mode, ahead;
+    int pass = 0;
+
+    for (mode = 0; mode <= Y422_DELTA; ++mode) {
+        if (strcmp(mode_arg, names[mode]) == 0) {
+            break;
+        }
+    }
+    if (mode > Y422_DELTA) {
+        return EXIT_FAILURE;
+    }
+    width = mode == Y422_CROP ? 3 : 4;
+    count = mode >= Y422_PLAYBACK ? 2 : 1;
+    reference_mode = mode == Y422_PALETTE_REJECT ? Y422_PLAYBACK : mode;
+    if (!y422_capture_run(&reference, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                          reference_mode, 0) ||
+        !y422_capture_pixels(&reference, expected, width, count)) {
+        goto end;
+    }
+    if (mode == Y422_PALETTE &&
+        (!y422_capture_run(&control, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                          Y422_PLAYBACK, 0) ||
+         !y422_capture_pixels(&control, without_palette, width, count) ||
+         memcmp(expected, without_palette, sizeof(expected)) == 0)) {
+        goto end;
+    }
+    for (layout = SIXEL_PIXELFORMAT_YUYV; layout <= SIXEL_PIXELFORMAT_UYVY;
+         ++layout) {
+        for (ahead = 0; ahead < count; ++ahead) {
+            if (!y422_capture_run(&packed, layout, mode, ahead) ||
+                !y422_capture_pixels(&packed, actual, width, count) ||
+                memcmp(actual, expected, sizeof(actual)) != 0) {
+                fprintf(stderr, "Packed %d mode %d: decoded pixels differ\n",
+                        layout, mode);
+                goto end;
+            }
+            if (mode == Y422_DELTA &&
+                (packed.painted[0] != 8 || packed.painted[1] != 1 ||
+                 memcmp(packed.painted, reference.painted,
+                        sizeof(packed.painted)) != 0 ||
+                 memcmp(actual[0] + 4, actual[1] + 4, 4) == 0)) {
+                fprintf(stderr, "Delta painted %zu then %zu pixels\n",
+                        packed.painted[0], packed.painted[1]);
+                goto end;
+            }
+            free(packed.stream.bytes);
+            memset(&packed, 0, sizeof(packed));
+        }
+    }
+    pass = 1;
+end:
+    free(control.stream.bytes);
+    free(reference.stream.bytes);
+    free(packed.stream.bytes);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
@@ -2969,6 +3293,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr422-encode") == 0) {
+        return test_y422_encode(argv[2]);
+    }
     if (argc == 3 && strcmp(argv[1], "ycbcr422-rgb") == 0) {
         return test_ycbcr422_rgb_cases(argv[2]);
     }

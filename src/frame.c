@@ -136,7 +136,10 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
 static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
-                  sixel_frame_t **frame_out);
+                  sixel_frame_t **frame_out, int decode_ycbcr);
+static SIXELSTATUS
+sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
+                                sixel_frame_t *destination);
 static void
 sixel_frame_vtbl_ref(sixel_frame_interface_t *frame);
 static void
@@ -979,7 +982,7 @@ sixel_frame_vtbl_clone(sixel_frame_interface_t *frame,
 
     *frame_out = NULL;
     storage = sixel_frame_from_interface_const(frame);
-    status = sixel_frame_clone(storage, allocator, &clone);
+    status = sixel_frame_clone(storage, allocator, &clone, 0);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -1199,7 +1202,7 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
 static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
-                  sixel_frame_t **frame_out)
+                  sixel_frame_t **frame_out, int decode_ycbcr)
 {
     SIXELSTATUS status;
     sixel_frame_t *clone;
@@ -1229,7 +1232,8 @@ sixel_frame_clone(sixel_frame_t const *frame,
     memset(&timeline, 0, sizeof(timeline));
     memset(&transparency, 0, sizeof(transparency));
 
-    if (frame == NULL || frame_out == NULL) {
+    if (frame == NULL || frame_out == NULL ||
+        (decode_ycbcr && frame->ycbcr == NULL)) {
         return status;
     }
     *frame_out = NULL;
@@ -1311,7 +1315,12 @@ sixel_frame_clone(sixel_frame_t const *frame,
         goto error;
     }
 
-    if (view.width > 0 && view.height > 0) {
+    if (decode_ycbcr) {
+        status = sixel_frame_decode_ycbcr422_into(frame, clone);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+    } else if (view.width > 0 && view.height > 0) {
         if (frame->ycbcr != NULL) {
             /* Dimension setters keep this rectangle inside the original
              * active rows. Drop all row padding when making an owned copy. */
@@ -1401,6 +1410,14 @@ error:
     sixel_allocator_free(clone->allocator, mask);
     sixel_frame_unref(clone);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
+                                sixel_allocator_t *allocator,
+                                sixel_frame_t **frame_out)
+{
+    return sixel_frame_clone(frame, allocator, frame_out, 1);
 }
 
 /* constructor of frame object */
@@ -1979,6 +1996,21 @@ sixel_frame_get_ycbcr422(sixel_frame_t const *frame, size_t *stride_bytes,
     *chroma_location = frame->ycbcr->chroma_location;
     *rgb = frame->ycbcr->rgb;
     return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API int
+sixel_frame_ycbcr422_matches(sixel_frame_t const *frame,
+                            sixel_frame_t const *source)
+{
+    sixel_ycbcr_def_t const *a = frame->ycbcr;
+    sixel_ycbcr_def_t const *b = source->ycbcr;
+
+    return a != NULL && b != NULL &&
+        frame->format.layout == source->format.layout &&
+        (a == b || (a->encoding == b->encoding && a->range == b->range &&
+                    a->chroma_location == b->chroma_location &&
+                    a->nearest_chroma == b->nearest_chroma &&
+                    sixel_cdef_same_rgb(a->rgb, b->rgb)));
 }
 
 /* get pixels */
@@ -2645,8 +2677,11 @@ sixel_frame_decode_ycbcr_sample(float *out, float y, float cb, float cr,
     out[2] = y + coefficients[3] * cb;
 }
 
+/* Read packed rows directly into the RGB allocation. The source and
+ * destination may be the same frame for explicit layout conversion. */
 static SIXELSTATUS
-sixel_frame_decode_ycbcr422(sixel_frame_t *frame)
+sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
+                                sixel_frame_t *destination)
 {
     /* Luma weights from the 601, 709 and 2020 NCL encodings. */
     static double const weights[][2] = {
@@ -2670,14 +2705,14 @@ sixel_frame_decode_ycbcr422(sixel_frame_t *frame)
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    pixels = sixel_allocator_malloc(frame->allocator, bytes);
+    pixels = sixel_allocator_malloc(destination->allocator, bytes);
     if (pixels == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
     definition = frame->ycbcr;
     rgb = sixel_cdef_clone(definition->rgb);
     if (rgb == NULL) {
-        sixel_allocator_free(frame->allocator, pixels);
+        sixel_allocator_free(destination->allocator, pixels);
         return SIXEL_BAD_ALLOCATION;
     }
     kr = weights[definition->encoding - 1][0];
@@ -2727,12 +2762,12 @@ sixel_frame_decode_ycbcr422(sixel_frame_t *frame)
         }
     }
 
-    sixel_frame_release_owned_pixels(frame);
-    sixel_frame_assign_layout(frame, SIXEL_PIXELFORMAT_RGBFLOAT32,
+    sixel_frame_release_owned_pixels(destination);
+    sixel_frame_assign_layout(destination, SIXEL_PIXELFORMAT_RGBFLOAT32,
                               SIXEL_FRAME_COLORSPACE_PROFILE_RGB);
-    frame->pixels.f32ptr = pixels;
-    frame->pixel_extent = bytes;
-    frame->format.rgb = rgb;
+    destination->pixels.f32ptr = pixels;
+    destination->pixel_extent = bytes;
+    destination->format.rgb = rgb;
     return SIXEL_OK;
 }
 
@@ -2741,7 +2776,7 @@ sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
     if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         if (frame->ycbcr != NULL) {
-            return sixel_frame_decode_ycbcr422(frame);
+            return sixel_frame_decode_ycbcr422_into(frame, frame);
         }
         if (frame->format.layout == pixelformat) {
             return SIXEL_OK;

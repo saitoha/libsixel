@@ -232,6 +232,12 @@ set -- \
     frame/storage/0090_ycbcr422_rgb_transfer.t \
     frame/storage/0091_ycbcr422_rgb_retry.t \
     frame/storage/0092_ycbcr422_rgb_invalid.t \
+    frame/storage/0093_ycbcr422_encode.t \
+    frame/storage/0094_ycbcr422_odd_crop.t \
+    frame/storage/0095_ycbcr422_playback.t \
+    frame/storage/0096_ycbcr422_palette_source.t \
+    frame/storage/0097_ycbcr422_palette_mismatch.t \
+    frame/storage/0098_ycbcr422_delta.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

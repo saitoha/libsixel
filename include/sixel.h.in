@@ -2342,7 +2342,9 @@ sixel_encoder_encode(
 
 #define SIXEL_HAVE_ENCODER_ENCODE_FRAME 1
 
-/* encode an initialized frame to SIXEL format */
+/* Encode an initialized frame to SIXEL format. Packed YUYV and UYVY are
+ * decoded into private RGB float32 storage, preserving the source frame
+ * and its bytes. Keep borrowed pixels alive throughout the call. */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode_frame(
     sixel_encoder_t /* in */ *encoder,
@@ -2373,9 +2375,10 @@ sixel_encoder_encode_frame(
  *
  * Ownership.  An admitted frame is referenced by the playback object and
  * may be modified by encoding; the caller must neither read nor modify it
- * until its completion callback has run.  Per-frame 6delta placement and
- * threshold limits are taken from the submission options, not from the
- * encoder at the time the frame is encoded.
+ * until its completion callback has run. Packed YUYV and UYVY are read into
+ * private RGB float32 storage after admission. Keep their borrowed buffers
+ * alive until completion. Per-frame 6delta placement and threshold limits
+ * are taken from the submission options at admission.
  *
  * While a playback object is attached, other calls on its encoder fail with
  * SIXEL_BAD_ARGUMENT; release the playback object to use the encoder
@@ -2487,10 +2490,12 @@ typedef struct sixel_playback_config {
 
 #define SIXEL_HAVE_PLAYBACK_PALETTE_SOURCE 1
 
-/* Optional palette_source is an independent, immutable RGB frame used only
+/* Optional palette_source is an independent, immutable frame used only
  * for palette sampling. Its geometry is independent of the submitted image:
  * output crop/resize do not apply to this source. Both frames must have the
- * same pixel format/colorspace. NULL samples the submitted image as usual.
+ * same pixel format/colorspace. Packed YUYV and UYVY also require matching
+ * YCbCr encoding, range, chroma location and interpolation policy, and RGB
+ * definitions. NULL samples the submitted image as usual.
  * Playback retains the source through completion; borrowed pixels must remain
  * alive and unchanged until the done callback, including cancellation.
  * Adaptive sampling stays bounded; explicit full-frame samples this entire
