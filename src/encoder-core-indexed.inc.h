@@ -112,6 +112,24 @@ sixel_indexed_core_unref(sixel_encoder_core_t *self)
     sixel_allocator_unref(allocator);
 }
 
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+/* Only consider a complete, full-origin raster. Size mode's first sweep
+ * can underpaint, so it must retain its own emission path. */
+static int
+sixel_indexed_core_webgpu_eligible(sixel_indexed_core_t const *core,
+    sixel_indexed_frame_description_t const *desc, int ncolors)
+{
+    return core->gpu_body && !core->options.ormode &&
+        core->options.encode_policy != SIXEL_ENCODEPOLICY_SIZE &&
+        desc->encoded_x == 0 && desc->encoded_y == 0 &&
+        desc->encoded_width == desc->width &&
+        desc->encoded_height == desc->height &&
+        desc->width <= 2048 && desc->height <= 2160 &&
+        (size_t)desc->width * desc->height >= core->gpu_body_threshold &&
+        ncolors >= 1 && ncolors <= 256;
+}
+#endif
+
 static SIXELSTATUS
 sixel_indexed_core_prepare(sixel_encoder_core_t *self,
     sixel_encoder_core_prepare_request_t const *request)
@@ -180,6 +198,13 @@ sixel_indexed_core_prepare(sixel_encoder_core_t *self,
     core->image = request->image;
     sixel_indexed_frame_ref(core->image);
     sixel_indexed_frame_acquire_user(core->image);
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    /* Palette application runs after prepare. If the body may bind its
+     * indexes on the device, let it skip the host readback. */
+    if (sixel_indexed_core_webgpu_eligible(core, desc, (int)palette.count)) {
+        sixel_indexed_frame_request_device_indexes(core->image);
+    }
+#endif
     status = SIXEL_OK;
 #if SIXEL_ENABLE_THREADS
     core->worker_capacity = request->worker_capacity != 0
@@ -330,6 +355,11 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
 #endif
 
 #if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+/* The admission compares whole chains, measured from the end of palette
+ * application. A resident frame's GPU chain is the device body plus its
+ * readback; its CPU chain is the index readback (the sync in consume) plus
+ * CPU emission. A frame whose host indexes are already current pays an
+ * index upload on the GPU side instead and nothing extra on the CPU side. */
 static int
 sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
     sixel_indexed_frame_description_t const *desc, int ncolors,
@@ -342,16 +372,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
     double gpu_ms;
     int i;
 
-    /* Only consider a complete, full-origin raster. Size mode's first
-     * sweep can underpaint, so it must retain its own emission path. */
-    if (!core->gpu_body || core->options.ormode ||
-            core->options.encode_policy == SIXEL_ENCODEPOLICY_SIZE ||
-            desc->encoded_x != 0 || desc->encoded_y != 0 ||
-            desc->encoded_width != desc->width ||
-            desc->encoded_height != desc->height ||
-            desc->width > 2048 || desc->height > 2160 ||
-            (size_t)desc->width * desc->height < core->gpu_body_threshold ||
-            ncolors < 1 || ncolors > 256) {
+    if (!sixel_indexed_core_webgpu_eligible(core, desc, ncolors)) {
         return 0;
     }
     if (core->webgpu_width != desc->width ||
@@ -363,7 +384,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
         core->webgpu_body_frames = 0;
         core->webgpu_body_warm = 0;
     }
-    /* Recheck the CPU cost every sixteen frames. High resolution alone
+    /* Recheck the CPU chain every sixteen frames. High resolution alone
      * cannot pay for two GPU readbacks on a low-complexity scene. */
     if (core->webgpu_body_frames == 0) {
         *cpu_start = sixel_timer_monotonic();
@@ -379,6 +400,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
     for (i = 0; i < ncolors; ++i)
         core->gpu_registers[i] = body->wire_colors[i].definition.register_index;
     request.indexes = core->image->indexes;
+    request.indexes_buffer = core->image->device_indexes;
     request.mask = core->image->skip;
     request.width = desc->width;
     request.height = desc->height;
@@ -469,6 +491,13 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
             sixel_indexed_core_webgpu_body(
                 core, desc, (int)palette.count, &cpu_start)) {
         return core->status;
+    }
+    /* CPU emission reads host indexes; a measured frame charges the
+     * readback to the CPU chain. */
+    status = sixel_indexed_frame_sync_indexes(core->image);
+    if (SIXEL_FAILED(status)) {
+        core->status = status;
+        return status;
     }
 #endif
     ready = published_rows == desc->height ? desc->encoded_height :

@@ -24,6 +24,10 @@ struct sixel_indexed_frame {
     sixel_gpu_device_interface_t *gpu_device;
     sixel_gpu_buffer_interface_t *gpu_indexes;
     sixel_gpu_buffer_interface_t *gpu_skip;
+    /* Optional device-only copy of indexes, requested by a consumer that
+     * binds it in place. A GPU producer may leave it as the only current
+     * copy; read indexes on the host only after sync_indexes. */
+    sixel_gpu_buffer_interface_t *device_indexes;
 };
 
 struct sixel_stream_receipt {
@@ -38,6 +42,15 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_indexed_frame_new_on_device(sixel_indexed_frame_t **result,
     sixel_indexed_frame_description_t const *description,
     sixel_allocator_t *allocator, sixel_gpu_device_interface_t *device);
+/* Ask the producer to keep indexes on the device, before it runs. Only
+ * thread-disabled WebGPU builds have such a producer; elsewhere, and when
+ * the device declines, this leaves the frame unchanged. */
+SIXEL_INTERNAL_API void
+sixel_indexed_frame_request_device_indexes(sixel_indexed_frame_t *image);
+/* Make the host indexes current: a no-op unless the producer left them on
+ * the device only. Fails when the deferred device result was invalid. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_indexed_frame_sync_indexes(sixel_indexed_frame_t *image);
 SIXEL_INTERNAL_API void
 sixel_indexed_frame_acquire_user(sixel_indexed_frame_t *image);
 SIXEL_INTERNAL_API void

@@ -189,6 +189,20 @@ sixel_webgpu_check_lookup(sixel_gpu_lookup_program_view_t const *,
     sixel_gpu_lookup_query_kind_t);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_webgpu_apply(
     sixel_gpu_palette_request_t const *request);
+#if !SIXEL_ENABLE_THREADS
+/* A device-only index plane for one indexed frame. Passed as dest_buffer,
+ * it lets palette application keep its indexes on the device instead of
+ * reading them back; the body stage then binds them in place. Host readers
+ * call sync first, which reads the plane back only when the host copy is
+ * stale. A plane whose producer wrote the host copy stays inert. */
+SIXEL_INTERNAL_API SIXELSTATUS sixel_webgpu_index_plane_new(size_t pixels,
+    sixel_gpu_buffer_interface_t **result);
+SIXEL_INTERNAL_API SIXELSTATUS sixel_webgpu_index_plane_sync(
+    sixel_gpu_buffer_interface_t *plane, sixel_index_t *host);
+/* The plane's device handle, or 0 when buffer is not a WebGPU plane. */
+SIXEL_INTERNAL_API int sixel_webgpu_index_plane_id(
+    sixel_gpu_buffer_interface_t const *buffer);
+#endif
 #endif
 
 /* Internal geometry policy: avoid submission overhead on small rasters. */

@@ -87,15 +87,19 @@ EM_JS(void, sixel_webgpu_body_install,
 EM_JS_DEPS(sixel_webgpu_body_memory, "malloc,free")
 
 /* Output length stays on the device until spelling finishes. Read that
- * word first and copy only the aligned range occupied by the body. */
+ * word first and copy only the aligned range occupied by the body. A
+ * resident index plane is copied on the device; its deferred palette
+ * errors and invalid-index words are checked with the length. */
 EM_ASYNC_JS(unsigned char *, sixel_webgpu_body_dispatch,
       (unsigned char const *indexes, unsigned char const *mask,
        int width, int height, int colors, int keycolor, int selectors,
        int limited, uint32_t const *registers, uint32_t *length,
-       double *elapsed), {
+       double *elapsed, int plane), {
     const state = Module['sixelWebGPU'];
     const {device, body} = state;
     if (body.busy) return 0;
+    const source = plane ? state.planes?.map.get(plane) : null;
+    const resident = !!source?.device;
     body.busy = true;
     let result = 0;
     let sizeBuffer, readback;
@@ -114,11 +118,14 @@ EM_ASYNC_JS(unsigned char *, sixel_webgpu_body_dispatch,
         const selector = 1 + String(Math.max(...regs)).length;
         const align = n => 4 * Math.ceil(n / 4);
         const bound = align(cells + nodes * (1 + selector + gap) + bands);
+        // The length word is followed by one status word per palette
+        // chunk of a resident plane.
+        const chunks = Math.ceil(pixels / 1048576);
         const sizes = [48, align(pixels), pairs * words * 4, pairs * 8,
             nodes * 16, align(pairs * width), pairs * 4, nodes * 4,
             bands * (2 * width + 1 + words) * 4, nodes * 4, nodes * 16,
             (bands + 1) * 16, bound, mask ? align(pixels) : 4, colors * 4,
-            4, bound];
+            4 + 4 * chunks, bound];
         const wg = n => Math.ceil(n / 256);
         const counts = [wg(pixels),wg(pairs),bands,1,wg(pairs),
                         wg(nodes),bands,bands,1,wg(nodes)];
@@ -135,10 +142,13 @@ EM_ASYNC_JS(unsigned char *, sixel_webgpu_body_dispatch,
         scoped = true;
         device.queue.writeBuffer(b[0], 0, new Uint32Array([width,height,colors,
             bands,words,pairs,limited,selectors,keycolor,Number(!!mask),0,0]));
-        state.writeBytes(b[1], 0, indexes, pixels);
+        if (!resident) state.writeBytes(b[1], 0, indexes, pixels);
         if (mask) state.writeBytes(b[13], 0, mask, pixels);
         device.queue.writeBuffer(b[14], 0, regs);
         const encoder = device.createCommandEncoder();
+        if (resident)
+            encoder.copyBufferToBuffer(source.indexes, 0, b[1], 0,
+                align(pixels));
         for (const i of [2,5,6,12]) encoder.clearBuffer(b[i]);
         body.pipelines.forEach((pipeline, i) => {
             const pass = encoder.beginComputePass();
@@ -148,11 +158,22 @@ EM_ASYNC_JS(unsigned char *, sixel_webgpu_body_dispatch,
             pass.end();
         });
         encoder.copyBufferToBuffer(b[11], 16 * bands + 8, sizeBuffer, 0, 4);
+        if (resident)
+            encoder.copyBufferToBuffer(source.status, 0, sizeBuffer, 4,
+                4 * chunks);
         device.queue.submit([encoder.finish()]);
-        await sizeBuffer.mapAsync(GPUMapMode.READ);
+        // Wait for the palette's error scopes with the length, not before
+        // submitting, so the body queues behind the palette on the device.
+        const [errors] = await Promise.all([Promise.all(resident ?
+            source.pending : []), sizeBuffer.mapAsync(GPUMapMode.READ)]);
         lengthMapped = true;
-        const used = new Uint32Array(sizeBuffer.getMappedRange())[0];
+        if (errors.some(Boolean)) return 0;
+        if (resident) source.pending = [];
+        const status = new Uint32Array(sizeBuffer.getMappedRange());
+        const used = status[0];
         if (!used || used > bound) return 0;
+        if (resident && status.subarray(1, 1 + chunks).some(Boolean))
+            return 0;
         const copy = device.createCommandEncoder();
         copy.copyBufferToBuffer(b[12], 0, readback, 0, align(used));
         device.queue.submit([copy.finish()]);
@@ -191,7 +212,7 @@ sixel_body_webgpu_spell(sixel_body_gpu_request_t const *request,
     bytes = sixel_webgpu_body_dispatch(request->indexes, request->mask,
         request->width, request->height, request->ncolors, request->keycolor,
         request->selectors, request->limited, request->registers,
-        length, elapsed);
+        length, elapsed, sixel_webgpu_index_plane_id(request->indexes_buffer));
     if (bytes != NULL) {
         /* Count the compute and byte-copy submissions without charging
          * host readback time as device busy time. */

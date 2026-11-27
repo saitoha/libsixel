@@ -217,10 +217,17 @@ sixel_apply_deferred_solve(sixel_palette_apply_deferred_interface_t *self,
 static SIXELSTATUS
 sixel_palette_apply_publish_fixed(sixel_indexed_frame_t *image, int rows)
 {
-    return image->description.keycolor < 0 ||
-            image->description.keycolor_reserved
-        ? sixel_indexed_frame_publish_gpu_rows(image, rows)
-        : sixel_indexed_frame_publish_applied(image, rows);
+    SIXELSTATUS status;
+
+    if (image->description.keycolor < 0 ||
+            image->description.keycolor_reserved) {
+        return sixel_indexed_frame_publish_gpu_rows(image, rows);
+    }
+    /* The applied scan reads host indexes the producer may have left on
+     * the device. */
+    status = sixel_indexed_frame_sync_indexes(image);
+    if (status != SIXEL_OK) return status;
+    return sixel_indexed_frame_publish_applied(image, rows);
 }
 
 static SIXELSTATUS

@@ -241,6 +241,189 @@ sixel_webgpu_available(void)
 
 EM_JS_DEPS(sixel_webgpu_deps, "$UTF8ToString")
 
+#if !SIXEL_ENABLE_THREADS
+/* Index planes live in the JS realm of the serial consumer. A plane holds
+ * the frame's indexes and one invalid-index word per palette chunk, plus
+ * the error scopes of the chunks that wrote it. Released planes of the
+ * frame size are kept for the next frame. */
+EM_JS(int, webgpu_plane_new, (int size), {
+    const state = Module['sixelWebGPU'];
+    if (!state) return 0;
+    const device = state.device;
+    if (!state.planes) state.planes = {map:new Map(), next:1, idle:[]};
+    const planes = state.planes;
+    const length = 4 * Math.ceil(size / 4);
+    const words = 4 * Math.ceil(size / 1048576);
+    if (length > device.limits.maxBufferSize ||
+            length > device.limits.maxStorageBufferBindingSize) return 0;
+    const at = planes.idle.findIndex(p => p.indexes.size === length);
+    let plane = at < 0 ? null : planes.idle.splice(at, 1)[0];
+    if (!plane) {
+        const U = GPUBufferUsage;
+        try {
+            plane = {
+                indexes:device.createBuffer({size:length,
+                    usage:U.STORAGE | U.COPY_SRC | U.COPY_DST}),
+                status:device.createBuffer({size:words,
+                    usage:U.COPY_SRC | U.COPY_DST}),
+                staging:null
+            };
+        } catch (error) {
+            return 0;
+        }
+    }
+    // device: the indexes buffer holds this frame. stale: only it does.
+    plane.device = plane.stale = false;
+    plane.pending = [];
+    const id = planes.next++;
+    planes.map.set(id, plane);
+    return id;
+})
+
+EM_JS(void, webgpu_plane_release, (int id), {
+    const planes = Module['sixelWebGPU']?.planes;
+    const plane = planes?.map.get(id);
+    if (!plane) return;
+    planes.map.delete(id);
+    if (planes.idle.length < 2) {
+        planes.idle.push(plane);
+        return;
+    }
+    plane.indexes.destroy();
+    plane.status.destroy();
+    plane.staging?.destroy();
+})
+
+/* Read a stale plane back once, checking the deferred palette errors and
+ * invalid-index words that the skipped palette readback would have. */
+EM_ASYNC_JS(int, webgpu_plane_sync, (int id, unsigned char *host, int size), {
+    const state = Module['sixelWebGPU'];
+    const plane = state?.planes?.map.get(id);
+    if (!plane) return 0;
+    if (!plane.stale) return 1;
+    const device = state.device;
+    let mapped = false;
+    try {
+        const length = plane.indexes.size, words = plane.status.size;
+        if (!plane.staging)
+            plane.staging = device.createBuffer({size:length + words,
+                usage:GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST});
+        const encoder = device.createCommandEncoder();
+        encoder.copyBufferToBuffer(plane.indexes, 0, plane.staging, 0, length);
+        encoder.copyBufferToBuffer(plane.status, 0, plane.staging, length,
+            words);
+        device.queue.submit([encoder.finish()]);
+        const [errors] = await Promise.all([Promise.all(plane.pending),
+            plane.staging.mapAsync(GPUMapMode.READ)]);
+        mapped = true;
+        if (errors.some(Boolean)) return 0;
+        plane.pending = [];
+        const view = plane.staging.getMappedRange();
+        if (new Uint32Array(view, length, words / 4).some(Boolean)) return 0;
+        HEAPU8.set(new Uint8Array(view, 0, size), host >>> 0);
+        plane.stale = false;
+        return 1;
+    } catch (error) {
+        return 0;
+    } finally {
+        if (mapped) plane.staging.unmap();
+    }
+})
+
+typedef struct webgpu_index_plane {
+    sixel_gpu_buffer_interface_t iface;
+    unsigned int refs;
+    int id;
+    size_t size;
+} webgpu_index_plane_t;
+
+static void
+webgpu_plane_ref(sixel_gpu_buffer_interface_t *self)
+{
+    ++((webgpu_index_plane_t *)self)->refs;
+}
+
+static void
+webgpu_plane_unref(sixel_gpu_buffer_interface_t *self)
+{
+    webgpu_index_plane_t *plane;
+
+    plane = (webgpu_index_plane_t *)self;
+    if (plane == NULL || --plane->refs != 0) return;
+    webgpu_plane_release(plane->id);
+    free(plane);
+}
+
+static size_t
+webgpu_plane_size(sixel_gpu_buffer_interface_t const *self)
+{
+    return ((webgpu_index_plane_t const *)self)->size;
+}
+
+/* WebGPU never maps storage into the Wasm heap. */
+static SIXELSTATUS
+webgpu_plane_shared_memory(sixel_gpu_buffer_interface_t const *self,
+    void **memory)
+{
+    (void)self;
+    if (memory != NULL) *memory = NULL;
+    return SIXEL_FEATURE_ERROR;
+}
+
+static sixel_gpu_buffer_vtbl_t const webgpu_plane_vtbl = {
+    webgpu_plane_ref, webgpu_plane_unref, webgpu_plane_size,
+    webgpu_plane_shared_memory
+};
+
+SIXELSTATUS
+sixel_webgpu_index_plane_new(size_t pixels,
+    sixel_gpu_buffer_interface_t **result)
+{
+    webgpu_index_plane_t *plane;
+
+    if (result == NULL) return SIXEL_BAD_ARGUMENT;
+    *result = NULL;
+    if (pixels == 0 || pixels > INT_MAX - 3) return SIXEL_BAD_ARGUMENT;
+    if (!sixel_webgpu_available()) return SIXEL_FEATURE_ERROR;
+    plane = malloc(sizeof(*plane));
+    if (plane == NULL) return SIXEL_BAD_ALLOCATION;
+    plane->id = webgpu_plane_new((int)pixels);
+    if (plane->id == 0) {
+        free(plane);
+        return SIXEL_FEATURE_ERROR;
+    }
+    plane->iface.vtbl = &webgpu_plane_vtbl;
+    plane->refs = 1;
+    plane->size = pixels;
+    *result = &plane->iface;
+    return SIXEL_OK;
+}
+
+int
+sixel_webgpu_index_plane_id(sixel_gpu_buffer_interface_t const *buffer)
+{
+    return buffer != NULL && buffer->vtbl == &webgpu_plane_vtbl
+        ? ((webgpu_index_plane_t const *)buffer)->id : 0;
+}
+
+SIXELSTATUS
+sixel_webgpu_index_plane_sync(sixel_gpu_buffer_interface_t *buffer,
+    sixel_index_t *host)
+{
+    webgpu_index_plane_t *plane;
+
+    if (sixel_webgpu_index_plane_id(buffer) == 0 || host == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    plane = (webgpu_index_plane_t *)buffer;
+    if (webgpu_plane_sync(plane->id, host, (int)plane->size)) return SIXEL_OK;
+    sixel_helper_set_additional_message(
+        "WebGPU palette dispatch or readback failed.");
+    return SIXEL_FEATURE_ERROR;
+}
+#endif
+
+/* A nonzero plane receives this chunk's indexes and invalid-index word on
+ * the device. Nothing is read back; the plane keeps the error scopes. */
 EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
     char const *const *dither, int ndither, unsigned char const *rgb,
     unsigned char const *palette, int colors, unsigned char *dest,
@@ -249,11 +432,13 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
     unsigned int gradient_size, void const *constants, unsigned int nbytes,
     unsigned int ws, sixel_gpu_lookup_build_pass_t const *passes,
     unsigned int npasses,
-    char const *const *entry, int nentry, int batch), {
+    char const *const *entry, int nentry, int batch, int plane), {
     let buffers = [], scoped = false, table;
     const state = Module['sixelWebGPU'];
     if (!state) return 0;
     const device = state.device;
+    const target = plane ? state.planes?.map.get(plane) : null;
+    if (plane && !target) return 0;
     try {
         const pipeline = await state.getPipeline(lookup, nlookup,
                                                dither, ndither, entry, nentry);
@@ -311,14 +496,35 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
             pass.dispatchWorkgroups(pitch,Math.ceil(tiles / pitch));
         } else pass.dispatchWorkgroups(Math.ceil(count / 256));
         pass.end();
-        enc.copyBufferToBuffer(output, 0, staging, 0, length);
-        enc.copyBufferToBuffer(invalidIndex, 0, staging, length, 4);
-        if (corrected)
-            enc.copyBufferToBuffer(queries, 0, staging, length + 4, count * 4);
+        if (target) {
+            // Chunks start on multiples of 1048576 pixels (see the caller).
+            const first = HEAPU32[(uniforms >>> 2) + 1];
+            enc.copyBufferToBuffer(output, 0, target.indexes, first, length);
+            enc.copyBufferToBuffer(invalidIndex, 0, target.status,
+                4 * Math.floor(first / 1048576), 4);
+        } else {
+            enc.copyBufferToBuffer(output, 0, staging, 0, length);
+            enc.copyBufferToBuffer(invalidIndex, 0, staging, length, 4);
+            if (corrected)
+                enc.copyBufferToBuffer(queries, 0, staging, length + 4,
+                    count * 4);
+        }
         device.queue.submit([enc.finish()]);
         const validation = device.popErrorScope();
         const allocation = device.popErrorScope();
         scoped = false;
+        if (target) {
+            // Later queue work is ordered after these copies, so the next
+            // chunk may reuse the leased buffers without waiting.
+            target.pending.push(validation, allocation);
+            target.device = target.stale = true;
+            if (!state.idle) {
+                state.idle = {count, colors, buffers, noiseBytes, nbytes,
+                              saveQuery: false};
+                buffers = [];
+            }
+            return 1;
+        }
         const [invalid, exhausted] = await Promise.all([validation,
             allocation, staging.mapAsync(GPUMapMode.READ)]);
         if (invalid || exhausted) return 0;
@@ -452,7 +658,7 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
                 view.batch ? palette_batch_main : palette_point_main,
                 view.batch ? sizeof(palette_batch_main) / sizeof(char *) :
                     sizeof(palette_point_main) / sizeof(char *),
-                view.batch != NULL)) {
+                view.batch != NULL, 0)) {
         sixel_helper_set_additional_message(
             "WebGPU adapter or compute pipeline unavailable.");
         return SIXEL_FEATURE_ERROR;
@@ -538,7 +744,7 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
     unsigned char const *gradient;
     uint32_t *corrected;
     unsigned char skip;
-    int transparent;
+    int transparent, plane;
     SIXELSTATUS status, finish;
 
     program = r->program;
@@ -556,6 +762,15 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
     if (status != SIXEL_OK) return status;
     transparent = r->transparent_mask != NULL &&
         r->transparent_keycolor >= 0 && r->transparent_keycolor < 256;
+    /* Keep the indexes on the device only when no host pass below or a
+     * row subscriber reads them before the frame's consumer syncs. */
+    plane = 0;
+#if !SIXEL_ENABLE_THREADS
+    if (!transparent && !r->has_6delta_accumulation && r->rows_ready == NULL &&
+            r->dest_buffer != NULL &&
+            r->dest_buffer->vtbl->size(r->dest_buffer) == r->pixel_count)
+        plane = sixel_webgpu_index_plane_id(r->dest_buffer);
+#endif
     corrected = NULL;
     if (r->has_6delta_accumulation &&
             r->sixdelta_compare == SIXEL_DELTA_COMPARE_QUERY) {
@@ -608,7 +823,7 @@ sixel_webgpu_apply(sixel_gpu_palette_request_t const *r)
                 program->view.batch ?
                     sizeof(palette_batch_main) / sizeof(char *) :
                     sizeof(palette_point_main) / sizeof(char *),
-                program->view.batch != NULL)) {
+                program->view.batch != NULL, plane)) {
             sixel_helper_set_additional_message(
                 "WebGPU palette dispatch or readback failed.");
             status = SIXEL_FEATURE_ERROR;

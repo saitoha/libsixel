@@ -247,7 +247,9 @@ d_a_dither_execute(d_a_dither_plan_t *plan,
     request.sixdelta_comparison_palette = plan->comparison;
     request.sixdelta_comparison_palette_size = request.palette_size;
     request.accumulation_result_mask = run->result->skip;
-    request.dest_buffer = run->result->gpu_indexes;
+    /* A frame has shared planes or a device-only index plane, not both. */
+    request.dest_buffer = run->result->gpu_indexes != NULL
+        ? run->result->gpu_indexes : run->result->device_indexes;
     request.accumulation_result_buffer = run->result->gpu_skip;
     request.accumulation_result_mask_size = run->result->pixels;
     request.positional_strength_override = 1;

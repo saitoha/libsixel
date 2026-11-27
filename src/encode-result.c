@@ -11,6 +11,9 @@
 #endif
 #include "encode-result.h"
 #include "gpu-program.h"
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+#include "gpu-palette.h"
+#endif
 #include "cpu.h"
 #include "colorspace.h"
 #include "palette.h"
@@ -440,6 +443,9 @@ sixel_indexed_frame_unref(sixel_indexed_frame_t *image)
             sixel_atomic_fetch_sub_u32(&image->ref, 1) == 1) {
         allocator = image->allocator;
         sixel_wire_palette_unref(image->description.palette);
+        if (image->device_indexes != NULL) {
+            image->device_indexes->vtbl->unref(image->device_indexes);
+        }
         if (image->gpu_device != NULL) {
             sixel_indexed_frame_recycle_device(image);
         } else {
@@ -449,6 +455,35 @@ sixel_indexed_frame_unref(sixel_indexed_frame_t *image)
         sixel_allocator_free(allocator, image);
         sixel_allocator_unref(allocator);
     }
+}
+
+SIXEL_INTERNAL_API void
+sixel_indexed_frame_request_device_indexes(sixel_indexed_frame_t *image)
+{
+    if (image == NULL || image->device_indexes != NULL ||
+            image->gpu_device != NULL ||
+            sixel_indexed_frame_get_state(image) != SIXEL_INDEXED_BUILDING ||
+            sixel_atomic_load_relaxed_i32(&image->rows) != 0) {
+        return;
+    }
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    (void)sixel_webgpu_index_plane_new(image->pixels, &image->device_indexes);
+#endif
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_indexed_frame_sync_indexes(sixel_indexed_frame_t *image)
+{
+    if (image == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+    if (image->device_indexes != NULL) {
+        return sixel_webgpu_index_plane_sync(image->device_indexes,
+            image->indexes);
+    }
+#endif
+    return SIXEL_OK;
 }
 
 SIXELAPI SIXELSTATUS

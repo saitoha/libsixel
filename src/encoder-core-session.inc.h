@@ -102,6 +102,9 @@ sixel_indexed_stream_filter(sixel_filter_t *filter,
         if (status != SIXEL_OK) goto end;
     }
     if (graph->session != NULL) {
+        /* History reads host indexes; the body may have used the device. */
+        status = sixel_indexed_frame_sync_indexes(image);
+        if (status != SIXEL_OK) goto end;
         sixel_timeline_logger_logf(logger, "controller", "retained_stage",
             "start", -1);
         status = graph->session->plane->vtbl->stage(graph->session->plane,
@@ -884,6 +887,9 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
             status = apply->vtbl->run(apply, &run);
             if (status != SIXEL_OK) goto end;
         }
+        /* The packet writer and history read the host indexes. */
+        status = sixel_indexed_frame_sync_indexes(image);
+        if (status != SIXEL_OK) goto end;
         history_started = sixel_timer_monotonic();
         if (session != NULL) {
             status = session->plane->vtbl->stage(session->plane, update);
