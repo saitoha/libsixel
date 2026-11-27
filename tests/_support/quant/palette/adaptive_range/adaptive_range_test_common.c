@@ -143,7 +143,7 @@ adaptive_range_test_stream(int hide_highlight)
         goto cleanup;
     }
     status = sixel_sample_stream_bind_borrowed_buffer(&samples, pixels,
-        sizeof(pixels), SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA,
+        sizeof(pixels), SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_SRGB,
         &transparency, SIXEL_PALETTE_SAMPLING_FULL_FRAME,
         SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
     if (SIXEL_FAILED(status)) {
@@ -184,7 +184,7 @@ adaptive_range_test_stream(int hide_highlight)
         goto cleanup;
     }
     sixel_filter_bind_sample_input(filter, &transformed);
-    sixel_filter_bind_weighted_output(filter, &points, SIXEL_COLORSPACE_GAMMA);
+    sixel_filter_bind_weighted_output(filter, &points, SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, allocator, NULL);
     if (SIXEL_FAILED(status) || points.point_count != count ||
             points.total_weight != count || points.weights == NULL) {
@@ -250,7 +250,7 @@ adaptive_range_test_gate(int scenario)
     requested = 256u;
     expected_safe = 3u;
     expected_gate = 1;
-    space = SIXEL_COLORSPACE_GAMMA;
+    space = SIXEL_COLORSPACE_SRGB;
     if (scenario == 16) {
         values[1] = 8u;
         values[2] = 16u;
@@ -264,7 +264,7 @@ adaptive_range_test_gate(int scenario)
         expected_gate = 0;
     } else if (scenario == 19) {
         /* These dark codes share one coarse L bin after conversion. */
-        space = SIXEL_COLORSPACE_CIELAB;
+        space = SIXEL_COLORSPACE_LAB_D65;
     } else if (scenario == 20) {
         requested = 1u;
         expected_gate = 0;
@@ -294,7 +294,7 @@ adaptive_range_test_gate(int scenario)
             coordinates[index * 3u + axis] = values[index];
         }
         if (scenario == 19 && !sixel_color_convert(
-                coordinates + index * 3u, gamma, SIXEL_COLORSPACE_GAMMA,
+                coordinates + index * 3u, gamma, SIXEL_COLORSPACE_SRGB,
                 space)) {
             goto cleanup;
         }

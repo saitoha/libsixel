@@ -15,7 +15,7 @@ trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
     -7 -Lbuiltin:Ebuiltin! -U "icc:P${data}/output-bpc.icc:bpc=0" \
     -_none -~none -Fnone -trgb -aoff -0none -dnone \
-    -Xlinear -Wlinear -Qkmeans:seed=1 -p2 --binning-policy=none \
+    -Xsrgb-linear -Wsrgb-linear -Qkmeans:seed=1 -p2 --binning-policy=none \
     --sampling-policy=full-frame "${data}/icc-register-centroid.ppm" 2>&1) || {
     printf '%s\n' "$trace" >&2
     printf '\n%s\n' 'not ok 1 - encode projected ICC palette'

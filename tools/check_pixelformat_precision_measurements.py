@@ -12,6 +12,11 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Sequence
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
+
 
 
 
@@ -41,6 +46,7 @@ OUTPUT_HEIGHT = int(literal_assignment(PLOTTER, "OUTPUT_HEIGHT"))
 PALETTE_COLORS = int(literal_assignment(PLOTTER, "PALETTE_COLORS"))
 PATH_CASES = tuple(literal_assignment(PLOTTER, "PATH_CASES"))
 RESIZE_CASES = tuple(literal_assignment(PLOTTER, "RESIZE_CASES"))
+ARCHIVED_REVISION = "8aa4fab9a6907dac900ef87b4b9ec8efd17c1bd5"
 
 
 EXPECTED_FORMATS = {
@@ -69,7 +75,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement CSV: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement CSV is empty: {path}")
     return rows
@@ -88,7 +94,7 @@ def validate_metadata(path: Path) -> Dict[str, object]:
     """Validate source provenance and the stable protocol."""
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
-    metadata = json.loads(path.read_text(encoding="utf-8"))
+    metadata = recorded_colorspace_fields(json.loads(path.read_text(encoding="utf-8")))
     if metadata.get("schema_version") != 1:
         fail("metadata schema is not version 1")
     source = metadata.get("source")
@@ -102,6 +108,14 @@ def validate_metadata(path: Path) -> Dict[str, object]:
         fail("durable measurements were not recorded from a clean worktree")
     if not source.get("revision"):
         fail("measurement source revision is missing")
+    expected_cases = [list(record) for record in PATH_CASES]
+    if source["revision"] == ARCHIVED_REVISION:
+        for record in expected_cases:
+            if record[2] == "auto":
+                if record[0].endswith("-auto"):
+                    record[0] = record[0].removesuffix("-auto") + "-8bit"
+                record[1] = record[1].replace("requested auto", "requested 8-bit")
+                record[2] = "8bit"
     expected_protocol = {
         "checker_size": [CHECKER_WIDTH, CHECKER_HEIGHT],
         "output_size": [OUTPUT_WIDTH, OUTPUT_HEIGHT],
@@ -112,7 +126,7 @@ def validate_metadata(path: Path) -> Dict[str, object]:
         "threads": 1,
         "comparison_colorspace": "oklab",
         "comparison_precision": "float32",
-        "path_cases": [list(record) for record in PATH_CASES],
+        "path_cases": expected_cases,
         "resize_cases": [list(record) for record in RESIZE_CASES],
         "sixel_environment_removed": True,
     }
@@ -155,15 +169,24 @@ def validate_command(command_text: str) -> None:
         fail("recorded measurement command unexpectedly enables diagnostics")
 
 
-def validate_paths(rows: Sequence[Dict[str, str]]) -> None:
+def validate_paths(rows: Sequence[Dict[str, str]], cases) -> None:
     """Validate requested/effective pixel-format transitions."""
-    expected_ids = [record[0] for record in PATH_CASES]
-    if [row.get("case") for row in rows] != expected_ids:
+    expected_records = [tuple(case) for case in cases]
+    observed_records = [
+        tuple(row[key] for key in (
+            "case", "label", "requested_precision", "clustering_colorspace",
+            "working_colorspace", "loader_kind",
+        ))
+        for row in rows
+    ]
+    if observed_records != expected_records:
         fail("path measurement rows do not match PATH_CASES")
-    by_id = {row["case"]: row for row in rows}
-    for row in rows:
+    by_id = {}
+    for row, current in zip(rows, PATH_CASES):
+        case = current[0]
+        by_id[case] = row
         validate_command(row["command"])
-        expected = EXPECTED_FORMATS[row["case"]]
+        expected = EXPECTED_FORMATS[case]
         observed = (
             row["source_format"],
             row["work_format"],
@@ -183,10 +206,10 @@ def validate_paths(rows: Sequence[Dict[str, str]]) -> None:
         if by_id[left]["output_sha256"] != by_id[right]["output_sha256"]:
             fail(f"implicit and explicit float32 outputs differ: {left}, {right}")
     cms_contracts = {
-        "cms-gamma-byte": ("gamma", "1", "rgb888"),
-        "cms-gamma-float": ("gamma", "0", "rgbfloat32"),
-        "cms-linear-byte": ("linear", "1", "rgb888"),
-        "cms-linear-float": ("linear", "0", "linearrgbfloat32"),
+        "cms-gamma-byte": ("srgb", "1", "rgb888"),
+        "cms-gamma-float": ("srgb", "0", "rgbfloat32"),
+        "cms-linear-byte": ("srgb-linear", "1", "rgb888"),
+        "cms-linear-float": ("srgb-linear", "0", "linearrgbfloat32"),
         "cms-oklab-auto": ("oklab", "0", "oklabfloat32"),
         "cms-oklab-float32": ("oklab", "0", "oklabfloat32"),
     }
@@ -224,7 +247,7 @@ def validate_resize(rows: Sequence[Dict[str, str]]) -> None:
         )
         if observed != expected:
             fail(f"resize format contract changed for {row['mode']}: {observed}")
-        command = (shlex.split(row["command"]))
+        command = canonical_encoder_arguments(shlex.split(row["command"]))
         if ("--precision-policy=8bit" not in command
                 or "-w50%" not in command
                 or "-rbilinear" not in command):
@@ -276,7 +299,7 @@ def main() -> int:
     paths = read_csv(directory / "pixelformat-precision-paths.csv")
     resize = read_csv(directory / "pixelformat-precision-resize.csv")
     validate_png(directory / "pixelformat-precision-resize.png")
-    validate_paths(paths)
+    validate_paths(paths, metadata["protocol"]["path_cases"])
     validate_resize(resize)
     if not isinstance(metadata.get("programs"), dict):
         fail("measurement program provenance is missing")

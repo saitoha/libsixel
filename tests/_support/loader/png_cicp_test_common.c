@@ -472,15 +472,15 @@ png_cicp_test(int specimen, int native)
     }
     if (byte_expected) {
         if ((!probe.palette && probe.format != SIXEL_PIXELFORMAT_RGB888) ||
-            probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+            probe.colorspace != SIXEL_COLORSPACE_SRGB) {
             fprintf(stderr, "cICP byte format=%x space=%d\n",
                     probe.format, probe.colorspace);
             goto cleanup;
         }
     } else if (probe.format != (specimen == 26 ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                     SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-               probe.colorspace != (specimen == 26 ? SIXEL_COLORSPACE_GAMMA :
-                    SIXEL_COLORSPACE_LINEAR)) {
+               probe.colorspace != (specimen == 26 ? SIXEL_COLORSPACE_SRGB :
+                    SIXEL_COLORSPACE_SRGB_LINEAR)) {
         fprintf(stderr, "cICP float format=%x space=%d\n",
                 probe.format, probe.colorspace);
         goto cleanup;

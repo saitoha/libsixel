@@ -95,7 +95,7 @@ precision_frame_samples(int mode, int linear)
             goto cleanup;
         }
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_WORKING_COLORSPACE,
-                                      mode == 3 ? "linear" : "gamma");
+                                      mode == 3 ? "srgb-linear" : "srgb");
         if (SIXEL_FAILED(status)) {
             failed = 1;
             goto cleanup;
@@ -149,8 +149,8 @@ precision_frame_samples(int mode, int linear)
         if (SIXEL_FAILED(status) || count == 0 ||
             sixel_frame_format(frame) != expected_format ||
             sixel_frame_get_colorspace(frame) !=
-                (mode == 3 ? SIXEL_COLORSPACE_LINEAR :
-                             SIXEL_COLORSPACE_GAMMA) ||
+                (mode == 3 ? SIXEL_COLORSPACE_SRGB_LINEAR :
+                             SIXEL_COLORSPACE_SRGB) ||
             sixel_frame_get_width(frame) != (mode >= 4 ? 2 : 4) ||
             sixel_frame_get_height(frame) != (mode >= 4 ? 1 : 2)) {
             fprintf(stderr, "mode=%d linear=%d status=%x got=%x expected=%x\n",

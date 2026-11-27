@@ -192,7 +192,7 @@ test_mono_lookup_encoder(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { '~', "auto" }, { '.', "float32" },
-        { 'W', "gamma" }, { 'd', "none" }, { '0', "none" },
+        { 'W', "srgb" }, { 'd', "none" }, { '0', "none" },
         { '_', "nearest" }, { 'A', "keep" }, { 'e', NULL }
     };
     sixel_encoder_t *encoder;

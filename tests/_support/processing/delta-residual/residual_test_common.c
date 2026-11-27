@@ -176,10 +176,10 @@ test_residual_case(int mode)
         break;
     case 4:
         RESIDUAL_REQUIRE(sixel_encoder_setopt(encoder,
-            SIXEL_OPTFLAG_WORKING_COLORSPACE, "linear") != SIXEL_OK);
+            SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb-linear") != SIXEL_OK);
         RESIDUAL_REQUIRE(sixel_encoder_setopt(encoder,
             SIXEL_OPTFLAG_DIFFUSION, "fs") != SIXEL_OK);
-        RESIDUAL_REQUIRE(encoder->working->space == SIXEL_COLORSPACE_GAMMA
+        RESIDUAL_REQUIRE(encoder->working->space == SIXEL_COLORSPACE_SRGB
             && encoder->method_for_diffuse == SIXEL_DIFFUSE_NONE &&
             encoder->accumulation_valid);
         break;

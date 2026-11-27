@@ -60,7 +60,7 @@ arguments. Enclose arguments whose uppercase characters must be preserved
 in double quotes:
 .PP
 .nf
-img2sixel \(dq\-Wc\(dq \(dq\-Qk\(dq input.png
+img2sixel \(dq\-Wlab-d65\(dq \(dq\-Qk\(dq input.png
 .fi
 .PP
 This applies whether or not an argument contains a slash.
@@ -79,6 +79,8 @@ it matches both "auto" and "average".
 .TP 5
 .B \-o, \-\-outfile
 specify output file name (default:stdout).
+A named destination that refers to an input file, including through a hard
+link, is rejected before writing.
 Selecting a name ending in \(dq.png\(dq, the literal \(dqpng:-\(dq, or the
 prefix \(dqpng:\(dq emits PNG data that reproduces the generated SIXEL
 stream. For ordinary palette SIXEL, the PNG keeps the palette indices
@@ -1316,8 +1318,8 @@ coregraphics, and builtin loaders accept
 \fBorientation=0|1\fP (short form \fBO0\fP or \fBO1\fP, default 1).
 All loaders accept \fBbackground_policy=file_first|explicit_first\fP
 (short form \fBPvalue\fP) and
-\fBbackground_colorspace=gamma|linear\fP (short form \fBCvalue\fP),
-\fBcms_target=gamma|linear|cielab|oklab|din99d\fP
+\fBbackground_colorspace=srgb|srgb-linear\fP (short form \fBCvalue\fP),
+\fBcms_target=srgb|srgb-linear|lab-d65|oklab|din99d\fP
 (short form \fBTvalue\fP), and \fBprefer_8bit=0|1\fP
 (short form \fBV0\fP or \fBV1\fP), and
 \fBcms_intent=INTENT[+INTENT][!]\fP (short form \fBRvalue\fP).
@@ -1330,7 +1332,7 @@ This does not reorder intents. Use cms_intent=relative! to require relative.
 Builtin requires usable RGB/Gray relative forward black points at both ends;
 unsupported or singular points fail that intent candidate. Native CMS engines
 use their own relative BPC option, without builtin pre-adjustment.
-All loaders accept \fBhdr_fallback_profile=linear-srgb|srgb\fP
+All loaders accept \fBhdr_fallback_profile=srgb-linear|srgb\fP
 (short form \fBFvalue\fP) for builtin HDR fallback decode and
 \fBhdr_exposure=EV\fP (short form \fBXvalue\fP) for finite EV stops.
 All loaders also accept \fBhdr_tonemap=auto|none|reinhard\fP
@@ -1554,13 +1556,13 @@ Ignored for \fB\-b\fP, \fB\-e\fP, and structured \fB\-m\fP palettes.
 .br
 auto -> follow the resolved working color space (default)
 .br
-gamma  -> keep gamma encoded pixels
+srgb  -> use encoded sRGB coordinates
 .br
-linear -> convert to linear RGB for clustering
+srgb-linear -> cluster in linear-light sRGB
 .br
 oklab -> cluster in OKLab uniform color space
 .br
-cielab -> cluster in CIELAB uniform color space
+lab-d65 -> cluster in CIELAB with a D65 reference white
 .br
 din99d -> cluster in DIN99d uniform color space
 .br
@@ -1574,13 +1576,13 @@ select internal working color space
 .br
 auto -> follow the input frame color space (default)
 .br
-gamma  -> keep gamma encoded pixels at the selected precision
+srgb  -> use encoded sRGB coordinates at the selected precision
 .br
-linear -> convert to linear RGB float32 for processing
+srgb-linear -> operate in linear-light sRGB float32
 .br
 oklab -> operate in OKLab float32 for palette decisions
 .br
-cielab -> operate in CIELAB float32 for palette decisions
+lab-d65 -> operate in D65 CIELAB float32 for palette decisions
 .br
 din99d -> operate in DIN99d float32 for palette decisions
 .br
@@ -1609,15 +1611,15 @@ CLI auto resolves the destination.
 .br
 \fICOLORSPACE\fP is one of them:
 .br
-gamma   -> sRGB gamma encoded output (default)
+srgb   -> sRGB gamma encoded output (default)
 .br
-linear  -> linear RGB output
+srgb-linear -> linear-light sRGB output
 .br
 smpte-c -> SMPTE-C gamma encoded output
 .br
 display-p3 -> Display P3 output for selected CPU palette or high-color paths
 .br
-adobe-rgb -> Adobe RGB (1998), D65 white and power 563/256
+a98-rgb -> Adobe RGB (1998), D65 white and power 563/256
 .br
 dci-p3 -> P3 primaries, DCI white and power 2.6
 .br
@@ -1642,7 +1644,7 @@ The receiver must interpret emitted RGB in the selected space.
 auto[:timeout_ms=N] -> negotiate with the image destination on stdout
 .br
 The CLI-only auto choice uses the same stdout terminal for queries and
-image output. File/pipe destinations use gamma without color queries,
+image output. File/pipe destinations use srgb without color queries,
 even when stderr is a terminal. Any outfile argument other than an exact
 "-" excludes auto negotiation, including "-o file -o -".
 Explicit color-space choices do not negotiate and remain honored for files.
@@ -1663,7 +1665,7 @@ further queries; restoration then uses a bounded write without verification.
 .br
 For ordinary palettes, Display P3 requires effective float precision;
 clustering and working
-coordinates accept gamma, linear, Oklab, CIELAB or DIN99d independently.
+coordinates independently accept srgb, srgb-linear, oklab, lab-d65 or din99d.
 It accepts K-means, K-center, K-medoids or Heckbert (including auto selection),
 any sampling policy,
 lookup none/certlut/5bit/6bit/auto/vptree/delaunay/blockcull/gridlut/ordered/rbc/mahalanobis/eytzinger/fhedt,
@@ -1992,7 +1994,7 @@ provided. Use 0 or 1. The loader suboption
 setting. Default is off.
 \fIimg2sixel\fP sets this variable to \(dq1\(dq only when it is unset.
 The loader probes only when the effective alpha policy is composite. When
-probing succeeds, it treats the returned background as gamma.
+probing succeeds, it interprets the returned background as sRGB.
 .TP 5
 .B SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS
 .br
@@ -2027,7 +2029,7 @@ not recover higher source bit depth from the loader.
 .TP 5
 .B SIXEL_DECODER_INPUT_COLORSPACE
 .br
-set decoded RGB interpretation: srgb, display-p3, adobe-rgb, dci-p3 or icc.
+set decoded RGB interpretation: srgb, display-p3, a98-rgb, dci-p3 or icc.
 The sixel2png \fB\-T\fP option takes precedence.
 Encoder-generated PNG snapshots use the profile selected by named or ICC
 \fB\-U\fP and sRGB otherwise, independently of this default.
@@ -2217,7 +2219,7 @@ command-line option is present.
 .B SIXEL_LOADER_BACKGROUND_COLORSPACE
 .br
 set how loader background colors are interpreted during alpha composition.
-accepts "gamma" (default) or "linear".
+accepts "srgb" (default) or "srgb-linear".
 ignored when OSC11 query supplies the background color.
 .TP 5
 .B SIXEL_BACKGROUND_POLICY
@@ -2370,7 +2372,7 @@ file. Accepts only "0" or "1"; "1" enables spooling.
 .B SIXEL_LOADER_HDR_FALLBACK_PROFILE
 .br
 set the builtin HDR source profile when GAMMA and PRIMARIES metadata are
-missing or unusable. Accepts "linear-srgb" (default) or "srgb".
+missing or unusable. Accepts "srgb-linear" (default) or "srgb".
 Header-derived metadata takes precedence. Override with
 \fB-Lloader:hdr_fallback_profile=PROFILE\fP or short form
 \fB-Lloader:FPROFILE\fP.
@@ -2474,8 +2476,8 @@ Other CMS engines and linear-to-P3 output conversion are unaffected.
 .TP 5
 .B SIXEL_LOADER_CMS_TARGET_COLORSPACE
 .br
-set the loader CMS output colorspace. Accepts "gamma", "linear", "cielab",
-"oklab", or "din99d". The default is "linear". Override with
+set the loader CMS output colorspace. Accepts "srgb", "srgb-linear", "lab-d65",
+"oklab", or "din99d". The default is "srgb-linear". Override with
 \fB-Lloader:cms_target=SPACE\fP or short form \fB-Lloader:TSPACE\fP.
 .TP 5
 .B SIXEL_LOADER_PREFER_8BIT

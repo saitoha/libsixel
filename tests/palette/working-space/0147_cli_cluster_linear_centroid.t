@@ -11,8 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
-    -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
-    -Qkmeans:seed=1 -p2 -Xlinear -Wgamma -aoff -dnone \
+    -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
+    -Qkmeans:seed=1 -p2 -Xsrgb-linear -Wsrgb -aoff -dnone \
     --binning-policy=none --sampling-policy=full-frame 2>&1 <<'PNM'
 P3
 3 1

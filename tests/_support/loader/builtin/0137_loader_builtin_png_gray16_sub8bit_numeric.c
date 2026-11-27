@@ -38,7 +38,7 @@ test_loader_0137_loader_builtin_png_gray16_sub8bit_numeric(int argc,
         3,
         1,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         pixels,
         expected,
         0.0000001f);

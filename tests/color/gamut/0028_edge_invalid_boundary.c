@@ -20,7 +20,7 @@ test_gamut_0028_edge_invalid_boundary(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture.allocator,
             NULL, NULL, NULL, NULL)) &&
         sixel_gamut_new(&fixture.mapper, fixture.definition,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_EDGE_SEEKER,
+            SIXEL_COLORSPACE_SRGB, SIXEL_GAMUT_EDGE_SEEKER,
             fixture.allocator) == SIXEL_BAD_ARGUMENT &&
         fixture.mapper == NULL;
     gamut_fixture_free(&fixture);

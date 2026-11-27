@@ -134,7 +134,7 @@ sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request)
     execution.working_palette = palette;
     execution.ncolors = entries.colors;
     execution.pixelformat = request->pixelformat;
-    execution.colorspace = SIXEL_COLORSPACE_GAMMA;
+    execution.colorspace = SIXEL_COLORSPACE_SRGB;
     status = sixel_gpu_device_acquire(&device);
     if (SIXEL_FAILED(status)) goto end;
     status = cached->provider->vtbl->prepare(cached->provider, &execution,

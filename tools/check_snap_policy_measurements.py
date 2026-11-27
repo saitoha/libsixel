@@ -11,12 +11,17 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Sequence, Set, Tuple
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 HIGH_K_COLORS = tuple(range(200, 257, 2))
 HIGH_K_SPEED_COLORS = (200, 208, 216, 224, 232, 240, 248, 256)
 CONTROL_COLORS = 64
-COLORSPACES = ("gamma", "linear", "oklab", "cielab", "din99d")
+COLORSPACES = ("srgb", "srgb-linear", "oklab", "lab-d65", "din99d")
 WORK_FORMATS = (
     "rgb-f32",
     "linear-f32",
@@ -34,7 +39,7 @@ CONFIGS = (
 RATES = (0.0, 0.25, 0.5, 0.75, 1.0)
 TIMINGS = ("once", "polish", "merge", "resolve", "all")
 CHANNEL_FACTORS = (0.0, 0.25, 0.5, 0.75, 1.0)
-LAB_COLORSPACES = ("oklab", "cielab", "din99d")
+LAB_COLORSPACES = ("oklab", "lab-d65", "din99d")
 PLOTS = (
     "snap-policy-quality.png",
     "snap-policy-fixed-point.png",
@@ -59,7 +64,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement file: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement file has no rows: {path}")
     return rows
@@ -70,7 +75,7 @@ def read_metadata(path: Path, mode: str) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        metadata = json.load(handle)
+        metadata = recorded_colorspace_fields(json.load(handle))
     if not isinstance(metadata, dict) or metadata.get("schema_version") not in (2, 3):
         fail("unsupported snap measurement metadata schema")
     if metadata.get("measurement_mode") != mode:
@@ -232,7 +237,7 @@ def require_command(
 ) -> None:
     """Validate one recorded command and matched colorspace contract."""
     try:
-        tokens = (shlex.split(row["command"]))
+        tokens = canonical_encoder_arguments(shlex.split(row["command"]))
     except (KeyError, ValueError) as exc:
         raise ValueError(f"invalid command in {context}") from exc
     colorspace = row["colorspace"]
@@ -246,8 +251,8 @@ def require_command(
         "--binning-policy=hard",
         "--quantize-model=kmeans:seed=1:binbits=6",
         "--cover-policy=off",
-        f"-X{colorspace}",
-        f"-W{colorspace}",
+        "-X" + colorspace,
+        "-W" + colorspace,
         "--diffusion=fs:scan=raster",
         "--gpu-policy=off",
         "--lookup-policy=none",

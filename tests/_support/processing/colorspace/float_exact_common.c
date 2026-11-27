@@ -59,8 +59,8 @@ int
 test_color_float_exact(int argc, char **argv)
 {
     static int const spaces[] = {
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB,
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
         SIXEL_COLORSPACE_DIN99D, SIXEL_COLORSPACE_SMPTEC
     };
     static int const budgets[] = { 8, 1, 2, 4 };

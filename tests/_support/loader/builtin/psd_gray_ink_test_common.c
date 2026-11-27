@@ -146,7 +146,7 @@ psd_gray_ink_test(int specimen)
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 3 || probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.rgb_size[0] != sizeof(actual) || probe.mask_size[0] != 0u) {
         fprintf(stderr, "PSD Gray ink case=%d status=%x fmt=%x\n",
             specimen, status, probe.pixelformat[0]);

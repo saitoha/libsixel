@@ -80,7 +80,7 @@ test_loader_0157_loader_builtin_png_cgbi_numeric(int argc, char **argv)
         probe.callback_count != 1 ||
         probe.width[0] != 1 || probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.rgb_size[0] != sizeof(expected_rgb) ||
         memcmp(probe.rgb[0], expected_rgb, sizeof(expected_rgb)) != 0) {
         return 1;

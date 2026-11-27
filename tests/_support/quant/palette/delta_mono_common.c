@@ -153,7 +153,7 @@ test_delta_bw_frames(int unused)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
-        {'_', "none"}, {'.', "float32"}, {'W', "gamma"}, {'U', "gamma"},
+        {'_', "none"}, {'.', "float32"}, {'W', "srgb"}, {'U', "srgb"},
         {'t', "rgb"}, {'Z', "delta"}, {'7', NULL}, {'b', "gray1"}
     };
     sixel_encoder_t *encoder;

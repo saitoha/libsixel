@@ -564,7 +564,7 @@ sixel_builtin_validate_psd_info(
 
     decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_NONE;
     skip_icc_conversion = 0;
-    colorspace = SIXEL_COLORSPACE_GAMMA;
+    colorspace = SIXEL_COLORSPACE_SRGB;
     min_channels = 1u;
     image_data_length = 0u;
     layer_state = 0;
@@ -584,7 +584,7 @@ sixel_builtin_validate_psd_info(
         *pskip_icc_conversion = 0;
     }
     if (pcolorspace != NULL) {
-        *pcolorspace = SIXEL_COLORSPACE_GAMMA;
+        *pcolorspace = SIXEL_COLORSPACE_SRGB;
     }
     message[0] = '\0';
 
@@ -758,11 +758,11 @@ sixel_builtin_validate_psd_info(
         } else if (info->depth == 16u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT;
             skip_icc_conversion = 1;
-            colorspace = SIXEL_COLORSPACE_LINEAR;
+            colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         } else if (info->depth == 32u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
             skip_icc_conversion = 1;
-            colorspace = SIXEL_COLORSPACE_LINEAR;
+            colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         } else {
             nwrite = snprintf(message,
                               message_size,
@@ -798,11 +798,11 @@ sixel_builtin_validate_psd_info(
             } else if (info->depth == 16u) {
                 decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_16BIT;
                 skip_icc_conversion = 1;
-                colorspace = SIXEL_COLORSPACE_LINEAR;
+                colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
             } else if (info->depth == 32u) {
                 decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_CMYK_32BIT;
                 skip_icc_conversion = 1;
-                colorspace = SIXEL_COLORSPACE_LINEAR;
+                colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
             } else {
                 nwrite = snprintf(
                     message,
@@ -821,7 +821,7 @@ sixel_builtin_validate_psd_info(
              * an arbitrary Multichannel composite can be displayed. */
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_COLORANTS;
             skip_icc_conversion = 1;
-            colorspace = SIXEL_COLORSPACE_LINEAR;
+            colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         } else {
             nwrite = snprintf(
                 message,
@@ -837,13 +837,13 @@ sixel_builtin_validate_psd_info(
         min_channels = 3u;
         if (info->depth == 8u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_8BIT;
-            colorspace = SIXEL_COLORSPACE_CIELAB;
+            colorspace = SIXEL_COLORSPACE_LAB_D65;
         } else if (info->depth == 16u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_16BIT;
-            colorspace = SIXEL_COLORSPACE_CIELAB;
+            colorspace = SIXEL_COLORSPACE_LAB_D65;
         } else if (info->depth == 32u) {
             decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_LAB_32BIT;
-            colorspace = SIXEL_COLORSPACE_CIELAB;
+            colorspace = SIXEL_COLORSPACE_LAB_D65;
         } else {
             nwrite = snprintf(message,
                               message_size,

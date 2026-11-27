@@ -40,7 +40,7 @@ test_gpupal_0003_fade_history(int argc, char **argv)
     static struct { int flag; char const *value; } const options[] = {
         {SIXEL_OPTFLAG_GPU_POLICY, "force"}, {'=', "greedy:B1"},
         {'.', "8bit"}, {'d', "bluenoise"}, {'~', "none"},
-        {'X', "gamma"}, {'W', "gamma"}, {'_', "none"},
+        {'X', "srgb"}, {'W', "srgb"}, {'_', "none"},
         {'a', "off"}, {'F', "none"}, {'Q', "heckbert"},
         {'p', "8"}, {'t', "rgb"}, {'Z', "delta:T8"}
     };

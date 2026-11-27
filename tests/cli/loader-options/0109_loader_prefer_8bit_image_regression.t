@@ -28,7 +28,7 @@ env_output="${artifact_dir}/0110-loader-prefer-8bit-env-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_PREFER_8BIT=invalid" \
-    "-Llibwebp:Tgamma:V1:Eauto!" "${input_image}" \
+    "-Llibwebp:Tsrgb:V1:Eauto!" "${input_image}" \
     2>&1 >"${short_output}") || {
     printf '\n%s\n' "not ok 1 - prefer_8bit short conversion failed"
     exit 0
@@ -39,14 +39,14 @@ case "${short_trace}" in *LSXSUB1\|*key=prefer_8bit\|stored=1\|binding=cms_prefe
     exit 0
 }
 
-case "${short_trace}" in *LSXLDR1\|cms_target=gamma\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
+case "${short_trace}" in *LSXLDR1\|cms_target=srgb\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
     printf '\n%s\n' "not ok 1 - prefer_8bit short value did not reach the loader"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOADER_CMS_TARGET_COLORSPACE=gamma" \
+    --env "SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb" \
     --env "SIXEL_LOADER_PREFER_8BIT=1" "-Llibwebp:Eauto!" \
     "${input_image}" 2>&1 >"${env_output}") || {
     printf '\n%s\n' "not ok 1 - prefer_8bit environment conversion failed"
@@ -58,7 +58,7 @@ case "${env_trace}" in *LSXSUB1\|*key=prefer_8bit\|stored=1\|binding=cms_prefer_
     exit 0
 }
 
-case "${env_trace}" in *LSXLDR1\|cms_target=gamma\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
+case "${env_trace}" in *LSXLDR1\|cms_target=srgb\|prefer_8bit=1\|pixelformat=rgb888**) true ;; *) false ;; esac || {
     printf '\n%s\n' "not ok 1 - prefer_8bit environment value did not reach the loader"
     exit 0
 }

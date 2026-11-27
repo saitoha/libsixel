@@ -19,7 +19,7 @@ static int const cover_native_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const cover_native_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 /* Independent neutral references: decode gamma 1/16, 1/8 and their gamma
  * midpoint 3/32, then apply the published D65 matrices/opponent equations.
@@ -481,7 +481,7 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
                 cover_native_spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                 mode == 1 || mode == 3 || mode == 5 || mode == 12
-                ? "display-p3" : "gamma")) ||
+                ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame,
                 byte ? (void *)bytes : (void *)pixels, 3, 2,

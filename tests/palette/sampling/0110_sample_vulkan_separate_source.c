@@ -56,9 +56,9 @@ test_sample_vulkan_separate_source(int argc, char **argv)
             SIXEL_FILTER_KIND_SAMPLE, &config, &filter);
         if (status != SIXEL_OK) goto end;
         sixel_filter_bind_input(filter, &source,
-            SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA);
+            SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_SRGB);
         sixel_filter_bind_sample_output(filter, result,
-            SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA);
+            SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_SRGB);
         if (run == 1 &&
                 sixel_gpu_get_statistics(&before) != SIXEL_OK)
             goto end;

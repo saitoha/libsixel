@@ -69,7 +69,7 @@ sample_stream_ownership_is_valid(void)
             stream.point_count != 4u ||
             stream.width != 2 || stream.height != 2 ||
             stream.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            stream.colorspace != SIXEL_COLORSPACE_GAMMA) {
+            stream.colorspace != SIXEL_COLORSPACE_SRGB) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;
     }

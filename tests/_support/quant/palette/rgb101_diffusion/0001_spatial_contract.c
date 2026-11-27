@@ -84,7 +84,7 @@ spatial_encoder(spatial_method_t const *method, int p3, int linear)
         char const *value;
     } const options[] = {
         { '=', "greedy:B1" }, { 'p', "1" }, { '.', "auto" },
-        { 'Q', "kmeans:seed=1" }, { 'X', "linear" }, { 'F', "none" },
+        { 'Q', "kmeans:seed=1" }, { 'X', "srgb-linear" }, { 'F', "none" },
         { 'a', "off" }, { '_', "none" }, { '~', "none" },
         { 't', "rgb" }, { '5', "none" }, { '4', "full-frame" },
         { '0', "soft:threshold=1.01" }
@@ -129,9 +129,9 @@ spatial_encoder(spatial_method_t const *method, int p3, int linear)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-            p3 ? "display-p3" : "gamma")) ||
+            p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                linear ? "linear" : "gamma")) ||
+                linear ? "srgb-linear" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', option)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 2, 1,
@@ -200,8 +200,9 @@ spatial_residual(spatial_method_t const *method, int p3, int space)
     NULL,
 };
     static int const colors[] = {
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
+            SIXEL_COLORSPACE_DIN99D
     };
     static int const formats[] = {
         SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,

@@ -17,7 +17,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -L 'libpng:cms_engine=none!' --precision-policy=float32 \
-    -Q kmeans:seed=1 -X linear -W oklab -U gamma \
+    -Q kmeans:seed=1 -X srgb-linear -W oklab -U srgb \
     -F none -a off -_ none '-~none' -d bluenoise -t rgb \
     --sampling-policy=full-frame --binning-policy=none \
     -o "${ARTIFACT_LOCAL_DIR}/output.six" \
@@ -35,7 +35,7 @@ esac || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -Tsrgb -Wlinear -Pfloat32 \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -Tsrgb -Wsrgb-linear -Pfloat32 \
     -b MS-SSIM:0.98 "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" \
     "${ARTIFACT_LOCAL_DIR}/output.six" >/dev/null || {
     printf '\n%s\n' "not ok 1 - native bluenoise quality"

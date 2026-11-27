@@ -98,7 +98,7 @@ hls_native_run(int scenario, int snapshot)
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { 'Q', "heckbert" }, { 'F', "none" },
         { '_', "none" }, { '~', "none" }, { 'd', "none" },
-        { 'E', "size" }, { 'X', "gamma" }, { 'W', "gamma" },
+        { 'E', "size" }, { 'X', "srgb" }, { 'W', "srgb" },
         { '7', NULL }, { 'g', NULL }, { 't', "hls" },
         { '4', "full-frame" }, { '5', "none" }
     };
@@ -194,8 +194,8 @@ hls_native_run(int scenario, int snapshot)
             (!builtin && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p',
                 colorful ? "9" : scenario == 7 ? "2" : "1"))) ||
             (centroid && (SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                'X', "linear")) || SIXEL_FAILED(sixel_encoder_setopt(
-                    encoder, 'W', "linear")))) ||
+                'X', "srgb-linear")) || SIXEL_FAILED(sixel_encoder_setopt(
+                    encoder, 'W', "srgb-linear")))) ||
             ((scenario == 8 || scenario == 9) && SIXEL_FAILED(
                 sixel_encoder_setopt(encoder, '=', "greedy:B4"))) ||
             ((scenario == 9 || scenario == 11 || scenario == 12) &&
@@ -208,7 +208,7 @@ hls_native_run(int scenario, int snapshot)
             (scenario == 10 && step != 1);
         memset(&capture, 0, sizeof(capture));
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
                 (scenario == 10 && SIXEL_FAILED(sixel_encoder_setopt(
                     encoder, 't', step == 1 ? "rgb" : "hls"))) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
@@ -368,7 +368,7 @@ hls_cache_contract(int scenario)
         if (SIXEL_FAILED(dithers[n]->palette->vtbl->init_entries_float32(
                 dithers[n]->palette, &request)) ||
                 SIXEL_FAILED(sixel_palette_prepare_rgb101(dithers[n]->palette,
-                    SIXEL_COLORSPACE_LINEAR, n)) ||
+                    SIXEL_COLORSPACE_SRGB_LINEAR, n)) ||
                 SIXEL_FAILED(sixel_palette_get_output_rgb(dithers[n]->palette,
                     &rgb, &count)) || count != 1) {
             goto end;
@@ -396,7 +396,7 @@ hls_cache_contract(int scenario)
                 count != 0 || sixel_palette_get_rgb101(dithers[0]->palette,
                     &codes, &count) != SIXEL_LOGIC_ERROR || codes != NULL ||
                 SIXEL_FAILED(sixel_palette_prepare_rgb101(dithers[0]->palette,
-                    SIXEL_COLORSPACE_LINEAR, 0)) ||
+                    SIXEL_COLORSPACE_SRGB_LINEAR, 0)) ||
                 SIXEL_FAILED(sixel_palette_get_output_rgb(dithers[0]->palette,
                     &rgb, &count)) || memcmp(saved, rgb, sizeof(saved)) != 0) {
             goto end;

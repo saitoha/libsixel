@@ -94,6 +94,19 @@ for rgb in codes:
     result = source.apply(source.inverse(srgb_d50), xyz)
     lines.append('    {' + ', '.join(format(float(v), '.17g') for v in result) + '},')
 lines += ['};', '']
+
+# D2B accepts (.848,.848,0); projecting 85% to RGB888 raises both
+# channels to 217/255, whose sum makes the float32 PCS X overflow.
+forward = matrix_mpe([2e38, 2e38, -2e38, 0, 0, 0, 0, 0, 0],
+                     [0, .2, .15])
+reverse = matrix_mpe([0, 1, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0])
+rounding = source.pack_profile([(b'D2B1', forward), (b'B2D1', reverse)],
+                               name='Rounded ICC PCS overflow')
+lines += ['/* Relative MPE with a rounding-dependent PCS domain failure. */',
+          'static unsigned char const icco_rounding_profile[] = {']
+for i in range(0, len(rounding), 12):
+    lines.append('    ' + ', '.join(f'0x{v:02x}' for v in rounding[i:i+12]) + ',')
+lines += ['};', '']
 (root / 'tests/data/color-numeric/icc-output.h').write_text('\n'.join(lines))
 
 # Diagonal D50 profiles with exact affine input curves. In normalized PCS,

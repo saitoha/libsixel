@@ -18,7 +18,7 @@ test_gamut_0043_ray_identity(int argc, char **argv)
     ok = ray_fixture_init(&fixture, "display-p3");
     for (i = 0; ok && i < 4; ++i) {
         ok = sixel_gamut_apply(fixture.mapper, pixels[i], result,
-            SIXEL_COLORSPACE_LINEAR) &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) &&
             memcmp(result, pixels[i], sizeof(result)) == 0;
     }
     gamut_fixture_free(&fixture);

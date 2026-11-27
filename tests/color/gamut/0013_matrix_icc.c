@@ -20,10 +20,10 @@ test_gamut_0013_matrix_icc(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture.allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper, fixture.definition,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_LOCAL_MINDE,
+            SIXEL_COLORSPACE_SRGB, SIXEL_GAMUT_LOCAL_MINDE,
             fixture.allocator)) &&
         sixel_gamut_apply(fixture.mapper, gamut_origins[0], result,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
     for (c = 0; ok && c < 3; ++c) {
         /* ICC 15.16 colorants add their own representation budget. */
         ok = isfinite(result[c]) &&

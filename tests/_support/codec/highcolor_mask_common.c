@@ -145,9 +145,9 @@ test_highcolor_mask(int scenario)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 use_float ? "float32" : "8bit")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                p3 ? "linear" : "gamma")) ||
+                p3 ? "srgb-linear" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', policy)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'E', "size")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "rgb")) ||

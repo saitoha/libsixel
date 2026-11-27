@@ -17,7 +17,7 @@ test "${status}" != 0 || {
     exit 0
 }
 case "${result}" in
-    *'unknown option base value "auto"'*'srgb, display-p3, adobe-rgb, dci-p3, icc'*) ;;
+    *'unknown option base value "auto"'*'srgb, display-p3, a98-rgb, dci-p3, icc'*) ;;
     *) printf '\n%s\n' "not ok 1 - missing diagnostic"; exit 0 ;;
 esac
 printf '\n%s\n' "ok 1 - invalid_input_colorspace"

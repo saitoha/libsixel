@@ -166,7 +166,7 @@ pipeline. Conversely, a result is not an 8-bit-path measurement merely because
 the input file stores 8-bit samples.
 
 Gamma RGB clustering supports both 8-bit and float32 coordinates. A matched
-`-Xgamma` comparison can therefore vary the clustering precision as well as the
+`-Xsrgb` comparison can therefore vary the clustering precision as well as the
 surrounding base pipeline. Linear RGB and the Lab-family clustering spaces are
 float32-only. There is no 8-bit Linear RGB, OKLab, CIELAB, or DIN99d clustering
 mode: their matched `--precision-policy=8bit|float32` rows keep clustering itself at

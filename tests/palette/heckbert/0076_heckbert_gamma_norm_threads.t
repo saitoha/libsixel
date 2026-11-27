@@ -8,10 +8,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 echo "1..1"
 set -v
-single=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xgamma \
+single=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xsrgb \
     -fnorm -Qheckbert:Tsse:Osse -=greedy:B1 -M gpl:- -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png")
-parallel=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xgamma \
+parallel=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xsrgb \
     -fnorm -Qheckbert:Tsse:Osse -=greedy:B8 -M gpl:- -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png")
 { test -n "$single" && test "$single" = "$parallel"; } || {

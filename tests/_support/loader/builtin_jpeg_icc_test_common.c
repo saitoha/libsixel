@@ -46,8 +46,8 @@ bj_capture(sixel_frame_t *frame, void *context)
         sixel_frame_format(frame) != (byte_frame ? SIXEL_PIXELFORMAT_RGB888 :
             managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
                       SIXEL_PIXELFORMAT_RGBFLOAT32) ||
-        frame->format.coordinates != (managed ? SIXEL_COLORSPACE_LINEAR :
-                                       SIXEL_COLORSPACE_GAMMA) ||
+        frame->format.coordinates != (managed ? SIXEL_COLORSPACE_SRGB_LINEAR :
+                                       SIXEL_COLORSPACE_SRGB) ||
         frame->palette != NULL || frame->transparent_mask != NULL ||
         frame->transparent != -1) {
         fprintf(stderr, "BJICC metadata format=%x space=%d\n",

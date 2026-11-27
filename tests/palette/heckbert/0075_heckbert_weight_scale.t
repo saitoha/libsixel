@@ -8,10 +8,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 echo "1..1"
 set -v
-first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xc \
+first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xlab-d65 \
     -Qheckbert:Tsse:Osse:W2/1/1 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png")
-second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xc \
+second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xlab-d65 \
     --env SIXEL_PALETTE_HECKBERT_WEIGHTS=9/1/1 \
     -Qheckbert:Tsse:Osse:weights=4/2/2 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png")

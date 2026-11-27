@@ -34,7 +34,7 @@ test_color_0002_din99d_inverse(int argc, char **argv)
     (void)argv;
     status = sixel_helper_convert_colorspace((unsigned char *)pixels,
         sizeof(pixels), SIXEL_PIXELFORMAT_DIN99DFLOAT32,
-        SIXEL_COLORSPACE_DIN99D, SIXEL_COLORSPACE_LINEAR);
+        SIXEL_COLORSPACE_DIN99D, SIXEL_COLORSPACE_SRGB_LINEAR);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "DIN99d inverse conversion failed: %d\n", status);
         return EXIT_FAILURE;

@@ -49,8 +49,8 @@ test_parallel_float_0011(int argc, char **argv)
     memcpy(serial, pixels, size);
     sixel_set_encoder_threads(1);
     status = sixel_helper_convert_colorspace((unsigned char *)serial, size,
-        SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_LINEAR);
+        SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_SRGB,
+        SIXEL_COLORSPACE_SRGB_LINEAR);
     ok = status == SIXEL_BAD_INPUT;
     for (initial = 1; initial <= 4; initial *= 2) {
         for (i = 0; i < 131073 * 3; ++i) {
@@ -64,8 +64,8 @@ test_parallel_float_0011(int argc, char **argv)
         sixel_thread_budget_set_reclaim(&scope, 8,
             reclaim_11_after_batch, &polls);
         status = sixel_helper_convert_colorspace((unsigned char *)pixels, size,
-            SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_SRGB,
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         sixel_thread_budget_leave(&scope);
         ok &= polls == 2 && status == SIXEL_BAD_INPUT &&
             memcmp(pixels, serial, size) == 0;

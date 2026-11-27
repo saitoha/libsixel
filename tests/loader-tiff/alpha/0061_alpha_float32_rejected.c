@@ -40,7 +40,7 @@ test_loader_0365_alpha16(int argc, char **argv)
             if (SIXEL_SUCCEEDED(status)) {
                 status = sixel_loader_setopt(loader,
                     SIXEL_LOADER_OPTION_LOADER_ORDER,
-                    "libtiff:cms_engine=builtin:cms_target=linear!");
+                    "libtiff:cms_engine=builtin:cms_target=srgb-linear!");
             }
             if (SIXEL_FAILED(status)) {
                 sixel_loader_unref(loader);

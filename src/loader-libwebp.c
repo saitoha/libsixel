@@ -954,7 +954,7 @@ webp_resolve_background_linear(float bg_linear[3], unsigned char *bgcolor)
         return;
     }
 
-    if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
+    if (background_colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) {
         bg_linear[0] = (float)bgcolor[0] / 255.0f;
         bg_linear[1] = (float)bgcolor[1] / 255.0f;
         bg_linear[2] = (float)bgcolor[2] / 255.0f;
@@ -975,13 +975,13 @@ webp_roundtrip_target_to_linear(float *pixels, size_t pixel_count)
 
     status = SIXEL_OK;
     size_bytes = 0u;
-    target_colorspace = SIXEL_COLORSPACE_LINEAR;
+    target_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     if (pixels == NULL || pixel_count == 0u) {
         return SIXEL_OK;
     }
 
     target_colorspace = loader_cms_target_colorspace();
-    if (target_colorspace == SIXEL_COLORSPACE_LINEAR) {
+    if (target_colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) {
         return SIXEL_OK;
     }
     if (pixel_count > SIZE_MAX / (3u * sizeof(float))) {
@@ -993,7 +993,7 @@ webp_roundtrip_target_to_linear(float *pixels, size_t pixel_count)
         (unsigned char *)pixels,
         size_bytes,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         target_colorspace);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1004,7 +1004,7 @@ webp_roundtrip_target_to_linear(float *pixels, size_t pixel_count)
         size_bytes,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         target_colorspace,
-        SIXEL_COLORSPACE_LINEAR);
+        SIXEL_COLORSPACE_SRGB_LINEAR);
 }
 
 static SIXELSTATUS
@@ -1139,7 +1139,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     /* Publish the composited samples and release the old RGBA allocation
      * together, after the frame initializer has validated the replacement. */
     status = sixel_frame_init_rgb_float(frame, dst,
-        frame->width, frame->height, SIXEL_COLORSPACE_LINEAR, -1);
+        frame->width, frame->height, SIXEL_COLORSPACE_SRGB_LINEAR, -1);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, dst);
     }
@@ -2476,7 +2476,7 @@ loader_try_promote_pal8(
             frame->width,
             frame->height,
             SIXEL_PIXELFORMAT_PAL8,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             ncolors,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -2869,7 +2869,7 @@ webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
     /* YUVA with a background already contains linear samples. Mark them
      * as linear so finalization does not decode them twice. */
     colorspace = pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-        ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
+        ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB;
     kind = (frame->format.layout == SIXEL_PIXELFORMAT_RGBFLOAT32)
         ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
     return sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -3211,7 +3211,7 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
             frame->width,
             frame->height,
             SIXEL_PIXELFORMAT_RGBA8888,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             -1,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -3464,7 +3464,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                         (int)anim_info->canvas_width,
                         (int)anim_info->canvas_height,
                         SIXEL_PIXELFORMAT_RGBA8888,
-                        SIXEL_COLORSPACE_GAMMA,
+                        SIXEL_COLORSPACE_SRGB,
                         -1,
                         SIXEL_FRAME_PIXELS_U8
                     });

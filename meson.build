@@ -905,6 +905,22 @@ endif
 # miscellaneous functions
 # Keep the CLI transport probe separate from the library TTY feature macros.
 # Both build systems compile this exact surface; neither executes the probe.
+if cc.links('''
+#ifndef _WIN32
+#error Windows file handles are unavailable on this target
+#endif
+#include <windows.h>
+#include <io.h>
+int main(void) {
+    BY_HANDLE_FILE_INFORMATION info;
+    HANDLE handle = (HANDLE)_get_osfhandle(0);
+    return !(GetFileInformationByHandle(handle, &info) &&
+             SetEndOfFile(handle));
+}
+''', name: 'Win32 output file APIs')
+  conf.set('HAVE_WIN32_OUTPUT_FILE_API', 1)
+endif
+
 color_tty_probe = files('build-aux/cli-color-tty-probe.c')[0]
 if cc.links(color_tty_probe, name: 'CLI nonblocking foreground terminal I/O')
   conf.set('HAVE_CLI_COLOR_TTY', 1)
@@ -941,6 +957,8 @@ extra_funcs = [
   'calloc',
   'clearerr',
   'stat',
+  'fstat',
+  'ftruncate',
   'setjmp',
   'longjmp',
   'strerror',

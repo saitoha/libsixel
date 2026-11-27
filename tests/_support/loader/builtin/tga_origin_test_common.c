@@ -133,7 +133,7 @@ tga_origin_test(int variant)
                                        &status);
     if (result != 0 || SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 2 || probe.height[0] != 2 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.pixelformat[0] != (expect_palette ? SIXEL_PIXELFORMAT_PAL8 :
                                                 SIXEL_PIXELFORMAT_RGB888)) {
         fprintf(stderr, "TGA origin variant %d: load/type failed (%d)\n",

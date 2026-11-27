@@ -17,7 +17,7 @@
 double const *test_map_p3_primary(int space);
 
 static char const *const fm_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const fm_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -247,7 +247,7 @@ test_fixed_mask_run(int space, int mode, char const *path, int animated)
                 '.', "float32"))) ||
             ((mode == 17 || mode == 18) &&
              SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L',
-                "builtin:cms_engine=builtin:cms_target=linear:"
+                "builtin:cms_engine=builtin:cms_target=srgb-linear:"
                 "prefer_8bit=0!")))) {
         goto end;
     }

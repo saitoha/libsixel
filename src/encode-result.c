@@ -43,8 +43,8 @@ sixel_wire_palette_new(sixel_wire_palette_t **result,
     /* These fields describe the receiver's interpretation, not the lookup
      * workspace. Reject interpretations this byte history cannot model. */
     if (request->color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
-            (request->colorspace != SIXEL_COLORSPACE_GAMMA &&
-             request->colorspace != SIXEL_COLORSPACE_LINEAR &&
+            (request->colorspace != SIXEL_COLORSPACE_SRGB &&
+             request->colorspace != SIXEL_COLORSPACE_SRGB_LINEAR &&
              request->colorspace != SIXEL_COLORSPACE_SMPTEC)) {
         return SIXEL_BAD_ARGUMENT;
     }

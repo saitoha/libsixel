@@ -50,7 +50,7 @@ def main():
                 # PNG avoids ambiguity in Netpbm readers when the first raster
                 # byte is '#'. Pixel bytes, not PNG container bytes, are hashed.
                 png=ppm.with_suffix('.png');image.save(png)
-                metrics=json.loads(run([str(lsqa),'-m',METRICS,'-P','float32','-W','gamma','-L','builtin','-v','32','-w','16',str(DATA/example['files']['source']),str(png)])) if round_id==0 else None
+                metrics=json.loads(run([str(lsqa),'-m',METRICS,'-P','float32','-W','srgb','-L','builtin','-v','32','-w','16',str(DATA/example['files']['source']),str(png)])) if round_id==0 else None
                 results.append({k:example[k] for k in ['id','model','space','p']}|{'arm':arm,'round':round_id,'median_ms':float(values[0]),'max_ms':float(values[1]),'bytes':int(values[2]),'colors':int(values[3]),'rgb_sha256':digest,'archive_rgb_match':digest==expected[arm+'_rgb_sha256'],'metrics':metrics})
     (args.output/'results.json').write_text(json.dumps(results,indent=2)+'\n')
     meta={'revision':run(['git','-C',str(ROOT),'rev-parse','HEAD']).strip(),'tracked_dirty':bool(run(['git','-C',str(ROOT),'status','--porcelain','--untracked-files=no']).strip()),'platform':platform.platform(),'measure_sha256':hashlib.sha256(measure.read_bytes()).hexdigest(),'lsqa_sha256':hashlib.sha256(lsqa.read_bytes()).hexdigest(),'library_environment':{k:v for k,v in env.items() if 'LIBRARY_PATH' in k},'commands':commands}

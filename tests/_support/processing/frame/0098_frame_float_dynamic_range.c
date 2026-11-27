@@ -118,7 +118,7 @@ test_frame_0098_dynamic(int argc, char **argv)
                 || view.pixels_float32 == NULL || view.width != dw
                 || view.height != dh
                 || view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                || view.colorspace != SIXEL_COLORSPACE_LINEAR) {
+                || view.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) {
             goto end;
         }
         result_pixels = view.pixels_float32;

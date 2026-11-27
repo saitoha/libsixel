@@ -217,7 +217,7 @@ test_highcolor_drcs(int mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'g', NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', "keep")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                mode == 0 ? "linear" : "gamma")) ||
+                mode == 0 ? "srgb-linear" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't',
                 mode == 3 ? "hls" : "rgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -243,7 +243,7 @@ test_highcolor_drcs(int mode)
         encoder->macro_number = mode == 8 && reject && phase == 1 ? 7 : -1;
         encoder->output_is_png = mode == 9 && reject;
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma"))) {
+                p3 ? "display-p3" : "srgb"))) {
             goto end;
         }
         for (i = 0; i < width * height; ++i) {

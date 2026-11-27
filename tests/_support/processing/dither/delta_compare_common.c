@@ -145,7 +145,7 @@ delta_compare_pixel_test(int method, int native, int gpu, int gate)
         DC_CHECK(dither->palette->vtbl->init_entries_float32(
             dither->palette, &float_palette) == SIXEL_OK);
         DC_CHECK(sixel_palette_prepare_rgb101(dither->palette,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY) == SIXEL_OK);
+            SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY) == SIXEL_OK);
     }
     prepare.pixelformat = native ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
         SIXEL_PIXELFORMAT_RGB888;
@@ -238,7 +238,7 @@ delta_compare_pixel_test(int method, int native, int gpu, int gate)
             lookup.working_palette = dither->palette;
             lookup.ncolors = 2;
             lookup.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            lookup.colorspace = SIXEL_COLORSPACE_GAMMA;
+            lookup.colorspace = SIXEL_COLORSPACE_SRGB;
             DC_CHECK(provider->vtbl->prepare(provider, &lookup, device,
                 &plan) == SIXEL_OK);
             DC_CHECK(sixel_gpu_program_prepare(device, plan,
@@ -402,9 +402,9 @@ delta_compare_encode_test(int gpu, int queued, int query, int method,
     DC_CHECK(sixel_encoder_setopt(encoder, '~', "ordered") == SIXEL_OK);
     DC_CHECK(sixel_encoder_setopt(encoder, '.', "8bit") == SIXEL_OK);
     DC_CHECK(sixel_encoder_setopt(encoder, '_', "none") == SIXEL_OK);
-    DC_CHECK(sixel_encoder_setopt(encoder, 'X', "gamma") == SIXEL_OK);
-    DC_CHECK(sixel_encoder_setopt(encoder, 'W', "gamma") == SIXEL_OK);
-    DC_CHECK(sixel_encoder_setopt(encoder, 'U', "gamma") == SIXEL_OK);
+    DC_CHECK(sixel_encoder_setopt(encoder, 'X', "srgb") == SIXEL_OK);
+    DC_CHECK(sixel_encoder_setopt(encoder, 'W', "srgb") == SIXEL_OK);
+    DC_CHECK(sixel_encoder_setopt(encoder, 'U', "srgb") == SIXEL_OK);
     DC_CHECK(sixel_encoder_setopt(encoder, 't', "rgb") == SIXEL_OK);
     DC_CHECK(sixel_encoder_setopt(encoder, 'G', gpu ? "force" : "off")
         == SIXEL_OK);

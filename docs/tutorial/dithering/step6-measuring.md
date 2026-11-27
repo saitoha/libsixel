@@ -122,8 +122,8 @@ libsixel can do the diffusion in either space, so the effect can be measured dir
 | Floyd–Steinberg on the photograph, 27-color cube | Area ΔE00 |
 | --- | --- |
 | Tutorial step 3, on the stored numbers | 6.74 |
-| libsixel, `-W gamma` | 6.46 |
-| libsixel, `-W linear` | 0.94 |
+| libsixel, `-W srgb` | 6.46 |
+| libsixel, `-W srgb-linear` | 0.94 |
 <!-- measurements:end -->
 
 The first row is the method you wrote, and libsixel gets about the same score when it also works with the stored numbers. Doing the arithmetic in linear light removes most of the error. The [working color space](../../encoder/palette-application/working-colorspace/README.md) reference describes this option.

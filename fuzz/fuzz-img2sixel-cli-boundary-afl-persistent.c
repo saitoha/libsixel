@@ -127,11 +127,11 @@ static char const *g_bg_values[] = {
 };
 
 static char const *g_cluster_values[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d", "bad"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d", "bad"
 };
 
 static char const *g_output_values[] = {
-    "gamma", "linear", "smpte-c", "bad"
+    "srgb", "srgb-linear", "smpte-c", "bad"
 };
 
 static char const *g_quant_inits[] = {

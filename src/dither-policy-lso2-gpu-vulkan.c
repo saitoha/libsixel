@@ -907,7 +907,7 @@ lso2_gpu_vk_run_impl(lso2_gpu_vk_plan_t *plan,
         if (source.pixels == NULL || source.width != (int)params.width ||
                 source.height != (int)params.height ||
                 source.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-                source.colorspace != SIXEL_COLORSPACE_GAMMA) {
+                source.colorspace != SIXEL_COLORSPACE_SRGB) {
             return SIXEL_BAD_ARGUMENT;
         }
         status = request->source->vtbl->get_transparency(request->source,
@@ -1413,7 +1413,7 @@ sixel_dither_lso2_gpu_vulkan_prepare(sixel_allocator_t *allocator,
         return SIXEL_BAD_ARGUMENT;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            request->colorspace != SIXEL_COLORSPACE_GAMMA ||
+            request->colorspace != SIXEL_COLORSPACE_SRGB ||
             request->scan != SIXEL_SCAN_SERPENTINE ||
             !sixel_gpu_vulkan_is_device(request->device)) {
         return SIXEL_FEATURE_ERROR;

@@ -95,7 +95,7 @@ The generated SVG and stage/test manifest are maintained by [`plot_builtin_loade
 
 ```console
 img2sixel -Lbuiltin! photo.jpg
-img2sixel -Lbuiltin:cms_engine=auto:cms_target=linear:orientation=1! photo.jpg
+img2sixel -Lbuiltin:cms_engine=auto:cms_target=srgb-linear:orientation=1! photo.jpg
 ```
 
 | Control | Exact effect on JPEG |

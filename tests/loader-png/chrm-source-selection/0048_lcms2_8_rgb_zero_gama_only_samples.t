@@ -3,7 +3,7 @@
 # Verify lcms2 8-rgb-zero-gama-only original samples and coverage.
 set -eux
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0198_png_chrm_samples 9 lcms2 2>&1) || result=$?
 test "$result" -ne 77 || {

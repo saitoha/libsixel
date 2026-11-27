@@ -327,7 +327,7 @@ static int
 test_packed_wire_run(int space, int mode, int animated)
 {
     static char const *const spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { '~', "none" }, { 'd', "none" },

@@ -11,18 +11,18 @@ int test_color_0012(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-    if (sixel_color_convert(out, input, SIXEL_COLORSPACE_LINEAR,
+    if (sixel_color_convert(out, input, SIXEL_COLORSPACE_SRGB_LINEAR,
                             SIXEL_COLORSPACE_OKLAB)) {
         return EXIT_FAILURE;
     }
     input[0] = 0.1;
-    if (sixel_color_convert(out, input, SIXEL_COLORSPACE_LINEAR, -1)) {
+    if (sixel_color_convert(out, input, SIXEL_COLORSPACE_SRGB_LINEAR, -1)) {
         return EXIT_FAILURE;
     }
     input[0] = -1.0;
     input[1] = -1.0;
     input[2] = -1.0;
-    if (sixel_color_convert(out, input, SIXEL_COLORSPACE_LINEAR,
+    if (sixel_color_convert(out, input, SIXEL_COLORSPACE_SRGB_LINEAR,
                             SIXEL_COLORSPACE_DIN99D)) {
         return EXIT_FAILURE;
     }

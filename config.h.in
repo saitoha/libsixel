@@ -279,8 +279,14 @@
    available. */
 #undef HAVE_FREEDESKTOP_THUMBNAILING
 
+/* Define to 1 if you have the `fstat' function. */
+#undef HAVE_FSTAT
+
 /* Define to 1 if you have the `fsync' function. */
 #undef HAVE_FSYNC
+
+/* Define to 1 if you have the `ftruncate' function. */
+#undef HAVE_FTRUNCATE
 
 /* Define to 1 if the system has the `always_inline' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_ALWAYS_INLINE
@@ -664,6 +670,9 @@
 
 /* define 1 if wic codec support is enabled */
 #undef HAVE_WICCODEC
+
+/* Define to 1 for Win32 output file identity and truncation. */
+#undef HAVE_WIN32_OUTPUT_FILE_API
 
 /* Define to 1 if you have the <wincodecsdk.h> header file. */
 #undef HAVE_WINCODECSDK_H

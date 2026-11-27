@@ -11,8 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
-    -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
-    -Qkmeans:seed=1 -p3 -Akeep "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wlinear -aoff -dnone \
+    -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
+    -Qkmeans:seed=1 -p3 -Akeep "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -Wsrgb-linear -aoff -dnone \
     --binning-policy=none --sampling-policy=full-frame "${TOP_SRCDIR}/tests/data/color-numeric/icc-cluster-alpha.png" 2>&1) || {
     printf '%s\n' "$trace" >&2
     printf '\n%s\n' 'not ok 1 - ICC clustering preserves the serial alpha mask conversion'

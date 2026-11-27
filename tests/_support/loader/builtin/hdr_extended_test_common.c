@@ -77,7 +77,7 @@ hdr_extended_test(int specimen)
         probe.callback_count != 1 || probe.width[0] != (int)width ||
         probe.height[0] != 1 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.mask_size[0] != 0u ||
         probe.rgb_size[0] != width * 3u * sizeof(float)) {
         fprintf(stderr, "HDR extended case=%d status=%x format=%x\n",

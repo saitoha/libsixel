@@ -39,7 +39,7 @@ test_color_0001_din99d_forward(int argc, char **argv)
     (void)argv;
     status = sixel_helper_convert_colorspace((unsigned char *)pixels,
         sizeof(pixels), SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_DIN99D);
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_DIN99D);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "DIN99d forward conversion failed: %d\n", status);
         return EXIT_FAILURE;

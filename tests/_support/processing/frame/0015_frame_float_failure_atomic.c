@@ -28,7 +28,7 @@ test_frame_0015_atomic(int argc, char **argv)
         return EXIT_FAILURE;
     }
     source = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    colorspace = SIXEL_COLORSPACE_LINEAR;
+    colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     target = SIXEL_PIXELFORMAT_OKLABFLOAT32;
     if (strcmp(argv[1], "nonfinite") == 0) {
         pixels[8] = NAN;
@@ -38,7 +38,7 @@ test_frame_0015_atomic(int argc, char **argv)
     } else if (strcmp(argv[1], "overflow") == 0) {
         pixels[8] = FLT_MAX;
         source = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        colorspace = SIXEL_COLORSPACE_GAMMA;
+        colorspace = SIXEL_COLORSPACE_SRGB;
         target = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     } else {
         return EXIT_FAILURE;

@@ -12,7 +12,7 @@ converters/img2sixel tests/data/assessment/video-snake-16.png \
     -g -Zdelta:P0 -dnone -Goff -~none > video.six
 
 assessment/lsqa -Ma -Aframe -L'builtin!' --cms-engine=none \
-    -dnone -Rauto -Tsrgb -Wlinear -Pfloat32 \
+    -dnone -Rauto -Tsrgb -Wsrgb-linear -Pfloat32 \
     -m S-CIELAB -v60 -u2 -t0.1 -o frames.jsonl \
     tests/data/assessment/video-snake-16.png video.six
 ```
@@ -29,7 +29,7 @@ Use an explicit source timeline whenever the producer can omit a frame or send m
 
 ```sh
 assessment/lsqa -Ma -Aframe -L'builtin!' --cms-engine=none \
-    -dnone -Rauto -Tsrgb -Wlinear -Pfloat32 \
+    -dnone -Rauto -Tsrgb -Wsrgb-linear -Pfloat32 \
     -m S-CIELAB -v60 -u2 -t0.1 \
     -J tests/data/assessment/video-snake-16-held.jsonl \
     -o held.jsonl tests/data/assessment/video-snake-16.png \
@@ -59,12 +59,12 @@ Once capture has finished, run assessment separately from the timed encoder. The
 
 ```sh
 assessment/lsqa -Ma -Aframe -L'builtin!' --cms-engine=none \
-    -dnone -Rauto -Tsrgb -Wlinear -Pfloat32 \
+    -dnone -Rauto -Tsrgb -Wsrgb-linear -Pfloat32 \
     -m MS-SSIM -v60 -u2 -t0.1 \
     -J frame-timeline.jsonl -o aligned.jsonl reference.apng capture.six
 
 assessment/lsqa -Ma -Aclock -L'builtin!' --cms-engine=none \
-    -dnone -Rauto -Tsrgb -Wlinear -Pfloat32 \
+    -dnone -Rauto -Tsrgb -Wsrgb-linear -Pfloat32 \
     -m MS-SSIM -v60 -u2 -t0.1 \
     -C display-timeline.jsonl -f25 -o clock.jsonl reference.apng capture.six
 ```

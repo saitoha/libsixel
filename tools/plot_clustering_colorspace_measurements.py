@@ -46,17 +46,17 @@ DEFAULT_COLORS = (8, 16, 32, 64, 128, 256)
 BINBITS = (4, 5, 6, 7, 8)
 OCCUPANCY_COLORS = 64
 COLORSPACES: Tuple[Tuple[str, str, int], ...] = (
-    ("gamma", "gamma sRGB", 0),
-    ("linear", "linear RGB", 1),
+    ("srgb", "gamma sRGB", 0),
+    ("srgb-linear", "linear RGB", 1),
     ("oklab", "OKLab", 2),
-    ("cielab", "CIELAB", 4),
+    ("lab-d65", "CIELAB", 4),
     ("din99d", "DIN99d", 5),
 )
 STYLES = {
-    "gamma": ("#0072B2", "o", "-"),
-    "linear": ("#E69F00", "s", "--"),
+    "srgb": ("#0072B2", "o", "-"),
+    "srgb-linear": ("#E69F00", "s", "--"),
     "oklab": ("#009E73", "^", "-."),
-    "cielab": ("#CC79A7", "D", ":"),
+    "lab-d65": ("#CC79A7", "D", ":"),
     "din99d": ("#D55E00", "v", (0, (5, 1))),
 }
 
@@ -96,8 +96,8 @@ def make_command(img2sixel: str,
         "none",
         "-a",
         "off",
-        f"-X{colorspace}",
-        "-Wgamma",
+        "-X" + colorspace,
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",
@@ -261,7 +261,7 @@ def measure_quality_and_size(
         gamma_bytes = next(
             int(row["encoded_bytes"])
             for row in color_size_rows
-            if row["colorspace"] == "gamma"
+            if row["colorspace"] == "srgb"
         )
         for row in color_size_rows:
             row["bytes_vs_gamma"] = (
@@ -494,8 +494,8 @@ def measure_speed(img2sixel: str,
         palette_medians = {
             name: statistics.median(palette_samples[name]) for name in names
         }
-        end_gamma = end_medians["gamma"]
-        palette_gamma = palette_medians["gamma"]
+        end_gamma = end_medians["srgb"]
+        palette_gamma = palette_medians["srgb"]
         for name in names:
             end_values = end_samples[name]
             palette_values = palette_samples[name]
@@ -875,7 +875,7 @@ def write_metadata(path: Path,
             "quantize_model": "kmeans:seed=1:binbits=6",
             "merge_policy": "none",
             "cover_policy": "off",
-            "working_colorspace": "gamma",
+            "working_colorspace": "srgb",
             "diffusion": "none",
             "lookup_policy": "none",
             "gpu_policy": "off",

@@ -1219,7 +1219,7 @@ pnm_resolve_background_linear(float bg_linear[3], unsigned char *bgcolor)
     }
 
     background_colorspace = loader_background_colorspace();
-    if (background_colorspace == SIXEL_COLORSPACE_LINEAR) {
+    if (background_colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) {
         bg_linear[0] = (float)bgcolor[0] / 255.0f;
         bg_linear[1] = (float)bgcolor[1] / 255.0f;
         bg_linear[2] = (float)bgcolor[2] / 255.0f;

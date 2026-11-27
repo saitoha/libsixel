@@ -14,7 +14,7 @@ set +e
 SIXEL_DECODER_INPUT_COLORSPACE=srgb \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! --cms-engine=none \
     --threading-policy=greedy:global_budget=1 -.f -Qheckbert -Fnone -aoff -_none '-~none' -dnone \
-    -Xgamma -Wgamma -U "icc:path=${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -trgb -I -o png:- - <<'PPM' | \
+    -Xsrgb -Wsrgb -U "icc:path=${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" -trgb -I -o png:- - <<'PPM' | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" palette/icc_output/0001_icc_output snapshot 1 unused
 P3
 3 1

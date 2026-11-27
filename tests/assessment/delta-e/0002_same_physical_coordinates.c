@@ -22,8 +22,8 @@ test_qa_0002(int argc, char **argv)
     int c;
     int space;
     int ok;
-    static int const spaces[] = {SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB,
+    static int const spaces[] = {SIXEL_COLORSPACE_SRGB_LINEAR,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
         SIXEL_COLORSPACE_DIN99D};
     (void)argc;
     (void)argv;
@@ -45,11 +45,11 @@ test_qa_0002(int argc, char **argv)
         }
     }
     ok &= sixel_cdef_to_xyz(p3, gray, gray_xyz, 1);
-    ok &= sixel_qa_xyz(srgb, SIXEL_COLORSPACE_GAMMA, gray, xyz);
+    ok &= sixel_qa_xyz(srgb, SIXEL_COLORSPACE_SRGB, gray, xyz);
     for (c = 0; c < 3; ++c) {
         ok &= fabs(xyz[c] - gray_xyz[c]) < 1e-9;
     }
-    ok &= sixel_qa_xyz(srgb, SIXEL_COLORSPACE_LINEAR, gray_linear, xyz);
+    ok &= sixel_qa_xyz(srgb, SIXEL_COLORSPACE_SRGB_LINEAR, gray_linear, xyz);
     for (c = 0; c < 3; ++c) {
         ok &= fabs(xyz[c] - gray_xyz[c]) < 1e-9;
     }

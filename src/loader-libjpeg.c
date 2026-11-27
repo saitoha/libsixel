@@ -442,8 +442,8 @@ jpeg_convert_rgbf32_gamma_to_linear(float *pixels,
     return sixel_helper_convert_colorspace((unsigned char *)pixels,
                                            float_bytes,
                                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                           SIXEL_COLORSPACE_GAMMA,
-                                           SIXEL_COLORSPACE_LINEAR);
+                                           SIXEL_COLORSPACE_SRGB,
+                                           SIXEL_COLORSPACE_SRGB_LINEAR);
 }
 
 /* Gray profiles need a one-component device source and the shared linear

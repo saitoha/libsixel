@@ -367,7 +367,7 @@ test_dither_fs_gpu_0015(int argc, char **argv)
     ok = 0;
     AHEAD_CHECK(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(encoder, '.', "8bit") == SIXEL_OK);
-    AHEAD_CHECK(sixel_encoder_setopt(encoder, 'W', "gamma") == SIXEL_OK);
+    AHEAD_CHECK(sixel_encoder_setopt(encoder, 'W', "srgb") == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(encoder, 'd', "auto") == SIXEL_OK);
     AHEAD_CHECK(sixel_encoder_setopt(encoder, '~', "auto") == SIXEL_OK);
     AHEAD_CHECK(sixel_output_new(&output, playback_test_write, &buffer, NULL)

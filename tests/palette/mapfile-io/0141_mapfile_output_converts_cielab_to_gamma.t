@@ -37,7 +37,7 @@ actual_palette=$(
         --quantize-model=kmeans:seed=1 --merge-policy=none \
         --cover-policy=off --snap-policy=none --lookup-policy=none \
         --gpu-policy=off --diffusion=none -p '2!' \
-        -Xgamma -Wcielab -Ugamma -M gpl:- -o /dev/null - <<'PPM'
+        -Xsrgb -Wlab-d65 -Usrgb -M gpl:- -o /dev/null - <<'PPM'
 P3
 2 1
 255

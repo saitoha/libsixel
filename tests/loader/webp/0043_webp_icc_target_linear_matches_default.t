@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 
     exit 0
 }
 
-SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_linear}" || {
     printf '\n%s\n' "not ok 1 - libwebp ICC decode failed with cms target linear"
     exit 0

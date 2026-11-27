@@ -208,7 +208,7 @@ freeze_playback_case(void)
 {
     static struct { int flag; char const *value; } const options[] = {
         { SIXEL_OPTFLAG_PRECISION_POLICY, "8bit" },
-        { SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma" },
+        { SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb" },
         { SIXEL_OPTFLAG_CLUSTERING_COLORSPACE, "oklab" },
         { SIXEL_OPTFLAG_DIFFUSION, "none" },
         { SIXEL_OPTFLAG_LUT_POLICY, "5bit" },

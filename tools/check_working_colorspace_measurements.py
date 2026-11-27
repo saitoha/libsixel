@@ -11,14 +11,19 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 DIFFUSIONS = ("none", "fs")
 COLORSPACES: Tuple[Tuple[str, str, int, str], ...] = (
-    ("gamma", "gamma sRGB", 0, "rgb-f32"),
-    ("linear", "linear RGB", 1, "linear-f32"),
+    ("srgb", "gamma sRGB", 0, "rgb-f32"),
+    ("srgb-linear", "linear RGB", 1, "linear-f32"),
     ("oklab", "Oklab", 2, "oklab-f32"),
-    ("cielab", "CIELAB", 4, "cielab-f32"),
+    ("lab-d65", "CIELAB", 4, "cielab-f32"),
     ("din99d", "DIN99d", 5, "din99d-f32"),
 )
 CSV_NAME = "working-colorspace-comparison.csv"
@@ -53,7 +58,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail("unsupported working-colorspace metadata schema")
     source = payload.get("source")
@@ -85,8 +90,8 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "quantize_model": "kmeans:seed=1:binbits=6",
         "merge_policy": "none",
         "cover_policy": "off",
-        "clustering_colorspace": "gamma",
-        "output_colorspace": "gamma",
+        "clustering_colorspace": "srgb",
+        "output_colorspace": "srgb",
         "lookup_policy": "none",
         "gpu_policy": "off",
         "palette_type": "rgb",
@@ -132,7 +137,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if row.get("label") != label or row.get("work_format") != work_format:
         fail(f"color-space contract differs in {path}: {colorspace}")
     try:
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}") from exc
     required = {
@@ -143,9 +148,9 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         "--sampling-policy=full-frame",
         "--binning-policy=hard",
         "--quantize-model=kmeans:seed=1:binbits=6",
-        "-Xgamma",
-        f"-W{colorspace}",
-        "-Ugamma",
+        "-Xsrgb",
+        "-W" + colorspace,
+        "-Usrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
         "--lookup-policy=none",
@@ -188,7 +193,7 @@ def read_rows(path: Path, revision: str) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement CSV: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     actual: Set[Tuple[str, int, str]] = set()
     for row in rows:
         validate_command(row, path)
@@ -249,7 +254,7 @@ def validate_ratios(rows: List[Dict[str, str]]) -> None:
     }
     for diffusion in DIFFUSIONS:
         for colors in COLORS:
-            gamma = by_key[(diffusion, colors, "gamma")]
+            gamma = by_key[(diffusion, colors, "srgb")]
             gamma_size = int(gamma["encoded_bytes"])
             gamma_time = float(gamma["median_seconds"])
             for colorspace, _label, _value, _work in COLORSPACES:

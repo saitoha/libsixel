@@ -3400,6 +3400,8 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          calloc \
                          clearerr \
                          stat \
+                         fstat \
+                         ftruncate \
                          setjmp \
                          longjmp \
                          strerror \
@@ -3461,6 +3463,26 @@ AS_IF([test "x$sixel_cv_encoder_sigint_sync" = xyes], [
             [Define to 1 for the encoder process signal hook.])
 ])
 
+AC_CACHE_CHECK([for Win32 output file APIs], [sixel_cv_win32_output_file], [
+  AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#ifndef _WIN32
+#error Windows file handles are unavailable on this target
+#endif
+#include <windows.h>
+#include <io.h>
+int main(void) {
+    BY_HANDLE_FILE_INFORMATION info;
+    HANDLE handle = (HANDLE)_get_osfhandle(0);
+    return !(GetFileInformationByHandle(handle, &info) &&
+             SetEndOfFile(handle));
+}
+  ]])], [sixel_cv_win32_output_file=yes], [sixel_cv_win32_output_file=no])
+])
+AS_IF([test "x$sixel_cv_win32_output_file" = xyes], [
+  AC_DEFINE([HAVE_WIN32_OUTPUT_FILE_API], [1],
+            [Define to 1 for Win32 output file identity and truncation.])
+])
+
 AC_CACHE_CHECK([for CLI nonblocking foreground terminal I/O],
   [sixel_cv_cli_color_tty], [
   AC_LINK_IFELSE([AC_LANG_SOURCE([[
@@ -3487,7 +3509,7 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
   # OpenVMS CRTL exposes several POSIX names through headers rather than as
   # plain lowercase linker symbols.  Re-check those functions with the normal
   # headers visible instead of relying on Autoconf's prototype-free fallback.
-  for ac_func in chmod clock_gettime fchmod fileno fsync gettimeofday \
+  for ac_func in chmod clock_gettime fchmod fileno fstat fsync ftruncate gettimeofday \
                  getopt isatty mkdir mkstemp mktemp open realpath select \
                  setenv stat strcasecmp strerror_r strdup waitpid; do
     eval "sixel_openvms_func_result=\${ac_cv_func_$ac_func-no}"
@@ -3498,7 +3520,9 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
         clock_gettime) sixel_openvms_func_body='struct timespec ts; return clock_gettime(CLOCK_REALTIME, &ts);' ;;
         fchmod) sixel_openvms_func_body='return fchmod(0, 0600);' ;;
         fileno) sixel_openvms_func_body='return fileno(stdin);' ;;
+        fstat) sixel_openvms_func_body='struct stat st; return fstat(0, &st);' ;;
         fsync) sixel_openvms_func_body='return fsync(0);' ;;
+        ftruncate) sixel_openvms_func_body='return ftruncate(0, 0);' ;;
         gettimeofday) sixel_openvms_func_body='struct timeval tv; return gettimeofday(&tv, 0);' ;;
         getopt) sixel_openvms_func_body='return getopt(0, (char * const *)0, "");' ;;
         isatty) sixel_openvms_func_body='return isatty(0);' ;;

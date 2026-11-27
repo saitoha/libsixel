@@ -25,7 +25,7 @@ test_gamut_0047_ray_bounds(int argc, char **argv)
             ok = sixel_gamut_apply(fixture.mapper, lab, result,
                 SIXEL_COLORSPACE_OKLAB) &&
                 sixel_color_convert(repeated, result,
-                    SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LINEAR);
+                    SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_SRGB_LINEAR);
             for (c = 0; ok && c < 3; ++c) {
                 ok = isfinite(repeated[c]) && repeated[c] >= -2e-7 &&
                     repeated[c] <= 1.0 + 2e-7;

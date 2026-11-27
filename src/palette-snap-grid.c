@@ -54,7 +54,7 @@ sixel_snap_grid_coordinates(sixel_snap_grid_t *grid, double const linear[3],
         return sixel_cdef_convert_intermediate(grid->cluster_linear,
             grid->cluster, linear, target);
     }
-    return sixel_color_convert(target, linear, SIXEL_COLORSPACE_LINEAR,
+    return sixel_color_convert(target, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
                                grid->colorspace);
 }
 
@@ -194,10 +194,10 @@ sixel_snap_grid_new_cluster(sixel_snap_grid_t **result, int policy,
     }
     *result = NULL;
     if (allocator == NULL || policy < 0 || policy > SIXEL_SNAP_GRID_FULL ||
-            (colorspace != SIXEL_COLORSPACE_GAMMA &&
-             colorspace != SIXEL_COLORSPACE_LINEAR &&
+            (colorspace != SIXEL_COLORSPACE_SRGB &&
+             colorspace != SIXEL_COLORSPACE_SRGB_LINEAR &&
              colorspace != SIXEL_COLORSPACE_OKLAB &&
-             colorspace != SIXEL_COLORSPACE_CIELAB &&
+             colorspace != SIXEL_COLORSPACE_LAB_D65 &&
              colorspace != SIXEL_COLORSPACE_DIN99D)) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -364,12 +364,12 @@ sixel_snap_grid_project(sixel_snap_grid_t *grid, double const source[3],
             ? !sixel_cdef_convert_intermediate(grid->cluster,
                 grid->cluster_linear, source, linear)
             : !sixel_color_convert(linear, source, grid->colorspace,
-                                   SIXEL_COLORSPACE_LINEAR)) {
+                                   SIXEL_COLORSPACE_SRGB_LINEAR)) {
         return SIXEL_BAD_INPUT;
     }
     weights[0] = weights[1] = weights[2] = 1.0;
     if (grid->colorspace == SIXEL_COLORSPACE_OKLAB ||
-            grid->colorspace == SIXEL_COLORSPACE_CIELAB ||
+            grid->colorspace == SIXEL_COLORSPACE_LAB_D65 ||
             grid->colorspace == SIXEL_COLORSPACE_DIN99D) {
         weights[0] = lightness_weight;
         weights[1] = weights[2] = (1.0 - lightness_weight) * .5;

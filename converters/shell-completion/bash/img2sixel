@@ -1047,10 +1047,10 @@ _img2sixel()
             fi
             return 0
         fi
-        COMPREPLY=( $( compgen -W 'auto icc: gamma \
-                                   linear \
+        COMPREPLY=( $( compgen -W 'auto icc: srgb \
+                                   srgb-linear \
                                    oklab \
-                                   cielab \
+                                   lab-d65 \
                                    din99d' -- "$cur" ) )
         return 0
         ;;
@@ -1086,11 +1086,11 @@ _img2sixel()
             compopt -o nospace 2>/dev/null
             return 0
         fi
-        COMPREPLY=( $( compgen -W 'gamma \
-                                   linear \
+        COMPREPLY=( $( compgen -W 'srgb \
+                                   srgb-linear \
                                    smpte-c \
                                    display-p3 \
-                                   adobe-rgb \
+                                   a98-rgb \
                                    dci-p3 \
                                    icc \
                                    auto' -- "$cur" ) )

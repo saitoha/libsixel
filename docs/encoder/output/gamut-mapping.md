@@ -16,7 +16,7 @@ For a worked color example, diagrams and comparisons of the actual mapper and en
 
 ```sh
 img2sixel image.png -U display-p3:gamut=local-minde
-img2sixel image.png -U gamma:Glocal-minde
+img2sixel image.png -U srgb:Glocal-minde
 img2sixel image.png -U display-p3:gamut=edge-seeker
 img2sixel image.png -U display-p3:gamut=ray-trace
 img2sixel image.png -U icc:path=/path/to/profile.icc:gamut=local-minde
@@ -35,7 +35,7 @@ The local clipping tolerance is Delta E OK `0.02`; the chroma search termination
 
 ### EdgeSeeker
 
-The reference is [CSS Color 4, 9 October 2026, EdgeSeeker](https://www.w3.org/TR/2026/CRD-css-color-4-20261009/#GMA-EdgeSeeker). At construction, 400 encoded RGB samples per HSL hue region at lightness 50% and 75% describe each destination's cusp and upper boundary. The destination transfer curves are used when decoding these samples, including the identity transfer for `-U linear`. Hue folds are removed by replacing the preceding overshoot with a bridge, rather than discarding only backward-moving samples. The sorted table interpolates across the 0/360-degree seam.
+The reference is [CSS Color 4, 9 October 2026, EdgeSeeker](https://www.w3.org/TR/2026/CRD-css-color-4-20261009/#GMA-EdgeSeeker). At construction, 400 encoded RGB samples per HSL hue region at lightness 50% and 75% describe each destination's cusp and upper boundary. The destination transfer curves are used when decoding these samples, including the identity transfer for `-U srgb-linear`. Hue folds are removed by replacing the preceding overshoot with a bridge, rather than discarding only backward-moving samples. The sorted table interpolates across the 0/360-degree seam.
 
 For an out-of-gamut color, the mapper looks up the cusp and signed curvature at its Oklab hue. Below the cusp, maximum chroma follows a straight line from black; above it, a fitted circle connects the cusp to white. Chroma is reduced at fixed lightness and hue, followed by destination clipping to contain approximation error. The circle intersection uses a rationalized expression which remains stable as curvature tends to zero. This method does not use local MINDE's Delta E tolerance or iterative chroma search. It shares the SDR black/white endpoint behavior.
 

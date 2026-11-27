@@ -84,10 +84,10 @@ PIPELINE_EDGES = [
 ]
 RESIZE_CASES = [
     {'title': 'A · Gamma input / gamma work',
-     'condition': '--precision-policy=8bit -Wgamma',
+     'condition': '--precision-policy=8bit -Wsrgb',
      'nodes': [('RGB888', ['Gamma-encoded source']),
                ('LINEARRGBFLOAT32', ['Resize in linear light']),
-               ('RGB888', ['Gamma work · -Wgamma'])],
+               ('RGB888', ['Gamma work · -Wsrgb'])],
      'edges': ['decode sRGB', 'encode sRGB']},
     {'title': 'B · Linear loader output / OKLab work',
      'condition': 'Linear-light loader composition, then -Woklab',

@@ -402,8 +402,8 @@ palette_integration_test_impl(int scenario, int gpu, char const *profile)
         goto end;
     }
     if (profile != NULL && (sixel_encoder_setopt(encoder, 'U', profile) ||
-            sixel_encoder_setopt(encoder, 'X', "linear") ||
-            sixel_encoder_setopt(encoder, 'W', "linear") ||
+            sixel_encoder_setopt(encoder, 'X', "srgb-linear") ||
+            sixel_encoder_setopt(encoder, 'W', "srgb-linear") ||
             sixel_encoder_setopt(encoder, 'Q', "kmeans:seed=1") ||
             sixel_encoder_setopt(encoder, 'p', "2") ||
             sixel_encoder_setopt(encoder, '5', "none") ||

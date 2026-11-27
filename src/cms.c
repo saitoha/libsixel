@@ -6802,7 +6802,7 @@ static struct {
       SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
     { "display-p3", {.3127, .3290, .68, .32, .265, .69, .15, .06},
       SIXEL_COLOR_TRC_SRGB, {1.0, 1.0, 1.0} },
-    { "adobe-rgb", {.3127, .3290, .64, .33, .21, .71, .15, .06},
+    { "a98-rgb", {.3127, .3290, .64, .33, .21, .71, .15, .06},
       SIXEL_COLOR_TRC_POWER, {563.0 / 256.0, 563.0 / 256.0, 563.0 / 256.0} },
     { "dci-p3", {.3140, .3510, .68, .32, .265, .69, .15, .06},
       SIXEL_COLOR_TRC_POWER, {2.6, 2.6, 2.6} }
@@ -7175,10 +7175,10 @@ sixel_cdef_matches_srgb(sixel_color_def_t const *definition, int colorspace)
             !(definition->srgb_invariants & SIXEL_CDEF_SRGB_IDENTITY)) {
         return 0;
     }
-    if (colorspace == SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace == SIXEL_COLORSPACE_SRGB) {
         return definition->trc == SIXEL_COLOR_TRC_SRGB;
     }
-    return colorspace == SIXEL_COLORSPACE_LINEAR &&
+    return colorspace == SIXEL_COLORSPACE_SRGB_LINEAR &&
         definition->trc == SIXEL_COLOR_TRC_POWER &&
         definition->gamma[0] == 1.0 && definition->gamma[1] == 1.0 &&
         definition->gamma[2] == 1.0;
@@ -7590,10 +7590,10 @@ sixel_cdef_frame_result(sixel_color_def_t const *srgb, double const xyz[3],
                              SIXEL_CMS_INTENT_RELATIVE_COLORIMETRIC)) {
         return 0;
     }
-    if (space == SIXEL_COLORSPACE_GAMMA) {
+    if (space == SIXEL_COLORSPACE_SRGB) {
         memcpy(output, encoded, sizeof(encoded));
     } else if (!sixel_color_convert(output, encoded,
-                                    SIXEL_COLORSPACE_GAMMA, space)) {
+                                    SIXEL_COLORSPACE_SRGB, space)) {
         return 0;
     }
     return sixel_cdef_finite(output) && (!store_float ||

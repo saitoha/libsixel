@@ -1212,7 +1212,7 @@ sixel_builtin_fill_linear_bgcolor(float bg_linear[3],
     float gamma_value;
 
     channel = 0;
-    bg_colorspace = SIXEL_COLORSPACE_GAMMA;
+    bg_colorspace = SIXEL_COLORSPACE_SRGB;
     gamma_value = 0.0f;
     if (bg_linear == NULL || bgcolor == NULL) {
         return;
@@ -1220,7 +1220,7 @@ sixel_builtin_fill_linear_bgcolor(float bg_linear[3],
 
     bg_colorspace = loader_background_colorspace();
     for (channel = 0; channel < 3; ++channel) {
-        if (bg_colorspace == SIXEL_COLORSPACE_LINEAR) {
+        if (bg_colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) {
             bg_linear[channel] = (float)bgcolor[channel] / 255.0f;
         } else {
             gamma_value = (float)bgcolor[channel] / 255.0f;
@@ -1588,7 +1588,7 @@ sixel_builtin_load_bmp_native(sixel_chunk_t const *chunk,
             sixel_frame_as_interface(frame),
             &(sixel_frame_pixels_request_t){
                 samples.pixels, NULL, samples.width, samples.height,
-                format, SIXEL_COLORSPACE_GAMMA, -1, SIXEL_FRAME_PIXELS_U8
+                format, SIXEL_COLORSPACE_SRGB, -1, SIXEL_FRAME_PIXELS_U8
             });
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -1666,7 +1666,7 @@ sixel_builtin_load_bmp_native(sixel_chunk_t const *chunk,
         }
     }
     status = sixel_frame_init_rgb_float(frame, rgb, samples.width,
-        samples.height, SIXEL_COLORSPACE_LINEAR, -1);
+        samples.height, SIXEL_COLORSPACE_SRGB_LINEAR, -1);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2576,7 +2576,7 @@ sixel_builtin_apng_float_canvas(sixel_builtin_apng_canvas_t *canvas,
     status = iface->vtbl->init_pixels(iface,
         &(sixel_frame_pixels_request_t){rgb, NULL, canvas->width,
             canvas->height, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-            SIXEL_COLORSPACE_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32});
+            SIXEL_COLORSPACE_SRGB_LINEAR, -1, SIXEL_FRAME_PIXELS_FLOAT32});
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -4869,7 +4869,7 @@ sixel_builtin_try_load_indexed_png(
             frame->width,
             frame->height,
             SIXEL_PIXELFORMAT_PAL8,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             palette_colors,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -5017,7 +5017,7 @@ sixel_builtin_load_tga_color(
         sixel_frame_as_interface(frame),
         &(sixel_frame_pixels_request_t){
             (unsigned char *)rgb, NULL, width, height,
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_LINEAR,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_COLORSPACE_SRGB_LINEAR,
             -1, SIXEL_FRAME_PIXELS_FLOAT32
         });
     if (SIXEL_FAILED(status)) {
@@ -5163,7 +5163,7 @@ sixel_builtin_try_load_indexed_tga(
             frame->width,
             frame->height,
             SIXEL_PIXELFORMAT_PAL8,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             palette_colors,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -5264,7 +5264,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
                 frame->width,
                 frame->height,
                 SIXEL_PIXELFORMAT_PAL8,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 palette_colors,
                 SIXEL_FRAME_PIXELS_U8
             });
@@ -5313,7 +5313,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
             frame->width,
             frame->height,
             SIXEL_PIXELFORMAT_RGBA8888,
-            SIXEL_COLORSPACE_GAMMA,
+            SIXEL_COLORSPACE_SRGB,
             -1,
             SIXEL_FRAME_PIXELS_U8
         });
@@ -5538,7 +5538,7 @@ sixel_builtin_load_jpeg_frame(
                 frame->width,
                 frame->height,
                 SIXEL_PIXELFORMAT_RGB888,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 -1,
                 SIXEL_FRAME_PIXELS_U8
             });
@@ -5611,7 +5611,7 @@ sixel_builtin_load_jpeg_frame(
     stbi_image_free(cmyk_pixels);
     status = sixel_frame_init_rgb_float(frame, (float *)(void *)float_pixels,
         frame->width, frame->height,
-        linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA, -1);
+        linear ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB, -1);
     if (SIXEL_FAILED(status)) {
         stbi_image_free(float_pixels);
         return status;
@@ -5934,7 +5934,7 @@ sixel_builtin_load_psd_single_frame(
     psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     psd_custom_decode_mode = 0;
     psd_skip_icc_conversion = 0;
-    psd_colorspace = SIXEL_COLORSPACE_GAMMA;
+    psd_colorspace = SIXEL_COLORSPACE_SRGB;
     psd_cmyk_icc_applied = 0;
     psd_icc_profile = NULL;
     psd_icc_profile_length = 0u;
@@ -6011,7 +6011,7 @@ sixel_builtin_load_psd_single_frame(
         frame->width = (int)psd_info.width;
         frame->height = (int)psd_info.height;
         psd_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        psd_colorspace = SIXEL_COLORSPACE_LINEAR;
+        psd_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         /* Both adapters return canonical color. Process profiles have
          * already been applied before spot composition. */
         psd_skip_icc_conversion = 1;
@@ -6352,7 +6352,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                         frame->width,
                         frame->height,
                         SIXEL_PIXELFORMAT_RGBA8888,
-                        SIXEL_COLORSPACE_GAMMA,
+                        SIXEL_COLORSPACE_SRGB,
                         -1,
                         SIXEL_FRAME_PIXELS_U8
                     });
@@ -6438,7 +6438,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     frame->width,
                     frame->height,
                     SIXEL_PIXELFORMAT_RGBA8888,
-                    SIXEL_COLORSPACE_GAMMA,
+                    SIXEL_COLORSPACE_SRGB,
                     -1,
                     SIXEL_FRAME_PIXELS_U8
                 });
@@ -6474,7 +6474,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 frame->width,
                 frame->height,
                 SIXEL_PIXELFORMAT_RGBA8888,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 -1,
                 SIXEL_FRAME_PIXELS_U8
             });
@@ -6499,7 +6499,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 frame->width,
                 frame->height,
                 SIXEL_PIXELFORMAT_RGB888,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 -1,
                 SIXEL_FRAME_PIXELS_U8
             });

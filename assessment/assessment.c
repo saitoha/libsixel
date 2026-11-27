@@ -493,14 +493,14 @@ SIXEL_INTERNAL_API char const *
 sixel_assessment_colorspace_name(int colorspace)
 {
     switch (colorspace) {
-    case SIXEL_COLORSPACE_GAMMA:
-        return "gamma";
-    case SIXEL_COLORSPACE_LINEAR:
-        return "linear";
+    case SIXEL_COLORSPACE_SRGB:
+        return "srgb";
+    case SIXEL_COLORSPACE_SRGB_LINEAR:
+        return "srgb-linear";
     case SIXEL_COLORSPACE_OKLAB:
         return "oklab";
-    case SIXEL_COLORSPACE_CIELAB:
-        return "cielab";
+    case SIXEL_COLORSPACE_LAB_D65:
+        return "lab-d65";
     case SIXEL_COLORSPACE_DIN99D:
         return "din99d";
     case SIXEL_COLORSPACE_SMPTEC:
@@ -1170,7 +1170,7 @@ frame_to_rgb_float(sixel_frame_t *frame,
             if (sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_OKLAB) {
                 converted[index] -= 0.5f;
             } else if (sixel_frame_get_colorspace(frame)
-                           == SIXEL_COLORSPACE_CIELAB) {
+                           == SIXEL_COLORSPACE_LAB_D65) {
                 converted[index] = (converted[index] - 0.5f) * 3;
             } else if (sixel_frame_get_colorspace(frame)
                            == SIXEL_COLORSPACE_DIN99D) {
@@ -3802,8 +3802,8 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
         signal = sixel_frame_get_colorspace(reference);
     }
     /* Opponent comparison choices use physical linear-sRGB Y. */
-    if (signal != SIXEL_COLORSPACE_GAMMA) {
-        signal = SIXEL_COLORSPACE_LINEAR;
+    if (signal != SIXEL_COLORSPACE_SRGB) {
+        signal = SIXEL_COLORSPACE_SRGB_LINEAR;
     }
     /* Use the stored choice below the bailout checkpoint so the temporary
      * normalization variable does not remain live across setjmp. */
@@ -4116,7 +4116,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         (unsigned int)assessment->background[0],
         (unsigned int)assessment->background[1],
         (unsigned int)assessment->background[2],
-        assessment->signal_space == SIXEL_COLORSPACE_GAMMA
+        assessment->signal_space == SIXEL_COLORSPACE_SRGB
             ? "encoded sRGB luma (0.2126,0.7152,0.0722)"
             : "linear sRGB Y (0.2126,0.7152,0.0722)",
         assessment->signal_bytes ? "8bit" : "float32",

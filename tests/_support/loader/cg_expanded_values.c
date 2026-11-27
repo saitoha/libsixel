@@ -108,8 +108,8 @@ cge_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 5 || frame->height != 3 ||
         sixel_frame_format(frame) != (byte_path ? SIXEL_PIXELFORMAT_RGB888 :
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_GAMMA :
-            SIXEL_COLORSPACE_LINEAR) || !frame->owns_pixels ||
+        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_SRGB :
+            SIXEL_COLORSPACE_SRGB_LINEAR) || !frame->owns_pixels ||
         frame->transparent != -1 || frame->ncolors != -1 ||
         frame->palette != NULL ||
         (frame->transparent_mask != NULL) != preserve ||
@@ -241,8 +241,9 @@ test_cg_expanded_values(int argc, char **argv)
     status = sixel_loader_new(&loader, allocator);
     if (SIXEL_FAILED(status)) { goto end; }
     status = sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_LOADER_ORDER,
-        probe.background == 2 ? "coregraphics:background_colorspace=linear!" :
-                                "coregraphics:background_colorspace=gamma!");
+        probe.background == 2 ?
+        "coregraphics:background_colorspace=srgb-linear!" :
+        "coregraphics:background_colorspace=srgb!");
     if (SIXEL_FAILED(status)) { goto end; }
     (void)sixel_loader_setopt(loader, SIXEL_LOADER_OPTION_CONTEXT, &probe);
     if (probe.background) {

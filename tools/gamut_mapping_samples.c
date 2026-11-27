@@ -67,7 +67,7 @@ main(int argc, char **argv)
     }
     for (i = 0; i < 3; ++i) {
         if (SIXEL_FAILED(sixel_gamut_new(&mapper[i], srgb,
-                SIXEL_COLORSPACE_GAMMA, policies[i], allocator))) {
+                SIXEL_COLORSPACE_SRGB, policies[i], allocator))) {
             goto end;
         }
     }
@@ -85,13 +85,13 @@ main(int argc, char **argv)
         }
         for (i = 0; i < 3; ++i) {
             if (!sixel_gamut_apply(mapper[i], values[0], values[i + 2],
-                    SIXEL_COLORSPACE_LINEAR)) {
+                    SIXEL_COLORSPACE_SRGB_LINEAR)) {
                 goto end;
             }
         }
         for (i = 0; i < 5; ++i) {
             if (!sixel_color_convert(lab, values[i],
-                    SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
+                    SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
                 goto end;
             }
             for (j = 0; j < 3; ++j) {

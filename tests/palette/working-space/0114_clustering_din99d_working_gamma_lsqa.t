@@ -2,7 +2,7 @@
 # Verify MS-SSIM for clustering din99d working gamma colorspace selection.
 #
 # Flow summary:
-# - Convert the input image with -X din99d -W gamma.
+# - Convert the input image with -X din99d -W srgb.
 # - Compare the output against the original image.
 # - Enforce MS-SSIM >= 0.99 via lsqa.
 # The reference five-scale MS-SSIM requires dimensions >=176x176.
@@ -23,7 +23,7 @@ lsqa_floor=0.99
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-din99d-work-gamma.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -X din99d -W gamma -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -X din99d -W srgb -o "${output_sixel}" "${input_image}" || {
     printf '\n%s\n' "not ok 1 - img2sixel clustering din99d working gamma conversion failed"
     exit 0
 }

@@ -135,8 +135,8 @@ drcs_native_contract(int scenario)
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { '@', "2:1" }, { 'Q', "heckbert" },
         { 'F', "none" }, { '_', "none" }, { '~', "none" },
-        { 'd', "none" }, { 'E', "size" }, { 'X', "linear" },
-        { 'W', "linear" }, { '7', NULL }, { 'g', NULL },
+        { 'd', "none" }, { 'E', "size" }, { 'X', "srgb-linear" },
+        { 'W', "srgb-linear" }, { '7', NULL }, { 'g', NULL },
         { '4', "full-frame" }, { '5', "none" }
     };
     static float const gray[3] = { .1f, .1001f, .5f };
@@ -226,8 +226,8 @@ drcs_native_contract(int scenario)
             'b', "gray2"))) {
         goto end;
     }
-    if (byte && (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "gamma")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma")))) {
+    if (byte && (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "srgb")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb")))) {
         goto end;
     }
     if ((scenario == 2 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -257,7 +257,7 @@ drcs_native_contract(int scenario)
         capture.bytes[0] = '\0';
         p3 = scenario != 0 && !byte && !(scenario == 11 && step == 1);
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame,
                     byte ? (void *)bytes : (void *)pixels, width, height,

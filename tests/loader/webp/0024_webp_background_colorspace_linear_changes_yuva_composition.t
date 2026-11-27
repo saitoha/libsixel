@@ -21,14 +21,14 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-l
 output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-yuva-gamma.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/webp-bgcs-yuva-linear.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Llibwebp:cms_engine=none! \
               -B#808080 "${input_webp}" >"${output_gamma}" || {
     printf '\n%s\n' "not ok 1 - libwebp YUVA gamma background composition failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb-linear \
               -Llibwebp:cms_engine=none! \
               -B#808080 "${input_webp}" >"${output_linear}" || {
     printf '\n%s\n' "not ok 1 - libwebp YUVA linear background composition failed"

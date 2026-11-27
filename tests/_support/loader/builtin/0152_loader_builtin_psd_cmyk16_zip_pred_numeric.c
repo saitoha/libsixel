@@ -26,7 +26,7 @@ test_loader_0152_loader_builtin_psd_cmyk16_zip_pred_numeric(int argc,
         16,
         16,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         pixels,
         expected,
         0.0000001f);

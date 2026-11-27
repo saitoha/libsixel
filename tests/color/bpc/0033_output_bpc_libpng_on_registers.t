@@ -14,7 +14,7 @@ export SIXEL_LOADER_CMS_BPC=0 SIXEL_OUTPUT_COLORSPACE_ICC_BPC=0
 export SIXEL_LOADER_CMS_RENDERING_INTENT=relative SIXEL_LOADER_PREFER_8BIT=0
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -7 -Llibpng:Ebuiltin! -Acomposite -Qkmeans:seed=1 -p2 \
-    -Xgamma -Wgamma -_none -Fnone -aoff -dnone -trgb \
+    -Xsrgb -Wsrgb -_none -Fnone -aoff -dnone -trgb \
     -U "icc:P${data}/output-bpc.icc:bpc=1" \
     "${data}/output-bpc-rgba16.png" 2>&1) || {
     printf '%s\n' "$trace" >&2

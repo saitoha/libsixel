@@ -10,7 +10,7 @@ palette is constructed:
 --clustering-colorspace=COLORSPACE
 ```
 
-The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE`. With `icc:FILE` the builtin CMS converts samples to the encoded device RGB coordinates of a matrix/TRC RGB profile using relative colorimetry. The solver computes distances and representatives in those coordinates. The generated representatives then pass back through the profile to the resolved `-W` space for palette lookup and dithering. The default `auto` follows the resolved `-W` working space. An explicit non-auto `-X` remains authoritative regardless of its position relative to `-W`; `-Xauto` restores tracking. The [working-space default and option coupling](../../palette-application/working-colorspace/README.md#default-and-option-coupling) owns per-input auto resolution and its precision constraint.
+The accepted values are `auto`, `srgb`, `srgb-linear`, `oklab`, `lab-d65`, `din99d`, and `icc:FILE`. With `icc:FILE` the builtin CMS converts samples to the encoded device RGB coordinates of a matrix/TRC RGB profile using relative colorimetry. The solver computes distances and representatives in those coordinates. The generated representatives then pass back through the profile to the resolved `-W` space for palette lookup and dithering. The default `auto` follows the resolved `-W` working space. An explicit non-auto `-X` remains authoritative regardless of its position relative to `-W`; `-Xauto` restores tracking. The [working-space default and option coupling](../../palette-application/working-colorspace/README.md#default-and-option-coupling) owns per-input auto resolution and its precision constraint.
 
 Float ICC clustering coordinates can be negative or greater than one. Outside the nominal TRC range each channel uses a linear extension anchored at the corresponding endpoint, with slope equal to the difference between the decoded values at one and zero. Conversion back to the working space uses the same extension in reverse. Within the nominal range the profile TRC governs the conversion. The final output conversion still follows the selected `-U` policy.
 
@@ -74,9 +74,9 @@ particular, the CIELAB distance used by a solver is not numerically identical
 to raw Delta E76, because libsixel scales the three stored axes before taking
 their Euclidean norm.
 
-## `gamma`: gamma-encoded sRGB coordinates
+## `srgb`: gamma-encoded sRGB coordinates
 
-`-X gamma` clusters the three displayed sRGB code values. For normalized
+`-X srgb` clusters the three displayed sRGB code values. For normalized
 components the vector is:
 
 ```text
@@ -92,9 +92,9 @@ effects depending on hue, luminance, and location in the gamut.
 This is the compatibility default. Its status as the default is not evidence
 that it minimizes Delta E00, MS-SSIM loss, or SIXEL size for every image.
 
-## `linear`: linear-light sRGB coordinates
+## `srgb-linear`: linear-light sRGB coordinates
 
-`-X linear` first removes the sRGB transfer function independently from each
+`-X srgb-linear` first removes the sRGB transfer function independently from each
 channel. For an sRGB component `C` in `[0, 1]`, libsixel uses:
 
 ```text
@@ -140,9 +140,9 @@ MS-SSIM or Delta E00 comparison. The definition and design criteria are in
 Bjorn Ottosson's original
 [A perceptual color space for image processing](https://bottosson.github.io/posts/oklab/).
 
-## `cielab`: normalized CIE 1976 L*a*b*
+## `lab-d65`: normalized CIE 1976 L*a*b*
 
-`-X cielab` converts linear sRGB to CIE XYZ using a D65 reference white and
+`-X lab-d65` converts linear sRGB to CIE XYZ using a D65 reference white and
 then applies the CIELAB nonlinear function:
 
 ```text
@@ -259,7 +259,7 @@ with dithering is a separate experiment.
 ### Precision
 
 Non-gamma clustering paths require floating-point coordinates. A fair
-comparison should also request float32 for `gamma`, otherwise representation
+comparison should also request float32 for `srgb`, otherwise representation
 precision becomes a second independent variable. The measurements below use
 `--precision-policy=float32` for every space.
 
@@ -283,7 +283,7 @@ The checked-in experiment compares all five spaces at
 img2sixel --threading-policy=greedy:global_budget=1 --precision-policy=float32 --quality=full \
   --loaders=builtin! --sampling-policy=full-frame \
   --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
-  -F none -a off -X COLORSPACE -Wgamma --diffusion=none \
+  -F none -a off -X COLORSPACE -Wsrgb --diffusion=none \
   --gpu-policy=off --lookup-policy=none --palette-type=rgb \
   -p K images/snake.png
 ```
@@ -484,12 +484,12 @@ CLI spelling remains undecided.
 
 There is no defensible total ordering from this run:
 
-- `gamma` is the compatibility reference and remains competitive in every
+- `srgb` is the compatibility reference and remains competitive in every
   quality panel;
-- `linear` often reduces stream size here but has weaker perceptual metrics;
+- `srgb-linear` often reduces stream size here but has weaker perceptual metrics;
 - `oklab` gives strong spatial quality and unexpectedly short measured solver
   spans on this fixture;
-- `cielab` is competitive in both quality and solver time, including the best
+- `lab-d65` is competitive in both quality and solver time, including the best
   mean Delta E00 at `K=256`; and
 - `din99d` is strongest at very small `K` here. At `K=8`, its end-to-end median is 68.75 ms versus 51.39 ms for gamma; at `K=256`, the corresponding medians are 206.10 and 220.54 ms.
 

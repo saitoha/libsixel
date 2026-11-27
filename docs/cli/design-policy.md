@@ -105,7 +105,7 @@ The command shell and C runtime process an invocation before libsixel receives `
 When invoking a C program as a foreign command from OpenVMS DCL, the default DCL/C runtime argument processing lowercases unquoted arguments. Double-quoted arguments preserve their case, as specified by the [VSI C argument-passing rules](https://docs.vmssoftware.com/vsi-c-user-s-guide-for-openvms-systems/). Unless the caller has configured case-preserving argument processing, quote each argument whose uppercase characters are significant. For example, with the converter names already defined as foreign commands:
 
 ```text
-img2sixel "-Wc" "-Qk" input.png
+img2sixel "-Wlab-d65" "-Qk" input.png
 sixel2png "-D" -i input.six -o output.png
 ```
 

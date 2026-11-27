@@ -134,7 +134,7 @@ The runtime subpolicy `resize_precision` controls the representation in which re
 | --- | --- | --- | --- | --- |
 | `preserve` | `RGB888` | Mixes gamma-coded byte values directly. | Usually remains `RGB888`. | Lowest temporary RGB storage and fastest measured path, with incorrect light mixing at contrasting boundaries. |
 | `linear` | Promoted `LINEARRGBFLOAT32` | Converts gamma RGB to linear light before filtering. | Converts to the requested work format, normally `RGB888`. | Default quality-preserving resize without forcing the later pipeline to retain float32. |
-| `float` | Promoted `LINEARRGBFLOAT32` | Uses the same linear-light resize representation as `linear`. | Retains a compatible float32 work frame; for `-W gamma`, this is `RGBFLOAT32`. | Keeps precision for later palette work as well as resize, at higher memory and measured runtime cost. |
+| `float` | Promoted `LINEARRGBFLOAT32` | Uses the same linear-light resize representation as `linear`. | Retains a compatible float32 work frame; for `-W srgb`, this is `RGBFLOAT32`. | Keeps precision for later palette work as well as resize, at higher memory and measured runtime cost. |
 
 The controls compose in one `-j` argument:
 

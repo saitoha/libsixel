@@ -51,8 +51,8 @@ test_progressive_projection_case(int mode)
     allocator = NULL;
     decoded = NULL;
     ok = 0;
-    workspace = SIXEL_COLORSPACE_GAMMA;
-    output_space = SIXEL_COLORSPACE_GAMMA;
+    workspace = SIXEL_COLORSPACE_SRGB;
+    output_space = SIXEL_COLORSPACE_SRGB;
     definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     type = SIXEL_PALETTETYPE_RGB;
     if (mode == 41 || mode == 44) {
@@ -74,12 +74,12 @@ test_progressive_projection_case(int mode)
     } else if (mode == 42) {
         /* IEC sRGB .5 decodes to .21404114, hence wire value 21. */
         source[0] = source[1] = source[2] = .5f;
-        output_space = SIXEL_COLORSPACE_LINEAR;
+        output_space = SIXEL_COLORSPACE_SRGB_LINEAR;
         expected[0] = expected[1] = expected[2] = 21;
     } else if (mode == 43) {
         /* The documented SMPTE-C matrix and signed sRGB curve give
          * (-.61283122, 1.12351236, .73120112) for this linear vector. */
-        workspace = SIXEL_COLORSPACE_LINEAR;
+        workspace = SIXEL_COLORSPACE_SRGB_LINEAR;
         output_space = SIXEL_COLORSPACE_SMPTEC;
         source[0] = -.25f;
         source[1] = 1.25f;

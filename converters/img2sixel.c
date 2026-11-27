@@ -93,6 +93,8 @@ const char *img2sixel_compat_getenv(const char *name);
 int img2sixel_compat_setenv(const char *name, const char *value);
 int img2sixel_trace_topic_is_enabled(char const *topic);
 void img2sixel_trace_topic_message(const char *topic, const char *format, ...);
+SIXEL_INTERNAL_API void
+sixel_encoder_defer_sixel_outfile(sixel_encoder_t *, int, char *const *);
 SIXEL_INTERNAL_API int sixel_diagnostics_mode_is_code(void);
 SIXEL_INTERNAL_API int sixel_diagnostics_quiet_is_enabled(void);
 SIXEL_INTERNAL_API int
@@ -240,7 +242,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    select the sample precision of palette application.\n"
         "      auto    -> promote to float32 where processing requires it.\n"
         "      8bit    -> apply the palette on 8-bit gamma samples; earlier\n"
-        "                 stages may use float32. Rejects a non-gamma -W\n"
+        "                 stages may use float32. Rejects a non-sRGB -W\n"
         "                 and a named -U destination.\n"
         "      float32 -> request float even when bytes would suffice.\n"
     },
@@ -1119,7 +1121,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                               (:Rvalue); when final, use !! to\n"
         "                               also disable loader fallbacks.\n"
         "                               :hdr_fallback_profile=PROFILE\n"
-        "                               (:Fvalue) selects linear-srgb or\n"
+        "                               (:Fvalue) selects srgb-linear or\n"
         "                               srgb; :hdr_exposure=EV (:Xvalue)\n"
         "                               applies finite EV stops;\n"
         "                               :hdr_tonemap=MODE (:Hvalue)\n"
@@ -1279,10 +1281,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "    applies to generated palettes, including float image maps\n"
         "    ignored for -b, -e, and structured -m palettes\n"
         "      auto   -> follow the working color space (default)\n"
-        "      gamma  -> sRGB gamma\n"
-        "      linear -> linear RGB color space\n"
+        "      srgb  -> sRGB gamma\n"
+        "      srgb-linear -> linear-light sRGB\n"
         "      oklab  -> OKLab color space\n"
-        "      cielab -> CIELAB color space\n"
+        "      lab-d65 -> CIELAB D65 color space\n"
         "      din99d -> DIN99d color space\n"
         "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
@@ -1292,10 +1294,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "-W COLORSPACE, --working-colorspace=COLORSPACE\n"
         "    choose internal working color space\n"
         "      auto   -> follow the input frame color space (default)\n"
-        "      gamma  -> sRGB gamma at the selected precision\n"
-        "      linear -> linear RGB in float32\n"
+        "      srgb  -> encoded sRGB at the selected precision\n"
+        "      srgb-linear -> linear-light sRGB in float32\n"
         "      oklab  -> OKLab in float32\n"
-        "      cielab -> CIELAB in float32\n"
+        "      lab-d65 -> CIELAB D65 in float32\n"
         "      din99d -> DIN99d in float32\n"
         "      icc:FILE -> encoded RGB of a matrix/TRC ICC profile\n"
     },
@@ -1304,12 +1306,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "output-colorspace",
         "-U COLORSPACE, --output-colorspace=COLORSPACE\n"
         "    choose output color space\n"
-        "      gamma   -> sRGB gamma(default)\n"
-        "      linear  -> linear RGB color space\n"
+        "      srgb   -> sRGB (default)\n"
+        "      srgb-linear -> linear-light sRGB\n"
         "      smpte-c -> SMPTE-C gamma color space\n"
         "      display-p3 -> Display P3 "
         "(selected CPU palette/high-color paths)\n"
-        "      adobe-rgb -> Adobe RGB (1998), D65, power 563/256\n"
+        "      a98-rgb -> Adobe RGB (1998), D65, power 563/256\n"
         "      dci-p3 -> P3 primaries, DCI white, power 2.6\n"
         "      icc[:path=FILE] -> RGB ICC endpoint (compact :PFILE)\n"
         "    icc: path=P; SIXEL_OUTPUT_COLORSPACE_ICC_PATH supplies default\n"
@@ -1325,7 +1327,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Named/ICC destinations use CPU float; ICC snap needs matrix/TRC.\n"
         "      auto[:timeout_ms=N] -> negotiate only with stdout's TTY\n"
         "    auto: timeout_ms=T, decimal 1..10000, default 200 ms per\n"
-        "    exchange/write; file/pipe output uses gamma, no stderr fallback\n"
+        "    exchange/write; file/pipe output uses srgb, no stderr fallback\n"
         "    auto cannot be combined with DRCS output (-@)\n"
         "    CLI overrides SIXEL_OUTPUT_COLORSPACE and the auto timeout\n"
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
@@ -1473,7 +1475,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_OUTPUT_COLORSPACE",
         "img2sixel output color-space choice, including CLI-only auto.\n"
-        "Explicit -U wins; empty means the gamma default. Set the timeout\n"
+        "Explicit -U wins; empty means the srgb default. Set the timeout\n"
         "separately; this variable takes a base name without suboptions."
     },
     {
@@ -1553,7 +1555,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "overrides this setting. Defaults to off, but\n"
         "img2sixel sets it to '1' when the variable is unset.\n"
         "Only effective alpha-policy=composite probes the terminal.\n"
-        "When OSC11 succeeds, background colorspace is forced to gamma."
+        "When OSC11 succeeds, background colorspace is forced to srgb."
     },
     {
         "SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_MS",
@@ -1671,7 +1673,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DECODER_INPUT_COLORSPACE",
-        "sixel2png RGB interpretation: srgb, display-p3, adobe-rgb, "
+        "sixel2png RGB interpretation: srgb, display-p3, a98-rgb, "
         "dci-p3, icc.\n"
         "Overridden by -T. Encoder PNG profiles follow named or ICC -U "
         "choices; otherwise sRGB."
@@ -1915,7 +1917,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_BACKGROUND_COLORSPACE",
         "set how loader background colors are interpreted during alpha\n"
-        "composition. Accepts gamma (default) or linear.\n"
+        "composition. Accepts srgb (default) or srgb-linear.\n"
         "Ignored when background color comes from OSC11 query."
     },
     {
@@ -2066,13 +2068,13 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
         "set loader CMS output colorspace after loader-side CMS conversion.\n"
-        "Accepts gamma, linear, cielab, oklab, or din99d.\n"
-        "Default is linear."
+        "Accepts srgb, srgb-linear, lab-d65, oklab, or din99d.\n"
+        "Default is srgb-linear."
     },
     {
         "SIXEL_LOADER_HDR_FALLBACK_PROFILE",
         "set builtin HDR source-profile fallback when GAMMA/PRIMARIES are\n"
-        "missing or unusable. Accepts linear-srgb (default) or srgb.\n"
+        "missing or unusable. Accepts srgb-linear (default) or srgb.\n"
         "Header-derived metadata takes precedence. Override with\n"
         "-Lloader:hdr_fallback_profile=PROFILE or :Fvalue."
     },
@@ -3990,6 +3992,8 @@ img2sixel_main(int argc, char *argv[])
     if (SIXEL_FAILED(status)) {
         goto error;
     }
+    sixel_encoder_defer_sixel_outfile(encoder, argc - parse_terminal_optind,
+                                     argv + parse_terminal_optind);
 
     /*
      * Keep the interactive frontend default distinct from the library

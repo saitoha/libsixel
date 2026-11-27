@@ -38,8 +38,8 @@ png_byte_capture(sixel_frame_t *frame, void *context)
     format = probe->stage == 3 ? SIXEL_PIXELFORMAT_RGB888 :
         probe->stage == 1 ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 :
         SIXEL_PIXELFORMAT_RGBFLOAT32;
-    space = probe->stage == 1 ? SIXEL_COLORSPACE_LINEAR :
-        SIXEL_COLORSPACE_GAMMA;
+    space = probe->stage == 1 ? SIXEL_COLORSPACE_SRGB_LINEAR :
+        SIXEL_COLORSPACE_SRGB;
     if (frame->width != 1 || frame->height != 1 ||
         sixel_frame_format(frame) != format ||
         frame->format.coordinates != space ||
@@ -118,7 +118,7 @@ test_loader_0186_png_byte_target(int argc, char **argv)
         length = snprintf(order, sizeof(order),
             "%s:cms_engine=%s:cms_target=%s:prefer_8bit=%d!", argv[1],
             probe.stage == 0 ? "none" : "builtin",
-            probe.stage == 1 ? "linear" : "gamma",
+            probe.stage == 1 ? "srgb-linear" : "srgb",
             probe.stage == 0 || probe.stage == 3);
         if (length < 0 || (size_t)length >= sizeof(order)) {
             status = SIXEL_BAD_ARGUMENT;

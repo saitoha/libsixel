@@ -8,5 +8,5 @@ int
 test_delta_native_0124(int argc, char **argv)
 {
     return test_delta_output_work_frames(1, 0, 0,
-                                       argc > 1 ? argv[1] : "linear");
+                                       argc > 1 ? argv[1] : "srgb-linear");
 }

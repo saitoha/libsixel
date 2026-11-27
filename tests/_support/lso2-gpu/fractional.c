@@ -252,7 +252,7 @@ lso2_gpu_fractional_config_check(
     memset(&wire, 0, sizeof(wire));
     wire.definitions = definitions;
     wire.count = count+1;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     LSO2_GPU_CHECK(sixel_wire_palette_new(&f.wire, &wire, f.allocator)
         == SIXEL_OK);
     f.prepare.output.palette = f.wire;

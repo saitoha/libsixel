@@ -122,8 +122,8 @@ def measure(args):
             for batch in range(args.batches):
                 for backend in (("builtin", "libpng") if batch % 2 == 0
                                 else ("libpng", "builtin")):
-                    order = (f"{backend}:cms_engine={cms}:cms_target=gamma:"
-                             "prefer_8bit=0:background_colorspace=gamma!")
+                    order = (f"{backend}:cms_engine={cms}:cms_target=srgb:"
+                             "prefer_8bit=0:background_colorspace=srgb!")
                     dump = directory / (backend + ".f32")
                     command = [str(args.probe), order, str(path), str(args.repeats),
                                str(dump), str(int(bg)), "0"]
@@ -166,7 +166,7 @@ def measure(args):
             metadata=((b"bKGD", struct.pack(">HHH", 16, 128, 240)),))
         for backend in ("builtin", "libpng"):
             for priority in ("file_first", "explicit_first"):
-                for space in ("gamma", "linear"):
+                for space in ("srgb", "srgb-linear"):
                     order = (f"{backend}:cms_engine=none:background_policy={priority}:"
                              f"background_colorspace={space}!")
                     dump = directory / "policy.f32"
@@ -188,8 +188,8 @@ def measure(args):
         for name, path, bg, palette, options in [
             ("16-bit tRNS / key on", depth_path, 0, 0, "trns_keycolor=1"),
             ("16-bit tRNS / key off", depth_path, 0, 0, "trns_keycolor=0"),
-            ("indexed alpha / gamma", indexed_path, 1, 1, "background_colorspace=gamma"),
-            ("indexed alpha / linear", indexed_path, 1, 1, "background_colorspace=linear"),
+            ("indexed alpha / srgb", indexed_path, 1, 1, "background_colorspace=srgb"),
+            ("indexed alpha / srgb-linear", indexed_path, 1, 1, "background_colorspace=srgb-linear"),
         ]:
             for backend in ("builtin", "libpng"):
                 order = f"{backend}:cms_engine=none:{options}!"

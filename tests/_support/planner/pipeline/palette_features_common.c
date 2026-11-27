@@ -440,7 +440,7 @@ feature_run(int scenario, int floating, int error_skip)
         sixel_output_set_palette_type(output, SIXEL_PALETTETYPE_HLS);
     }
     if (scenario == 3 && sixel_encoder_setopt(state.encoder,
-            SIXEL_OPTFLAG_OUTPUT_COLORSPACE, "gamma")) goto end;
+            SIXEL_OPTFLAG_OUTPUT_COLORSPACE, "srgb")) goto end;
     if (scenario == 3 || scenario == 8) {
         if (sixel_encoder_setopt(state.encoder, SIXEL_OPTFLAG_MAPFILE_OUTPUT,
                 "pal:-")) goto end;

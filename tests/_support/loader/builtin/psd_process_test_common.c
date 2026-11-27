@@ -356,7 +356,7 @@ psd_process_test(int specimen)
     }
     if (specimen == 104) {
         if (probe.pixelformat[0] != SIXEL_PIXELFORMAT_RGB888 ||
-            probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+            probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
             probe.rgb_size[0] != 24u) {
             return 1;
         }
@@ -368,7 +368,7 @@ psd_process_test(int specimen)
         return 0;
     }
     if (probe.pixelformat[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.rgb_size[0] != sizeof(actual)) {
         return 1;
     }

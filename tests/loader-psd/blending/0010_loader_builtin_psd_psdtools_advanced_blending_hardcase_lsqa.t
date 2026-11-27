@@ -36,7 +36,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W srgb-linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" >/dev/null 2>&1 || {
     printf '\n%s\n' "not ok 1 - hard-case advanced-blending decode fell below MS-SSIM ${lsqa_floor}"

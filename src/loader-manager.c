@@ -203,8 +203,8 @@ loader_manager_init_loader_suboptions(
     memset(suboptions, 0, sizeof(*suboptions));
     suboptions->background_policy =
         SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
-    suboptions->background_colorspace = SIXEL_COLORSPACE_GAMMA;
-    suboptions->cms_target_colorspace = SIXEL_COLORSPACE_LINEAR;
+    suboptions->background_colorspace = SIXEL_COLORSPACE_SRGB;
+    suboptions->cms_target_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     suboptions->cms_prefer_8bit = 0;
     suboptions->cms_rendering_intent_order = 0u;
     suboptions->hdr_fallback_profile =

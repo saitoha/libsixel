@@ -26,7 +26,7 @@ test_loader_0142_loader_builtin_jpeg_gray16_restart_numeric(int argc,
         64,
         64,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         pixels,
         expected,
         0.0000001f);

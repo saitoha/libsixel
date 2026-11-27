@@ -22,7 +22,7 @@ static int const solver_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const solver_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int solver_fail_once;
 static int solver_failure_hits;
@@ -368,7 +368,7 @@ solver_wire(int model, int x, int w, int p3, char const *mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                 solver_spaces[w])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }

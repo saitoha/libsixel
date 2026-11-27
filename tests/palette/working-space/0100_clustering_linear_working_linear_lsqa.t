@@ -2,7 +2,7 @@
 # Verify MS-SSIM for clustering linear working linear colorspace selection.
 #
 # Flow summary:
-# - Convert the input image with -X linear -W linear.
+# - Convert the input image with -X srgb-linear -W srgb-linear.
 # - Compare the output against the original image.
 # - Enforce MS-SSIM >= 0.98 via lsqa.
 # The reference five-scale MS-SSIM requires dimensions >=176x176.
@@ -24,7 +24,7 @@ lsqa_floor=0.98
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-linear-work-linear.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -X linear -W linear -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -X srgb-linear -W srgb-linear -o "${output_sixel}" "${input_image}" || {
     printf '\n%s\n' "not ok 1 - img2sixel clustering linear working linear conversion failed"
     exit 0
 }

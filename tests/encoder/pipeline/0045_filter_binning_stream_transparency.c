@@ -143,7 +143,7 @@ test_filter_0036_filter_binning_stream_transparency(int argc, char **argv)
     sixel_filter_bind_sample_input(filter, &samples);
     sixel_filter_bind_weighted_output(filter,
                                       &output,
-                                      SIXEL_COLORSPACE_GAMMA);
+                                      SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, allocator, NULL);
     if (SIXEL_FAILED(status) || output.point_count != 2u ||
             output.total_weight != 2.0 ||

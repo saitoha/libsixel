@@ -271,6 +271,17 @@ SIXEL_COMPAT_API int sixel_compat_access(const char *path, int mode);
 SIXEL_COMPAT_API int sixel_compat_stat(const char *path,
                                        struct stat *stat_buffer);
 
+/* A validated descriptor can be truncated without reopening its path. */
+#if HAVE_WIN32_OUTPUT_FILE_API || (HAVE_FSTAT && HAVE_FTRUNCATE)
+# define SIXEL_HAVE_FD_TRUNCATE 1
+#else
+# define SIXEL_HAVE_FD_TRUNCATE 0
+#endif
+SIXEL_COMPAT_API int
+sixel_compat_same_file(int output_fd, const char *output_path,
+                        const char *input_path);
+SIXEL_COMPAT_API int sixel_compat_truncate_output(int fd);
+
 SIXEL_COMPAT_API ssize_t sixel_compat_write(int fd,
                                             const void *buffer,
                                             size_t count);

@@ -73,8 +73,8 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
             }
         }
         if (i % 4 == 3 && SIXEL_FAILED(sixel_color_convert_rgbf32(
-                pixels[i], 1, SIXEL_COLORSPACE_GAMMA,
-                SIXEL_COLORSPACE_CIELAB))) {
+                pixels[i], 1, SIXEL_COLORSPACE_SRGB,
+                SIXEL_COLORSPACE_LAB_D65))) {
             goto cleanup;
         }
     }

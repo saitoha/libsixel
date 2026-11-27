@@ -8,7 +8,7 @@ It assumes the concepts in [Color spaces](../../concepts/colorspace/README.md) (
 
 ## Implicit conversions users should expect
 
-**Internal color conversion can occur even when no color-space option is supplied.** Loader CMS, background composition, and the default resize path can require a different representation before palette processing starts. `-Wgamma` selects palette-application coordinates, and `--precision-policy=8bit` requests the byte base path; neither forbids a temporary linear-light float buffer. Likewise, `--cms-engine=none` disables loader CMS but does not disable linear-light resize or composition on loader paths that implement it. These conversions can change intermediate pixel values, memory use, processing time, and the resulting image.
+**Internal color conversion can occur even when no color-space option is supplied.** Loader CMS, background composition, and the default resize path can require a different representation before palette processing starts. `-Wsrgb` selects palette-application coordinates, and `--precision-policy=8bit` requests the byte base path; neither forbids a temporary linear-light float buffer. Likewise, `--cms-engine=none` disables loader CMS but does not disable linear-light resize or composition on loader paths that implement it. These conversions can change intermediate pixel values, memory use, processing time, and the resulting image.
 
 The purpose is to perform each operation in suitable coordinates while preserving the interpretation of the color. The [conversion hubs](../../concepts/colorspace/README.md#linear-rgb-and-xyz-as-conversion-hubs) explain the mathematics; [lazy conversion at operation boundaries](#lazy-conversion-at-operation-boundaries) identifies the triggers and how to inspect the effective path. Loader behavior is path-specific, so the explanation does not imply that every backend composites in linear light.
 
@@ -45,7 +45,7 @@ Here, "lazy" means converting when a consuming operation needs different coordin
 
 For resize, `sixel_encoding_planner_analyze()` compares the actual frame format with the required resize input and work formats. The encoder inserts pre-resize and post-resize conversion steps only where those formats differ. An already linear float frame needs no pre-resize transfer decoding; an Oklab frame must return to linear RGB for the default resize path and can re-enter Oklab afterward. If resize is absent, there is no resize buffer, although CMS or `-X`/`-W` may independently require conversion. The general color converter likewise skips matching source and destination color spaces.
 
-For example, an opaque `RGB888` source with no applied CMS transform, no resize, and gamma palette policies can stay on the gamma byte path. Adding a resize with `--precision-policy=8bit -Wgamma` introduces a temporary linear float stage, shown in case A below. If a loader's background-composition path instead returns linear float and `-Woklab` is selected, case B applies: resize already has its required input coordinates, and conversion to Oklab follows the resize.
+For example, an opaque `RGB888` source with no applied CMS transform, no resize, and gamma palette policies can stay on the gamma byte path. Adding a resize with `--precision-policy=8bit -Wsrgb` introduces a temporary linear float stage, shown in case A below. If a loader's background-composition path instead returns linear float and `-Woklab` is selected, case B applies: resize already has its required input coordinates, and conversion to Oklab follows the resize.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/resize-boundaries-mobile.svg">
@@ -59,7 +59,7 @@ Case B needs no extra sRGB decoding before resize. The planner retains loader-or
 Use verbose planner output to see the source, work, and resize representations together:
 
 ```sh
-img2sixel --cms-engine=none --precision-policy=8bit -Wgamma \
+img2sixel --cms-engine=none --precision-policy=8bit -Wsrgb \
   -w50% -v -o /dev/null image.png
 ```
 
@@ -78,9 +78,9 @@ The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize i
 
 | Option | Boundary controlled | Default | Accepted values |
 | --- | --- | --- | --- |
-| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
-| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
-| `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `gamma` | `gamma`, `linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
+| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `srgb`, `srgb-linear`, `oklab`, `lab-d65`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
+| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `srgb`, `srgb-linear`, `oklab`, `lab-d65`, `din99d`, `icc:FILE` (matrix/TRC RGB) |
+| `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `srgb` | `srgb`, `srgb-linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
 
 The names are defined in [spaces used by libsixel](../../concepts/colorspace/README.md#spaces-used-by-libsixel).
 
@@ -94,7 +94,7 @@ The names are defined in [spaces used by libsixel](../../concepts/colorspace/REA
 
 `-W` selects the shared working coordinates for the main image and the generated palette. Lookup policies compare pixels with palette entries in this space, and dithering propagates its error in this space. Changing `-W` can therefore change selected indices even when the palette itself was generated in another space.
 
-`-Wgamma` can use either the 8-bit or float32 precision path. `linear`, `oklab`, `cielab`, `din99d`, and `icc:FILE` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
+`-Wsrgb` can use either the 8-bit or float32 precision path. `srgb-linear`, `oklab`, `lab-d65`, `din99d`, and `icc:FILE` require float32 working storage. This is why a non-gamma `-W` can change memory use and runtime as well as color geometry.
 
 The mathematical role of each accepted space and the controlled quality, runtime, and stream-size comparison are documented in [Working color space](../palette-application/working-colorspace/README.md).
 
@@ -104,7 +104,7 @@ The mathematical role of each accepted space and the controlled quality, runtime
 
 Palette export is a separate boundary. `-M` always writes sRGB8 ACT, PAL, RIFF PAL, or GPL files, whatever `-U` selects, so a wide-gamut palette is clipped to sRGB in the file; see [External palette input and output](../palette-construction/external-palettes.md#exporting-a-palette-with-m).
 
-SIXEL carries numeric palette components but does not embed an ICC profile or an explicit color-space tag. A receiving terminal therefore cannot discover from the stream alone whether values were prepared as sRGB, linear RGB, SMPTE-C, or Display P3. `-Ugamma` is the interoperable default; an explicit alternate output space is meaningful only when the receiving environment is known to interpret the numeric values accordingly. The CLI-only `-Uauto` choice negotiates the definition with the terminal through the [terminal graphics color management proposal](../../protocols/graphics-color-management.md) for images sent directly to a terminal on stdout. Files and pipes keep gamma sRGB; a terminal that does not answer at all also receives unconfirmed gamma output, while a partial or malformed reply stops before image output.
+SIXEL carries numeric palette components but does not embed an ICC profile or an explicit color-space tag. A receiving terminal therefore cannot discover from the stream alone whether values were prepared as sRGB, linear RGB, SMPTE-C, or Display P3. `-Usrgb` is the interoperable default; an explicit alternate output space is meaningful only when the receiving environment is known to interpret the numeric values accordingly. The CLI-only `-Uauto` choice negotiates the definition with the terminal through the [terminal graphics color management proposal](../../protocols/graphics-color-management.md) for images sent directly to a terminal on stdout. Files and pipes keep gamma sRGB; a terminal that does not answer at all also receives unconfirmed gamma output, while a partial or malformed reply stops before image output.
 
 ## Loader color management
 
@@ -133,21 +133,21 @@ When an enabled loader recognizes usable color metadata, it first resolves the f
 The common loader suboption is:
 
 ```text
-cms_target=gamma|linear|cielab|oklab|din99d
+cms_target=srgb|srgb-linear|lab-d65|oklab|din99d
 ```
 
-Its short suboption form is `Tvalue`, its environment fallback is `SIXEL_LOADER_CMS_TARGET_COLORSPACE`, and its default is `linear`. This target controls the frame representation produced after a successful CMS conversion. It does not set `-X`, `-W`, or `-U`; the encoder still performs any conversions required by those later boundaries.
+Its short suboption form is `Tvalue`, its environment fallback is `SIXEL_LOADER_CMS_TARGET_COLORSPACE`, and its default is `srgb-linear`. This target controls the frame representation produced after a successful CMS conversion. It does not set `-X`, `-W`, or `-U`; the encoder still performs any conversions required by those later boundaries.
 
 For example, this command asks the builtin loader to apply an available CMS backend and leave the managed frame in linear-light float32 before the encoder keeps those coordinates under default `-Wauto -Xauto` and converts the output palette to gamma sRGB:
 
 ```sh
-img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' image.png
+img2sixel --cms-engine=auto --loaders='builtin:cms_target=srgb-linear!' image.png
 ```
 
 This command keeps palette construction and palette application in Oklab after the same loader-side normalization, then converts the palette to gamma-encoded sRGB for SIXEL output:
 
 ```sh
-img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' -Xoklab -Woklab -Ugamma image.png
+img2sixel --cms-engine=auto --loaders='builtin:cms_target=srgb-linear!' -Xoklab -Woklab -Usrgb image.png
 ```
 
 ### Adopted native source definitions
@@ -207,7 +207,7 @@ The loader may normalize a recognized source profile. By default, auto working a
 ### Perceptual palette construction with gamma lookup
 
 ```sh
-img2sixel --cms-engine=auto -Xoklab -Wgamma -Ugamma image.png
+img2sixel --cms-engine=auto -Xoklab -Wsrgb -Usrgb image.png
 ```
 
 Only the palette-building view enters Oklab. The generated palette returns to gamma sRGB before lookup and dithering, and the emitted SIXEL palette remains gamma sRGB.
@@ -215,7 +215,7 @@ Only the palette-building view enters Oklab. The generated palette returns to ga
 ### Perceptual construction and application
 
 ```sh
-img2sixel --cms-engine=auto -Woklab -Ugamma image.png
+img2sixel --cms-engine=auto -Woklab -Usrgb image.png
 ```
 
 Because no explicit `-X` is present, `-X` follows `-Woklab`. Palette construction, lookup, and dithering use Oklab float32, then the palette is converted to gamma sRGB for output.
@@ -223,10 +223,10 @@ Because no explicit `-X` is present, `-X` follows `-Woklab`. Palette constructio
 ### Fixed palette
 
 ```sh
-img2sixel -m palette.map -Xoklab -Wlinear -Ugamma image.png
+img2sixel -m palette.map -Xoklab -Wsrgb-linear -Usrgb image.png
 ```
 
-The map supplies the palette, so `-Xoklab` has no palette-construction work to control. `-Wlinear` can still affect palette application, and `-Ugamma` still governs final palette serialization.
+The map supplies the palette, so `-Xoklab` has no palette-construction work to control. `-Wsrgb-linear` can still affect palette application, and `-Usrgb` still governs final palette serialization.
 
 ## Measuring color-space choices
 

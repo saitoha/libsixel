@@ -11,6 +11,12 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    encoder_precision_matches,
+    recorded_colorspace_fields,
+)
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 METHODS: Tuple[Tuple[str, str], ...] = (
@@ -52,7 +58,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement file: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement file has no rows: {path}")
     return rows
@@ -63,7 +69,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail(f"unsupported measurement metadata schema: {path}")
     source = payload.get("source")
@@ -87,6 +93,8 @@ def read_metadata(path: Path) -> Dict[str, object]:
         fail("measurement metadata has unexpected size source")
     if tuple(protocol.get("colors", [])) != COLORS:
         fail("measurement metadata has unexpected palette sizes")
+    if protocol.get("precision") not in ("8bit", "auto"):
+        fail("measurement metadata has unexpected precision")
     expected_methods = [
         {"name": method, "diffusion_option": diffusion}
         for method, diffusion in METHODS
@@ -101,9 +109,8 @@ def read_metadata(path: Path) -> Dict[str, object]:
         fail("measurement metadata has invalid measured-run count")
     expected_controls = {
         "threads": 1,
-        "precision": "auto",
         "clustering_colorspace": "oklab",
-        "working_colorspace": "gamma",
+        "working_colorspace": "srgb",
         "lookup_policy": "none",
         "scan": "raster",
         "gpu_policy": "off",
@@ -134,7 +141,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     return payload
 
 
-def validate_command(row: Dict[str, str], path: Path) -> None:
+def validate_command(row: Dict[str, str], path: Path, precision: str) -> None:
     """Check the controlled CLI shape recorded in one row."""
     method = row.get("method", "")
     options = dict(METHODS)
@@ -144,16 +151,17 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if diffusion != options[method]:
         fail(f"method/diffusion mismatch in {path}: {method}")
     try:
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {method}") from exc
+    if not encoder_precision_matches(tokens, precision):
+        fail(f"command precision differs from the recorded protocol in {path}")
     required = {
         "--threading-policy=greedy:global_budget=1",
-        "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",
         "-Xoklab",
-        "-Wgamma",
+        "-Wsrgb",
         f"--diffusion={diffusion}",
         "--gpu-policy=off",
         "--lookup-policy=none",
@@ -178,12 +186,12 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         fail(f"command palette size differs from row in {path}")
 
 
-def validate_quality(path: Path, revision: str) -> None:
+def validate_quality(path: Path, revision: str, precision: str) -> None:
     """Validate all dither quality points and metrics."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
     for row in rows:
-        validate_command(row, path)
+        validate_command(row, path, precision=precision)
         method = row.get("method", "")
         try:
             colors = int(row.get("colors", ""))
@@ -214,12 +222,12 @@ def validate_quality(path: Path, revision: str) -> None:
         )
 
 
-def validate_speed(path: Path, revision: str, expected_runs: int) -> None:
+def validate_speed(path: Path, revision: str, expected_runs: int, precision: str) -> None:
     """Validate all speed points and the no-dither normalization."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
     for row in rows:
-        validate_command(row, path)
+        validate_command(row, path, precision=precision)
         method = row.get("method", "")
         try:
             colors = int(row.get("colors", ""))
@@ -261,14 +269,14 @@ def validate_speed(path: Path, revision: str, expected_runs: int) -> None:
         )
 
 
-def validate_size(path: Path, revision: str) -> None:
+def validate_size(path: Path, revision: str, precision: str) -> None:
     """Validate encoded sizes and their normalization against no dithering."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
     sizes: Dict[Tuple[str, int], int] = {}
     ratios: Dict[Tuple[str, int], float] = {}
     for row in rows:
-        validate_command(row, path)
+        validate_command(row, path, precision=precision)
         method = row.get("method", "")
         try:
             colors = int(row.get("colors", ""))
@@ -342,20 +350,24 @@ def main() -> int:
     source = metadata["source"]
     protocol = metadata["protocol"]
     revision = str(source["revision"])
+    precision = str(protocol["precision"])
     runs = int(protocol["speed_runs"])
     validate_quality(
         args.directory / "dither-policy-quality.csv",
         revision,
+        precision,
     )
     validate_size(
         args.directory / "dither-policy-size.csv",
         revision,
+        precision,
     )
     validate_quality_size_commands(args.directory)
     validate_speed(
         args.directory / "dither-policy-speed.csv",
         revision,
         runs,
+        precision,
     )
     validate_plots(args.directory)
     print(

@@ -39,7 +39,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
     } const options[] = {
         {'=', "greedy:B1"}, {'.', "float"},
         {'j', "scalar:resize_precision=float"},
-        {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'W', "linear"},
+        {'Q', "kmeans:seed=1"}, {'X', "srgb-linear"}, {'W', "srgb-linear"},
         {'U', "display-p3"}, {'F', "none"}, {'a', "off"}, {'_', "none"},
         {'~', "none"}, {'d', "none"}, {'t', "rgb"}, {'5', "none"},
         {'4', "full-frame"}
@@ -81,7 +81,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
         }
     }
     if (strcmp(argv[1], "working") == 0 &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma"))) {
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb"))) {
         goto end;
     }
     for (phase = 0; phase < 3; ++phase) {
@@ -141,7 +141,7 @@ test_palette_0054_p3_encoder(int argc, char **argv)
             goto end;
         }
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                phase == 1 ? "gamma" : "display-p3")) ||
+                phase == 1 ? "srgb" : "display-p3")) ||
                 SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame,
                     output))) {
             goto end;

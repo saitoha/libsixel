@@ -14,14 +14,14 @@ set -v
 profile="icc:P${TOP_SRCDIR}/tests/data/color-numeric/register-feedback-lut.icc"
 set +x
 reference=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -.float32 -Wlinear -Goff -dnone -p4 '-~none' '-_none' \
-    -Zprogressive:N2:M0 -Ugamma "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
+    -.float32 -Wsrgb-linear -Goff -dnone -p4 '-~none' '-_none' \
+    -Zprogressive:N2:M0 -Usrgb "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     printf '\n%s\n' 'not ok 1 - reference conversion failed'
     exit 0
 }
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 '-Lbuiltin!' \
-    -.float32 -Wlinear -Goff -dnone -p4 '-~none' '-_none' \
-    -Zprogressive:N2:M0 -U "$profile" -Ugamma \
+    -.float32 -Wsrgb-linear -Goff -dnone -p4 '-~none' '-_none' \
+    -Zprogressive:N2:M0 -U "$profile" -Usrgb \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     printf '\n%s\n' 'not ok 1 - gamma replaces an output ICC before progressive repair'
     exit 0

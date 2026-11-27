@@ -22,9 +22,9 @@ test_loader_0053_loader_background_colorspace_override(int argc, char **argv)
 
     current_colorspace = 0;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     current_colorspace = loader_background_colorspace();
-    if (current_colorspace != SIXEL_COLORSPACE_LINEAR) {
+    if (current_colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) {
         fprintf(stderr, "background colorspace override to linear failed\n");
         sixel_helper_set_loader_background_colorspace(-1);
         return EXIT_FAILURE;

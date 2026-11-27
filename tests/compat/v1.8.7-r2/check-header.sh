@@ -93,6 +93,18 @@ _Static_assert(!SIXEL_PIXELFORMAT_IS_FLOAT32(0x21),
                "private working code is not a public layout");
 EOF_FLOAT
 
+# The encoder's canonical coordinates retain their numeric IDs.
+"$CC" -std=c11 -I"${current%/*}" -x c -fsyntax-only - <<'EOF_COLORSPACE'
+#include <sixel.h>
+#if defined(SIXEL_COLORSPACE_GAMMA) || defined(SIXEL_COLORSPACE_LINEAR) || \
+    defined(SIXEL_COLORSPACE_CIELAB)
+# error Retired color-space names must stay outside the public header.
+#endif
+_Static_assert(SIXEL_COLORSPACE_SRGB == 0, "encoded sRGB coordinate ID");
+_Static_assert(SIXEL_COLORSPACE_SRGB_LINEAR == 1, "linear sRGB coordinate ID");
+_Static_assert(SIXEL_COLORSPACE_LAB_D65 == 4, "D65 Lab coordinate ID");
+EOF_COLORSPACE
+
 # The allocation limit is a measured compatibility difference. Check each
 # value independently instead of allowing that macro to disappear from CI.
 for version in old current; do

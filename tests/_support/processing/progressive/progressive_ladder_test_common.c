@@ -197,7 +197,7 @@ test_progressive_ladder_case(int mode)
         LADDER_REQUIRE(sixel_encoder_setopt(encoder,
             SIXEL_OPTFLAG_GPU_POLICY, "off") == SIXEL_OK);
         LADDER_REQUIRE(sixel_encoder_setopt(encoder,
-            SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+            SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
         LADDER_REQUIRE(sixel_encoder_set_accumulation_buffer(encoder,
             black, (int)count, 1, SIXEL_PIXELFORMAT_RGB888) == SIXEL_OK);
         LADDER_REQUIRE(sixel_progressive_config_init(&config,

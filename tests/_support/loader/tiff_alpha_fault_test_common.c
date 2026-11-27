@@ -1007,8 +1007,8 @@ af_capture(sixel_frame_t *frame, void *context)
         sixel_frame_format(frame) == (fallback ? (floating
             ? SIXEL_PIXELFORMAT_RGBFLOAT32 : SIXEL_PIXELFORMAT_RGB888)
             : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
-        frame->format.coordinates == (fallback ? SIXEL_COLORSPACE_GAMMA
-                                      : SIXEL_COLORSPACE_LINEAR) &&
+        frame->format.coordinates == (fallback ? SIXEL_COLORSPACE_SRGB
+                                      : SIXEL_COLORSPACE_SRGB_LINEAR) &&
         (frame->transparent_mask_size == (masked ? 4u : 0u)) &&
         frame->alpha_zero_is_transparent == masked;
     if (!af_frame_ok) { return SIXEL_BAD_INPUT; }
@@ -1213,7 +1213,7 @@ af_test(int argc, char **argv, int photo, int engine, int mode, int bits)
     previous_policy = loader_transparent_policy();
     previous_background = loader_background_colorspace();
     sixel_helper_set_loader_transparent_policy(SIXEL_ALPHA_POLICY_COMPOSITE);
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB);
     ok = 1;
     if (mode == 0) {
         /* Six bounded source witnesses per engine: both associations with

@@ -697,7 +697,7 @@ def write_metadata(path: Path,
             "threads": 1,
             "quality": "full",
             "loader": "builtin!",
-            "working_colorspace": "gamma",
+            "working_colorspace": "srgb",
             "clustering_precision_interpretation": (
                 "gamma changes clustering precision; linear and Lab-family "
                 "clustering remains float32 in both base-precision rows"

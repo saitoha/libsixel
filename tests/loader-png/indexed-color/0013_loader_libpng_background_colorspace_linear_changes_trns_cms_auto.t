@@ -21,14 +21,14 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 output_gamma="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_bgcs_trns_gamma_cms_auto.six"
 output_linear="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_bgcs_trns_linear_cms_auto.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -Nexplicit_first --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -Nexplicit_first --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Llibpng:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
     printf '\n%s\n' "not ok 1 - libpng cms=auto tRNS gamma background composition failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -Nexplicit_first --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Acomposite -Nexplicit_first --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb-linear \
               -Llibpng:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_linear}" || {
     printf '\n%s\n' "not ok 1 - libpng cms=auto tRNS linear background composition failed"

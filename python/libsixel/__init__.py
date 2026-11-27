@@ -312,11 +312,11 @@ SIXEL_PIXELFORMAT_PAL4     = (SIXEL_FORMATTYPE_PALETTE   | 0x02) # 4bpp palette
 SIXEL_PIXELFORMAT_PAL8     = (SIXEL_FORMATTYPE_PALETTE   | 0x03) # 8bpp palette
 
 # colorspace modes for clustering/working/output options
-SIXEL_COLORSPACE_GAMMA  = 0x0  # gamma-encoded RGB
-SIXEL_COLORSPACE_LINEAR = 0x1  # linear RGB
+SIXEL_COLORSPACE_SRGB  = 0x0  # gamma-encoded RGB
+SIXEL_COLORSPACE_SRGB_LINEAR = 0x1  # linear RGB
 SIXEL_COLORSPACE_OKLAB  = 0x2  # OKLab
 SIXEL_COLORSPACE_SMPTEC = 0x3  # SMPTE-C gamma
-SIXEL_COLORSPACE_CIELAB = 0x4  # CIELAB
+SIXEL_COLORSPACE_LAB_D65 = 0x4  # CIELAB
 SIXEL_COLORSPACE_DIN99D = 0x5  # DIN99d
 
 # palette type
@@ -718,25 +718,25 @@ SIXEL_OPTFLAG_TERMINAL_POLICY   = 'z'  # -z 0|1, --terminal-policy=0|1
 SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X'  # -X COLORSPACE, --clustering-colorspace=COLORSPACE:
                                           #        select palette clustering space.
                                           #        ignored with fixed palette options (-b, -m, -e).
-                                          #          gamma  -> keep gamma encoded pixels
-                                          #          linear -> convert to linear RGB
+                                          #          srgb  -> use encoded sRGB coordinates
+                                          #          srgb-linear -> convert to linear RGB
                                           #          oklab  -> operate in OKLab
-                                          #          cielab -> operate in CIELAB
+                                          #          lab-d65 -> operate in CIELAB
                                           #          din99d -> operate in DIN99d
 SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W'  # -W WORKING_COLORSPACE, --working-colorspace=COLORSPACE:
                                       #        select internal working space.
-                                      #          gamma  -> keep gamma encoded pixels
-                                      #          linear -> convert to linear RGB
+                                      #          srgb  -> use encoded sRGB coordinates
+                                      #          srgb-linear -> convert to linear RGB
                                       #          oklab  -> operate in OKLab
-                                      #          cielab -> operate in CIELAB
+                                      #          lab-d65 -> operate in CIELAB
                                       #          din99d -> operate in DIN99d
 SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspace=COLORSPACE:
                                       #        select output buffer color space.
-                                      #          gamma   -> sRGB gamma encoded output
-                                      #          linear  -> linear RGB output
+                                      #          srgb   -> sRGB gamma encoded output
+                                      #          srgb-linear  -> linear RGB output
                                       #          smpte-c -> SMPTE-C gamma encoded output
                                       #          display-p3 -> P3/D65 with sRGB transfer
-                                      #          adobe-rgb -> Adobe RGB (1998)
+                                      #          a98-rgb -> Adobe RGB (1998)
                                       #          dci-p3 -> P3/DCI white with power 2.6
                                       # icc:path=FILE / icc:PFILE; ICC_PATH env default
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image

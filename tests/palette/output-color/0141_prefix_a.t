@@ -16,7 +16,7 @@ test "${status}" != 0 || {
     exit 0
 }
 case "${result}" in
-    *"a matches auto and adobe-rgb"*) ;;
+    *"a matches auto and a98-rgb"*) ;;
     *) printf '\n%s\n' "not ok 1 - missing ambiguity diagnostic"; exit 0 ;;
 esac
 printf '\n%s\n' "ok 1 - ambiguous output prefix a rejected"

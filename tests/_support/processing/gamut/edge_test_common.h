@@ -13,14 +13,14 @@ edge_fixture_init(gamut_fixture_t *fixture, char const *name)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture->allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture->mapper,
-            fixture->definition, SIXEL_COLORSPACE_GAMMA,
+            fixture->definition, SIXEL_COLORSPACE_SRGB,
             SIXEL_GAMUT_EDGE_SEEKER, fixture->allocator));
 }
 
 static inline int
 edge_reference_check(int space)
 {
-    char const *names[] = {"srgb", "display-p3", "adobe-rgb", "dci-p3",
+    char const *names[] = {"srgb", "display-p3", "a98-rgb", "dci-p3",
         "linear"};
     gamut_fixture_t fixture = {0};
     double result[3];
@@ -32,14 +32,14 @@ edge_reference_check(int space)
         ok = SIXEL_SUCCEEDED(sixel_allocator_new(&fixture.allocator,
             NULL, NULL, NULL, NULL)) &&
             SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper, NULL,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_GAMUT_EDGE_SEEKER,
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_GAMUT_EDGE_SEEKER,
                 fixture.allocator));
     } else {
         ok = edge_fixture_init(&fixture, names[space]);
     }
     for (i = 0; ok && i < 11; ++i) {
         ok = sixel_gamut_apply(fixture.mapper, edge_origins[i], result,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         for (c = 0; ok && c < 3; ++c) {
             /* Separate matrix derivation and circle intersection agree
              * within 3e-5 linear channel units, not bitwise math results. */

@@ -33,7 +33,7 @@ test_loader_0165_loader_builtin_jpeg_rgb_restart_numeric(int argc,
         3,
         1,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         pixels,
         expected,
         0.0000001f);

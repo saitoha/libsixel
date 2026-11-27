@@ -6,7 +6,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
-    -W gamma -P float32 -m VIF-P -b VIF-P:min=0.496146304262,VIF-P:max=0.496586304262 \
+    -W srgb -P float32 -m VIF-P -b VIF-P:min=0.496146304262,VIF-P:max=0.496586304262 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp" "${TOP_SRCDIR}/tests/data/assessment/vif-p-distorted.ppm" >/dev/null || {
     printf '\n%s\n' "not ok 1 - VIF-P even reference"
     exit 0

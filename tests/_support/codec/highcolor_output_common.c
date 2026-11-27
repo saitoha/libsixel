@@ -171,23 +171,23 @@ test_highcolor_output(int scenario)
     samples[0] = .124f; samples[1] = .234f; samples[2] = .344f;
     width = height = 1;
     format = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    source = target = SIXEL_COLORSPACE_GAMMA;
+    source = target = SIXEL_COLORSPACE_SRGB;
     input = (unsigned char *)samples;
     expected = subbyte_rgb;
     if (scenario == 1 || scenario == 2 || scenario == 9) {
         format = scenario == 9 ? SIXEL_PIXELFORMAT_RGBA8888 :
             SIXEL_PIXELFORMAT_RGB888;
         input = bytes;
-        target = scenario == 1 ? SIXEL_COLORSPACE_GAMMA :
-            SIXEL_COLORSPACE_LINEAR;
+        target = scenario == 1 ? SIXEL_COLORSPACE_SRGB :
+            SIXEL_COLORSPACE_SRGB_LINEAR;
         expected = scenario == 1 ? byte_rgb : linear_rgb;
     } else if (scenario == 4) {
-        source = SIXEL_COLORSPACE_LINEAR;
+        source = SIXEL_COLORSPACE_SRGB_LINEAR;
         format = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
         samples[0] = .25f; samples[1] = .5f; samples[2] = .75f;
         expected = gamma_rgb;
     } else if (scenario == 5 || scenario == 11) {
-        source = SIXEL_COLORSPACE_LINEAR;
+        source = SIXEL_COLORSPACE_SRGB_LINEAR;
         target = SIXEL_COLORSPACE_SMPTEC;
         format = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
         samples[0] = .5f; samples[1] = -.9f; samples[2] = .5f;
@@ -230,9 +230,9 @@ test_highcolor_output(int scenario)
                     "greedy:B1")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, '.', "8bit")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                    scenario == 11 ? "linear" : "gamma")) ||
+                    scenario == 11 ? "srgb-linear" : "srgb")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                    scenario == 11 ? "smpte-c" : "gamma")) ||
+                    scenario == 11 ? "smpte-c" : "srgb")) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame, input, width,
                     height, format, NULL, -1)) ||
@@ -255,8 +255,8 @@ test_highcolor_output(int scenario)
         if (scenario == 14 && step != 0) {
             input = bytes;
             format = SIXEL_PIXELFORMAT_RGB888;
-            target = step == 1 ? SIXEL_COLORSPACE_LINEAR :
-                SIXEL_COLORSPACE_GAMMA;
+            target = step == 1 ? SIXEL_COLORSPACE_SRGB_LINEAR :
+                SIXEL_COLORSPACE_SRGB;
             expected = step == 1 ? linear_rgb : byte_rgb;
         }
         stream.size = 0;
@@ -329,7 +329,7 @@ test_highcolor_p3(int scenario)
     int colorspace;
     sixel_frame_pixels_kind_t kind;
     static char const *const spaces[5] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static int const formats[5] = {
         SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -402,7 +402,7 @@ test_highcolor_p3(int scenario)
             (SIXEL_FAILED(sixel_encoder_new(&other, NULL)) ||
              SIXEL_FAILED(sixel_encoder_setopt(other, 'I', NULL)) ||
              SIXEL_FAILED(sixel_encoder_setopt(other, '=', "greedy:B1")) ||
-             SIXEL_FAILED(sixel_encoder_setopt(other, 'U', "gamma")))) {
+             SIXEL_FAILED(sixel_encoder_setopt(other, 'U', "srgb")))) {
         goto end;
     }
     for (phase = 0; phase < phases; ++phase) {
@@ -450,7 +450,7 @@ test_highcolor_p3(int scenario)
             samples[0] = 1.0f; samples[1] = samples[2] = 0.0f;
             expected[0] = 92; expected[1] = 20; expected[2] = 14;
             if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                    phase == 1 ? "gamma" : "display-p3"))) {
+                    phase == 1 ? "srgb" : "display-p3"))) {
                 goto end;
             }
             if (phase == 1) {
@@ -469,7 +469,8 @@ test_highcolor_p3(int scenario)
         }
         memcpy(saved, samples, (size_t)width * (size_t)height * 3U *
             sizeof(float));
-        colorspace = reject && scenario == 34 ? SIXEL_COLORSPACE_LINEAR : -1;
+        colorspace = reject && scenario == 34 ?
+            SIXEL_COLORSPACE_SRGB_LINEAR : -1;
         kind = SIXEL_WORKFORMAT_IS_FLOAT32(format)
             ? SIXEL_FRAME_PIXELS_FLOAT32 : SIXEL_FRAME_PIXELS_U8;
         if (SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||

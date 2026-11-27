@@ -1551,10 +1551,10 @@ typedef enum LsqaComparePrecision {
 
 static sixel_option_choice_t const g_lsqa_compare_colorspace_choices[] = {
     { "reference", LSQA_COMPARE_COLORSPACE_REFERENCE },
-    { "gamma", SIXEL_COLORSPACE_GAMMA },
-    { "linear", SIXEL_COLORSPACE_LINEAR },
+    { "srgb", SIXEL_COLORSPACE_SRGB },
+    { "srgb-linear", SIXEL_COLORSPACE_SRGB_LINEAR },
     { "oklab", SIXEL_COLORSPACE_OKLAB },
-    { "cielab", SIXEL_COLORSPACE_CIELAB },
+    { "lab-d65", SIXEL_COLORSPACE_LAB_D65 },
     { "din99d", SIXEL_COLORSPACE_DIN99D }
 };
 
@@ -1565,8 +1565,8 @@ static sixel_option_choice_t const g_lsqa_compare_precision_choices[] = {
 };
 
 static char const g_lsqa_compare_colorspace_detail[] =
-    "compare-colorspace accepts reference, gamma, linear, oklab, "
-    "cielab, or din99d.";
+    "compare-colorspace accepts reference, srgb, srgb-linear, "
+    "oklab, lab-d65, or din99d.";
 
 static char const g_lsqa_compare_precision_detail[] =
     "compare-precision accepts reference, 8bit, or float32.";
@@ -2245,7 +2245,7 @@ static cli_option_help_t const g_option_help_table[] = {
         'R', "reference-colorspace",
         "-R SPEC, --reference-colorspace=SPEC (default auto).\n"
         "                           Original input definition: auto, srgb,\n"
-        "                           display-p3, adobe-rgb, dci-p3,\n"
+        "                           display-p3, a98-rgb, dci-p3,\n"
         "                           icc:[INTENT:]FILE, or\n"
         "                           rgb:wx,wy,rx,ry,gx,gy,bx,by:srgb or\n"
         "                           rgb:wx,wy,rx,ry,gx,gy,bx,by:gamma=r,g,b.\n"
@@ -2275,9 +2275,9 @@ static cli_option_help_t const g_option_help_table[] = {
         'W',
         "compare-colorspace",
         "-W COLORSPACE, --compare-colorspace=COLORSPACE\n"
-        "                           luma signal basis: reference, gamma,\n"
-        "                           linear, oklab, cielab, din99d.\n"
-        "                           Gamma uses encoded luma; the other\n"
+        "                           luma signal basis: reference, srgb,\n"
+        "                           srgb-linear, oklab, lab-d65, din99d.\n"
+        "                           sRGB uses encoded luma; the other\n"
         "                           spaces use linear Y. Color metrics\n"
         "                           keep the original physical colors.\n"
     },
@@ -2586,8 +2586,8 @@ print_usage(const char *prog)
     fprintf(stderr,
             "  -W, --compare-colorspace COLORSPACE\n");
     fprintf(stderr,
-            "                        reference/gamma/linear/oklab/\n"
-            "                        cielab/din99d\n");
+            "                        reference/srgb/srgb-linear/oklab/\n"
+            "                        lab-d65/din99d\n");
     fprintf(stderr,
             "  -P, --compare-precision PRECISION\n");
     fprintf(stderr,
@@ -2660,8 +2660,8 @@ show_help(void)
             "  LSQA_METRICS=NAME[,NAME...] (CLI replaces the list)\n"
             "  LSQA_BASELINE=CONDITION[,CONDITION...] (CLI replaces the list)\n"
             "  LSQA_GRAYSCALE=0|1\n"
-            "  LSQA_COMPARE_COLORSPACE=reference|gamma|linear|oklab|"
-            "cielab|din99d\n"
+            "  LSQA_COMPARE_COLORSPACE=reference|srgb|srgb-linear|"
+            "oklab|lab-d65|din99d\n"
             "  LSQA_COMPARE_PRECISION=reference|8bit|float32\n"
             "  LSQA_LOADERS=LIST\n"
             "  SIXEL_LOADER_CMS_ENGINE=none|auto|builtin|lcms2|colorsync\n"
@@ -3692,9 +3692,9 @@ main(int argc, char **argv)
     exit_code = LSQA_EXIT_RUNTIME_FAILED;
     parse_message = NULL;
     parse_status = 0;
-    reference_colorspace = SIXEL_COLORSPACE_GAMMA;
+    reference_colorspace = SIXEL_COLORSPACE_SRGB;
     reference_precision = LSQA_COMPARE_PRECISION_8BIT;
-    target_colorspace = SIXEL_COLORSPACE_GAMMA;
+    target_colorspace = SIXEL_COLORSPACE_SRGB;
     target_precision = LSQA_COMPARE_PRECISION_8BIT;
     input_passes = 0U;
 

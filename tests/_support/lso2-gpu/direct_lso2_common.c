@@ -87,7 +87,7 @@ test_direct_lso2_palette256(void)
     memset(&wire, 0, sizeof(wire));
     wire.definitions = definitions;
     wire.count = 256;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     LSO2_GPU_CHECK(sixel_wire_palette_new(&f.wire, &wire, f.allocator)
         == SIXEL_OK);
     f.prepare.output.palette = f.wire;

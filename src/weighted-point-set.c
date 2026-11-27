@@ -36,7 +36,7 @@
 static int
 sixel_weighted_point_colorspace_is_valid(int colorspace)
 {
-    return colorspace >= SIXEL_COLORSPACE_GAMMA &&
+    return colorspace >= SIXEL_COLORSPACE_SRGB &&
         colorspace <= SIXEL_COLORSPACE_DIN99D;
 }
 
@@ -61,7 +61,7 @@ sixel_weighted_point_set_init(sixel_weighted_point_set_t *set)
     set->point_count = 0u;
     set->entry_capacity_bound = 0u;
     set->total_weight = 0.0;
-    set->colorspace = SIXEL_COLORSPACE_GAMMA;
+    set->colorspace = SIXEL_COLORSPACE_SRGB;
 }
 
 static SIXELSTATUS

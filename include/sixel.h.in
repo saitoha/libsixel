@@ -189,12 +189,12 @@ typedef int SIXELSTATUS;
 #define SIXEL_BUILTIN_OKLCH_LATTICE256 0xa /* OKLCh lattice 256color */
 
 /* colorspace */
-#define SIXEL_COLORSPACE_GAMMA    0x0  /* gamma encoded (sRGB) */
-#define SIXEL_COLORSPACE_LINEAR   0x1  /* linear RGB */
-#define SIXEL_COLORSPACE_OKLAB    0x2  /* OKLab uniform color space */
-#define SIXEL_COLORSPACE_SMPTEC   0x3  /* SMPTE-C gamma encoded RGB */
-#define SIXEL_COLORSPACE_CIELAB   0x4  /* CIELAB uniform color space */
-#define SIXEL_COLORSPACE_DIN99D   0x5  /* DIN99d uniform color space */
+#define SIXEL_COLORSPACE_SRGB        0x0  /* encoded sRGB (D65) */
+#define SIXEL_COLORSPACE_SRGB_LINEAR 0x1  /* linear-light sRGB (D65) */
+#define SIXEL_COLORSPACE_OKLAB       0x2  /* Oklab */
+#define SIXEL_COLORSPACE_SMPTEC      0x3  /* encoded SMPTE-C RGB */
+#define SIXEL_COLORSPACE_LAB_D65     0x4  /* CIELAB with D65 reference white */
+#define SIXEL_COLORSPACE_DIN99D      0x5  /* DIN99d */
 
 /* offset value of pixelFormat */
 #define SIXEL_FORMATTYPE_COLOR     (0)
@@ -794,20 +794,20 @@ typedef int SIXELSTATUS;
     /* --clustering-colorspace=COLORSPACE */
     /* select palette clustering space */
     /* includes float image maps; ignored for -b, -e, and structured -m */
-    /*   gamma  -> keep gamma encoded pixels */
-    /*   linear -> convert to linear RGB */
+    /*   srgb  -> use encoded sRGB coordinates */
+    /*   srgb-linear -> convert to linear RGB */
     /*   oklab  -> OKLab color space */
-    /*   cielab -> CIELAB color space */
+    /*   lab-d65 -> CIELAB D65 color space */
     /*   din99d -> DIN99d color space */
     /*   icc:FILE -> encoded matrix/TRC ICC RGB coordinates */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE    ('W')
     /* -W COLORSPACE */
     /* --working-colorspace=COLORSPACE */
     /* select internal working space */
-    /*   gamma  -> keep the selected precision */
-    /*   linear -> convert to linear RGB float32 */
+    /*   srgb  -> keep the selected precision */
+    /*   srgb-linear -> convert to linear RGB float32 */
     /*   oklab  -> OKLab float32 */
-    /*   cielab -> CIELAB float32 */
+    /*   lab-d65 -> CIELAB float32 */
     /*   din99d -> DIN99d float32 */
 #define SIXEL_OPTFLAG_OUTPUT_COLORSPACE     ('U')
     /* -U COLORSPACE */
@@ -815,11 +815,11 @@ typedef int SIXELSTATUS;
     /* select output buffer color space */
     /* gamut (G): auto|clip|local-minde|edge-seeker|ray-trace. */
     /* auto currently retains clip; this is independent of dither clamp. */
-    /*   gamma   -> sRGB gamma encoded */
-    /*   linear  -> linear RGB */
+    /*   srgb   -> sRGB gamma encoded */
+    /*   srgb-linear  -> linear RGB */
     /*   smpte-c -> SMPTE-C gamma encoded RGB */
     /*   display-p3 -> P3/D65 with the sRGB transfer curve */
-    /*   adobe-rgb -> Adobe RGB (1998), D65, power 563/256 */
+    /*   a98-rgb -> Adobe RGB (1998), D65, power 563/256 */
     /*   dci-p3 -> P3/DCI white, power 2.6 */
     /*   icc:path=FILE or icc:PFILE; path environment supplies the default */
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
@@ -1773,7 +1773,7 @@ sixel_frame_init_borrowed(
 );
 
 /* Immutable RGB sample definitions. Constructors return NULL on failure.
- * Named definitions accept srgb, linear-srgb, display-p3, adobe-rgb and
+ * Named definitions accept srgb, srgb-linear, display-p3, a98-rgb and
  * dci-p3. The ICC constructor copies the supplied RGB profile bytes.
  * Release the returned definition with sixel_color_def_free(). */
 SIXELAPI sixel_color_def_t *

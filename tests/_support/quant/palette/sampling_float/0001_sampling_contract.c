@@ -12,7 +12,7 @@
 #include "tests/data/color-numeric/palette-space.h"
 
 static char const *const sampling_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const sampling_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -179,10 +179,10 @@ sampling_wire(int space, int p3, char const *mode, char const *precision,
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4', automatic
                 ? "auto" : "adaptive-grid")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
                 sampling_spaces[space])) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }

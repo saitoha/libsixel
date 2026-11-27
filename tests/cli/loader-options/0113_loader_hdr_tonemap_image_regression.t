@@ -25,7 +25,7 @@ control_output="${artifact_dir}/0114-loader-hdr-tonemap-control-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_TONEMAP=invalid" \
-    "-Lbuiltin:Tlinear:X2:Hreinhard!" "${input_image}" \
+    "-Lbuiltin:Tsrgb-linear:X2:Hreinhard!" "${input_image}" \
     2>&1 >"${short_output}") || {
     printf '\n%s\n' "not ok 1 - hdr_tonemap short conversion failed"
     exit 0
@@ -44,7 +44,7 @@ case "${short_trace}" in *builtin\ HDR:\ final\ controls*tonemap=reinhard**) tru
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_TONEMAP=reinhard" \
-    "-Lbuiltin:Tlinear:X2!" "${input_image}" 2>&1 >"${env_output}") || {
+    "-Lbuiltin:Tsrgb-linear:X2!" "${input_image}" 2>&1 >"${env_output}") || {
     printf '\n%s\n' "not ok 1 - hdr_tonemap environment conversion failed"
     exit 0
 }
@@ -66,7 +66,7 @@ cmp -s "${short_output}" "${env_output}" || {
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=builtin \
     --env "SIXEL_LOADER_HDR_TONEMAP=none" \
-    "-Lbuiltin:Tlinear:X2!" "${input_image}" >"${control_output}" || {
+    "-Lbuiltin:Tsrgb-linear:X2!" "${input_image}" >"${control_output}" || {
     printf '\n%s\n' "not ok 1 - hdr_tonemap control conversion failed"
     exit 0
 }

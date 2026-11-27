@@ -109,7 +109,7 @@ The word is used for at least five things, and confusing them causes most gamma 
 | A decoding exponent | "the display gamma is 2.2" | Light = value^2.2. Larger means darker midtones. |
 | An encoding exponent | "the file gamma is 0.45" | Value = light^0.45, the reciprocal of the above. |
 | A whole curve, not just an exponent | "the sRGB gamma" | sRGB is not a pure power function. |
-| Encoded data as opposed to linear | "convert to gamma space" | libsixel's `gamma` color space means sRGB-encoded values specifically. |
+| Encoded data as opposed to linear | "convert to gamma space" | The `srgb` option in img2sixel means sRGB-encoded values specifically. |
 | A field in a file | PNG `gAMA` | Stores the *encoding* exponent times 100,000: 45455 means 1/2.2. |
 
 The PNG case is a classic trap: a decoder that treats 45455 as a display exponent of 0.45 instead of an encoding exponent of 1/2.2 brightens every image enormously. How libsixel's loaders interpret `gAMA` together with `cHRM`, `sRGB`, `iCCP` and `cICP` is documented in [PNG color metadata](../../loader/png-color-metadata.md).
@@ -135,9 +135,9 @@ This is why libsixel performs resizing, background composition and other light m
 
 ## Transfer functions in libsixel
 
-- **Internal working values.** 8-bit pixels are treated as sRGB-encoded by default. Linear values exist only as floating-point intermediates where an operation needs them. The `gamma` and `linear` color-space names in options refer to sRGB-encoded and linear-light sRGB, as listed under [spaces used by libsixel](README.md#spaces-used-by-libsixel).
+- **Internal working values.** 8-bit pixels are treated as sRGB-encoded by default. Linear values exist only as floating-point intermediates where an operation needs them. The img2sixel color-space names `srgb` and `srgb-linear` refer to sRGB-encoded and linear-light sRGB, as listed under [spaces used by libsixel](README.md#spaces-used-by-libsixel).
 - **Input files.** Loaders read transfer information from file metadata where it exists, such as the PNG chunks described in [PNG color metadata](../../loader/png-color-metadata.md) and ICC profiles described in [color management](../color-management/README.md).
-- **SIXEL output.** The SIXEL format does not say which transfer function its register values use. libsixel writes sRGB-encoded values by default and explains that choice, and its historical alternatives, in [interpretation 1 of the specification layers](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb). `-U linear` writes linear values and `-U smpte-c` a 2.2 power with SMPTE-C primaries, as described in [output color space](../../encoder/output/output-colorspace.md).
+- **SIXEL output.** The SIXEL format does not say which transfer function its register values use. libsixel writes sRGB-encoded values by default and explains that choice, and its historical alternatives, in [interpretation 1 of the specification layers](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb). `-U srgb-linear` writes linear values and `-U smpte-c` a 2.2 power with SMPTE-C primaries, as described in [output color space](../../encoder/output/output-colorspace.md).
 
 ## Reproducing the figures
 

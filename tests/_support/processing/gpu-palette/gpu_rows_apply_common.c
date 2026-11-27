@@ -92,7 +92,7 @@ gpu_rows_apply_test(int reject)
     wire_request.definitions = definitions;
     wire_request.count = 2;
     wire_request.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    wire_request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire_request.colorspace = SIXEL_COLORSPACE_SRGB;
     ROWS_CHECK(sixel_wire_palette_new(&wire, &wire_request,
         f.component.allocator) == SIXEL_OK);
     request.working_palette = f.component.palette;
@@ -105,7 +105,7 @@ gpu_rows_apply_test(int reject)
     request.output.plane_width = request.output.plane_height = 512;
     request.output.keycolor = -1;
     request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    request.colorspace = SIXEL_COLORSPACE_SRGB;
     request.scan = SIXEL_SCAN_RASTER;
     request.worker_threads = 1;
     request.gpu_policy = SIXEL_GPU_POLICY_FORCE;

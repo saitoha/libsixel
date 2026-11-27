@@ -41,7 +41,7 @@ img2sixel -Llibpng input.png
 img2sixel -Llibpng,builtin! input.png
 
 # Use only builtin and request a float32 linear CMS result when a transform runs.
-img2sixel -Lbuiltin:cms_engine=builtin:cms_target=linear:prefer_8bit=0! input.png
+img2sixel -Lbuiltin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0! input.png
 ```
 
 Suboptions after `:` are resolved before components are created. Environment defaults are applied first and explicit `-L` assignments override them. Common suboptions include background policy and colorspace, CMS target and preferred output precision, rendering intents, HDR policy, OSC 11 background queries, thumbnail sizing, and PNG transparent-key handling. A backend may add narrower options such as `libwebp:max_output_frames`, `librsvg:relative_resources`, or builtin PNM/BMP compatibility controls. The canonical grammar and complete current vocabulary are generated into [`img2sixel --help`](../../converters/img2sixel.c) and the [`img2sixel(1)` manual](../../converters/img2sixel.1).

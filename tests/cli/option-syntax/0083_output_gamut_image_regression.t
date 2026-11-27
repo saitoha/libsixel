@@ -20,7 +20,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:seed=1 -dnone -aoff \
-    -U gamma:Glocal-minde <"${input_image}" \
+    -U srgb:Glocal-minde <"${input_image}" \
     2>&1 >"${short_output}") || {
     printf '\n%s\n' "not ok 1 - gamut compact mapping conversion"
     exit 0
@@ -31,7 +31,7 @@ case "${short_trace}" in *LSXSUB1\|*key=gamut\|stored=1\|binding=gamut\|value=2*
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qkmeans:seed=1 -dnone -aoff \
-    --env "SIXEL_OUTPUT_COLORSPACE_GAMUT=local-minde" -U gamma \
+    --env "SIXEL_OUTPUT_COLORSPACE_GAMUT=local-minde" -U srgb \
     <"${input_image}" 2>&1 >"${env_output}") || {
     printf '\n%s\n' "not ok 1 - gamut environment mapping conversion"
     exit 0

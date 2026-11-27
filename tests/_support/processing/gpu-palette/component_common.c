@@ -147,7 +147,7 @@ gpu_component_open(gpu_component_fixture_t *fixture, int kind)
     fixture->request.working_palette = fixture->palette;
     fixture->request.ncolors = 2;
     fixture->request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    fixture->request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    fixture->request.colorspace = SIXEL_COLORSPACE_SRGB;
     return fixture->provider->vtbl->prepare(fixture->provider,
         &fixture->request, &fixture->device, &fixture->plan) == SIXEL_OK;
 }

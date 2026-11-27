@@ -69,7 +69,7 @@
 <rect x="1060" y="455" width="330" height="110" rx="10" fill="#FFFFFF" stroke="#CC79A7" stroke-width="2" stroke-dasharray="3 5"/>
 <text x="1225" y="491" text-anchor="middle" class="body">
 <tspan x="1225" dy="0">retain float32 work</tspan>
-<tspan x="1225" dy="22">RGB-f32 for -W gamma</tspan>
+<tspan x="1225" dy="22">RGB-f32 for -W srgb</tspan>
 </text>
 <path d="M580,510 L655,510" class="arrow"/>
 <path d="M985,510 L1060,510" class="arrow"/>

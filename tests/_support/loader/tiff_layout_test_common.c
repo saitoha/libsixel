@@ -329,7 +329,7 @@ ti_reference(char const *path)
     memcpy(ti.expected, ti_cases[ti.fixture].source,
            ti.count * 3u * sizeof(float));
     ti.format = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    ti.space = SIXEL_COLORSPACE_GAMMA;
+    ti.space = SIXEL_COLORSPACE_SRGB;
     if (!ti.managed) {
         if (ti_cases[ti.fixture].bits <= 8 &&
             ti_cases[ti.fixture].photo != 3 && !ti_cases[ti.fixture].alpha) {
@@ -349,7 +349,7 @@ ti_reference(char const *path)
     sixel_cms_close_profile(profile);
     TIFFClose(tif);
     ti.format = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    ti.space = SIXEL_COLORSPACE_LINEAR;
+    ti.space = SIXEL_COLORSPACE_SRGB_LINEAR;
     negotiate = ti_cases[ti.fixture].bits <= 8 ||
         ti_cases[ti.fixture].photo == 3 || ti_cases[ti.fixture].alpha;
     if (ti.target && negotiate) {
@@ -357,7 +357,7 @@ ti_reference(char const *path)
          * the public byte-oriented storage converter clamps and is not an
          * appropriate reference for this target boundary. */
         status = sixel_color_convert_rgbf32(ti.expected, ti.count,
-            SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB);
+            SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB);
         ti.ok &= status == SIXEL_OK;
         ti.format = SIXEL_PIXELFORMAT_OKLABFLOAT32;
         ti.space = SIXEL_COLORSPACE_OKLAB;

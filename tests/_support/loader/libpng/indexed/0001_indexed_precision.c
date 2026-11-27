@@ -315,7 +315,7 @@ ip_capture(sixel_frame_t *frame, void *context)
     bytes = sixel_frame_get_pixels(frame);
     if (!probe->managed) {
         if ((format & SIXEL_FORMATTYPE_PALETTE) == 0 ||
-            frame->format.coordinates != SIXEL_COLORSPACE_GAMMA ||
+            frame->format.coordinates != SIXEL_COLORSPACE_SRGB ||
             frame->ncolors != probe->colors || frame->palette == NULL ||
             ip_float_allocations != 0) {
             fprintf(stderr, "unmanaged indexed storage was promoted\n");
@@ -346,8 +346,8 @@ ip_capture(sixel_frame_t *frame, void *context)
     if (format != (probe->target == 2 ? SIXEL_PIXELFORMAT_RGB888 :
                    probe->target == 1 ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                    SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (probe->target ? SIXEL_COLORSPACE_GAMMA :
-                                             SIXEL_COLORSPACE_LINEAR) ||
+        frame->format.coordinates != (probe->target ? SIXEL_COLORSPACE_SRGB :
+                                             SIXEL_COLORSPACE_SRGB_LINEAR) ||
         frame->palette != NULL ||
         (probe->variant != 16 && frame->ncolors > 0)) {
         fprintf(stderr, "managed indexed format=%x colors=%d\n", format,
@@ -477,7 +477,8 @@ test_libpng_indexed_precision(int argc, char **argv)
     }
     n = snprintf(order, sizeof(order),
         "libpng:cms_engine=%s:cms_target=%s:prefer_8bit=%d!",
-        sixel_cms_engine_to_string(engine), probe.target ? "gamma" : "linear",
+        sixel_cms_engine_to_string(engine),
+        probe.target ? "srgb" : "srgb-linear",
         probe.target == 2);
     if (n < 0 || (size_t)n >= sizeof(order)) {
         status = SIXEL_BAD_ARGUMENT;

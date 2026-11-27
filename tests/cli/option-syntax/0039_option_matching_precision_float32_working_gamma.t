@@ -15,7 +15,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 planner_log=$(set +xv; SIXEL_PRECISION_POLICY=auto \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
-    --precision-policy=float32 -Wlinear -Wgamma -dnone -p16 \
+    --precision-policy=float32 -Wsrgb-linear -Wsrgb -dnone -p16 \
     -v -o/dev/null "${input_image}" 2>&1) || {
     printf '\n%s\n' "not ok 1 - float32 gamma conversion failed"
     exit 0

@@ -44,7 +44,7 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
         char const *value;
     } const quality_options[] = {
         { 'Q', "kmeans:seed=1:sample_target=1024" }, { 'F', "ward" },
-        { 'W', "cielab" }, { 'X', "cielab" }, { 'd', "lso2" }
+        { 'W', "lab-d65" }, { 'X', "lab-d65" }, { 'd', "lso2" }
     };
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;

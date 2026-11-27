@@ -14,11 +14,11 @@ sixel_qa_xyz(sixel_color_def_t const *srgb, int coordinate,
 
     /* Working Lab/Oklab/DIN99d describe the existing sRGB D65 basis.
      * Decode that coordinate first, then adapt the physical color to D50. */
-    if (coordinate == SIXEL_COLORSPACE_GAMMA) {
+    if (coordinate == SIXEL_COLORSPACE_SRGB) {
         return sixel_cdef_to_xyz(srgb, sample, xyz, 1);
     }
     return sixel_color_convert(rgb, sample, coordinate,
-                                SIXEL_COLORSPACE_GAMMA)
+                                SIXEL_COLORSPACE_SRGB)
         && sixel_cdef_to_xyz(srgb, rgb, xyz, 1);
 }
 

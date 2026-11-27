@@ -29,7 +29,7 @@ p3_snap_pipeline(int model, int space, int policy, int mode)
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, SIXEL_PIXELFORMAT_OKLABFLOAT32,
         SIXEL_PIXELFORMAT_CIELABFLOAT32, SIXEL_PIXELFORMAT_DIN99DFLOAT32};
     static char const *const names[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"};
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"};
     static char const *const models[] = {
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert"};
     static struct { int flag; char const *value; } const options[] = {
@@ -145,7 +145,7 @@ p3_snap_stage(char const *timing, int model)
         { '=', "greedy:B1" }, { 'p', "2" }, { 'a', "off" }, { '~', "none" },
         { 'd', "none" }, { 't', "rgb" }, { '4', "full-frame" },
         { '5', "none" }, { 'U', "display-p3" },
-        { 'X', "gamma" }, { 'W', "gamma" }
+        { 'X', "srgb" }, { 'W', "srgb" }
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;
@@ -255,8 +255,9 @@ end:
 }
 
 /* Growing hard cover from gray introduces eight unsnapped sRGB corners.
- * Every corner must be projected after cover, then converted from -Xgamma
- * to -Wlinear. Moving this hook before cover cannot satisfy these values. */
+ * Every corner must be projected after cover, then converted from -Xsrgb
+ * to -Wsrgb-linear. Moving this hook before cover cannot
+ * satisfy these values. */
 static int
 p3_snap_cover_values(int partial)
 {
@@ -265,7 +266,7 @@ p3_snap_cover_values(int partial)
         { 'a', "corners:Whard:V1" }, { '~', "none" }, { 'd', "none" },
         { 't', "rgb" }, { 'Q', "kmeans:seed=1" }, { 'U', "display-p3" },
         { '4', "full-frame" }, { '5', "none" },
-        { 'X', "gamma" }, { 'W', "linear" }
+        { 'X', "srgb" }, { 'W', "srgb-linear" }
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;

@@ -144,7 +144,7 @@ lab_linear_capture(sixel_frame_t *frame, void *context)
     ++state->calls;
     if (frame->width != 521 || frame->height != 1 ||
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR ||
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL ||
         frame->transparent_mask_size != 0u ||
@@ -183,7 +183,7 @@ lab_linear_frame_test(int argc, char **argv, int engine, int words)
     no = 0;
     ok = 0;
     snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!",
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!",
         sixel_cms_engine_to_string((sixel_cms_engine_t)engine));
     status = sixel_loader_new(&loader, NULL);
     if (SIXEL_FAILED(status)) { goto cleanup; }

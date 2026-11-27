@@ -8,6 +8,6 @@ test_map_precision_0005(int argc, char **argv)
 {
     return argc == 2 ? test_map_precision(0, 4,
         "auto", "kmeans:seed=1",
-        "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",
+        "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!",
         argv[1]) : 1;
 }

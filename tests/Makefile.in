@@ -13917,6 +13917,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	data/color-numeric/output-bpc.icc \
 	data/color-numeric/output-bpc-rgba16.png \
 	data/color-numeric/output-bpc-rgba16-reference.png \
+	data/color-numeric/png-rec2020-linear-primaries-16.png \
 	compat/v1.8.7-r2
 
 # Each batch contains at most 16 numbered cases in one test directory with

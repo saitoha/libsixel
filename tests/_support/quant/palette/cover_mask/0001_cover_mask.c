@@ -188,7 +188,7 @@ cm_wire(int mode)
         { '0', "none" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" },
         { '4', "full-frame" }, { '5', "none" }, { 'A', "keep" },
-        { 'X', "gamma" }, { 'W', "gamma" }, { 't', "rgb" }
+        { 'X', "srgb" }, { 'W', "srgb" }, { 't', "rgb" }
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;

@@ -1758,7 +1758,7 @@ run_coregraphics_pixelformat_case_by_id(
                 1,
                 0,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 0, 256, NULL },
@@ -1777,7 +1777,7 @@ run_coregraphics_pixelformat_case_by_id(
                 1,
                 0,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 0, 256, white_bg },
@@ -1834,7 +1834,7 @@ run_coregraphics_pixelformat_case_by_id(
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 256, NULL },
@@ -1891,7 +1891,7 @@ run_coregraphics_pixelformat_case_by_id(
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 256, NULL },
@@ -1910,7 +1910,7 @@ run_coregraphics_pixelformat_case_by_id(
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 256, white_bg },

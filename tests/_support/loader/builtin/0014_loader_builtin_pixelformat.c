@@ -762,7 +762,7 @@ run_builtin_loader_jpeg_prefer_float32_test(void)
     }
     if (probe.callback_count != 1 ||
         probe.pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader jpeg rgb8 prefer float32: "
                 "metadata mismatch "
@@ -1168,7 +1168,7 @@ pnm_expect_rgb888_case(char const *label,
                 label, probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label, probe.colorspace);
         return 1;
@@ -1280,7 +1280,7 @@ run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
 
     result = run_builtin_loader_probe_buffer_case(
         "builtin loader pnm pam rgba linear bg numeric (default black)",
@@ -1310,7 +1310,7 @@ run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test(void)
         "builtin loader pnm pam rgba linear bg numeric (default black)",
         &probe_black,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         1,
         1,
         expected_black,
@@ -1352,7 +1352,7 @@ run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test(void)
         "builtin loader pnm pam rgba linear bg numeric (linear bgcolor)",
         &probe_bg,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         1,
         1,
         expected_bg,
@@ -1438,7 +1438,7 @@ run_builtin_loader_pnm_ppm16_float32_numeric_test(void)
         "builtin loader pnm ppm16 float32 numeric",
         &probe,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         1,
         1,
         expected_rgb,
@@ -1509,7 +1509,7 @@ run_builtin_loader_pnm_ppm8_fastpath_numeric_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader pnm ppm8 fastpath numeric: "
                 "colorspace mismatch (%d)\n",
@@ -1601,7 +1601,7 @@ run_builtin_loader_pnm_pam_unknown_key_compat_numeric_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader pnm pam unknown key compatibility: "
                 "colorspace mismatch (%d)\n",
@@ -1706,7 +1706,7 @@ run_builtin_loader_pnm_pam_unknown_long_key_compat_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader pnm pam unknown long key compatibility: "
                 "colorspace mismatch (%d)\n",
@@ -4445,7 +4445,7 @@ run_builtin_loader_pnm_classic_magic_matrix_numeric_test(void)
         "builtin loader pnm classic magic matrix p5",
         &probe,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         1,
         1,
         expected_p5_rgb,
@@ -5088,7 +5088,7 @@ run_builtin_loader_pnm_pam_graya_paths_numeric_test(void)
     options.set_bgcolor = 1;
     options.bgcolor = bgcolor_u8;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB);
 
     bg_linear[0] = pnm_numeric_decode_srgb_unit((float)bgcolor_u8[0] / 255.0f);
     bg_linear[1] = pnm_numeric_decode_srgb_unit((float)bgcolor_u8[1] / 255.0f);
@@ -5123,7 +5123,7 @@ run_builtin_loader_pnm_pam_graya_paths_numeric_test(void)
         "builtin loader pnm pam graya paths rgba8 transparent",
         &probe,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         1,
         1,
         expected_graya8_linear,
@@ -5176,7 +5176,7 @@ run_builtin_loader_pnm_pam_graya_paths_numeric_test(void)
         "builtin loader pnm pam graya paths rgba16 transparent",
         &probe,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         1,
         1,
         expected_graya16_linear,
@@ -5213,7 +5213,7 @@ run_builtin_loader_pnm_pam_graya_paths_numeric_test(void)
         "builtin loader pnm pam graya paths rgba16 opaque",
         &probe,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         1,
         1,
         expected_graya16_opaque,
@@ -5950,7 +5950,7 @@ run_builtin_loader_test(void)
 
     result = run_builtin_loader_hdr_case_with_cms("builtin loader hdr cms=off",
                                                   SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                                                  SIXEL_COLORSPACE_LINEAR,
+                                                  SIXEL_COLORSPACE_SRGB_LINEAR,
                                                   SIXEL_CMS_ENGINE_NONE);
     if (result != 0) {
         return result;

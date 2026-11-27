@@ -11,10 +11,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 trace=$(SIXEL_TRACE_TOPIC=loader,palette_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
-    -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
+    -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
     -Qmedoids:algo=pam:seed=1 \
     -p2 "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/display-p3.icc" \
-    -Wlinear -aoff -dnone \
+    -Wsrgb-linear -aoff -dnone \
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/icc-medoids-samples.ppm" 2>&1) || {
     printf '%s\n' "$trace" >&2

@@ -38,7 +38,7 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
         char const *value;
     } const options[] = {
         {'=', "greedy:B1"}, {'.', "auto"}, {'U', "display-p3"},
-        {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'F', "none"},
+        {'Q', "kmeans:seed=1"}, {'X', "srgb-linear"}, {'F', "none"},
         {'_', "none"}, {'~', "none"}, {'t', "rgb"}, {'5', "none"},
         {'4', "full-frame"}, {'G', "off"}, {'0', "none"}
     };
@@ -89,19 +89,20 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-            argc == 4 ? argv[3] : (linear ? "linear" : "gamma"))) ||
+            argc == 4 ? argv[3] : (linear ? "srgb-linear" : "srgb"))) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd',
                 fs ? "fs" : "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'm', argv[2]))) {
         goto end;
     }
     if (image && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L',
-            "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!"))) {
+            "builtin:cms_engine=builtin:cms_target=srgb-linear:"
+            "prefer_8bit=0!"))) {
         goto end;
     }
     for (phase = 0; phase < (reuse ? 3 : 1); ++phase) {
         if (reuse && SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                phase == 1 ? "gamma" : "display-p3"))) {
+                phase == 1 ? "srgb" : "display-p3"))) {
             goto end;
         }
         memset(&capture, 0, sizeof(capture));

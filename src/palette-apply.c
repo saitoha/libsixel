@@ -396,7 +396,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     }
     /* Other working representations keep their explicit legacy adapter. */
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            request->colorspace != SIXEL_COLORSPACE_GAMMA) {
+            request->colorspace != SIXEL_COLORSPACE_SRGB) {
         return SIXEL_FEATURE_ERROR;
     }
     apply = (sixel_palette_apply_storage_t *)self;

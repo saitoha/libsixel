@@ -40,7 +40,7 @@ tuf_check(sixel_frame_t const *frame, int variant)
     height = photo == 2 ? 2 : 4;
     if (frame->width != width || frame->height != height ||
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_GAMMA ||
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->transparent_mask != NULL || frame->transparent_mask_size ||
         frame->alpha_zero_is_transparent) {
@@ -128,7 +128,7 @@ tiff_float_values_test(int argc, char **argv, int variant)
     sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
     control = tuf_trace_control();
     fprintf(stderr, "TFLOAT|control=%d|case-begin\n", control);
-    target = variant == 15 ? "gamma" : variant == 17 ? "oklab" : "linear";
+    target = variant == 15 ? "srgb" : variant == 17 ? "oklab" : "srgb-linear";
     snprintf(order, sizeof(order),
         "libtiff:cms_engine=%s:cms_target=%s:prefer_8bit=%d!",
         variant == 10 ? "none" : "builtin", target, variant == 16);

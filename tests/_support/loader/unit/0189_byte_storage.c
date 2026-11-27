@@ -55,7 +55,7 @@ byte_probe_capture(sixel_frame_t *frame, void *context)
     }
     if ((sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 &&
          sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888) ||
-        frame->format.coordinates != SIXEL_COLORSPACE_GAMMA ||
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB ||
         (size_t)frame->width * frame->height * 3u * sizeof(float) !=
             byte_probe_float_size) {
         fprintf(stderr, "byte frame contract: format=%d, size=%dx%d\n",

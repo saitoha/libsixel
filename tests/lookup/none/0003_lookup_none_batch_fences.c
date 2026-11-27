@@ -106,7 +106,7 @@ test_lookup_0017_none_batch_fences(int argc, char **argv)
             if (SIXEL_FAILED(dither->palette->vtbl->init_entries_float32(
                     dither->palette, &entries))
                     || SIXEL_FAILED(sixel_palette_prepare_rgb101(
-                        dither->palette, SIXEL_COLORSPACE_GAMMA,
+                        dither->palette, SIXEL_COLORSPACE_SRGB,
                         SIXEL_PALETTE_OUTPUT_LEGACY))) {
                 fprintf(stderr, "native output palette preparation failed\n");
                 goto end;

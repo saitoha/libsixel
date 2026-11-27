@@ -208,10 +208,10 @@ test_delta_byte_scope(int mode)
         sixel_dither_set_body_only(dither, pass == 1 && mode == 2);
         if (SIXEL_FAILED(sixel_output_set_encoder_format(output,
                 SIXEL_PIXELFORMAT_RGB888,
-                pass == 1 && mode == 3 ? SIXEL_COLORSPACE_LINEAR
-                    : SIXEL_COLORSPACE_GAMMA,
-                pass == 1 && mode == 4 ? SIXEL_COLORSPACE_LINEAR
-                    : SIXEL_COLORSPACE_GAMMA))) {
+                pass == 1 && mode == 3 ? SIXEL_COLORSPACE_SRGB_LINEAR
+                    : SIXEL_COLORSPACE_SRGB,
+                pass == 1 && mode == 4 ? SIXEL_COLORSPACE_SRGB_LINEAR
+                    : SIXEL_COLORSPACE_SRGB))) {
             goto end;
         }
         memset(&request, 0, sizeof(request));
@@ -265,7 +265,7 @@ test_delta_byte_repeat(int workers)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'~', "none"}, {'d', "none"}, {'0', "hard"}, {'_', "none"},
-        {'.', "8bit"}, {'W', "gamma"}, {'U', "gamma"}, {'t', "rgb"},
+        {'.', "8bit"}, {'W', "srgb"}, {'U', "srgb"}, {'t', "rgb"},
         {'Z', "delta"}, {'7', NULL}, {'Q', "heckbert"}, {'F', "none"},
         {'4', "full-frame"}, {'5', "none"}, {'p', "4"}, {'a', "off"}
     };
@@ -506,7 +506,7 @@ test_delta_byte_hls_frames(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'~', "none"}, {'d', "none"}, {'0', "hard"}, {'_', "none"},
-        {'W', "gamma"}, {'U', "gamma"}, {'t', "hls"}, {'Z', "delta"},
+        {'W', "srgb"}, {'U', "srgb"}, {'t', "hls"}, {'Z', "delta"},
         {'7', NULL}, {'Q', "heckbert"}, {'F', "none"}, {'p', "4"},
         {'4', "full-frame"}, {'5', "none"}, {'a', "off"}
     };

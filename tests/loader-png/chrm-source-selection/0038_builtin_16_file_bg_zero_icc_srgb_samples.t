@@ -4,7 +4,7 @@
 # Verify builtin 16-file-bg-zero-icc-srgb original samples and coverage.
 set -eux
 result=0
-trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+trace=$(SIXEL_TRACE_TOPIC=loader SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     loader/0198_png_chrm_samples 71 builtin 2>&1) || result=$?
 test "$result" -ne 77 || {

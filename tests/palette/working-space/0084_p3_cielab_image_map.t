@@ -9,7 +9,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/0055_p3_mapfile image-linear \
-    "${TOP_SRCDIR}/tests/data/color-numeric/display-p3.png" cielab || {
+    "${TOP_SRCDIR}/tests/data/color-numeric/display-p3.png" lab-d65 || {
     printf '\n%s\n' "not ok 1 - p3 cielab image map"
     exit 0
 }

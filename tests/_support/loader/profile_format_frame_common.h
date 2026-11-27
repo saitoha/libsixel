@@ -32,7 +32,7 @@ profile_format_frame_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 16 || frame->height != 16 ||
         sixel_frame_format(frame) !=
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        frame->format.coordinates != SIXEL_COLORSPACE_LINEAR) {
+        frame->format.coordinates != SIXEL_COLORSPACE_SRGB_LINEAR) {
         return SIXEL_BAD_INPUT;
     }
     pixels = (float const *)sixel_frame_get_pixels(frame);
@@ -104,7 +104,7 @@ profile_format_frame(int argc, char **argv, int mode)
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_loader_setopt(loader,
                 SIXEL_LOADER_OPTION_LOADER_ORDER,
-                "builtin:cms_engine=colorsync:cms_target=linear:"
+                "builtin:cms_engine=colorsync:cms_target=srgb-linear:"
                 "prefer_8bit=0!");
         }
         if (SIXEL_SUCCEEDED(status)) {

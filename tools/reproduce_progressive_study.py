@@ -205,8 +205,8 @@ def main() -> None:
     parser.add_argument("--passes", type=int, default=10, help="repair packets after baseline")
     parser.add_argument("--seconds", type=float, default=10)
     parser.add_argument("--packet-bytes", type=int, default=16384)
-    parser.add_argument("--workspace", default="gamma",
-                        choices=["gamma", "linear", "oklab", "cielab", "din99d"])
+    parser.add_argument("--workspace", default="srgb",
+                        choices=["srgb", "srgb-linear", "oklab", "lab-d65", "din99d"])
     parser.add_argument("--noise", type=float, action="append")
     parser.add_argument("--selection-fraction", type=float, action="append",
                         help="legacy upper-selection fraction (repeatable, legacy only)")
@@ -262,7 +262,7 @@ def main() -> None:
         "study": program(args.study), "lsqa": program(args.lsqa),
         "build_libraries": {str(p): digest(p) for p in libraries if p.is_file()},
         "protocol": {
-            "workspace": args.workspace, "output_colorspace": "gamma/sRGB",
+            "workspace": args.workspace, "output_colorspace": "srgb",
             "threads": 1, "gpu": "off", "lookup": "none",
             "baseline_dither": "none", "repair_noise": noises,
             "repair_selection_fraction": fractions, "repair_color_cap": color_caps,
@@ -351,7 +351,7 @@ def main() -> None:
             if args.quality:
                 qa_command = [str(args.lsqa), "-L", "builtin!", "-#", "builtin",
                               "-M", "6delta-progressive", "-T", "srgb",
-                              "-W", "gamma", "-P", "float32", "-w", "16",
+                              "-W", "srgb", "-P", "float32", "-w", "16",
                               str(args.input), "-"]
                 qa = subprocess.run(qa_command, env=env,
                                     input=stream[:record["wire_bytes"]],

@@ -19,11 +19,11 @@ test_gamut_0046_ray_matrix_icc(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_allocator_new(&fixture.allocator,
             NULL, NULL, NULL, NULL)) &&
         SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper, fixture.definition,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_GAMUT_RAY_TRACE,
+            SIXEL_COLORSPACE_SRGB, SIXEL_GAMUT_RAY_TRACE,
             fixture.allocator));
     for (i = 0; ok && i < 12; ++i) {
         ok = sixel_gamut_apply(fixture.mapper, ray_origins[i], result,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         for (c = 0; ok && c < 3; ++c) {
             /* Includes the ICC's 15.16 matrix representation budget. */
             ok = isfinite(result[c]) &&

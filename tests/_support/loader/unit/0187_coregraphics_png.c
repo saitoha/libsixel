@@ -52,8 +52,8 @@ cg_png_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 4 || frame->height != 2 ||
         sixel_frame_format(frame) != (byte_path ? SIXEL_PIXELFORMAT_RGB888 :
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_GAMMA :
-            SIXEL_COLORSPACE_LINEAR) || !frame->owns_pixels ||
+        frame->format.coordinates != (byte_path ? SIXEL_COLORSPACE_SRGB :
+            SIXEL_COLORSPACE_SRGB_LINEAR) || !frame->owns_pixels ||
         frame->transparent != -1 || frame->ncolors != -1 ||
         frame->alpha_zero_is_transparent != preserve ||
         (frame->transparent_mask != NULL) != preserve ||
@@ -136,7 +136,7 @@ test_loader_0187_coregraphics_png(int argc, char **argv)
     probe.policy = atoi(argv[5]);
     if (snprintf(order, sizeof(order),
         "coregraphics:background_colorspace=%s!",
-        probe.background == 2 ? "linear" : "gamma") >=
+        probe.background == 2 ? "srgb-linear" : "srgb") >=
         (int)sizeof(order)) {
         return 1;
     }

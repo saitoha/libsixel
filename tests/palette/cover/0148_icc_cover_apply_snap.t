@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
     -7 -Lbuiltin! -Udisplay-p3 -_reversible:timing=apply -~none -Fnone -trgb \
-    -Qkmeans:seed=1 -p2 -Wlinear -afaces:Whard:V1 -dnone \
+    -Qkmeans:seed=1 -p2 -Wsrgb-linear -afaces:Whard:V1 -dnone \
     "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/narrow-p3-cluster.icc" \
     --binning-policy=none --sampling-policy=full-frame -Mpal:- -o/dev/null \
     "${TOP_SRCDIR}/tests/data/color-numeric/icc-heckbert-samples.ppm" 2>&1) || {

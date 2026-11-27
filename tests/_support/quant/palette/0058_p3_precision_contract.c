@@ -39,7 +39,7 @@ test_palette_0058_p3_precision(int argc, char **argv)
     } const options[] = {
         {'=', "greedy:B1"}, {'p', "1"},
         {'j', "scalar:resize_precision=float"},
-        {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'W', "gamma"},
+        {'Q', "kmeans:seed=1"}, {'X', "srgb-linear"}, {'W', "srgb"},
         {'U', "display-p3"}, {'F', "none"}, {'a', "off"}, {'_', "none"},
         {'~', "none"}, {'d', "none"}, {'t', "rgb"}, {'5', "none"},
         {'4', "full-frame"}
@@ -50,14 +50,14 @@ test_palette_0058_p3_precision(int argc, char **argv)
         int requested;
         int effective;
     } const phases[] = {
-        {"float", "gamma", SIXEL_OPTION_PRECISION_FLOAT32, 1},
-        {"auto", "gamma", SIXEL_OPTION_PRECISION_AUTO, 0},
-        {"8bit", "gamma", SIXEL_OPTION_PRECISION_8BIT, 0},
+        {"float", "srgb", SIXEL_OPTION_PRECISION_FLOAT32, 1},
+        {"auto", "srgb", SIXEL_OPTION_PRECISION_AUTO, 0},
+        {"8bit", "srgb", SIXEL_OPTION_PRECISION_8BIT, 0},
         {"auto", "display-p3", SIXEL_OPTION_PRECISION_AUTO, 1},
-        {"float", "gamma", SIXEL_OPTION_PRECISION_FLOAT32, 1},
-        {"auto", "gamma", SIXEL_OPTION_PRECISION_AUTO, 0},
+        {"float", "srgb", SIXEL_OPTION_PRECISION_FLOAT32, 1},
+        {"auto", "srgb", SIXEL_OPTION_PRECISION_AUTO, 0},
         {"auto", "display-p3", SIXEL_OPTION_PRECISION_AUTO, 1},
-        {"8bit", "gamma", SIXEL_OPTION_PRECISION_8BIT, 0},
+        {"8bit", "srgb", SIXEL_OPTION_PRECISION_8BIT, 0},
         {"auto", "display-p3", SIXEL_OPTION_PRECISION_AUTO, 1}
     };
     sixel_encoder_t *encoder;

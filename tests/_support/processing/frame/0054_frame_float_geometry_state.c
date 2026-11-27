@@ -169,7 +169,7 @@ fg_color(char const *operation)
                                                           &transparency)) ||
                 view.pixels != NULL || view.pixels_float32 != storage ||
                 view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-                view.colorspace != SIXEL_COLORSPACE_LINEAR ||
+                view.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR ||
                 view.width != 3 || view.height != 2 ||
                 transparency.transparent != -1 ||
                 !transparency.alpha_zero_is_transparent ||
@@ -212,7 +212,7 @@ fg_color(char const *operation)
     for (encoded = 0; encoded < 2; ++encoded) {
         if (encoded && SIXEL_FAILED(sixel_frame_convert_pixels(
                 (sixel_frame_t *)iface, SIXEL_PIXELFORMAT_RGBFLOAT32,
-                SIXEL_COLORSPACE_GAMMA))) {
+                SIXEL_COLORSPACE_SRGB))) {
             goto end;
         }
         if (SIXEL_FAILED(sixel_frame_get_work_pixels(iface, &view)) ||
@@ -221,8 +221,8 @@ fg_color(char const *operation)
             view.pixels != NULL || view.pixels_float32 == NULL ||
             view.pixelformat != (encoded ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
                                  SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-            view.colorspace != (encoded ? SIXEL_COLORSPACE_GAMMA
-                                        : SIXEL_COLORSPACE_LINEAR) ||
+            view.colorspace != (encoded ? SIXEL_COLORSPACE_SRGB
+                                        : SIXEL_COLORSPACE_SRGB_LINEAR) ||
             view.width != width || view.height != height ||
             transparency.transparent != -1) {
             fprintf(stderr, "frame %s has incorrect metadata\n", operation);

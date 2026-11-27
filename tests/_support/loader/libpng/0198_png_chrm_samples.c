@@ -42,7 +42,7 @@ png_chrm_capture(sixel_frame_t *frame, void *context)
     if (frame->width != 8 || frame->height != 1 ||
         sixel_frame_format(frame) != format || frame->format.coordinates !=
             (format == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA) ||
+                ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB) ||
         frame->ncolors != -1 || frame->transparent != -1 ||
         frame->alpha_zero_is_transparent != source->alpha ||
         frame->transparent_mask_size != (mask ? 8u : 0u) ||

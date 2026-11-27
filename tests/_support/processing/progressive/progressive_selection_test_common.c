@@ -119,10 +119,10 @@ test_progressive_selection_case(int mode)
     SELECTION_REQUIRE(palette->vtbl->init_entries_float32(palette, &floats)
         == SIXEL_OK);
     SELECTION_REQUIRE(sixel_palette_prepare_output(palette,
-        SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY,
-        SIXEL_COLORSPACE_GAMMA) == SIXEL_OK);
+        SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY,
+        SIXEL_COLORSPACE_SRGB) == SIXEL_OK);
     SELECTION_REQUIRE(sixel_repair_selection_new(&selection, source,
-        errors, domain, count, palette, SIXEL_COLORSPACE_GAMMA,
+        errors, domain, count, palette, SIXEL_COLORSPACE_SRGB,
         SIXEL_PALETTETYPE_RGB, 0, .5, mode != 46, samples, cap, allocator)
         == SIXEL_OK);
     SELECTION_REQUIRE(selection_test_run(selection, 1, totals));
@@ -171,7 +171,7 @@ test_progressive_selection_case(int mode)
             "\377\0\0", 3) == 0);
         if (mode == 52) {
             SELECTION_REQUIRE(sixel_repair_selection_new(&replay, source,
-                errors, domain, count, palette, SIXEL_COLORSPACE_GAMMA,
+                errors, domain, count, palette, SIXEL_COLORSPACE_SRGB,
                 SIXEL_PALETTETYPE_RGB, 0, .5, 1, samples, cap, allocator)
                 == SIXEL_OK);
             SELECTION_REQUIRE(selection_test_run(replay, 10000,

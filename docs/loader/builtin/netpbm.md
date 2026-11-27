@@ -75,7 +75,7 @@ img2sixel -Lbuiltin:pnm_trailing_data=1:pam_large_header=1! image.pam
 | `builtin:pam_duplicate_keys=0|1` (`D0`/`D1`) | `0` | `0` rejects repeated required PAM keys. `1` accepts them and the later parsed value is effective. |
 | `builtin:pam_endhdr_tokens=0|1` (`G0`/`G1`) | `0` | `0` requires `ENDHDR` to be the only token on its line. `1` permits tokens after it. |
 | `builtin:pam_large_header=0|1` (`J0`/`J1`) | `0` | `1` removes the 64 KiB/1024-line policy caps; input length and checked arithmetic still bound parsing. |
-| `-B COLOR`, `background_colorspace=gamma|linear` | no explicit background; gamma | Affects only alpha-bearing PAM. The selected color is interpreted in the declared background colorspace before linear composition. |
+| `-B COLOR`, `background_colorspace=srgb|srgb-linear` | no explicit background; srgb | Affects only alpha-bearing PAM. The selected color is interpreted in the declared background colorspace before linear composition. |
 | `-A auto|composite|clear|keep` | `auto` | Does not retain PAM alpha: format decode has already flattened any non-opaque PAM before common alpha policy runs. |
 | `cms_engine`, `cms_target`, `cms_intent`, `prefer_8bit` | CMS off | No embedded-profile transform is available, so these do not change ordinary Netpbm decode. |
 | `orientation`, `trns_keycolor`, HDR controls, `bmp_info40_mode` | format-specific defaults | No effect on Netpbm. |

@@ -20,7 +20,7 @@ test_palette_retention_cache(int argc, char **argv)
     if (!retention_init(&dither, pixels, SIXEL_PIXELFORMAT_RGBFLOAT32,
             SIXEL_QUANTIZE_MODEL_KMEANS) ||
             SIXEL_FAILED(sixel_palette_prepare_rgb101(dither->palette,
-                SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY)) ||
+                SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY)) ||
             SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
                 &codes, &count)) || count != 2) {
         goto end;

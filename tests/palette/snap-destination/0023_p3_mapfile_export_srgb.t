@@ -14,7 +14,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -Lbuiltin! --cms-engine=none --precision-policy=auto \
     --sampling-policy=full-frame --binning-policy=none \
-    -Qkmeans:seed=1 -Xlinear -Wgamma -Udisplay-p3 \
+    -Qkmeans:seed=1 -Xsrgb-linear -Wsrgb -Udisplay-p3 \
     -Fnone -_none '-~none' -dnone -trgb -Goff \
     -m "${TOP_SRCDIR}/tests/data/inputs/mapfile/p3-fixed.pal" \
     -Mpal:- -o/dev/null - <<'PPM'

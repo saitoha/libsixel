@@ -17,7 +17,7 @@ test_gamut_0002_p3_extended_identity(int argc, char **argv)
     /* sRGB-external coordinates strictly inside Display P3. */
     ok = gamut_fixture_init(&fixture, "display-p3") &&
         sixel_gamut_apply(fixture.mapper, source, result,
-            SIXEL_COLORSPACE_LINEAR) &&
+            SIXEL_COLORSPACE_SRGB_LINEAR) &&
         memcmp(source, result, sizeof(source)) == 0;
     gamut_fixture_free(&fixture);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

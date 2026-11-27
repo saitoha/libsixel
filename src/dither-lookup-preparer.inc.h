@@ -183,7 +183,7 @@ dither_lookup_prepare(sixel_lookup_preparer_interface_t const *self,
         return SIXEL_FEATURE_ERROR;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-            request->colorspace != SIXEL_COLORSPACE_GAMMA) {
+            request->colorspace != SIXEL_COLORSPACE_SRGB) {
         return SIXEL_FEATURE_ERROR;
     }
     if (request->ncolors < 1 || request->ncolors > 256) {

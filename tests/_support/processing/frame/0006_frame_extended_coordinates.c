@@ -23,8 +23,8 @@ test_frame_0006_extended(int argc, char **argv)
         SIXEL_PIXELFORMAT_DIN99DFLOAT32
     };
     static int const spaces[] = {
-        SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_OKLAB,
-        SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
+        SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_OKLAB,
+        SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_DIN99D
     };
     float pixels[sizeof(color_trc) / sizeof(color_trc[0]) * 3];
     double expected[sizeof(pixels) / sizeof(pixels[0])];
@@ -86,7 +86,7 @@ test_frame_0006_extended(int argc, char **argv)
     status = sixel_frame_get_work_pixels(iface, &view);
     if (SIXEL_FAILED(status) || view.pixels != NULL
             || view.pixels_float32 == NULL || view.pixelformat != target
-            || view.colorspace != (inverse ? SIXEL_COLORSPACE_LINEAR
+            || view.colorspace != (inverse ? SIXEL_COLORSPACE_SRGB_LINEAR
                                            : spaces[index])
             || view.width != (int)count || view.height != 1) {
         goto end;

@@ -81,7 +81,7 @@ batch_image(sixel_allocator_t *allocator, int observation)
     request.definitions = colors;
     request.count = 2;
     request.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    request.colorspace = SIXEL_COLORSPACE_GAMMA;
+    request.colorspace = SIXEL_COLORSPACE_SRGB;
     if (sixel_wire_palette_new(&wire, &request, allocator) != SIXEL_OK)
         return NULL;
     memset(&desc, 0, sizeof(desc));

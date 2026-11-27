@@ -26,7 +26,7 @@ test_loader_0153_loader_builtin_psd_lab32_zip_pred_numeric(int argc,
         16,
         16,
         SIXEL_PIXELFORMAT_CIELABFLOAT32,
-        SIXEL_COLORSPACE_CIELAB,
+        SIXEL_COLORSPACE_LAB_D65,
         pixels,
         expected,
         0.0000001f);

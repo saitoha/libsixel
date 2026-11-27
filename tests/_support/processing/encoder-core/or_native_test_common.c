@@ -99,7 +99,7 @@ or_native_encoder_case(int scenario)
         { '=', "greedy:B1" }, { 'O', NULL },
         { 'Q', "heckbert" }, { 'F', "none" }, { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 'E', "size" },
-        { 'X', "linear" }, { 'W', "linear" }, { '7', NULL },
+        { 'X', "srgb-linear" }, { 'W', "srgb-linear" }, { '7', NULL },
         { '4', "full-frame" }, { '5', "none" }
     };
     static float const gray[3] = { .1f, .1001f, .5f };
@@ -175,7 +175,7 @@ or_native_encoder_case(int scenario)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-            p3 ? "display-p3" : "gamma"))) {
+            p3 ? "display-p3" : "srgb"))) {
         goto end;
     }
     if (!builtin && !byte && scenario != 9 &&
@@ -187,8 +187,8 @@ or_native_encoder_case(int scenario)
             'b', "gray2"))) {
         goto end;
     }
-    if (byte && (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "gamma")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma")))) {
+    if (byte && (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "srgb")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "srgb")))) {
         goto end;
     }
     if ((scenario == 4 || offset) &&

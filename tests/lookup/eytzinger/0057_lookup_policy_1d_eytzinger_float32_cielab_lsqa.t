@@ -21,7 +21,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.97}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-cielab.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=eytzinger --working-colorspace=cielab -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=eytzinger --working-colorspace=lab-d65 -o "${output_sixel}" "${input_image}" || {
     printf '\n%s\n' "not ok 1 - float32 Eytzinger CIELAB colorspace conversion failed"
     exit 0
 }

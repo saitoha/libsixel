@@ -12,6 +12,12 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    encoder_precision_matches,
+    recorded_colorspace_fields,
+)
+
 
 COLORS = (8, 16, 32, 64, 128, 256)
 DEFAULT_LOADER_ORDER = "libpng!"
@@ -83,7 +89,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing measurement file: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"measurement file has no rows: {path}")
     return rows
@@ -111,7 +117,7 @@ def read_metadata(path: Path, expected_mode: str) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing measurement metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail(f"unsupported measurement metadata schema: {path}")
     source = payload.get("source")
@@ -150,6 +156,8 @@ def read_metadata(path: Path, expected_mode: str) -> Dict[str, object]:
     revision = source.get("revision")
     if not isinstance(revision, str) or not revision or revision == "unknown":
         fail("measurement source revision is missing")
+    if protocol.get("precision") not in ("8bit", "auto"):
+        fail("measurement metadata has unexpected precision")
     expected_protocol = {
         "measurement_mode": expected_mode,
         "comparison_scope": (
@@ -157,12 +165,11 @@ def read_metadata(path: Path, expected_mode: str) -> Dict[str, object]:
         ),
         "comparison_facets": COMPARISON_FACETS,
         "threads": 1,
-        "precision": "auto",
         "quality": "full",
         "quantize_option": QUANTIZE_OPTION,
         "sample_target": SAMPLE_TARGET,
         "clustering_colorspace": "oklab",
-        "working_colorspace": "gamma",
+        "working_colorspace": "srgb",
         "diffusion": "none",
         "lookup_policy": "none",
         "gpu_policy": "off",
@@ -338,7 +345,8 @@ def validate_command(row: Dict[str, str],
                      path: Path,
                      timeline: bool = False,
                      discard_output: bool = False,
-                     loader_order: str = DEFAULT_LOADER_ORDER) -> None:
+                     loader_order: str = DEFAULT_LOADER_ORDER,
+                     precision: str = "auto") -> None:
     """Check one recorded command and its row identity."""
     config = row.get("config", "")
     expected = config_map()
@@ -353,20 +361,22 @@ def validate_command(row: Dict[str, str],
         fail(f"quantize option differs in {path}: {config}")
     try:
         colors = int(row.get("colors", ""))
-        tokens = (shlex.split(row.get("command", "")))
+        tokens = canonical_encoder_arguments(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {config}") from exc
+    if not encoder_precision_matches(tokens, precision):
+        fail(f"command precision differs from the recorded protocol in {path}")
     expected_tokens = [
         "{img2sixel}",
         "--threading-policy=greedy:global_budget=1",
-        "--precision-policy=auto",
+        f"--precision-policy={precision}",
         "--quality=full",
         f"--loaders={loader_order}",
         f"--sampling-policy={sampling}",
         f"--binning-policy={binning}",
         f"--quantize-model={QUANTIZE_OPTION}",
         "-Xoklab",
-        "-Wgamma",
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",
@@ -425,12 +435,14 @@ def validate_rows(path: Path,
                   revision: str,
                   input_path: str,
                   platform_name: str,
-                  loader_order: str) -> List[Dict[str, str]]:
+                  loader_order: str,
+                  precision: str) -> List[Dict[str, str]]:
     """Validate common row identity and completeness."""
     rows = read_csv(path)
     actual: Set[Tuple[str, int]] = set()
     for row in rows:
-        validate_command(row, path, loader_order=loader_order)
+        validate_command(row, path, loader_order=loader_order,
+                         precision=precision)
         try:
             key = (row.get("config", ""), int(row.get("colors", "")))
         except ValueError as exc:
@@ -459,10 +471,11 @@ def validate_quality(path: Path,
                      input_path: str,
                      platform_name: str,
                      loader_order: str,
-                     require_assessment_command: bool) -> None:
+                     require_assessment_command: bool,
+                     precision: str) -> None:
     """Validate all quality values."""
     rows = validate_rows(
-        path, revision, input_path, platform_name, loader_order
+        path, revision, input_path, platform_name, loader_order, precision
     )
     for row in rows:
         validate_assessment_command(
@@ -484,10 +497,11 @@ def validate_size(path: Path,
                   revision: str,
                   input_path: str,
                   platform_name: str,
-                  loader_order: str) -> None:
+                  loader_order: str,
+                  precision: str) -> None:
     """Validate raw stream sizes."""
     rows = validate_rows(
-        path, revision, input_path, platform_name, loader_order
+        path, revision, input_path, platform_name, loader_order, precision
     )
     for row in rows:
         key = (row["config"], row["colors"])
@@ -505,7 +519,8 @@ def validate_speed(path: Path,
                    platform_name: str,
                    warmups: int,
                    runs: int,
-                   loader_order: str) -> None:
+                   loader_order: str,
+                   precision: str) -> None:
     """Validate every raw timing row and its exact executed schedule."""
     rows = read_csv(path)
     names = [config for config, _sampling, _binning in CONFIGS]
@@ -548,6 +563,7 @@ def validate_speed(path: Path,
             domain == "palette-build",
             True,
             loader_order,
+            precision,
         )
         key = (row.get("config", ""), row.get("colors", ""))
         try:
@@ -641,6 +657,7 @@ def main() -> int:
     warmups = int(protocol["speed_warmups"])
     runs = int(protocol["speed_runs"])
     loader_order = str(protocol["loader"])
+    precision = str(protocol["precision"])
     require_assessment_command = "quality_reference_loader" in protocol
     validate_quality(
         directory / "palette-pipeline-quality.csv",
@@ -649,6 +666,7 @@ def main() -> int:
         platform_name,
         loader_order,
         require_assessment_command,
+        precision,
     )
     validate_size(
         directory / "palette-pipeline-size.csv",
@@ -656,6 +674,7 @@ def main() -> int:
         input_path,
         platform_name,
         loader_order,
+        precision,
     )
     validate_speed(
         directory / "palette-pipeline-speed.csv",
@@ -665,6 +684,7 @@ def main() -> int:
         warmups,
         runs,
         loader_order,
+        precision,
     )
     validate_plots(directory)
     return 0

@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
     --sampling-policy=full-frame --binning-policy=none \
-    -7 -Lbuiltin! -Qkmeans:seed=1 -Xoklab -Wlinear \
+    -7 -Lbuiltin! -Qkmeans:seed=1 -Xoklab -Wsrgb-linear \
     -U "icc:P${TOP_SRCDIR}/tests/data/color-numeric/output-bpc.icc" \
     -_none -~none -Fnone -aoff -dnone -trgb -Mpal:- -o/dev/null - <<'PPM'
 P3

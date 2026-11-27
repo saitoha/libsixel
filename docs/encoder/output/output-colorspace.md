@@ -1,6 +1,6 @@
 # Output Color Space
 
-`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. Palette export with `-M` has its own sRGB interchange boundary. For normal terminal display, leave `-U` at its default, `gamma`. Use another output space only when the consumer's interpretation of those numbers is known. Ordinary SIXEL defines no color space for its register values; treating them as sRGB by default is libsixel's [interpretation](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb), not part of the format.
+`img2sixel -U` selects the RGB representation of the palette written to a SIXEL stream. Palette export with `-M` has its own sRGB interchange boundary. For normal terminal display, leave `-U` at its default, `srgb`. Use another output space only when the consumer's interpretation of those numbers is known. Ordinary SIXEL defines no color space for its register values; treating them as sRGB by default is libsixel's [interpretation](../../sixel-format/specification-layers.md#interpretation-1-register-rgb-values-default-to-srgb), not part of the format.
 
 ```text
 -U COLORSPACE
@@ -9,30 +9,30 @@
 
 | Value | Output representation | Intended use |
 | --- | --- | --- |
-| `gamma` | Gamma-encoded sRGB channels. | Default output for consumers expecting ordinary RGB code values. |
-| `linear` | Linear-light RGB with the sRGB primary basis. | A consumer explicitly configured to interpret linear-light channel values. |
+| `srgb` | Gamma-encoded sRGB channels. | Default output for consumers expecting ordinary RGB code values. |
+| `srgb-linear` | Linear-light RGB with the sRGB primary basis. | A consumer explicitly configured to interpret linear-light channel values. |
 | `smpte-c` | libsixel's SMPTE-C primary conversion and gamma encoding. | A consumer expecting that specific RGB representation. |
 | `display-p3` | Standard Display P3 primaries, D65 white and sRGB transfer encoding. | The [limited CPU float path](#display-p3-selected-cpu-float-path) and a receiver explicitly configured for P3 input. |
-| `adobe-rgb` | Adobe RGB (1998), D65, decoding exponent 563/256. | Selected CPU float output with destination-aware snap. |
+| `a98-rgb` | Adobe RGB (1998), D65, decoding exponent 563/256. | Selected CPU float output with destination-aware snap. |
 | `dci-p3` | P3 primaries, DCI white `(0.3140, 0.3510)`, decoding exponent 2.6. | Selected CPU float output with destination-aware snap; distinct from Display P3. |
 | `icc[:path=FILE]` | RGB defined by a supported ICC file. | Explicit output endpoint; the receiver must use the same RGB interpretation. |
 | `auto[:timeout_ms=N]` | CLI negotiation resolves to gamma sRGB or standard Display P3. | Only images sent directly to stdout as a TTY; other destinations retain gamma sRGB. |
 
-The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `cielab`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required base name, optionally followed by its registered suboptions; a bare numeric gamma or filename is not a base name.
+The parser also accepts `smptec` as an alias for `smpte-c`, folds letter case, and uses the shared [choice prefix-matching policy](../../cli/prefix-matching.md). Full names are preferable in durable commands. A repeated `-U` replaces the earlier value. `oklab`, `lab-d65`, and `din99d` are working/clustering choices, not accepted output choices. `-U` takes a required base name, optionally followed by its registered suboptions; a bare numeric gamma or filename is not a base name.
 
 `-U` and `-_` are not generally mutually exclusive. The selected Display P3, Adobe RGB and DCI-P3 generated-palette paths accept destination-aware snap, including when CLI negotiation selects P3; gamma, linear and SMPTE-C retain their existing snap behavior. The [snap/output boundary](../palette-construction/snap-policy/README.md#output-conversion-and-destination-aware-snap) defines the inverse-mapped destination lattice and stage controls.
 
 ## Named destination definitions
 
-`display-p3`, `adobe-rgb` and `dci-p3` select complete RGB definitions in the shared CMS registry, separately from the frame's working-coordinate tag. The palette and high-color paths use the same relative-colorimetric transform through D50 PCS with Bradford white adaptation. Working values remain extended until the destination copy is clipped for wire serialization. Adding a named destination does not add or implicitly change `-X` or `-W`.
+`display-p3`, `a98-rgb` and `dci-p3` select complete RGB definitions in the shared CMS registry, separately from the frame's working-coordinate tag. The palette and high-color paths use the same relative-colorimetric transform through D50 PCS with Bradford white adaptation. Working values remain extended until the destination copy is clipped for wire serialization. Adding a named destination does not add or implicitly change `-X` or `-W`.
 
 Adobe RGB (1998) uses the [ICC registry definition](https://registry.color.org/rgb-registry/adobergb), including the exact `563/256` decoding exponent. Here `dci-p3` means P3 primaries with DCI white `(0.3140, 0.3510)` and power 2.6, one of the explicitly distinguished [DCI-P3 definitions](https://registry.color.org/rgb-registry/dcip3). It is not P3-D65/power-2.6 or Display P3, and does not control cinema reference luminance or viewing conditions. These names select analytic definitions. The `icc` choice below selects a file-backed definition.
 
 Adobe RGB and DCI-P3 follow the selected CPU palette/high-color admission below. Generated palettes use the same definition-driven [destination snap contract](../palette-construction/snap-policy/README.md#output-conversion-and-destination-aware-snap), including timing, approach rate, distance weighting and grid strategy. The separate high-color path continues to reject active snap for every destination. Disabled snap or zero approach rate retains the unsnapped working palette. Generated and fixed palettes, RGB/HLS output and supported alternate envelopes use the selected definition. Output cache and retained delta history identities distinguish all named destinations across encoder reuse. Separate encoder objects retain independent state.
 
-Explicit choices do not negotiate with a terminal. CLI `-Uauto` still resolves only named sRGB/Display P3; receiving Adobe RGB, a simple definition or ICC does not activate these explicit modes automatically. CLI prefixes `-Ua` (auto/adobe-rgb) and `-Ud` (display-p3/dci-p3) are ambiguous; use unambiguous prefixes or full names. The library has no auto choice, so its prefix set differs accordingly.
+Explicit choices do not negotiate with a terminal. CLI `-Uauto` still resolves only named sRGB/Display P3; receiving Adobe RGB, a simple definition or ICC does not activate these explicit modes automatically. CLI prefixes `-Ua` (auto/a98-rgb), `-Ud` (display-p3/dci-p3), and `-Us` (srgb/srgb-linear/smpte-c) are ambiguous; use unambiguous prefixes or full names. The library has no auto choice, so its prefix set differs accordingly.
 
-`sixel2png -T` and `lsqa -R/-T` accept the same added names for explicit decoded-input interpretation. Encoder PNG snapshots carry the selected named destination's ICC, preserving decoded numbers. Legacy mapfile `-M` remains sRGB8 independent of `-U`; this does not introduce a color-bearing palette exchange format. Raw SIXEL decode APIs still return numbers without color policy.
+`sixel2png -T` and `lsqa -R/-T` use `a98-rgb` to interpret decoded RGB values as Adobe RGB (1998). Encoder PNG snapshots carry the selected named destination's ICC, preserving decoded numbers. Legacy mapfile `-M` remains sRGB8 independent of `-U`; this does not introduce a color-bearing palette exchange format. Raw SIXEL decode APIs still return numbers without color policy.
 
 ## ICC file endpoints
 
@@ -62,7 +62,7 @@ Every output choice accepts `gamut=auto|clip|local-minde|edge-seeker|ray-trace` 
 
 ## Where the conversion happens
 
-For the legacy `gamma`, `linear` and `smpte-c` palette paths, the relevant data flow is:
+For the legacy `srgb`, `srgb-linear` and `smpte-c` palette paths, the relevant data flow is:
 
 ```text
 Loaded image with a known color interpretation
@@ -87,16 +87,16 @@ Loaded image with a known color interpretation
 Unlike the implicit coupling from an explicit `-W` to an unspecified `-X`, `-U` does not change either earlier choice. For example:
 
 ```sh
-img2sixel -Xgamma -Woklab -Ugamma image.png
+img2sixel -Xsrgb -Woklab -Usrgb image.png
 ```
 
-This builds the palette in gamma coordinates, applies it in Oklab, and writes gamma RGB output. Keeping `-Ugamma` does not cancel the effect of `-Woklab`. Conversely, `-Ulinear` alone does not make lookup, dithering, resize, or alpha compositing operate in linear light. Those stages have their own controls; see [Working color space](../palette-application/working-colorspace/README.md), [Crop and resize](../preprocessing/crop-resize/README.md), and [Alpha policy](../../loader/alpha-policy/README.md).
+This builds the palette in gamma coordinates, applies it in Oklab, and writes gamma RGB output. Keeping `-Usrgb` does not cancel the effect of `-Woklab`. Conversely, `-Usrgb-linear` alone does not make lookup, dithering, resize, or alpha compositing operate in linear light. Those stages have their own controls; see [Working color space](../palette-application/working-colorspace/README.md), [Crop and resize](../preprocessing/crop-resize/README.md), and [Alpha policy](../../loader/alpha-policy/README.md).
 
 ## Legacy representations
 
-### `gamma`: sRGB encoding
+### `srgb`: sRGB encoding
 
-The name `gamma` denotes libsixel's sRGB transfer curve, including its linear segment near black. It is not simply a power of `1/2.2`. For a normalized linear-light channel `l` in `[0, 1]`, the corresponding sRGB channel `g` is:
+The name `srgb` denotes libsixel's sRGB transfer curve, including its linear segment near black. It is not simply a power of `1/2.2`. For a normalized linear-light channel `l` in `[0, 1]`, the corresponding sRGB channel `g` is:
 
 ```text
 g = 12.92 * l                       when l <= 0.0031308
@@ -112,9 +112,9 @@ l = ((g + 0.055) / 1.055)^2.4      otherwise
 
 The [W3C sRGB definition](https://www.w3.org/TR/css-color-4/#predefined-sRGB) describes the primary basis, D65 white point, and transfer function. libsixel's conversion implementation is in [`src/colorspace.c`](../../../src/colorspace.c), with typed float paths and byte lookup-table paths.
 
-### `linear`: linear-light sRGB
+### `srgb-linear`: linear-light sRGB
 
-`linear` uses the same RGB basis without the sRGB transfer encoding. A gamma channel near `0.5` corresponds to only about `0.214` in linear light. Thus an output palette can change from roughly `50%` to `21%` without intending to change the physical color: the recipient must apply the matching interpretation.
+`srgb-linear` uses the same RGB basis without the sRGB transfer encoding. A gamma channel near `0.5` corresponds to only about `0.214` in linear light. Thus an output palette can change from roughly `50%` to `21%` without intending to change the physical color: the recipient must apply the matching interpretation.
 
 If a receiver instead treats that linear `21%` as an ordinary sRGB code value, the result is much darker. This follows from applying the sRGB decoding curve to a number that was already linear. It is an interpretation mismatch, not evidence that the encoder chose a worse palette.
 
@@ -122,7 +122,7 @@ If a receiver instead treats that linear `21%` as an ordinary sRGB code value, t
 
 Output conversion first converts the working color to linear sRGB and applies the fixed `sixel_linear_srgb_to_smptec_matrix` in [`src/colorspace.c`](../../../src/colorspace.c), followed by a power `1/2.2` encoding. Typed float conversion preserves signed extended values through the matrix and transfer function; byte conversion remains bounded by its storage representation. The selected output path clamps only the wire copy immediately before RGB101 rounding. The inverse uses the power `2.2` and the inverse primary-conversion matrix. See [color-space handling](../colorspace-handling/README.md) for the shared float arithmetic contract.
 
-Consequently, `-Usmpte-c` can change channel balance as well as tone response. It is not an alternative spelling for `gamma`, a generic CRT correction, an HDR mode, or a destination ICC transform. The fixed matrix and curve describe libsixel's implementation; this option does not measure or calibrate a monitor, or establish that a particular DEC terminal expects these values.
+Consequently, `-Usmpte-c` can change channel balance as well as tone response. It is not an alternative spelling for `srgb`, a generic CRT correction, an HDR mode, or a destination ICC transform. The fixed matrix and curve describe libsixel's implementation; this option does not measure or calibrate a monitor, or establish that a particular DEC terminal expects these values.
 
 ## `display-p3`: selected CPU float path
 
@@ -136,9 +136,9 @@ The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged 
 
 ```sh
 ./converters/img2sixel --threading-policy=greedy:global_budget=1 \
-  -L 'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
+  -L 'libpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!' \
   -j scalar:resize_precision=float --precision-policy=auto \
-  -Q kmeans:seed=1 -X linear -W gamma -U display-p3 \
+  -Q kmeans:seed=1 -X srgb-linear -W srgb -U display-p3 \
   --sampling-policy=full-frame --binning-policy=none \
   -F none -a off -_ none '-~none' -d fs -t rgb \
   tests/data/color-numeric/png-p3-16-rgb.png > output.six
@@ -150,7 +150,7 @@ Before index selection, the palette owner prepares a separate RGB101 serializati
 
 For example, linear gray centers `0.1` and `0.11` produce P3 code values `35%` and `37%`. With snap disabled, a query of `0.106` still selects the second original center. Substituting the inverse-decoded wire colors would move the decision boundary above `0.106` and incorrectly select the first center. The direct palette tests protect unchanged float and byte working views and unchanged lookup results. Primary and intermediate-color wire tests independently protect the destination conversion.
 
-P3 requires an effective float working format even for `-Wgamma`; `--precision-policy=8bit` cannot provide it and is rejected with P3. Requested precision stays separate from this output requirement, so leaving P3 restores the effective format required by the remaining precision and working-space settings. An explicit float request remains float after leaving P3; automatic gamma working coordinates return to the ordinary byte preference.
+P3 requires an effective float working format even for `-Wsrgb`; `--precision-policy=8bit` cannot provide it and is rejected with P3. Requested precision stays separate from this output requirement, so leaving P3 restores the effective format required by the remaining precision and working-space settings. An explicit float request remains float after leaving P3; automatic gamma working coordinates return to the ordinary byte preference.
 
 Gamma working coordinates use the existing sRGB transfer function with sign-preserving extended values. FS computes its error against the unrounded working palette. [Dither clamp policy](../palette-application/clamp-policy.md) controls feedback while retaining original extended coordinates; `-0none` propagates the unrestricted residual. For example, errors `(0.125, -0.125, 0.0625)` sent to a following source `(1, -0.03125, 0.125)` with the FS right-neighbor weight `7/16` produce `(1.0546875, -0.0859375, 0.15234375)` before that next lookup. The direct test observes this input to the real lookup. The CLI two-color test checks independently derived source-group means, paint-time wire agreement with a raster FS reference calculation, and actual FS dispatch. Its painted result is also unchanged when error propagation is omitted, so detecting missing propagation or an intermediate clamp belongs to the direct next-lookup test and its code mutations. The other few-color CLI witnesses can optimize FS away because every source color fits in the palette; they establish option acceptance and wire values, not error diffusion. Nonfinite working samples or errors fail instead of entering lookup, and a later valid apply on the same policy recovers. The same feedback policy applies to ordinary output; it is independent of the output primaries.
 
@@ -160,9 +160,9 @@ Ward merge retains the same nominal channel scales and `channel_l` weights as th
 
 ## Selected ordinary sRGB float path
 
-The same extended-palette/RGB101 preparation is selected for `-Ugamma`, `-Ulinear` and `-Usmpte-c` when a static or animated RGB job requires float through the source, an image map, packed alpha composition, a non-gamma generated-palette clustering view or explicit float precision, and the options match one of the four CPU solver families described above: any of the five clustering/working spaces, any sampling policy, the supported binning choices below and lookup policies above, none, the CPU spatial diffusion methods listed above (including `auto`), or the three positional methods, none or Ward merge, default/AUTO, off or explicitly selected soft/hard cover, and disabled snap. It does not promote a job with byte-eligible source/map data and operations merely to select this algorithm. A float image map can require float palette application while the source image plan remains RGB888. Other settings retain their existing path. All four admitted solver families and AUTO also accept ordinary sRGB mapfile jobs under the same frame/precision conditions, as described in [selected float mapfile application](../palette-construction/external-palettes.md#selected-ordinary-srgb-output). The P3 and selected sRGB image-map builders both use the extended path. [Built-in `-b` tables](../palette-construction/fixed-palettes.md#native-float-application-and-display-p3) also retain an authoritative float working view under these frame/precision conditions while bypassing construction and cover. The separate [monochrome foreground-mask path](../palette-construction/fixed-palettes.md#native-monochrome-application) uses the same typed endpoint preparation without sending RGB definitions.
+The same extended-palette/RGB101 preparation is selected for `-Usrgb`, `-Usrgb-linear` and `-Usmpte-c` when a static or animated RGB job requires float through the source, an image map, packed alpha composition, a non-gamma generated-palette clustering view or explicit float precision, and the options match one of the four CPU solver families described above: any of the five clustering/working spaces, any sampling policy, the supported binning choices below and lookup policies above, none, the CPU spatial diffusion methods listed above (including `auto`), or the three positional methods, none or Ward merge, default/AUTO, off or explicitly selected soft/hard cover, and disabled snap. It does not promote a job with byte-eligible source/map data and operations merely to select this algorithm. A float image map can require float palette application while the source image plan remains RGB888. Other settings retain their existing path. All four admitted solver families and AUTO also accept ordinary sRGB mapfile jobs under the same frame/precision conditions, as described in [selected float mapfile application](../palette-construction/external-palettes.md#selected-ordinary-srgb-output). The P3 and selected sRGB image-map builders both use the extended path. [Built-in `-b` tables](../palette-construction/fixed-palettes.md#native-float-application-and-display-p3) also retain an authoritative float working view under these frame/precision conditions while bypassing construction and cover. The separate [monochrome foreground-mask path](../palette-construction/fixed-palettes.md#native-monochrome-application) uses the same typed endpoint preparation without sending RGB definitions.
 
-Generated palettes also retain native float coordinates when `-Xlinear`, `-Xoklab`, `-Xcielab` or `-Xdin99d` requires a float clustering view but `-Wgamma` leaves the image plan at RGB888. The palette returns to gamma through the extended transform; lookup promotes its byte source queries to match that float palette. This preserves sub-byte centroids and negative components produced by the inverse transform, without changing the requested precision or the source buffer. Under `-.8bit` the calculation still runs in float, and the resulting palette is rounded to gamma bytes before application without RGB101 preparation. An otherwise byte-eligible `-Xgamma` job keeps its byte palette; an unused `-X` setting on a built-in table does not change its representation. Source-image generation is distinct from image-map construction, whose admission remains specified by [External palette input and output](../palette-construction/external-palettes.md#selected-ordinary-srgb-output).
+Generated palettes also retain native float coordinates when `-Xsrgb-linear`, `-Xoklab`, `-Xlab-d65` or `-Xdin99d` requires a float clustering view but `-Wsrgb` leaves the image plan at RGB888. The palette returns to gamma through the extended transform; lookup promotes its byte source queries to match that float palette. This preserves sub-byte centroids and negative components produced by the inverse transform, without changing the requested precision or the source buffer. Under `-.8bit` the calculation still runs in float, and the resulting palette is rounded to gamma bytes before application without RGB101 preparation. An otherwise byte-eligible `-Xsrgb` job keeps its byte palette; an unused `-X` setting on a built-in table does not change its representation. Source-image generation is distinct from image-map construction, whose admission remains specified by [External palette input and output](../palette-construction/external-palettes.md#selected-ordinary-srgb-output).
 
 Omitted cover and plain `-aauto` select this path without an explicit mode. Their native repair budget is zero, as defined by [Cover policy](../palette-construction/cover-policy/README.md). Palette construction for qualifying float jobs, including ordinary sRGB defaults, therefore differs from the legacy byte-projected construction; identical palette entries, dither patterns or perceptual scores are not promised. Byte-eligible jobs keep their existing precision decision. [Terminal macro output](terminal-macros.md#native-float-palettes-and-color-interpretation) uses the same admission and palette preparation as ordinary output. Opaque [OR output](or-mode/README.md#native-float-palettes) also retains native palettes, including serial fallback for offsets. Opaque [DRCS output](drcs.md#native-float-palettes-and-color-interpretation) retains the native SIXEL body under its separate glyph envelope.
 
@@ -285,7 +285,7 @@ Each RGB component is an integer percentage in `0..100`. The `2` selects the RGB
 
 ### Native HLS serialization
 
-The selected CPU float path accepts `-t hls` for gamma, linear, SMPTE-C and explicit Display P3 output. The construction, working palette, lookup and diffusion contracts above are unchanged. Where those sections describe RGB101 serialization, HLS instead uses a separate destination RGB float view produced by the same output transform. It clamps that output copy to the destination RGB cube, then rounds the DEC hue, lightness and saturation fields directly. It does not first round RGB percentages or reconstruct RGB from compatibility bytes. RGB output retains its existing RGB101 codes. Both cached views share one palette-owned publication and invalidation boundary; neither changes the working palette or enables snap. The additional cache is 3 KiB per palette at the 256-entry limit, not per image pixel, and adds no installed public interface.
+The selected CPU float path accepts `-t hls` for `-U srgb`, `srgb-linear`, `smpte-c` and `display-p3`. The construction, working palette, lookup and diffusion contracts above are unchanged. Where those sections describe RGB101 serialization, HLS instead uses a separate destination RGB float view produced by the same output transform. It clamps that output copy to the destination RGB cube, then rounds the DEC hue, lightness and saturation fields directly. It does not first round RGB percentages or reconstruct RGB from compatibility bytes. RGB output retains its existing RGB101 codes. Both cached views share one palette-owned publication and invalidation boundary; neither changes the working palette or enables snap. The additional cache is 3 KiB per palette at the 256-entry limit, not per image pixel, and adds no installed public interface.
 
 DEC hue uses blue at 0, red at 120 and green at 240; hue rounds to an integer degree modulo 360, and lightness/saturation round to integer percentages. Exact grays use hue and saturation zero. The HLS coordinates describe the RGB basis selected by `-U`; the receiver must interpret the reconstructed RGB in that basis. There is no new embedded profile or negotiation grammar.
 
@@ -310,9 +310,9 @@ For ordinary SIXEL, a controller using this proposal can display the selected `-
 | Display | Send the bytes generated with `-Udisplay-p3`; new RGB definitions are interpreted as standard Display P3. |
 | Restore | Send `CSI 1;M./p`; verify the saved value, including on recoverable errors. |
 
-For a color-preserving sRGB comparison, generate `-Ugamma` output and set and verify policy `1`. Feeding gamma sRGB values under a P3 device policy reinterprets those values in the wider basis; it does not establish correct sRGB rendering. Policy `3` explicitly requests the proposal's component expansion and serves a different purpose from source-to-destination color conversion.
+For a color-preserving sRGB comparison, generate `-Usrgb` output and set and verify policy `1`. Feeding gamma sRGB values under a P3 device policy reinterprets those values in the wider basis; it does not establish correct sRGB rendering. Policy `3` explicitly requests the proposal's component expansion and serves a different purpose from source-to-destination color conversion.
 
-Explicit `img2sixel -Udisplay-p3` and `-Ugamma` perform none of these color-protocol exchanges. The CLI-only `-Uauto` manages discovery and the transaction above, accepting the named sRGB and Display P3 definitions. An available target with an unsupported definition uses verified policy `1` and gamma output; P3 requires both `C=4` and `S2=1`. A final automatic request cannot be combined with DRCS (`-@`): the implemented transaction is for ordinary SIXEL (`T=1`), while DRCS uses a separate `T=2` policy. This combination fails before any color query or image output, regardless of the eventual advertised definition. A later explicit `-Ugamma` clears auto. Explicit `-Udisplay-p3` also emits DRCS under its [native palette contract](drcs.md#native-float-palettes-and-color-interpretation), without any color-protocol exchange; the caller configures the separate DRCS receiver policy. Neither the library `setopt` API nor bindings accept `auto`.
+Explicit `img2sixel -Udisplay-p3` and `-Usrgb` perform none of these color-protocol exchanges. The CLI-only `-Uauto` manages discovery and the transaction above, accepting the named sRGB and Display P3 definitions. An available target with an unsupported definition uses verified policy `1` and gamma output; P3 requires both `C=4` and `S2=1`. A final automatic request cannot be combined with DRCS (`-@`): the implemented transaction is for ordinary SIXEL (`T=1`), while DRCS uses a separate `T=2` policy. This combination fails before any color query or image output, regardless of the eventual advertised definition. A later explicit `-Usrgb` clears auto. Explicit `-Udisplay-p3` also emits DRCS under its [native palette contract](drcs.md#native-float-palettes-and-color-interpretation), without any color-protocol exchange; the caller configures the separate DRCS receiver policy. Neither the library `setopt` API nor bindings accept `auto`.
 
 The reply parser enforces the proposal's [numeric field and simple-RGB rules](../../protocols/graphics-color-management.md#simple-rgb-definition), including rejection of the reserved saturation value `9999`. A simple definition has eight to ten fields: the five common fields, three mandatory base-9999 gamma limbs, and optional primaries/white identifiers. It remains an unsupported transform and therefore uses verified sRGB fallback only after its syntax and reconstructed gamma range pass validation. The five-field named sRGB/P3 replies and their negotiation steps above are unchanged.
 
@@ -322,7 +322,7 @@ During the POSIX query phases, the CLI temporarily disables the terminal's suspe
 
 The transport blocks SIGINT and SIGTERM while checking cancellation, then uses `pselect` to restore the caller's signal mask atomically with the I/O wait. A cancellation signal enabled by that mask therefore cannot be lost between the check and the wait, even when output is blocked. Every return restores the caller's mask, and unrelated signals remain enabled according to that mask. If readiness wins over a pending cancellation signal, restoring the mask can deliver the signal after `pselect` returns; the transport rechecks cancellation before performing the ready I/O. Recovery writes retain their explicit cancellation exemption. Both build systems require this `pselect` surface through the shared terminal-I/O capability probe.
 
-The default remains `-Ugamma`. `SIXEL_OUTPUT_COLORSPACE` supplies a CLI default using the same case folding, unambiguous prefixes and named choices; it takes only a base name, without suboptions. An explicit `-U` overrides that environment value, and the last `-U` replaces the whole earlier request. Empty environment values are unset. `-Uauto:timeout_ms=N` and compact `-Uauto:TN` set a decimal deadline in `1..10000` milliseconds, overriding `SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS`; the default is 200 ms. The timeout environment is relevant only to a final automatic request, and an explicit timeout overrides even an invalid environment timeout. These CLI settings also work through `--env NAME=VALUE` without outranking explicit options.
+The default remains `-Usrgb`. `SIXEL_OUTPUT_COLORSPACE` supplies a CLI default using the same case folding, unambiguous prefixes and named choices; it takes only a base name, without suboptions. An explicit `-U` overrides that environment value, and the last `-U` replaces the whole earlier request. Empty environment values are unset. `-Uauto:timeout_ms=N` and compact `-Uauto:TN` set a decimal deadline in `1..10000` milliseconds, overriding `SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS`; the default is 200 ms. The timeout environment is relevant only to a final automatic request, and an explicit timeout overrides even an invalid environment timeout. These CLI settings also work through `--env NAME=VALUE` without outranking explicit options.
 
 Only a completely silent first capability exchange, a valid unavailable reply, or unavailable local TTY access allows unconfirmed legacy gamma output. This does not prove that the receiver currently interprets RGB as sRGB. A partial or malformed response fails before sending an image. After a timeout or loss of reply correlation, no later query is issued on that job/TTY; saved policy restoration is write-only and bounded. An available target whose policy cannot be saved or verified receives no image. Normal restoration is queried and verified, and restoration or terminal-settings failure cannot produce a successful exit.
 
@@ -357,15 +357,15 @@ The preparation of fixed palettes also matters:
 | Structured ACT/PAL/GPL input or built-in `-b` palette | sRGB8 entries are converted to `-W` once. The selected native path retains float coordinates even for gamma work; genuinely byte-eligible gamma jobs keep their byte view. Entries are never interpreted as native working-space bytes. |
 | Monochrome `-e` | Uses assumed sRGB black/white endpoints for mapping, with a native working view on the selected float path. It emits a foreground mask with no RGB definitions; `-U` cannot set the receiver foreground. See [native monochrome application](../palette-construction/fixed-palettes.md#native-monochrome-application). |
 
-Fixed palettes bypass generated-palette snap processing. Structured-file and built-in entries retain their sRGB interpretation under `-Wlinear`; image mapfiles still pass through their separate image-loader and palette-construction route.
+Fixed palettes bypass generated-palette snap processing. Structured-file and built-in entries retain their sRGB interpretation under `-Wsrgb-linear`; image mapfiles still pass through their separate image-loader and palette-construction route.
 
 ## Reproducible numeric example
 
-Run the following from the repository root, using the converter built in that checkout. It supplies a two-entry byte palette with `-Wgamma`, so quantizer choices do not obscure the output conversion:
+Run the following from the repository root, using the converter built in that checkout. It supplies a two-entry byte palette with `-Wsrgb`, so quantizer choices do not obscure the output conversion:
 
 ```sh
 ./converters/img2sixel --threading-policy=greedy:global_budget=1 --gpu-policy=off --diffusion=none \
-  -Wgamma -Ulinear -t rgb -m pal:- -M pal:- -o /dev/null \
+  -Wsrgb -Usrgb-linear -t rgb -m pal:- -M pal:- -o /dev/null \
   tests/data/inputs/snake_16.png <<'PAL'
 JASC-PAL
 0100
@@ -375,12 +375,12 @@ JASC-PAL
 PAL
 ```
 
-The exported first entry is `128 64 32`; the black entry stays `0 0 0`. Replacing only `-Ulinear` gives:
+The exported first entry is `128 64 32`; the black entry stays `0 0 0`. Replacing only `-Usrgb-linear` gives:
 
 | Output option | First entry in the exported PAL | First SIXEL RGB definition |
 | --- | --- | --- |
-| `-Ugamma` | `128 64 32` | `#0;2;50;25;13` |
-| `-Ulinear` | `128 64 32` | `#0;2;22;5;2` |
+| `-Usrgb` | `128 64 32` | `#0;2;50;25;13` |
+| `-Usrgb-linear` | `128 64 32` | `#0;2;22;5;2` |
 | `-Usmpte-c` | `128 64 32` | `#0;2;51;25;15` |
 
 To inspect the wire definitions, replace `-M pal:- -o /dev/null` with `-o output.six` and inspect that file. The table describes the byte-palette path with snap bypassed; it is not an expected-value table for arbitrary generated or float32 palettes. Its purpose is to show separately the RGB conversion, 8-bit export, and percentage serialization boundaries.
@@ -569,9 +569,9 @@ These value tests inspect the authoritative working palette, separate wire value
 | ID | Covered observation | Owning test |
 | --- | --- | --- |
 | OC-01 | A generated float CIELAB palette exports neutral black and white as exact sRGB8 endpoints through `-M gpl:-`, without a biased byte a/b round trip; solver entry order is not fixed. | [tests/palette/mapfile-io/0141_mapfile_output_converts_cielab_to_gamma.t](../../../tests/palette/mapfile-io/0141_mapfile_output_converts_cielab_to_gamma.t) |
-| OC-02 | A built-in palette preserves its supplied bytes after sRGB-to-linear working conversion and sRGB export, even with `-Ulinear`. | [tests/palette/working-space/0134_builtin_palette_working_output_colorspace_stable.t](../../../tests/palette/working-space/0134_builtin_palette_working_output_colorspace_stable.t) |
-| OC-03 | A structured PAL palette preserves its supplied bytes after sRGB-to-linear working conversion and sRGB export, even with `-Ulinear`. | [tests/palette/working-space/0135_mapfile_pal_working_output_colorspace_stable.t](../../../tests/palette/working-space/0135_mapfile_pal_working_output_colorspace_stable.t) |
-| OC-04 | A PNG image mapfile recovers its eight occupied source sRGB8 colors after native linear working conversion under `-Wlinear -Ulinear`, with CMS, binning and snap disabled. | [tests/palette/working-space/0136_mapfile_png_working_output_colorspace_deterministic.t](../../../tests/palette/working-space/0136_mapfile_png_working_output_colorspace_deterministic.t) |
+| OC-02 | A built-in palette preserves its supplied bytes after sRGB-to-linear working conversion and sRGB export, even with `-Usrgb-linear`. | [tests/palette/working-space/0134_builtin_palette_working_output_colorspace_stable.t](../../../tests/palette/working-space/0134_builtin_palette_working_output_colorspace_stable.t) |
+| OC-03 | A structured PAL palette preserves its supplied bytes after sRGB-to-linear working conversion and sRGB export, even with `-Usrgb-linear`. | [tests/palette/working-space/0135_mapfile_pal_working_output_colorspace_stable.t](../../../tests/palette/working-space/0135_mapfile_pal_working_output_colorspace_stable.t) |
+| OC-04 | A PNG image mapfile recovers its eight occupied source sRGB8 colors after native linear working conversion under `-Wsrgb-linear -Usrgb-linear`, with CMS, binning and snap disabled. | [tests/palette/working-space/0136_mapfile_png_working_output_colorspace_deterministic.t](../../../tests/palette/working-space/0136_mapfile_png_working_output_colorspace_deterministic.t) |
 | OC-05 | The corresponding RGBA PNG image-mapfile path recovers the same occupied sRGB8 colors when ICC metadata is present but CMS is explicitly disabled. | [tests/palette/working-space/0145_mapfile_png_icc_working_output_colorspace_deterministic.t](../../../tests/palette/working-space/0145_mapfile_png_icc_working_output_colorspace_deterministic.t) |
 | OC-06 | Exact snap and SMPTE-C output conversion produce independently expected wire values. | [tests/palette/snap-destination/0001_snap_smptec_grid.t](../../../tests/palette/snap-destination/0001_snap_smptec_grid.t) |
 | OC-07 | P3 ICC RGB8 PNG produces independently derived P3 RGB101 values through the actual libpng/builtin CMS path. | [tests/cli/terminal-color/0005_libpng_p3_8_wire.t](../../../tests/cli/terminal-color/0005_libpng_p3_8_wire.t) |
@@ -591,7 +591,7 @@ These value tests inspect the authoritative working palette, separate wire value
 | OC-22 | Nonzero FS errors reach the next real lookup with independently derived extended values. | [tests/palette/snap-destination/0012_p3_fs_error.t](../../../tests/palette/snap-destination/0012_p3_fs_error.t) |
 | OC-23 | Explicit hard feedback preserves the original extended source while bounding added compensation. | [tests/palette/dispatch/0010_fs_hard_source_bounds.t](../../../tests/palette/dispatch/0010_fs_hard_source_bounds.t) |
 | OC-24 | A nonfinite P3 sample fails before lookup and the same policy subsequently processes valid samples. | [tests/palette/snap-destination/0013_p3_fs_nonfinite_recovery.t](../../../tests/palette/snap-destination/0013_p3_fs_nonfinite_recovery.t) |
-| OC-25 | P3 RGB8 PNG retains independent RGB101 values with gamma working coordinates and automatic precision. | [tests/cli/terminal-color/0009_libpng_p3_gamma_auto_wire.t](../../../tests/cli/terminal-color/0009_libpng_p3_gamma_auto_wire.t) |
+| OC-25 | P3 RGB8 PNG retains independent RGB101 values with encoded sRGB working coordinates and automatic precision. | [tests/cli/terminal-color/0009_libpng_p3_gamma_auto_wire.t](../../../tests/cli/terminal-color/0009_libpng_p3_gamma_auto_wire.t) |
 | OC-26 | P3 RGB16 PNG reduced to two colors matches independent source-group means and the paint-time wire from a raster FS reference calculation, and reports actual FS dispatch; this fixture does not independently detect omitted error propagation. | [tests/cli/terminal-color/0010_libpng_p3_gamma_fs_wire.t](../../../tests/cli/terminal-color/0010_libpng_p3_gamma_fs_wire.t) |
 | OC-27 | Untagged sRGB PNG is color-converted to independent P3 RGB101 values with automatic gamma processing and an accepted FS request; the few-color optimization needs no dithering. | [tests/cli/terminal-color/0011_libpng_srgb_to_p3_fs_wire.t](../../../tests/cli/terminal-color/0011_libpng_srgb_to_p3_fs_wire.t) |
 | OC-28 | Oriented RGB16 TIFF retains geometry and independent P3 RGB101 with automatic linear processing and an accepted FS request; the few-color optimization needs no dithering. | [tests/cli/terminal-color/0012_libtiff_p3_auto_fs_wire.t](../../../tests/cli/terminal-color/0012_libtiff_p3_auto_fs_wire.t) |
@@ -623,6 +623,7 @@ These value tests inspect the authoritative working palette, separate wire value
 | OC-53 | Complete initial silence retires color queries for later images in the same invocation. | [tests/cli/terminal-color/0104_multiple_silent.t](../../../tests/cli/terminal-color/0104_multiple_silent.t) |
 | OC-54 | The existing library OSC11 reader owns encoding, and CLI policy restoration resumes after its cleanup. | [tests/cli/terminal-color/0105_encoder_reader.t](../../../tests/cli/terminal-color/0105_encoder_reader.t) |
 | OC-55 | Auto rejects DRCS before color queries or image output; explicit gamma/P3 emit DRCS without an automatic color transaction, with independent P3 wire values. | [tests/cli/terminal-color/0106_drcs_auto.t](../../../tests/cli/terminal-color/0106_drcs_auto.t), [tests/cli/terminal-color/0107_drcs_env.t](../../../tests/cli/terminal-color/0107_drcs_env.t), [tests/cli/terminal-color/0108_drcs_assignment.t](../../../tests/cli/terminal-color/0108_drcs_assignment.t), [tests/cli/terminal-color/0109_drcs_overridden.t](../../../tests/cli/terminal-color/0109_drcs_overridden.t), [tests/cli/terminal-color/0110_drcs_gamma.t](../../../tests/cli/terminal-color/0110_drcs_gamma.t), [tests/cli/terminal-color/0111_drcs_p3_values.t](../../../tests/cli/terminal-color/0111_drcs_p3_values.t) |
+| OC-544 | Display P3 negotiation preserves local-minde gamut mapping on Rec.2020 input. The output matches explicit Display P3 local-minde and differs from clipping. | [tests/cli/terminal-color/0146_p3_gamut.t](../../../tests/cli/terminal-color/0146_p3_gamut.t) |
 | OC-56 | At a simulated interrupted-encoder boundary, actual CLI controller cleanup ends an unfinished DCS before the independent receiver accepts the saved-policy restoration. This is distinct from the real CLI signal cases. | [tests/cli/terminal-color/0112_partial_encode.t](../../../tests/cli/terminal-color/0112_partial_encode.t) |
 | OC-57 | Gamma sRGB lookup and both working palette views remain unchanged after RGB101 preparation. | [tests/palette/snap-policy/0005_srgb_gamma_unsnapped_lookup.t](../../../tests/palette/snap-policy/0005_srgb_gamma_unsnapped_lookup.t) |
 | OC-58 | Linear sRGB lookup and both working palette views remain unchanged after RGB101 preparation. | [tests/palette/snap-policy/0006_srgb_linear_unsnapped_lookup.t](../../../tests/palette/snap-policy/0006_srgb_linear_unsnapped_lookup.t) |
@@ -690,54 +691,54 @@ The independent fixture generator in `tools/generate_palette_space_fixtures.py` 
 | OC-107 | P3 cielab immutable lookup. | [tests/palette/working-space/0027_p3_cielab_immutable_lookup.t](../../../tests/palette/working-space/0027_p3_cielab_immutable_lookup.t) |
 | OC-108 | Srgb din99d immutable lookup. | [tests/palette/working-space/0028_srgb_din99d_immutable_lookup.t](../../../tests/palette/working-space/0028_srgb_din99d_immutable_lookup.t) |
 | OC-109 | P3 din99d immutable lookup. | [tests/palette/working-space/0029_p3_din99d_immutable_lookup.t](../../../tests/palette/working-space/0029_p3_din99d_immutable_lookup.t) |
-| OC-110 | Srgb X gamma W gamma wire. | [tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t) |
-| OC-111 | P3 X gamma W gamma wire. | [tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t) |
-| OC-112 | Srgb X gamma W linear wire. | [tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t) |
-| OC-113 | P3 X gamma W linear wire. | [tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t) |
-| OC-114 | Srgb X gamma W oklab wire. | [tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t) |
-| OC-115 | P3 X gamma W oklab wire. | [tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t) |
-| OC-116 | Srgb X gamma W cielab wire. | [tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t) |
-| OC-117 | P3 X gamma W cielab wire. | [tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t) |
-| OC-118 | Srgb X gamma W din99d wire. | [tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t) |
-| OC-119 | P3 X gamma W din99d wire. | [tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t) |
-| OC-120 | Srgb X linear W gamma wire. | [tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t) |
-| OC-121 | P3 X linear W gamma wire. | [tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t) |
-| OC-122 | Srgb X linear W linear wire. | [tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t) |
-| OC-123 | P3 X linear W linear wire. | [tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t) |
-| OC-124 | Srgb X linear W oklab wire. | [tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t) |
-| OC-125 | P3 X linear W oklab wire. | [tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t) |
-| OC-126 | Srgb X linear W cielab wire. | [tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t) |
-| OC-127 | P3 X linear W cielab wire. | [tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t) |
-| OC-128 | Srgb X linear W din99d wire. | [tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t) |
-| OC-129 | P3 X linear W din99d wire. | [tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t) |
-| OC-130 | Srgb X oklab W gamma wire. | [tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t) |
-| OC-131 | P3 X oklab W gamma wire. | [tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t) |
-| OC-132 | Srgb X oklab W linear wire. | [tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t) |
-| OC-133 | P3 X oklab W linear wire. | [tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t) |
+| OC-110 | Srgb X srgb W srgb wire. | [tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0030_srgb_X_gamma_W_gamma_wire.t) |
+| OC-111 | P3 X srgb W srgb wire. | [tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t](../../../tests/palette/working-space/0031_p3_X_gamma_W_gamma_wire.t) |
+| OC-112 | Srgb X srgb W srgb-linear wire. | [tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0032_srgb_X_gamma_W_linear_wire.t) |
+| OC-113 | P3 X srgb W srgb-linear wire. | [tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t](../../../tests/palette/working-space/0033_p3_X_gamma_W_linear_wire.t) |
+| OC-114 | Srgb X srgb W oklab wire. | [tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0034_srgb_X_gamma_W_oklab_wire.t) |
+| OC-115 | P3 X srgb W oklab wire. | [tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t](../../../tests/palette/working-space/0035_p3_X_gamma_W_oklab_wire.t) |
+| OC-116 | Srgb X srgb W lab-d65 wire. | [tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0036_srgb_X_gamma_W_cielab_wire.t) |
+| OC-117 | P3 X srgb W lab-d65 wire. | [tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t](../../../tests/palette/working-space/0037_p3_X_gamma_W_cielab_wire.t) |
+| OC-118 | Srgb X srgb W din99d wire. | [tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0038_srgb_X_gamma_W_din99d_wire.t) |
+| OC-119 | P3 X srgb W din99d wire. | [tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t](../../../tests/palette/working-space/0039_p3_X_gamma_W_din99d_wire.t) |
+| OC-120 | Srgb X srgb-linear W srgb wire. | [tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0040_srgb_X_linear_W_gamma_wire.t) |
+| OC-121 | P3 X srgb-linear W srgb wire. | [tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t](../../../tests/palette/working-space/0041_p3_X_linear_W_gamma_wire.t) |
+| OC-122 | Srgb X srgb-linear W srgb-linear wire. | [tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0042_srgb_X_linear_W_linear_wire.t) |
+| OC-123 | P3 X srgb-linear W srgb-linear wire. | [tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t](../../../tests/palette/working-space/0043_p3_X_linear_W_linear_wire.t) |
+| OC-124 | Srgb X srgb-linear W oklab wire. | [tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0044_srgb_X_linear_W_oklab_wire.t) |
+| OC-125 | P3 X srgb-linear W oklab wire. | [tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t](../../../tests/palette/working-space/0045_p3_X_linear_W_oklab_wire.t) |
+| OC-126 | Srgb X srgb-linear W lab-d65 wire. | [tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0046_srgb_X_linear_W_cielab_wire.t) |
+| OC-127 | P3 X srgb-linear W lab-d65 wire. | [tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t](../../../tests/palette/working-space/0047_p3_X_linear_W_cielab_wire.t) |
+| OC-128 | Srgb X srgb-linear W din99d wire. | [tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0048_srgb_X_linear_W_din99d_wire.t) |
+| OC-129 | P3 X srgb-linear W din99d wire. | [tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t](../../../tests/palette/working-space/0049_p3_X_linear_W_din99d_wire.t) |
+| OC-130 | Srgb X oklab W srgb wire. | [tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0050_srgb_X_oklab_W_gamma_wire.t) |
+| OC-131 | P3 X oklab W srgb wire. | [tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t](../../../tests/palette/working-space/0051_p3_X_oklab_W_gamma_wire.t) |
+| OC-132 | Srgb X oklab W srgb-linear wire. | [tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0052_srgb_X_oklab_W_linear_wire.t) |
+| OC-133 | P3 X oklab W srgb-linear wire. | [tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t](../../../tests/palette/working-space/0053_p3_X_oklab_W_linear_wire.t) |
 | OC-134 | Srgb X oklab W oklab wire. | [tests/palette/working-space/0054_srgb_X_oklab_W_oklab_wire.t](../../../tests/palette/working-space/0054_srgb_X_oklab_W_oklab_wire.t) |
 | OC-135 | P3 X oklab W oklab wire. | [tests/palette/working-space/0055_p3_X_oklab_W_oklab_wire.t](../../../tests/palette/working-space/0055_p3_X_oklab_W_oklab_wire.t) |
-| OC-136 | Srgb X oklab W cielab wire. | [tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t) |
-| OC-137 | P3 X oklab W cielab wire. | [tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t) |
+| OC-136 | Srgb X oklab W lab-d65 wire. | [tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0056_srgb_X_oklab_W_cielab_wire.t) |
+| OC-137 | P3 X oklab W lab-d65 wire. | [tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t](../../../tests/palette/working-space/0057_p3_X_oklab_W_cielab_wire.t) |
 | OC-138 | Srgb X oklab W din99d wire. | [tests/palette/working-space/0058_srgb_X_oklab_W_din99d_wire.t](../../../tests/palette/working-space/0058_srgb_X_oklab_W_din99d_wire.t) |
 | OC-139 | P3 X oklab W din99d wire. | [tests/palette/working-space/0059_p3_X_oklab_W_din99d_wire.t](../../../tests/palette/working-space/0059_p3_X_oklab_W_din99d_wire.t) |
-| OC-140 | Srgb X cielab W gamma wire. | [tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t) |
-| OC-141 | P3 X cielab W gamma wire. | [tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t) |
-| OC-142 | Srgb X cielab W linear wire. | [tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t) |
-| OC-143 | P3 X cielab W linear wire. | [tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t) |
-| OC-144 | Srgb X cielab W oklab wire. | [tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t) |
-| OC-145 | P3 X cielab W oklab wire. | [tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t) |
-| OC-146 | Srgb X cielab W cielab wire. | [tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t) |
-| OC-147 | P3 X cielab W cielab wire. | [tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t) |
-| OC-148 | Srgb X cielab W din99d wire. | [tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t) |
-| OC-149 | P3 X cielab W din99d wire. | [tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t) |
-| OC-150 | Srgb X din99d W gamma wire. | [tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t) |
-| OC-151 | P3 X din99d W gamma wire. | [tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t) |
-| OC-152 | Srgb X din99d W linear wire. | [tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t) |
-| OC-153 | P3 X din99d W linear wire. | [tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t) |
+| OC-140 | Srgb X lab-d65 W srgb wire. | [tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0060_srgb_X_cielab_W_gamma_wire.t) |
+| OC-141 | P3 X lab-d65 W srgb wire. | [tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t](../../../tests/palette/working-space/0061_p3_X_cielab_W_gamma_wire.t) |
+| OC-142 | Srgb X lab-d65 W srgb-linear wire. | [tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0062_srgb_X_cielab_W_linear_wire.t) |
+| OC-143 | P3 X lab-d65 W srgb-linear wire. | [tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t](../../../tests/palette/working-space/0063_p3_X_cielab_W_linear_wire.t) |
+| OC-144 | Srgb X lab-d65 W oklab wire. | [tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0064_srgb_X_cielab_W_oklab_wire.t) |
+| OC-145 | P3 X lab-d65 W oklab wire. | [tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t](../../../tests/palette/working-space/0065_p3_X_cielab_W_oklab_wire.t) |
+| OC-146 | Srgb X lab-d65 W lab-d65 wire. | [tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0066_srgb_X_cielab_W_cielab_wire.t) |
+| OC-147 | P3 X lab-d65 W lab-d65 wire. | [tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t](../../../tests/palette/working-space/0067_p3_X_cielab_W_cielab_wire.t) |
+| OC-148 | Srgb X lab-d65 W din99d wire. | [tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0068_srgb_X_cielab_W_din99d_wire.t) |
+| OC-149 | P3 X lab-d65 W din99d wire. | [tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t](../../../tests/palette/working-space/0069_p3_X_cielab_W_din99d_wire.t) |
+| OC-150 | Srgb X din99d W srgb wire. | [tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0070_srgb_X_din99d_W_gamma_wire.t) |
+| OC-151 | P3 X din99d W srgb wire. | [tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t](../../../tests/palette/working-space/0071_p3_X_din99d_W_gamma_wire.t) |
+| OC-152 | Srgb X din99d W srgb-linear wire. | [tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0072_srgb_X_din99d_W_linear_wire.t) |
+| OC-153 | P3 X din99d W srgb-linear wire. | [tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t](../../../tests/palette/working-space/0073_p3_X_din99d_W_linear_wire.t) |
 | OC-154 | Srgb X din99d W oklab wire. | [tests/palette/working-space/0074_srgb_X_din99d_W_oklab_wire.t](../../../tests/palette/working-space/0074_srgb_X_din99d_W_oklab_wire.t) |
 | OC-155 | P3 X din99d W oklab wire. | [tests/palette/working-space/0075_p3_X_din99d_W_oklab_wire.t](../../../tests/palette/working-space/0075_p3_X_din99d_W_oklab_wire.t) |
-| OC-156 | Srgb X din99d W cielab wire. | [tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t) |
-| OC-157 | P3 X din99d W cielab wire. | [tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t) |
+| OC-156 | Srgb X din99d W lab-d65 wire. | [tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0076_srgb_X_din99d_W_cielab_wire.t) |
+| OC-157 | P3 X din99d W lab-d65 wire. | [tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t](../../../tests/palette/working-space/0077_p3_X_din99d_W_cielab_wire.t) |
 | OC-158 | Srgb X din99d W din99d wire. | [tests/palette/working-space/0078_srgb_X_din99d_W_din99d_wire.t](../../../tests/palette/working-space/0078_srgb_X_din99d_W_din99d_wire.t) |
 | OC-159 | P3 X din99d W din99d wire. | [tests/palette/working-space/0079_p3_X_din99d_W_din99d_wire.t](../../../tests/palette/working-space/0079_p3_X_din99d_W_din99d_wire.t) |
 | OC-160 | Srgb oklab atkinson residual. | [tests/palette/output-diffusion/0069_srgb_oklab_atkinson_residual.t](../../../tests/palette/output-diffusion/0069_srgb_oklab_atkinson_residual.t) |
@@ -1366,9 +1367,9 @@ The named destination checks use independent Decimal primary matrices, Bradford 
 | ON-34 | DCI-P3: Reject non-finite input before output and recover on valid input. | [tests/palette/output-color/0140_dci_nan_recovery.t](../../../tests/palette/output-color/0140_dci_nan_recovery.t) |
 | ON-35 | Reject ambiguous CLI prefix `a`. | [tests/palette/output-color/0141_prefix_a.t](../../../tests/palette/output-color/0141_prefix_a.t) |
 | ON-36 | Reject ambiguous CLI prefix `d`. | [tests/palette/output-color/0142_prefix_d.t](../../../tests/palette/output-color/0142_prefix_d.t) |
-| ON-37 | Convert P3 ICC 16-bit libpng input through builtin CMS to adobe-rgb. | [tests/palette/output-color/0143_adobe_libpng.t](../../../tests/palette/output-color/0143_adobe_libpng.t) |
+| ON-37 | Convert P3 ICC 16-bit libpng input through builtin CMS to a98-rgb. | [tests/palette/output-color/0143_adobe_libpng.t](../../../tests/palette/output-color/0143_adobe_libpng.t) |
 | ON-38 | Convert P3 ICC 16-bit libpng input through builtin CMS to dci-p3. | [tests/palette/output-color/0144_dci_libpng.t](../../../tests/palette/output-color/0144_dci_libpng.t) |
-| ON-39 | Convert P3 ICC 16-bit libtiff input through builtin CMS to adobe-rgb. | [tests/palette/output-color/0145_adobe_libtiff.t](../../../tests/palette/output-color/0145_adobe_libtiff.t) |
+| ON-39 | Convert P3 ICC 16-bit libtiff input through builtin CMS to a98-rgb. | [tests/palette/output-color/0145_adobe_libtiff.t](../../../tests/palette/output-color/0145_adobe_libtiff.t) |
 | ON-40 | Convert P3 ICC 16-bit libtiff input through builtin CMS to dci-p3. | [tests/palette/output-color/0146_dci_libtiff.t](../../../tests/palette/output-color/0146_dci_libtiff.t) |
 
 #### ICC file endpoint contracts

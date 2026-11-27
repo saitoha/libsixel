@@ -40,7 +40,7 @@ test_palette_stage2_0027(int argc, char **argv)
     }
     profile = sixel_palette_snapshot_profile(snapshot);
     if (profile->consumer_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-            profile->working != sixel_color_geometry(SIXEL_COLORSPACE_GAMMA) ||
+            profile->working != sixel_color_geometry(SIXEL_COLORSPACE_SRGB) ||
             profile->clustering != profile->working ||
             profile->delta_alpha_key != 1 || profile->keycolor_reserved != 1 ||
             profile->paintable_colors != 2 || profile->output_icc == NULL ||

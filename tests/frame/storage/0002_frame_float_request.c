@@ -95,7 +95,7 @@ frame_float_request_fails(void)
         goto end;
     }
     if (sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 ||
-            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA) {
+            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_SRGB) {
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }

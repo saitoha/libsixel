@@ -455,13 +455,13 @@ sixel_colorspace_apply_neon(unsigned char *pixels,
 static const unsigned char *
 sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 {
-    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
-            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB &&
+            colorspace_dst == SIXEL_COLORSPACE_SRGB_LINEAR) {
         return gamma_to_linear_lut;
     }
 
-    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
-            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_SRGB) {
         return linear_to_gamma_lut;
     }
 
@@ -1476,12 +1476,12 @@ sixel_decode_linear_from_colorspace(int colorspace,
                                     double *b_lin)
 {
     switch (colorspace) {
-    case SIXEL_COLORSPACE_GAMMA:
+    case SIXEL_COLORSPACE_SRGB:
         *r_lin = sixel_srgb_to_linear_double(r8);
         *g_lin = sixel_srgb_to_linear_double(g8);
         *b_lin = sixel_srgb_to_linear_double(b8);
         break;
-    case SIXEL_COLORSPACE_LINEAR:
+    case SIXEL_COLORSPACE_SRGB_LINEAR:
         *r_lin = (double)r8 / 255.0;
         *g_lin = (double)g8 / 255.0;
         *b_lin = (double)b8 / 255.0;
@@ -1494,7 +1494,7 @@ sixel_decode_linear_from_colorspace(int colorspace,
         sixel_oklab_to_linear(L, A, B, r_lin, g_lin, b_lin);
         break;
     }
-    case SIXEL_COLORSPACE_CIELAB:
+    case SIXEL_COLORSPACE_LAB_D65:
     {
         double L;
         double A;
@@ -1550,12 +1550,12 @@ sixel_encode_linear_to_colorspace(int colorspace,
     double B;
 
     switch (colorspace) {
-    case SIXEL_COLORSPACE_GAMMA:
+    case SIXEL_COLORSPACE_SRGB:
         *r8 = sixel_linear_double_to_srgb(r_lin);
         *g8 = sixel_linear_double_to_srgb(g_lin);
         *b8 = sixel_linear_double_to_srgb(b_lin);
         break;
-    case SIXEL_COLORSPACE_LINEAR:
+    case SIXEL_COLORSPACE_SRGB_LINEAR:
         *r8 = sixel_linear_double_to_byte(r_lin);
         *g8 = sixel_linear_double_to_byte(g_lin);
         *b8 = sixel_linear_double_to_byte(b_lin);
@@ -1566,7 +1566,7 @@ sixel_encode_linear_to_colorspace(int colorspace,
         *g8 = sixel_oklab_encode_ab(A);
         *b8 = sixel_oklab_encode_ab(B);
         break;
-    case SIXEL_COLORSPACE_CIELAB:
+    case SIXEL_COLORSPACE_LAB_D65:
         sixel_linear_to_cielab(r_lin, g_lin, b_lin, &L, &A, &B);
         *r8 = sixel_cielab_encode_L(L);
         *g8 = sixel_cielab_encode_ab(A);
@@ -2336,10 +2336,10 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
     uint32_t key[3];
     sixel_float_memo_entry_t *entry;
 
-    source = sixel_color_geometry(colorspace_src == SIXEL_COLORSPACE_GAMMA
-        ? SIXEL_COLORSPACE_LINEAR : colorspace_src);
+    source = sixel_color_geometry(colorspace_src == SIXEL_COLORSPACE_SRGB
+        ? SIXEL_COLORSPACE_SRGB_LINEAR : colorspace_src);
     target = sixel_color_geometry(colorspace_dst);
-    if (colorspace_src == SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB) {
         sixel_colorspace_init_tables();
     }
     for (index = 0U; index < pixel_total; ++index) {
@@ -2360,7 +2360,7 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
         input[0] = pixel[0];
         input[1] = pixel[1];
         input[2] = pixel[2];
-        if (colorspace_src == SIXEL_COLORSPACE_GAMMA) {
+        if (colorspace_src == SIXEL_COLORSPACE_SRGB) {
             for (channel = 0; channel < 3; ++channel) {
                 input[channel] = sixel_color_decode_srgb_float(input[channel]);
             }
@@ -2370,8 +2370,9 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
                 colorspace_src, colorspace_dst);
         } else if (colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
             converted = sixel_color_convert_output(output, input,
-                colorspace_src == SIXEL_COLORSPACE_GAMMA
-                    ? SIXEL_COLORSPACE_LINEAR : colorspace_src, colorspace_dst);
+                colorspace_src == SIXEL_COLORSPACE_SRGB
+                    ? SIXEL_COLORSPACE_SRGB_LINEAR : colorspace_src,
+                colorspace_dst);
         } else {
             converted = sixel_geometry_convert(output, input, source, target);
         }
@@ -2750,13 +2751,13 @@ sixel_colorspace_convert_component(unsigned char value,
         return value;
     }
 
-    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
-            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB &&
+            colorspace_dst == SIXEL_COLORSPACE_SRGB_LINEAR) {
         return gamma_to_linear_lut[value];
     }
 
-    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
-            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_SRGB) {
         return linear_to_gamma_lut[value];
     }
 
@@ -2813,13 +2814,13 @@ sixel_colorspace_supports_byte_format(int pixelformat)
 static int
 sixel_colorspace_supports_lut_pair(int colorspace_src, int colorspace_dst)
 {
-    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
-            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB &&
+            colorspace_dst == SIXEL_COLORSPACE_SRGB_LINEAR) {
         return 1;
     }
 
-    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
-            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+    if (colorspace_src == SIXEL_COLORSPACE_SRGB_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_SRGB) {
         return 1;
     }
 
@@ -2927,8 +2928,8 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
     if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
             colorspace_dst == SIXEL_COLORSPACE_OKLAB ||
-            colorspace_src == SIXEL_COLORSPACE_CIELAB ||
-            colorspace_dst == SIXEL_COLORSPACE_CIELAB ||
+            colorspace_src == SIXEL_COLORSPACE_LAB_D65 ||
+            colorspace_dst == SIXEL_COLORSPACE_LAB_D65 ||
             colorspace_src == SIXEL_COLORSPACE_DIN99D ||
             colorspace_dst == SIXEL_COLORSPACE_DIN99D ||
             colorspace_src == SIXEL_COLORSPACE_SMPTEC ||
@@ -3181,16 +3182,17 @@ sixel_geometry_linear_to_din99d(double out[3], double const in[3])
 /* Index by the existing coordinate IDs. SMPTE-C occupies an output-only
  * slot. NULL callbacks on a named entry mean linear-sRGB identity. */
 static sixel_color_geometry_t const sixel_geometries[] = {
-    { "gamma", SIXEL_COLORSPACE_GAMMA, SIXEL_PIXELFORMAT_RGBFLOAT32,
+    { "srgb", SIXEL_COLORSPACE_SRGB, SIXEL_PIXELFORMAT_RGBFLOAT32,
       {0, 0, 0}, {1, 1, 1},
       sixel_geometry_gamma_to_linear, sixel_geometry_linear_to_gamma },
-    { "linear", SIXEL_COLORSPACE_LINEAR, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+    { "srgb-linear", SIXEL_COLORSPACE_SRGB_LINEAR,
+      SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
       {0, 0, 0}, {1, 1, 1}, NULL, NULL },
     { "oklab", SIXEL_COLORSPACE_OKLAB, SIXEL_PIXELFORMAT_OKLABFLOAT32,
       {0, -0.5f, -0.5f}, {1, 0.5f, 0.5f},
       sixel_geometry_oklab_to_linear, sixel_geometry_linear_to_oklab },
     { NULL, SIXEL_COLORSPACE_SMPTEC, 0, {0, 0, 0}, {0, 0, 0}, NULL, NULL },
-    { "cielab", SIXEL_COLORSPACE_CIELAB, SIXEL_PIXELFORMAT_CIELABFLOAT32,
+    { "lab-d65", SIXEL_COLORSPACE_LAB_D65, SIXEL_PIXELFORMAT_CIELABFLOAT32,
       {0, -1.5f, -1.5f}, {1, 1.5f, 1.5f},
       sixel_geometry_cielab_to_linear, sixel_geometry_linear_to_cielab },
     { "din99d", SIXEL_COLORSPACE_DIN99D, SIXEL_PIXELFORMAT_DIN99DFLOAT32,
@@ -3258,13 +3260,13 @@ sixel_color_convert_output(double out[3], double const in[3],
     int row;
     int column;
 
-    if (target == SIXEL_COLORSPACE_GAMMA ||
-            target == SIXEL_COLORSPACE_LINEAR) {
+    if (target == SIXEL_COLORSPACE_SRGB ||
+            target == SIXEL_COLORSPACE_SRGB_LINEAR) {
         return sixel_color_convert(out, in, source, target);
     }
     if (out == NULL || target != SIXEL_COLORSPACE_SMPTEC ||
             !sixel_color_convert(linear, in, source,
-                SIXEL_COLORSPACE_LINEAR)) {
+                SIXEL_COLORSPACE_SRGB_LINEAR)) {
         return 0;
     }
     for (row = 0; row < 3; ++row) {
@@ -3293,8 +3295,8 @@ sixel_color_from_output(double out[3], double const in[3],
     int row;
     int column;
 
-    if (source == SIXEL_COLORSPACE_GAMMA ||
-            source == SIXEL_COLORSPACE_LINEAR) {
+    if (source == SIXEL_COLORSPACE_SRGB ||
+            source == SIXEL_COLORSPACE_SRGB_LINEAR) {
         return sixel_color_convert(out, in, source, target);
     }
     if (out == NULL || in == NULL || source != SIXEL_COLORSPACE_SMPTEC ||
@@ -3314,7 +3316,8 @@ sixel_color_from_output(double out[3], double const in[3],
     /* Even bounded destination RGB can lie outside the sRGB cube. Keep
      * that residual intact; the working converter validates every result
      * before publishing, including overflow and invalid target spaces. */
-    return sixel_color_convert(out, linear, SIXEL_COLORSPACE_LINEAR, target);
+    return sixel_color_convert(out, linear, SIXEL_COLORSPACE_SRGB_LINEAR,
+                               target);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS

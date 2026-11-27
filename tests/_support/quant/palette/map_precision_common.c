@@ -38,16 +38,16 @@ test_map_precision_run(int mode, int space, char const *precision,
                    char const *path, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "greedy:B1" }, { 'X', "linear" }, { 'F', "none" },
+        { '=', "greedy:B1" }, { 'X', "srgb-linear" }, { 'F', "none" },
         { '_', "none" }, { '~', "5bit" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" }, { '0', "hard" },
-        { 'd', "none" }, { 'U', "gamma" }
+        { 'd', "none" }, { 'U', "srgb" }
     };
     static char const *const spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static char const managed[] =
-        "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!";
+        "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!";
     static char const unmanaged[] = "builtin:cms_engine=none!";
     unsigned char pixels[3] = { 255, 0, 0 };
     sixel_encoder_t *encoder;
@@ -110,7 +110,7 @@ test_map_precision_run(int mode, int space, char const *precision,
     /* Isolate the map loader's precision requirement. Non-gamma clustering
      * independently requires native palette construction, even without CMS. */
     if ((mode == 1 || mode == 2 || mode == 3) &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "gamma"))) {
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "srgb"))) {
         goto end;
     }
     passes = mode == 2 || mode == 3 ? 3 : mode == 8 ? 2 : 1;
@@ -362,6 +362,6 @@ int
 test_map_animation(int mode, int space, char const *path)
 {
     return test_map_precision_run(mode, space, "auto", "kmeans:seed=1",
-        "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",
+        "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!",
         path, 1);
 }

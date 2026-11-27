@@ -3,12 +3,12 @@
 set -eux
 
 SIXEL_HDR_CASE_ID='020'
-SIXEL_HDR_CASE_LABEL='hdr matrix sample range case=020 target=linear ev=2 tonemap=none cms=auto fallback=linear-srgb'
-SIXEL_HDR_TARGET='linear'
+SIXEL_HDR_CASE_LABEL='hdr matrix sample range case=020 target=srgb-linear ev=2 tonemap=none cms=auto fallback=srgb-linear'
+SIXEL_HDR_TARGET='srgb-linear'
 SIXEL_HDR_EXPOSURE_EV='2'
 SIXEL_HDR_TONEMAP='none'
 SIXEL_HDR_CMS_ENGINE='auto'
-SIXEL_HDR_FALLBACK_PROFILE='linear-srgb'
+SIXEL_HDR_FALLBACK_PROFILE='srgb-linear'
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"

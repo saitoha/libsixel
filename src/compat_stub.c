@@ -1801,6 +1801,114 @@ sixel_compat_stat(const char *path, struct stat *stat_buffer)
 }
 
 
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+# define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
+#if HAVE_WIN32_OUTPUT_FILE_API
+static int
+sixel_compat_file_info(int fd, const char *path,
+                       BY_HANDLE_FILE_INFORMATION *info)
+{
+    HANDLE handle;
+    char *buffer;
+    char const *libc_path;
+    int ok;
+
+    if (fd >= 0) {
+        handle = (HANDLE)_get_osfhandle(fd);
+    } else {
+        if (sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+            return 0;
+        }
+        /* Path-only inspection needs metadata access, including when an
+         * open descriptor already owns write access to the same file. */
+        handle = CreateFileA(libc_path, 0,
+                             FILE_SHARE_READ | FILE_SHARE_WRITE |
+                             FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
+        free(buffer);
+    }
+    if (handle == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+    ok = GetFileType(handle) == FILE_TYPE_DISK &&
+        GetFileInformationByHandle(handle, info);
+    if (fd < 0) {
+        CloseHandle(handle);
+    }
+    return ok;
+}
+#endif
+
+SIXEL_COMPAT_API int
+sixel_compat_same_file(int output_fd, const char *output_path,
+                        const char *input_path)
+{
+    int input_fd;
+#if HAVE_WIN32_OUTPUT_FILE_API
+    BY_HANDLE_FILE_INFORMATION input;
+    BY_HANDLE_FILE_INFORMATION output;
+#else
+    struct stat input;
+    struct stat output;
+    int input_result;
+    int output_result;
+#endif
+
+    input_fd = input_path == NULL || strcmp(input_path, "-") == 0 ? 0 : -1;
+#if HAVE_WIN32_OUTPUT_FILE_API
+    return sixel_compat_file_info(output_fd, output_path, &output) &&
+        sixel_compat_file_info(input_fd, input_path, &input) &&
+        input.dwVolumeSerialNumber == output.dwVolumeSerialNumber &&
+        input.nFileIndexHigh == output.nFileIndexHigh &&
+        input.nFileIndexLow == output.nFileIndexLow;
+#else
+# if HAVE_FSTAT
+    output_result = output_fd >= 0 ? fstat(output_fd, &output)
+        : sixel_compat_stat(output_path, &output);
+    input_result = input_fd >= 0 ? fstat(input_fd, &input)
+        : sixel_compat_stat(input_path, &input);
+# else
+    (void)output_fd;
+    output_result = sixel_compat_stat(output_path, &output);
+    input_result = input_fd < 0 ? sixel_compat_stat(input_path, &input) : -1;
+# endif
+    return input_result == 0 && output_result == 0 &&
+        S_ISREG(input.st_mode) &&
+        memcmp(&input.st_dev, &output.st_dev, sizeof(input.st_dev)) == 0 &&
+        memcmp(&input.st_ino, &output.st_ino, sizeof(input.st_ino)) == 0;
+#endif
+}
+
+SIXEL_COMPAT_API int
+sixel_compat_truncate_output(int fd)
+{
+#if HAVE_WIN32_OUTPUT_FILE_API
+    HANDLE handle;
+
+    /* The output descriptor was just opened, so its offset is zero. */
+    handle = (HANDLE)_get_osfhandle(fd);
+    if (handle != INVALID_HANDLE_VALUE &&
+            (GetFileType(handle) != FILE_TYPE_DISK || SetEndOfFile(handle))) {
+        return 0;
+    }
+    errno = EIO;
+    return -1;
+#elif HAVE_FSTAT && HAVE_FTRUNCATE
+    struct stat file;
+
+    if (fstat(fd, &file) < 0) {
+        return -1;
+    }
+    /* O_TRUNC only clears regular files. Preserve devices and pipes. */
+    return S_ISREG(file.st_mode) ? ftruncate(fd, 0) : 0;
+#else
+    (void)fd;
+    errno = ENOSYS;
+    return -1;
+#endif
+}
+
 SIXEL_COMPAT_API ssize_t
 sixel_compat_write(int fd, const void *buffer, size_t count)
 {

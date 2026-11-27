@@ -67,7 +67,7 @@ export_options(sixel_encoder_t *encoder, int native, char const *path,
         {'=', "greedy:B1"}, {'b', "gray2"}, {'~', "none"}, {'d', "none"},
         {'Q', "heckbert"},
         {'F', "none"}, {'_', "none"}, {'E', "size"},
-        {'X', "gamma"}, {'W', "gamma"}, {'t', "rgb"}, {'7', NULL},
+        {'X', "srgb"}, {'W', "srgb"}, {'t', "rgb"}, {'7', NULL},
         {'g', NULL}, {'o', "/dev/null"}, {'L', "builtin!"}
     };
     size_t i;
@@ -84,7 +84,7 @@ export_options(sixel_encoder_t *encoder, int native, char const *path,
     return SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder, '.',
             native ? "float32" : "8bit")) &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder, 'U',
-            native ? "display-p3" : "gamma")) &&
+            native ? "display-p3" : "srgb")) &&
         (path == NULL || SIXEL_SUCCEEDED(sixel_encoder_setopt(
             encoder, 'M', path)));
 }

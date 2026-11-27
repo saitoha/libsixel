@@ -277,7 +277,7 @@ async function autoOutputFallback(createConverter) {
         const control = await convert(createConverter, 'auto', 'fs', 'ordered');
         if (submissions < 8 || !control.length)
             throw Error('gamma output did not dispatch GPU diffusion');
-        for (const extra of [['-O'], ['-U', 'linear'], ['-U', 'smpte-c']]) {
+        for (const extra of [['-O'], ['-U', 'srgb-linear'], ['-U', 'smpte-c']]) {
             const cpu = await convert(createConverter, 'off', 'fs', 'ordered',
                                       'xterm256', image, extra);
             const auto = await convert(createConverter, 'auto', 'fs', 'ordered',

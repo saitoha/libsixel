@@ -137,7 +137,7 @@ test_progressive_video_case(int mode)
     VIDEO_REQUIRE(sixel_encoder_setopt(encoder, 'g', NULL) == SIXEL_OK);
     VIDEO_REQUIRE(sixel_encoder_setopt(encoder, 'G',
         mode == 191 ? "force" : "off") == SIXEL_OK);
-    VIDEO_REQUIRE(sixel_encoder_setopt(encoder, 'W', "gamma") == SIXEL_OK);
+    VIDEO_REQUIRE(sixel_encoder_setopt(encoder, 'W', "srgb") == SIXEL_OK);
     VIDEO_REQUIRE(sixel_output_new(&output, video_test_write, &sink,
         allocator) == SIXEL_OK);
     VIDEO_REQUIRE(sixel_encoder_operation_enter(encoder,
@@ -187,7 +187,7 @@ test_progressive_video_case(int mode)
         guard.video_after = after;
         guard.paint = paint;
         guard.indices = indices;
-        guard.workspace = SIXEL_COLORSPACE_GAMMA;
+        guard.workspace = SIXEL_COLORSPACE_SRGB;
         color.working[0] = color.working[1] = color.working[2] = .5f;
         guard.application.colors = &color;
         guard.application.palette = palette;

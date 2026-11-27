@@ -7,14 +7,20 @@ import argparse
 import csv
 import json
 import math
+import shlex
 import statistics
 import sys
 from pathlib import Path
 from typing import Dict, List, Sequence, Set, Tuple
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    recorded_colorspace_fields,
+)
+
 
 BINBITS = (4, 5, 6, 7, 8)
-COLORSPACES = ("gamma", "linear", "oklab", "cielab", "din99d")
+COLORSPACES = ("srgb", "srgb-linear", "oklab", "lab-d65", "din99d")
 CRITERIA: Tuple[Tuple[str, float, float], ...] = (
     ("strict", 0.001, 0.05),
     ("balanced", 0.002, 0.15),
@@ -39,7 +45,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.is_file():
         fail(f"missing CSV: {path}")
     with path.open("r", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle))
+        rows = recorded_colorspace_fields(list(csv.DictReader(handle)))
     if not rows:
         fail(f"empty CSV: {path}")
     return rows
@@ -50,7 +56,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     if not path.is_file():
         fail(f"missing metadata: {path}")
     with path.open("r", encoding="utf-8") as handle:
-        payload = json.load(handle)
+        payload = recorded_colorspace_fields(json.load(handle))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         fail(f"unsupported metadata schema: {path}")
     source = payload.get("source")
@@ -91,6 +97,7 @@ def validate_command(row: Dict[str, str]) -> None:
     policy = row["binning_policy"]
     binbits = int(row["binbits"])
     command_bits = binbits if policy == "hard" else 6
+    space = row["colorspace"]
     required = (
         "--threading-policy=greedy:global_budget=1",
         "--precision-policy=float32",
@@ -101,15 +108,15 @@ def validate_command(row: Dict[str, str]) -> None:
         f"--quantize-model=kmeans:seed={row['seed']}:binbits={command_bits}",
         "-F none",
         "-a off",
-        f"-X{row['colorspace']}",
-        "-Wgamma",
+        "-X" + space,
+        "-Wsrgb",
         "--diffusion=none",
         "--gpu-policy=off",
         "--lookup-policy=none",
         "--palette-type=rgb",
         f"-p {row['colors']}",
     )
-    command = row["command"]
+    command = " ".join(canonical_encoder_arguments(shlex.split(row["command"])))
     if not all(token in command for token in required):
         fail(
             "raw command does not match the controlled protocol: "

@@ -188,7 +188,7 @@ test_progressive_limits_case(int mode)
     }
     LIMIT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
-    LIMIT_REQUIRE(sixel_encoder_setopt(encoder, 'W', "gamma") == SIXEL_OK);
+    LIMIT_REQUIRE(sixel_encoder_setopt(encoder, 'W', "srgb") == SIXEL_OK);
     LIMIT_REQUIRE(sixel_output_new(&output, limits_test_write, &sink, NULL)
         == SIXEL_OK);
     LIMIT_REQUIRE(sixel_encoder_operation_enter(encoder,

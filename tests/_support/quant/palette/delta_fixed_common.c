@@ -57,7 +57,7 @@ df_frames(int mode, int duplicates, char const *map, int hls)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
-        {'_', "none"}, {'.', "float32"}, {'W', "gamma"}, {'U', "gamma"},
+        {'_', "none"}, {'.', "float32"}, {'W', "srgb"}, {'U', "srgb"},
         {'t', "rgb"}, {'Z', "delta"}, {'7', NULL},
         {'Q', "heckbert"}, {'F', "none"}, {'4', "full-frame"}, {'5', "none"}
     };
@@ -366,7 +366,7 @@ df_residual(int skip, int hls)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
-        {'_', "none"}, {'.', "float32"}, {'W', "gamma"}, {'U', "gamma"},
+        {'_', "none"}, {'.', "float32"}, {'W', "srgb"}, {'U', "srgb"},
         {'t', "rgb"}, {'Z', "delta"}, {'b', "gray2"}, {'7', NULL}
     };
     sixel_encoder_t *encoder;
@@ -630,7 +630,7 @@ test_delta_wire_generated(int workers)
 {
     static struct { int flag; char const *value; } const options[] = {
         {'~', "none"}, {'d', "none"}, {'0', "hard"}, {'_', "none"},
-        {'.', "8bit"}, {'W', "gamma"}, {'U', "gamma"}, {'t', "rgb"},
+        {'.', "8bit"}, {'W', "srgb"}, {'U', "srgb"}, {'t', "rgb"},
         {'Z', "delta"}, {'7', NULL}, {'Q', "heckbert"}, {'F', "none"},
         {'4', "full-frame"}, {'5', "none"}, {'p', "4"}, {'a', "off"}
     };

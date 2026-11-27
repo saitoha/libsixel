@@ -38,11 +38,11 @@ test_animation_feedback(int cache, int soft)
 {
     static struct { int flag; char const *value; } const options[] = {
         { '=', "greedy:B1" }, { '~', "none" }, { 'd', "fs" },
-        { 'W', "gamma" },
-        { 'X', "gamma" }, { '_', "none" }, { '.', "auto" },
+        { 'W', "srgb" },
+        { 'X', "srgb" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
         { '4', "full-frame" }, { '5', "none" }, { 'p', "2" },
-        { 't', "rgb" }, { 'U', "gamma" }
+        { 't', "rgb" }, { 'U', "srgb" }
     };
     static float const input[6] = { .55f, .4f, 0, 0, 1, 1 };
     static int const indexes[6] = { 1, 0, 0, 0, 1, 1 };
@@ -260,8 +260,8 @@ test_animation_loader_run(char const *input, char const *path,
 {
     char threading[64];
     static struct { int flag; char const *value; } const options[] = {
-        { '~', "none" }, { 'd', "fs" }, { 'W', "linear" },
-        { 'X', "linear" }, { '_', "none" }, { '.', "auto" },
+        { '~', "none" }, { 'd', "fs" }, { 'W', "srgb-linear" },
+        { 'X', "srgb-linear" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
         { '4', "full-frame" }, { '5', "none" }, { 'p', "2" },
         { 't', "rgb" }, { 'g', NULL }, { 'l', "auto" }
@@ -324,7 +324,7 @@ test_animation_loader_run(char const *input, char const *path,
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threading)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L', loader)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'o', path)) ||
             SIXEL_FAILED(sixel_encoder_encode(encoder, input))) {
         goto cleanup;

@@ -64,7 +64,7 @@ gpu_body_image(sixel_allocator_t *allocator)
     wire.definitions = colors;
     wire.count = GPU_BODY_COLORS;
     wire.color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     palette = NULL;
     if (sixel_wire_palette_new(&palette, &wire, allocator) != SIXEL_OK) {
         return NULL;

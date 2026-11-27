@@ -88,7 +88,7 @@ test_loader_0189_png_palette_samples(int argc, char **argv)
         SIXEL_FAILED(status) || probe.callback_count != 1 ||
         probe.width[0] != 4 || probe.height[0] != 2 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_PAL8 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB ||
         probe.ncolors[0] != 4 || probe.palette_size[0] != 12 ||
         probe.rgb_size[0] != 8 || probe.mask_size[0] != 0) {
         fprintf(stderr, "retained palette: unexpected frame or status\n");

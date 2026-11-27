@@ -15,7 +15,7 @@ output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     --gpu-policy=off --threading-policy=greedy:global_budget=1 --precision-policy=8bit \
     -Lbuiltin:cms_engine=none! -4full -5exact -_none -aoff -Fnone \
-    -Qkmeans -Xgamma -Wgamma -Ugamma -dnone \
+    -Qkmeans -Xsrgb -Wsrgb -Usrgb -dnone \
     "${TOP_SRCDIR}/tests/data/color-numeric/palette-trns-multi.png") || {
     printf '\n%s\n' "not ok 1 - indexed PNG encode failed"
     exit 0

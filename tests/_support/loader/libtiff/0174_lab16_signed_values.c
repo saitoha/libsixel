@@ -35,8 +35,8 @@ lab16_capture(sixel_frame_t *frame, void *context)
     count = state->mode == 4 ? 4u : 15u;
     format = state->mode == 0 || state->mode == 4 ? SIXEL_PIXELFORMAT_RGBFLOAT32
                              : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    colorspace = state->mode == 0 || state->mode == 4 ? SIXEL_COLORSPACE_GAMMA
-                                 : SIXEL_COLORSPACE_LINEAR;
+    colorspace = state->mode == 0 || state->mode == 4 ? SIXEL_COLORSPACE_SRGB
+                                 : SIXEL_COLORSPACE_SRGB_LINEAR;
     if (frame->width != (int)count || frame->height != 1 ||
         sixel_frame_format(frame) != format ||
         frame->format.coordinates != colorspace ||
@@ -120,7 +120,7 @@ test_loader_0174_lab16(int argc, char **argv)
     no = 0;
     ok = 0;
     snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!", name);
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!", name);
     status = sixel_loader_new(&loader, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;

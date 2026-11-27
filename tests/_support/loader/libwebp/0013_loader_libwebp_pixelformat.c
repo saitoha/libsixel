@@ -35,7 +35,7 @@ webp_test_capture_linear_alpha(sixel_frame_t *frame, void *context)
     if (SIXEL_FAILED(loader_test_frame_get_pixels_view(frame, &view)) ||
         view.width != 2 || view.height != 1 ||
         view.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        view.colorspace != SIXEL_COLORSPACE_LINEAR ||
+        view.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR ||
         view.rgb_definition != NULL || view.pixels_float32 == NULL) {
         fprintf(stderr, "WebP alpha output must be linear sRGB float32\n");
         return SIXEL_BAD_INPUT;
@@ -75,7 +75,7 @@ webp_test_linear_alpha(void)
     int no = 0;
     int ok;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB);
     ok = SIXEL_SUCCEEDED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
                                                NULL)) &&
         SIXEL_SUCCEEDED(create_loader_component_by_name(

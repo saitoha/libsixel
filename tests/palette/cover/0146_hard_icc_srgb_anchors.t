@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=1 --precision-policy=float32 \
-    -7 -Lbuiltin! -Ugamma -_none -~none -Fnone -trgb \
+    -7 -Lbuiltin! -Usrgb -_none -~none -Fnone -trgb \
     -Qkmeans:seed=1 -p2 -Woklab -afaces:Whard:V1 -dnone \
     "-Xicc:${TOP_SRCDIR}/tests/data/color-numeric/narrow-p3-cluster.icc" \
     --binning-policy=none --sampling-policy=full-frame \

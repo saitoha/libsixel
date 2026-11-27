@@ -67,7 +67,7 @@ For exact palette interchange, inspect `-M` output rather than assuming the term
 
 ## Native float application and Display P3
 
-The [selected CPU path](../output/output-colorspace.md#selected-ordinary-srgb-float-path) accepts built-in `-b` tables for gamma, linear, SMPTE-C and Display P3 output. The table remains sRGB8: import converts its entries once to the requested gamma, linear, Oklab, CIELAB or DIN99d working coordinates. Lookup and diffusion use these unrounded float values. A separate output copy is converted to the destination definition, clamped and rounded to RGB101. The receiver must interpret that output definition; selecting P3 does not reinterpret the compiled table as P3 primaries.
+The [selected CPU path](../output/output-colorspace.md#selected-ordinary-srgb-float-path) accepts built-in `-b` tables for `-U srgb`, `srgb-linear`, `smpte-c` and `display-p3`. The table remains sRGB8: import converts its entries once to the requested gamma, linear, Oklab, CIELAB or DIN99d working coordinates. Lookup and diffusion use these unrounded float values. A separate output copy is converted to the destination definition, clamped and rounded to RGB101. The receiver must interpret that output definition; selecting P3 does not reinterpret the compiled table as P3 primaries.
 
 Table order, duplicate colors and unused entries are retained. `-M` exports the supplied sRGB8 values before wire conversion. A source or operation that needs float selects native application; an otherwise byte-eligible ordinary gamma job keeps its byte path. Changing the output, source precision or built-in table on one encoder recomputes the corresponding working/wire state. Palette construction is still bypassed, and an explicit cover option still conflicts with `-b`.
 

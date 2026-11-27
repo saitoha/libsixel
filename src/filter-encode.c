@@ -84,7 +84,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     height = 0;
     pixelformat = 0;
     depth = 0;
-    frame_colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame_colorspace = SIXEL_COLORSPACE_SRGB;
     pixels = NULL;
 
     if (config == NULL || frame == NULL) {

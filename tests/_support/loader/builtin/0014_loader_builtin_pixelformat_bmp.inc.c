@@ -224,9 +224,9 @@ verify_bmp_composited_float_probe(char const *label,
         return 1;
     }
     if ((probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-         probe->colorspace != SIXEL_COLORSPACE_LINEAR) ||
+         probe->colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) ||
         (probe->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-         probe->colorspace != SIXEL_COLORSPACE_GAMMA)) {
+         probe->colorspace != SIXEL_COLORSPACE_SRGB)) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -306,7 +306,7 @@ verify_bmp_rgb_probe(char const *label,
                 probe->pixelformat);
         return 1;
     }
-    if (probe->colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe->colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -357,11 +357,11 @@ verify_bmp_png16_no_bg_rgbf_probe(char const *label,
         return 1;
     }
     if (!((probe->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-           probe->colorspace == SIXEL_COLORSPACE_GAMMA) ||
+           probe->colorspace == SIXEL_COLORSPACE_SRGB) ||
           (probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-           probe->colorspace == SIXEL_COLORSPACE_LINEAR) ||
+           probe->colorspace == SIXEL_COLORSPACE_SRGB_LINEAR) ||
           (probe->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-           probe->colorspace == SIXEL_COLORSPACE_GAMMA))) {
+           probe->colorspace == SIXEL_COLORSPACE_SRGB))) {
         fprintf(stderr, "%s: format/colorspace mismatch (%d,%d)\n",
                 label,
                 probe->pixelformat,
@@ -433,7 +433,7 @@ verify_bmp_rgb_mask_probe(char const *label,
                 probe->pixelformat);
         return 1;
     }
-    if (probe->colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe->colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -524,7 +524,7 @@ run_builtin_loader_bmp_rgba_bgcolor_float32_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB);
     result = run_builtin_loader_probe_buffer_case(
         "builtin loader bmp rgba bgcolor float32 numeric (gamma bg)",
         bmp_rgba_2x2_sample,
@@ -560,7 +560,7 @@ run_builtin_loader_bmp_rgba_bgcolor_float32_numeric_test(void)
         goto end;
     }
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_buffer_case(
         "builtin loader bmp rgba bgcolor float32 numeric (linear bg)",
         bmp_rgba_2x2_sample,
@@ -694,7 +694,7 @@ run_builtin_loader_bmp_rgba_mask_no_bg_numeric_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader bmp rgba mask without bgcolor numeric: "
                 "colorspace mismatch (%d)\n",
@@ -810,7 +810,7 @@ run_builtin_loader_bmp_opaque_fastpath_numeric_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader bmp opaque fastpath numeric: "
                 "colorspace mismatch (%d)\n",
@@ -904,7 +904,7 @@ run_builtin_loader_bmp_rle8_decode_numeric_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader bmp rle8 decode numeric: "
                 "colorspace mismatch (%d)\n",
@@ -1011,7 +1011,7 @@ run_builtin_loader_bmp_rle4_decode_numeric_test(void)
                 probe.pixelformat);
         return 1;
     }
-    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader bmp rle4 decode numeric: "
                 "colorspace mismatch (%d)\n",
@@ -1357,7 +1357,7 @@ run_builtin_loader_bmp_v4_alpha_bgcolor_float32_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp v4 alpha bgcolor float32 numeric",
         "/tests/data/inputs/formats/bmp-v4-bitfields-rgba-2x2.bmp",
@@ -2011,7 +2011,7 @@ run_builtin_loader_bmp_v5_alpha_bgcolor_float32_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp v5 alpha bgcolor float32 numeric",
         "/tests/data/inputs/formats/bmp-v5-bitfields-rgba-2x2.bmp",
@@ -2157,7 +2157,7 @@ run_builtin_loader_bmp_v3_alpha_bgcolor_float32_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp v3 alpha bgcolor float32 numeric",
         "/tests/data/inputs/formats/bmp-v3-bitfields-rgba-2x2.bmp",
@@ -2273,7 +2273,7 @@ verify_bmp_rgb_probe_metadata(char const *label,
                 probe->pixelformat);
         return 1;
     }
-    if (probe->colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (probe->colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -2427,7 +2427,7 @@ run_builtin_loader_bmp_bi_png_alpha_bgcolor_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp bi-png alpha bgcolor numeric",
         "/tests/data/inputs/formats/bmp-info40-bi-png-rgba-2x2.bmp",
@@ -2512,7 +2512,7 @@ run_builtin_loader_bmp_bi_png_alpha_mask_no_bg_numeric_test(void)
         return 1;
     }
     if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        probe.colorspace != SIXEL_COLORSPACE_SRGB) {
         fprintf(stderr,
                 "builtin loader bmp bi-png alpha mask no-bg numeric: "
                 "unexpected format/colorspace (%d, %d)\n",
@@ -2584,7 +2584,7 @@ run_builtin_loader_bmp_bi_png16_alpha_bgcolor_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp bi-png16 alpha bgcolor numeric",
         "/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-2x2.bmp",
@@ -2875,7 +2875,7 @@ run_bmp_png16_bg_cms_on_t(void)
     options.set_cms_engine = 1;
     options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp bi-png16 alpha bgcolor cms on numeric",
         "/tests/data/inputs/formats/bmp-info40-bi-png-rgba16-2x2.bmp",
@@ -3095,9 +3095,9 @@ verify_bmp_float_probe_metadata(char const *label,
         return 1;
     }
     if ((probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
-         probe->colorspace != SIXEL_COLORSPACE_LINEAR) ||
+         probe->colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) ||
         (probe->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-         probe->colorspace != SIXEL_COLORSPACE_GAMMA)) {
+         probe->colorspace != SIXEL_COLORSPACE_SRGB)) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -3278,7 +3278,7 @@ run_builtin_loader_bmp_v5_icc_rgba_bgcolor_num_test(void)
     options.set_cms_engine = 1;
     options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp v5 embedded icc rgba bgcolor numeric",
         "/tests/data/inputs/formats/bmp-v5-embedded-icc-rgba-2x2.bmp",
@@ -3365,7 +3365,7 @@ run_builtin_loader_bmp_v5_icc_rgba_mask_no_bg_num_test(void)
         return 1;
     }
     if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+        probe.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) {
         fprintf(stderr,
                 "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
                 "unexpected format/colorspace (%d, %d)\n",
@@ -3511,7 +3511,7 @@ run_builtin_loader_bmp_alphabitfields_bgcolor_numeric_test(void)
     options.set_cms_engine = 0;
     options.cms_engine = SIXEL_CMS_ENGINE_NONE;
 
-    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_SRGB_LINEAR);
     result = run_builtin_loader_probe_case(
         "builtin loader bmp alphabitfields bgcolor numeric",
         "/tests/data/inputs/formats/bmp-info40-alphabitfields-rgba-2x2.bmp",
@@ -3664,7 +3664,7 @@ run_builtin_loader_bmp_v4_calibrated_cms_on_numeric_test(void)
     }
     if (probe.callback_count != 1 ||
         probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB ||
         probe.width != 2 ||
         probe.height != 2) {
         fprintf(stderr,
@@ -3796,7 +3796,7 @@ run_bmp_v4_cal_split_gamma_cms_on_num_t(void)
     }
     if (probe.callback_count != 1 || probe.width != 2 || probe.height != 2 ||
         probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB ||
         memcmp(probe.pixels_u8, expected, sizeof(expected)) != 0) {
         fprintf(stderr, "BMP split-gamma independent byte result mismatch\n");
         return 1;
@@ -3859,7 +3859,7 @@ run_builtin_loader_bmp_v5_icc_calibrated_priority_num_test(void)
     }
     if (probe.callback_count != 1 ||
         probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.colorspace != SIXEL_COLORSPACE_SRGB ||
         probe.width != 2 ||
         probe.height != 2) {
         fprintf(stderr,

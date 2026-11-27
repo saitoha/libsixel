@@ -76,15 +76,15 @@ The sRGB transfer and `srgb-linear` definitions are described by [CSS Color Modu
 
 | CLI name | Meaning in libsixel | Available at |
 | --- | --- | --- |
-| `gamma` | sRGB primaries and D65 white with the piecewise sRGB transfer function | loader CMS target, `-X`, `-W`, and `-U` |
-| `linear` | linear-light sRGB with the same primaries and white point as sRGB | loader CMS target, `-X`, `-W`, and `-U` |
-| `oklab` | Oklab opponent coordinates derived from linear sRGB | loader CMS target, `-X`, and `-W` |
-| `cielab` | libsixel's normalized CIE 1976 L*a*b* coordinates, derived through D65 XYZ | loader CMS target, `-X`, and `-W` |
-| `din99d` | DIN99d with its XYZ correction, using a common `/100` coordinate scale | loader CMS target, `-X`, and `-W` |
+| `srgb` | sRGB primaries and D65 white with the piecewise sRGB transfer function | `-X`, `-W`, and `-U` |
+| `srgb-linear` | linear-light sRGB with the same primaries and white point as sRGB | `-X`, `-W`, and `-U` |
+| `oklab` | Oklab opponent coordinates derived from linear sRGB | `-X` and `-W` |
+| `lab-d65` | libsixel's normalized CIE 1976 L*a*b* coordinates, derived through D65 XYZ | `-X` and `-W` |
+| `din99d` | DIN99d with its XYZ correction, using a common `/100` coordinate scale | `-X` and `-W` |
 | `smpte-c` | SMPTE-C primaries with the output transfer used by libsixel | `-U` only |
 | `display-p3` | Display P3 primaries and D65 white with the sRGB transfer function | `-U`, on the selected CPU float path described in [Output color space](../../encoder/output/output-colorspace.md#display-p3-selected-cpu-float-path) |
 
-Within this project, `gamma` is not shorthand for an arbitrary power-law curve. It specifically means the sRGB encoded representation. SMPTE-C output uses a different primary conversion and a nominal 2.2 power transfer.
+The `srgb` name specifies the standard piecewise sRGB transfer function. SMPTE-C output uses a different primary conversion and a nominal 2.2 power transfer.
 
 Gamma, linear RGB, SMPTE-C, and Display P3 are device-oriented RGB spaces: their coordinates ultimately describe amounts or encodings of red, green, and blue primaries. Oklab, CIELAB, and DIN99d are opponent or perceptual working spaces designed so that geometric distance is more useful for color decisions. They are internal calculation spaces, not SIXEL palette syntaxes. The [DIN99d guide](../din99d/README.md) shows why a color-difference-oriented space can change a nearest-palette-color decision, explains the corrected XYZ transform and common coordinate scale, and connects that example to measured image results.
 

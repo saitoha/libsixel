@@ -23,11 +23,11 @@ In libsixel, two independently selectable stages can use this geometry:
 
 | Stage | Explicit example | What changes |
 | --- | --- | --- |
-| Palette construction | `-Xdin99d -Wgamma` | Samples enter DIN99d before binning and clustering; the generated palette returns to gamma RGB for application. |
-| Palette application | `-Xgamma -Wdin99d` | Palette construction stays in gamma RGB; pixel lookup and any error diffusion use DIN99d coordinates. |
+| Palette construction | `-Xdin99d -Wsrgb` | Samples enter DIN99d before binning and clustering; the generated palette returns to gamma RGB for application. |
+| Palette application | `-Xsrgb -Wdin99d` | Palette construction stays in gamma RGB; pixel lookup and any error diffusion use DIN99d coordinates. |
 | Both stages | `-Xdin99d -Wdin99d` | Construction and application use the same perceptual coordinates. |
 
-Set both options when isolating a stage: a lone `-W` can also resolve the clustering space when `-X` was not explicit. DIN99d processing uses typed float32 coordinates. `-Ugamma` controls conversion of the final palette entries to the output RGB representation; it does not redo pixel assignments. These conversions happen at the relevant processing boundaries, as explained in the [encoding pipeline](../../encoder/colorspace-handling/README.md#end-to-end-pipeline).
+Set both options when isolating a stage: a lone `-W` can also resolve the clustering space when `-X` was not explicit. DIN99d processing uses typed float32 coordinates. `-Usrgb` controls conversion of the final palette entries to the output RGB representation; it does not redo pixel assignments. These conversions happen at the relevant processing boundaries, as explained in the [encoding pipeline](../../encoder/colorspace-handling/README.md#end-to-end-pipeline).
 
 ## Coordinates and normalization
 

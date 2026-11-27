@@ -47,7 +47,7 @@ case "${trace_output}" in *builtin\ PSD:\ parsed\ infx=1**) true ;; *) false ;; 
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W srgb-linear \
     -b "MS-SSIM:${lsqa_floor}" \
     "${expected_ppm}" "${output_sixel}" 2>&1) || {
     printf '\n%s\n' "not ok 1 - effects/shape-fx decode fell below MS-SSIM ${lsqa_floor}"

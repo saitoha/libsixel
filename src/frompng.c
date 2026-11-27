@@ -1678,7 +1678,7 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
                     sixel_frompng_decode_samples(background, 1u, &source);
                 }
             } else if (loader_background_colorspace() !=
-                       SIXEL_COLORSPACE_LINEAR) {
+                       SIXEL_COLORSPACE_SRGB_LINEAR) {
                 /* An explicit background has its own declared transfer;
                  * it never inherits the file's ICC profile or gAMA. */
                 for (c = 0; c < 3; ++c) {
@@ -1753,13 +1753,13 @@ sixel_frompng_load_samples(sixel_chunk_t const *pchunk,
             sixel_frame_as_interface(frame),
             &(sixel_frame_pixels_request_t){
                 samples8, NULL, frame->width, frame->height,
-                SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA, -1,
+                SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_SRGB, -1,
                 SIXEL_FRAME_PIXELS_U8
             });
     } else {
         status = sixel_frame_init_rgb_float(frame, pixels,
             frame->width, frame->height,
-            linear ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA, -1);
+            linear ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB, -1);
     }
     if (SIXEL_FAILED(status)) {
         goto cleanup;

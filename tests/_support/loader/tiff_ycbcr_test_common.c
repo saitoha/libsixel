@@ -265,8 +265,8 @@ yc_capture(sixel_frame_t *frame, void *context)
     ++yc.calls;
     format = yc.managed ? yc_target_format() : SIXEL_PIXELFORMAT_RGB888;
     space = !yc.managed || yc.target == 1 || yc.target == 2
-        ? SIXEL_COLORSPACE_GAMMA : yc.target == 3
-        ? SIXEL_COLORSPACE_OKLAB : SIXEL_COLORSPACE_LINEAR;
+        ? SIXEL_COLORSPACE_SRGB : yc.target == 3
+        ? SIXEL_COLORSPACE_OKLAB : SIXEL_COLORSPACE_SRGB_LINEAR;
     yc.ok &= frame->width == 3 && frame->height == 2 &&
         sixel_frame_format(frame) == format &&
         frame->format.coordinates == space &&
@@ -339,8 +339,8 @@ yc_phase(sixel_loader_component_t *component, sixel_chunk_t *chunk,
     memcpy(yc.expected, yc.native, sizeof(yc.expected));
     if (target != 0 && yc.managed) {
         status = sixel_color_convert_rgbf32(yc.expected, 6u,
-            SIXEL_COLORSPACE_LINEAR, target == 3
-                ? SIXEL_COLORSPACE_OKLAB : SIXEL_COLORSPACE_GAMMA);
+            SIXEL_COLORSPACE_SRGB_LINEAR, target == 3
+                ? SIXEL_COLORSPACE_OKLAB : SIXEL_COLORSPACE_SRGB);
         if (SIXEL_FAILED(status)) { return 0; }
     }
     applies = enabled && !yc.mismatch && fault != 2 && fault != 3;

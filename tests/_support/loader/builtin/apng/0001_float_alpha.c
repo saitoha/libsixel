@@ -330,7 +330,7 @@ ap_load(ap_fixture_t const *f, ap_probe_t *probe, int mode, int height)
            ? SIXEL_CMS_ENGINE_NONE : SIXEL_CMS_ENGINE_BUILTIN;
     options.builtin_enable_cms = engine != SIXEL_CMS_ENGINE_NONE;
     options.builtin_cms_engine = engine;
-    options.cms_target_colorspace = SIXEL_COLORSPACE_LINEAR;
+    options.cms_target_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     options.cms_prefer_8bit = 0;
     previous = sixel_loader_activate_suboptions(&options);
     previous_policy = loader_transparent_policy();

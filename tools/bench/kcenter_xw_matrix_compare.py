@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Iterable
 
 
-DEFAULT_COLORSPACES = ["gamma", "linear", "oklab", "cielab", "din99d"]
+DEFAULT_COLORSPACES = ["srgb", "srgb-linear", "oklab", "lab-d65", "din99d"]
 
 
 @dataclass

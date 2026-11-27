@@ -48,7 +48,7 @@ test_loader_0106_loader_builtin_hdr_old_scanline_rle_numeric(
     if (probe.callback_count != 1 || probe.width[0] != 8 ||
         probe.height[0] != 2 ||
         probe.pixelformat[0] != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-        probe.colorspace[0] != SIXEL_COLORSPACE_LINEAR ||
+        probe.colorspace[0] != SIXEL_COLORSPACE_SRGB_LINEAR ||
         probe.rgb_size[0] != sizeof(samples)) {
         return 1;
     }

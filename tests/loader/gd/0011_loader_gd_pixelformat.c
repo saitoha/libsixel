@@ -60,7 +60,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 0, 256, NULL },
@@ -79,7 +79,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 0, 256, white_bg },
@@ -98,7 +98,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 0, 1, 256, NULL },
@@ -117,7 +117,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 0, 0, 256, white_bg },
@@ -136,7 +136,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 0, 1, 256, white_bg },
@@ -155,7 +155,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 0, 1, 256, NULL },
@@ -174,7 +174,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 3, NULL },
@@ -193,7 +193,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 3, white_bg },
@@ -212,7 +212,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 0, 256, NULL },
@@ -231,7 +231,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 0, 256, NULL },
@@ -250,7 +250,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 256, NULL },
@@ -269,7 +269,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 4, NULL },
@@ -288,7 +288,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 0, 0, 256, NULL },
@@ -307,7 +307,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 0, 0, 256, NULL },
@@ -326,7 +326,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 256, white_bg },
@@ -345,7 +345,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 256, white_bg },
@@ -364,7 +364,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 0, 256, NULL },
@@ -383,7 +383,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 1,
                 FRAME_MASK_VALUE_ANY,
                 1,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 256, NULL },
@@ -402,7 +402,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 0, NULL },
@@ -421,7 +421,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, SIXEL_PALETTE_MAX + 1, NULL },
@@ -440,7 +440,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 255, NULL },
@@ -459,7 +459,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_GAMMA,
+                SIXEL_COLORSPACE_SRGB,
                 1
             },
             { 1, 1, 256, NULL },
@@ -478,7 +478,7 @@ run_gd_pixelformat_case_by_id(gd_pixelformat_case_id_t case_id)
                 0,
                 FRAME_MASK_VALUE_ANY,
                 0,
-                SIXEL_COLORSPACE_LINEAR,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                 1
             },
             { 1, 1, 256, white_bg },

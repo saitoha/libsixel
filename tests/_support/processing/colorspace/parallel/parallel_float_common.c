@@ -22,8 +22,8 @@ static int const parallel_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static int const parallel_spaces[] = {
-    SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
-    SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_OKLAB,
+    SIXEL_COLORSPACE_SRGB, SIXEL_COLORSPACE_SRGB_LINEAR,
+    SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_OKLAB,
     SIXEL_COLORSPACE_DIN99D
 };
 
@@ -77,7 +77,8 @@ parallel_float_values(int frame_api)
             linear[0] = -.125 + (double)(i % 17) / 16.0;
             linear[1] = .5;
             linear[2] = 1.25;
-            if (!sixel_color_convert(typed, linear, SIXEL_COLORSPACE_LINEAR,
+            if (!sixel_color_convert(typed, linear,
+                SIXEL_COLORSPACE_SRGB_LINEAR,
                     parallel_spaces[src])) {
                 return EXIT_FAILURE;
             }
@@ -269,9 +270,9 @@ parallel_float_pipeline(int clustering, char const *path)
                 "adaptive-grid")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '5', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
-                clustering ? "gamma" : "cielab")) ||
+                clustering ? "srgb" : "lab-d65")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X',
-                clustering ? "cielab" : "gamma")) ||
+                clustering ? "lab-d65" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 64, 64,
                 SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, -1))) {
         goto end;

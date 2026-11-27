@@ -41,8 +41,8 @@ psd_process_normalize(float *base, float *output, size_t count,
                     (1.0 - base[i * 4u + j]) *
                     (1.0 - base[i * 4u + 3u]);
             }
-            if (!sixel_color_convert(rgb, rgb, SIXEL_COLORSPACE_GAMMA,
-                                      SIXEL_COLORSPACE_LINEAR)) {
+            if (!sixel_color_convert(rgb, rgb, SIXEL_COLORSPACE_SRGB,
+                                      SIXEL_COLORSPACE_SRGB_LINEAR)) {
                 return 0;
             }
             for (j = 0u; j < 3u; ++j) {
@@ -251,8 +251,8 @@ sixel_psd_render_process_data(sixel_chunk_t const *chunk,
     for (j = 0u; j < 3u; ++j) {
         bg[j] = bgcolor == NULL ? 0.0 : bgcolor[j] / 255.0;
     }
-    (void)sixel_color_convert(bg, bg, SIXEL_COLORSPACE_GAMMA,
-                              SIXEL_COLORSPACE_LINEAR);
+    (void)sixel_color_convert(bg, bg, SIXEL_COLORSPACE_SRGB,
+                              SIXEL_COLORSPACE_SRGB_LINEAR);
     for (i = 0u; i < count; ++i) {
         opacity = 1.0;
         if (alpha) {

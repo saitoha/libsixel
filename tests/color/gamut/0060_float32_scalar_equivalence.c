@@ -8,11 +8,11 @@
 int
 test_gamut_0060_float32_scalar_equivalence(int argc, char **argv)
 {
-    char const *names[] = {"srgb", "display-p3", "adobe-rgb", "dci-p3"};
+    char const *names[] = {"srgb", "display-p3", "a98-rgb", "dci-p3"};
     int const policies[] = {SIXEL_GAMUT_LOCAL_MINDE,
         SIXEL_GAMUT_EDGE_SEEKER, SIXEL_GAMUT_RAY_TRACE};
-    int const spaces[] = {SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB,
+    int const spaces[] = {SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_SRGB,
+        SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_LAB_D65,
         SIXEL_COLORSPACE_DIN99D};
     float const edges[] = {-0.0f, 0.0f, -2e-7f, 2e-7f,
         1.0f, 1.0f + 2e-7f, -1e-30f, 1e-30f};
@@ -37,7 +37,7 @@ test_gamut_0060_float32_scalar_equivalence(int argc, char **argv)
         for (policy = 0; ok && policy < 3; ++policy) {
             ok = SIXEL_SUCCEEDED(sixel_gamut_new(&fixture.mapper,
                 fixture.definition, destination == 4
-                    ? SIXEL_COLORSPACE_SMPTEC : SIXEL_COLORSPACE_GAMMA,
+                    ? SIXEL_COLORSPACE_SMPTEC : SIXEL_COLORSPACE_SRGB,
                 policies[policy], fixture.allocator));
             for (space = 0; ok && space < 5; ++space) {
                 for (i = 0; ok && i < 259; ++i) {
@@ -53,7 +53,7 @@ test_gamut_0060_float32_scalar_equivalence(int argc, char **argv)
                         source[1] = source[2] = .5;
                     }
                     ok = sixel_color_convert(input, source,
-                        SIXEL_COLORSPACE_LINEAR, spaces[space]);
+                        SIXEL_COLORSPACE_SRGB_LINEAR, spaces[space]);
                     if (!ok) {
                         break;
                     }

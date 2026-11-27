@@ -19,8 +19,8 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 }
 trace=$(SIXEL_TRACE_TOPIC=loader,palette_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threading-policy=greedy:global_budget=3 --precision-policy=float32 \
-    -7 -Llibtiff! -Ugamma -_none -~none -Fnone -trgb \
-    -Qkmeans:seed=4 -p2 -Xoklab -Wlinear -aoff -dfs:scan=raster -0none \
+    -7 -Llibtiff! -Usrgb -_none -~none -Fnone -trgb \
+    -Qkmeans:seed=4 -p2 -Xoklab -Wsrgb-linear -aoff -dfs:scan=raster -0none \
     --binning-policy=none --sampling-policy=adaptive-grid \
     "${TOP_SRCDIR}/tests/data/color-numeric/mixed-spaces-xyz.tif" 2>&1) || {
     printf '%s\n' "$trace" >&2

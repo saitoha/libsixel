@@ -23,14 +23,14 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 output_gamma="${ARTIFACT_LOCAL_DIR}/builtin_bgcs_trns_gamma_cms_auto.six"
 output_linear="${ARTIFACT_LOCAL_DIR}/builtin_bgcs_trns_linear_cms_auto.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb \
               -Lbuiltin:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_gamma}" || {
     printf '\n%s\n' "not ok 1 - builtin cms=auto RGBA gamma background composition failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=linear \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_BACKGROUND_COLORSPACE=srgb-linear \
               -Lbuiltin:cms_engine=auto! \
               -B#808080 "${input_png}" >"${output_linear}" || {
     printf '\n%s\n' "not ok 1 - builtin cms=auto RGBA linear background composition failed"

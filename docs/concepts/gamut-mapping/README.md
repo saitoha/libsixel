@@ -47,8 +47,8 @@ This chapter starts with spatial examples, then builds from individual colors to
 For example, these commands choose the same sRGB output interpretation but different handling of colors that do not fit it:
 
 ```sh
-img2sixel wide-gamut.png -U gamma:gamut=clip
-img2sixel wide-gamut.png -U gamma:gamut=local-minde
+img2sixel wide-gamut.png -U srgb:gamut=clip
+img2sixel wide-gamut.png -U srgb:gamut=local-minde
 ```
 
 ## One pixel that does not fit

@@ -19,9 +19,9 @@ echo "1..1"
 set -v
 
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threading-policy=greedy:global_budget=1 -L"libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
+    --threading-policy=greedy:global_budget=1 -L"libpng:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!" \
     -jscalar:resize_precision=float --precision-policy=auto -Qkmeans:seed=1 \
-    -Xlinear -Wgamma -Udisplay-p3 -Fnone -aoff -_none '-~none' -dfs -trgb \
+    -Xsrgb-linear -Wsrgb -Udisplay-p3 -Fnone -aoff -_none '-~none' -dfs -trgb \
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-raw-8-rgb.png" 2>&1) || {
     echo "$trace" >&2

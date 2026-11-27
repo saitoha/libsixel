@@ -70,7 +70,7 @@ sixel_sample_safe_color_add(sixel_sample_statistics_t *statistics,
     case SIXEL_COLORSPACE_OKLAB:
         format = SIXEL_PIXELFORMAT_OKLABFLOAT32;
         break;
-    case SIXEL_COLORSPACE_CIELAB:
+    case SIXEL_COLORSPACE_LAB_D65:
         format = SIXEL_PIXELFORMAT_CIELABFLOAT32;
         break;
     case SIXEL_COLORSPACE_DIN99D:
@@ -81,7 +81,7 @@ sixel_sample_safe_color_add(sixel_sample_statistics_t *statistics,
     }
     key = 0u;
     if (statistics->byte_coordinates &&
-            statistics->colorspace == SIXEL_COLORSPACE_GAMMA) {
+            statistics->colorspace == SIXEL_COLORSPACE_SRGB) {
         for (axis = 0u; axis < 3u; ++axis) {
             byte = (unsigned int)coordinates[axis];
             key = (key << 8u) | sixel_safe_tones[byte];

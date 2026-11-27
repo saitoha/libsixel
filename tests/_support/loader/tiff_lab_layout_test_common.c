@@ -286,8 +286,8 @@ lx_capture(sixel_frame_t *frame, void *context)
         sixel_frame_format(frame) ==
             (linear ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                                       : SIXEL_PIXELFORMAT_RGBFLOAT32) &&
-        frame->format.coordinates == (linear ? SIXEL_COLORSPACE_LINEAR
-                                     : SIXEL_COLORSPACE_GAMMA) &&
+        frame->format.coordinates == (linear ? SIXEL_COLORSPACE_SRGB_LINEAR
+                                     : SIXEL_COLORSPACE_SRGB) &&
         frame->transparent_mask == NULL && frame->ncolors == -1;
     lx.ok &= lx_values((float const *)sixel_frame_get_pixels(frame),
                        lx.mode >= 2 && lx.mode <= 4);
@@ -312,7 +312,7 @@ lx_public(unsigned char const *data, size_t size)
         "libtiff:cms_engine=%s:cms_target=%s:prefer_8bit=%d!",
         lx.mode == 1 || lx.mode >= 10 ? "none" :
         sixel_cms_engine_to_string((sixel_cms_engine_t)lx.engine),
-        lx.mode >= 10 ? "gamma" : "linear", lx.mode == 11);
+        lx.mode >= 10 ? "srgb" : "srgb-linear", lx.mode == 11);
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) { goto cleanup; }
     status = sixel_chunk_create_from_memory(&chunk, data, size, NULL,

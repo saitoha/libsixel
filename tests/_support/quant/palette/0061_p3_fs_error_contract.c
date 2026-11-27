@@ -114,7 +114,8 @@ test_palette_0061_p3_fs_error(int argc, char **argv)
             SIXEL_FAILED(dither->palette->vtbl->init_entries_float32(
                 dither->palette, &float_request)) ||
             SIXEL_FAILED(sixel_palette_prepare_rgb101(dither->palette,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
+                SIXEL_COLORSPACE_SRGB_LINEAR,
+                    SIXEL_PALETTE_OUTPUT_DISPLAY_P3)) ||
             SIXEL_FAILED(sixel_palette_get_rgb101(dither->palette,
                 &codes, &count)) || count != 1 || codes[0] != 100 ||
                 codes[1] != 0 || codes[2] != 0 ||

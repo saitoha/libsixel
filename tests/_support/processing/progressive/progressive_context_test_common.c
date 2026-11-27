@@ -166,7 +166,7 @@ int
 test_progressive_context_case(int mode)
 {
     static char const *spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     sixel_encoder_t *encoder;
     sixel_allocator_t *allocator;
@@ -244,7 +244,7 @@ test_progressive_context_case(int mode)
         "delta") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
         SIXEL_OPTFLAG_WORKING_COLORSPACE, mode >= 35 ? spaces[mode - 35]
-                                                     : "gamma") == SIXEL_OK);
+                                                     : "srgb") == SIXEL_OK);
     if (mode == 33) {
         CONTEXT_REQUIRE(sixel_encoder_set_cancel_callback(encoder,
             context_test_cancel, &cancel) == SIXEL_OK);
@@ -448,7 +448,7 @@ test_progressive_context_case(int mode)
             == SIXEL_OK && audit.outcome == SIXEL_REPAIR_CONVERGED);
     } else if (mode == 31) {
         CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-            SIXEL_OPTFLAG_WORKING_COLORSPACE, "linear") == SIXEL_OK);
+            SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb-linear") == SIXEL_OK);
         CONTEXT_REQUIRE(encoder->accumulation_pixels == retained);
         CONTEXT_REQUIRE(context_test_audit(context, 100, &audit, &visits)
             == SIXEL_OK && audit.outcome == SIXEL_REPAIR_NEEDS_SOURCE &&
@@ -561,7 +561,7 @@ test_progressive_prepare_case(int mode)
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_repair_config_init(&config, sizeof(config))
         == SIXEL_OK);
     config.stop_distance_auto = 0;
@@ -733,7 +733,8 @@ context_step_write(char *data, int size, void *priv)
         *sink->cancel = 1;
     } else if (sink->mode == 86) {
         sink->reentry_rejected = sixel_encoder_setopt(sink->encoder,
-            SIXEL_OPTFLAG_WORKING_COLORSPACE, "linear") == SIXEL_RUNTIME_ERROR;
+            SIXEL_OPTFLAG_WORKING_COLORSPACE,
+                "srgb-linear") == SIXEL_RUNTIME_ERROR;
     } else if (sink->mode == 89) {
         sink->allocations = context_test_allocations;
         context_test_fail = context_test_allocations + 1;
@@ -836,7 +837,7 @@ test_progressive_step_case(int mode)
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_set_cancel_callback(encoder,
         context_test_cancel, &cancel) == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_output_new(&output, context_step_write, &sink,
@@ -1134,7 +1135,7 @@ test_progressive_boundary_case(int mode)
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_ALPHA_POLICY,
         "keep") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
@@ -1287,7 +1288,7 @@ test_progressive_public_case(int mode)
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_set_accumulation_buffer(encoder, black,
         2, 1, SIXEL_PIXELFORMAT_RGB888) == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_progressive_config_init(&config, sizeof(config))
@@ -1375,7 +1376,7 @@ test_progressive_public_case(int mode)
             stats.total_distance_evaluations == distances &&
             stats.pixel_visits <= 1 && stats.distance_evaluations <= 1 &&
             stats.backend == SIXEL_PROGRESSIVE_BACKEND_CPU &&
-            stats.working_colorspace == SIXEL_COLORSPACE_GAMMA);
+            stats.working_colorspace == SIXEL_COLORSPACE_SRGB);
         if (stats.outcome != SIXEL_PROGRESSIVE_YIELDED) {
             break;
         }
@@ -1413,7 +1414,7 @@ test_progressive_public_case(int mode)
         stats.maximum_distance == 0 && stats.sum_squared_error == 0 &&
         stats.packet_bytes == 0 && stats.painted_pixels == 0);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "linear") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb-linear") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_progressive_step(context, &budget, output, &stats)
         == SIXEL_OK && stats.outcome == SIXEL_PROGRESSIVE_NEEDS_SOURCE &&
         stats.state_snapshot_valid && !stats.audit_complete);
@@ -1489,7 +1490,7 @@ test_progressive_gpu_context_case(int mode)
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
         "delta") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
+        SIXEL_OPTFLAG_WORKING_COLORSPACE, "srgb") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_set_cancel_callback(encoder,
         context_test_cancel, &cancel) == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_progressive_config_init(&config, sizeof(config))

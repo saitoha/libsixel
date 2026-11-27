@@ -85,11 +85,11 @@ final class Constants
     public const SIXEL_GPU_POLICY_AUTO = 0x1;
     public const SIXEL_GPU_POLICY_FORCE = 0x2;
 
-    public const SIXEL_COLORSPACE_GAMMA = 0x0;
-    public const SIXEL_COLORSPACE_LINEAR = 0x1;
+    public const SIXEL_COLORSPACE_SRGB = 0x0;
+    public const SIXEL_COLORSPACE_SRGB_LINEAR = 0x1;
     public const SIXEL_COLORSPACE_OKLAB = 0x2;
     public const SIXEL_COLORSPACE_SMPTEC = 0x3;
-    public const SIXEL_COLORSPACE_CIELAB = 0x4;
+    public const SIXEL_COLORSPACE_LAB_D65 = 0x4;
     public const SIXEL_COLORSPACE_DIN99D = 0x5;
 
     public const SIXEL_QUANTIZE_MODEL_AUTO = 0x0;

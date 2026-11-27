@@ -878,7 +878,7 @@ tiff_publish_integer_alpha(unsigned char **result, float **ppixels,
     for (channel = 0u; channel < 3u; ++channel) {
         background[channel] = bgcolor == NULL ? 0.0
             : (double)bgcolor[channel] / 255.0;
-        if (loader_background_colorspace() != SIXEL_COLORSPACE_LINEAR) {
+        if (loader_background_colorspace() != SIXEL_COLORSPACE_SRGB_LINEAR) {
             background[channel] =
                 sixel_color_decode_srgb(background[channel]);
         }
@@ -1614,7 +1614,7 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
                     (unsigned char *)layout.pixels,
                     count * 3u * sizeof(float),
                     SIXEL_PIXELFORMAT_CIELABFLOAT32,
-                    SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_GAMMA);
+                    SIXEL_COLORSPACE_LAB_D65, SIXEL_COLORSPACE_SRGB);
             }
             if (SIXEL_FAILED(status)) { goto cleanup; }
         } else if (!managed && cmyk) {
@@ -1798,7 +1798,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     separate_uint16 = 0;
     lab_decode = 0;
     native_float = 0;
-    float_colorspace = SIXEL_COLORSPACE_GAMMA;
+    float_colorspace = SIXEL_COLORSPACE_SRGB;
     float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     decode_mode = TIFF_DECODE_UNSUPPORTED;
 
@@ -1948,7 +1948,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     if (decode_mode == TIFF_DECODE_LAB_BYTE ||
         decode_mode == TIFF_DECODE_LAB_UINT ||
         decode_mode == TIFF_DECODE_LAB_FLOAT32) {
-        float_colorspace = SIXEL_COLORSPACE_CIELAB;
+        float_colorspace = SIXEL_COLORSPACE_LAB_D65;
         float_pixelformat = SIXEL_PIXELFORMAT_CIELABFLOAT32;
     }
 
@@ -2123,7 +2123,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 goto cleanup;
             }
 
-            if (float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+            if (float_colorspace == SIXEL_COLORSPACE_LAB_D65) {
                 float_pixels[dst_base + 0u] = (float)lab_unit[0];
                 float_pixels[dst_base + 1u] = (float)lab_unit[1];
                 float_pixels[dst_base + 2u] = (float)lab_unit[2];
@@ -2201,12 +2201,12 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
-    } else if (!cms_converted && float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+    } else if (!cms_converted && float_colorspace == SIXEL_COLORSPACE_LAB_D65) {
         status = sixel_helper_convert_colorspace((unsigned char *)float_pixels,
                                                  float_bytes,
                                                  float_pixelformat,
-                                                 SIXEL_COLORSPACE_CIELAB,
-                                                 SIXEL_COLORSPACE_GAMMA);
+                                                 SIXEL_COLORSPACE_LAB_D65,
+                                                 SIXEL_COLORSPACE_SRGB);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -2642,7 +2642,7 @@ load_with_libtiff(
         status = sixel_frame_init_rgb_float(frame, (float *)(void *)pixels,
             frame->width, frame->height,
             pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-                ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA, -1);
+                ? SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB, -1);
     } else {
         status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
             sixel_frame_as_interface(frame),

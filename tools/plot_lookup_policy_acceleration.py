@@ -124,7 +124,7 @@ def make_command(img2sixel: str,
                 "--quantize-model=kmeans:seed=1",
                 "--merge-policy=ward",
                 "-Xoklab",
-                "-Wgamma",
+                "-Wsrgb",
             ]
         )
     command.extend(

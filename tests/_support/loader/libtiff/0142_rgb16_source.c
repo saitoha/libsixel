@@ -51,7 +51,8 @@ tiff_numeric_capture(sixel_frame_t *frame, void *context)
     orientation = color_tiff_cases[fixture].orientation;
     format = probe->managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                             : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    space = probe->managed ? SIXEL_COLORSPACE_LINEAR : SIXEL_COLORSPACE_GAMMA;
+    space = probe->managed ?
+        SIXEL_COLORSPACE_SRGB_LINEAR : SIXEL_COLORSPACE_SRGB;
     if (frame->width != color_tiff_cases[fixture].width ||
         frame->height != color_tiff_cases[fixture].height ||
         sixel_frame_format(frame) != format ||
@@ -150,7 +151,7 @@ test_tiff_0142(int argc, char **argv)
     no = 0;
     ok = 0;
     length = snprintf(order, sizeof(order),
-        "libtiff:cms_engine=%s:cms_target=linear:prefer_8bit=0!", argv[1]);
+        "libtiff:cms_engine=%s:cms_target=srgb-linear:prefer_8bit=0!", argv[1]);
     if (length < 0 || (size_t)length >= sizeof(order)) {
         goto end;
     }

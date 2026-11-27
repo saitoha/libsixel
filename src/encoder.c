@@ -1362,10 +1362,10 @@ sixel_encoder_gpu_diffusion_eligible(sixel_encoder_t const *encoder,
     return encoder->gpu_policy != SIXEL_GPU_POLICY_OFF &&
         (encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
          (!encoder->ormode &&
-          encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA)) &&
+          encoder->output_colorspace == SIXEL_COLORSPACE_SRGB)) &&
         encoder->precision_requested != SIXEL_OPTION_PRECISION_FLOAT32 &&
         !encoder->prefer_float32 &&
-        encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
+        encoder->working->space == SIXEL_COLORSPACE_SRGB &&
         encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR;
 }
 
@@ -3030,8 +3030,8 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
         sixel_encoder_delta_metric(encoder) == SIXEL_DELTA_METRIC_RGB241;
     diffuse = encoder->method_for_diffuse;
     if (encoder->update_policy != SIXEL_UPDATE_POLICY_DELTA ||
-            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
-            encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            encoder->working->space != SIXEL_COLORSPACE_SRGB ||
+            encoder->output_colorspace != SIXEL_COLORSPACE_SRGB ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->palette_type == SIXEL_PALETTETYPE_HLS ||
             encoder->precision_requested == SIXEL_OPTION_PRECISION_FLOAT32 ||
@@ -3097,7 +3097,7 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
     height = sixel_frame_get_height(frame);
     if (width <= 0 || height <= 0 ||
             sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGB888 ||
-            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_GAMMA ||
+            sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_SRGB ||
             ((encoder->residual_enabled ||
               sixel_encoder_delta_metric(encoder) ==
                   SIXEL_DELTA_METRIC_RGB241) &&
@@ -4087,7 +4087,7 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
                 request->clustering_icc, request->linear_srgb);
             if (SIXEL_SUCCEEDED(status)) {
                 status = sixel_color_convert_rgbf32(triplet, 1,
-                    SIXEL_COLORSPACE_LINEAR, target_colorspace);
+                    SIXEL_COLORSPACE_SRGB_LINEAR, target_colorspace);
             }
             if (SIXEL_FAILED(status)) {
                 return status;
@@ -4118,7 +4118,7 @@ sixel_encoder_update_precision(sixel_encoder_t *encoder)
     /* Output requirements affect the effective format, never the request. */
     encoder->prefer_float32 = encoder->precision_prefer_float32 ||
         (encoder->working_override != NULL &&
-         encoder->working_override->space != SIXEL_COLORSPACE_GAMMA) ||
+         encoder->working_override->space != SIXEL_COLORSPACE_SRGB) ||
         encoder->gamut_mapper != NULL ||
         encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY;
 }
@@ -4149,7 +4149,7 @@ sixel_encoder_apply_precision_override(
             encoder->working_override == NULL) {
         /* An encoder reused after float input must not validate against
          * that input's resolved space before the next frame is available. */
-        encoder->working = sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
+        encoder->working = sixel_color_geometry(SIXEL_COLORSPACE_SRGB);
     }
     sixel_encoder_update_precision(encoder);
 
@@ -4703,7 +4703,7 @@ sixel_encoder_capture_palette(
      * Export is independent of the wire output space and of its final snap.
      * Explicit ICC keeps an original working view beside its wire colors.
      */
-    if (source_colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (source_colorspace != SIXEL_COLORSPACE_SRGB) {
         memset(&float_view, 0, sizeof(float_view));
         status = palette_obj->vtbl->get_entries_float32(palette_obj,
                                                         &float_view);
@@ -4733,7 +4733,7 @@ sixel_encoder_capture_palette(
                 memcpy(triplet, export_floats + index * 3U,
                        sizeof(triplet));
                 status = sixel_color_convert_rgbf32(triplet, 1U,
-                    source_colorspace, SIXEL_COLORSPACE_GAMMA);
+                    source_colorspace, SIXEL_COLORSPACE_SRGB);
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }
@@ -4750,7 +4750,7 @@ sixel_encoder_capture_palette(
                 palette_bytes,
                 SIXEL_PIXELFORMAT_RGB888,
                 source_colorspace,
-                SIXEL_COLORSPACE_GAMMA);
+                SIXEL_COLORSPACE_SRGB);
         }
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
@@ -4816,9 +4816,9 @@ sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder)
         encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
         encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
         (encoder->working_override == NULL ||
-         encoder->working_override->space == SIXEL_COLORSPACE_GAMMA) &&
+         encoder->working_override->space == SIXEL_COLORSPACE_SRGB) &&
         (!encoder->clustering_override ||
-         sixel_encoder_cluster_space(encoder) == SIXEL_COLORSPACE_GAMMA) &&
+         sixel_encoder_cluster_space(encoder) == SIXEL_COLORSPACE_SRGB) &&
         (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
          !sixel_encoder_gpu_kmeans(encoder));
 }
@@ -4842,12 +4842,12 @@ sixel_encoder_frame_working_geometry(sixel_encoder_t const *encoder,
      * reports its existing conflict instead of silently changing space. */
     if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT ||
             sixel_encoder_force_byte_apply(encoder)) {
-        return sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
+        return sixel_color_geometry(SIXEL_COLORSPACE_SRGB);
     }
     colorspace = sixel_frame_get_colorspace((sixel_frame_t *)frame);
     if (colorspace == SIXEL_FRAME_COLORSPACE_PROFILE_RGB ||
         colorspace == SIXEL_COLORSPACE_SMPTEC) {
-        colorspace = SIXEL_COLORSPACE_LINEAR;
+        colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     }
     return sixel_color_geometry(colorspace);
 }
@@ -4948,11 +4948,11 @@ sixel_encoder_loader_prefers_float32(sixel_encoder_t const *encoder)
     if (encoder->prefer_float32 != 0) {
         return 1;
     }
-    if (encoder->working->space != SIXEL_COLORSPACE_GAMMA) {
+    if (encoder->working->space != SIXEL_COLORSPACE_SRGB) {
         return 1;
     }
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
-        sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA) {
+        sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_SRGB) {
         return 1;
     }
     /* An explicitly preserved byte resize must not acquire a float source
@@ -5136,7 +5136,7 @@ load_image_callback_for_palette(
             (SIXEL_WORKFORMAT_IS_FLOAT32(
                 sixel_frame_format(frame)) ||
              sixel_encoder_cluster_space(callback_context->encoder) !=
-                SIXEL_COLORSPACE_GAMMA)) {
+                SIXEL_COLORSPACE_SRGB)) {
         callback_context->prefer_float32 = 1;
         callback_context->preserve_float_palette = 1;
     }
@@ -5516,9 +5516,9 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
             context->planner == NULL ||
             context->planner->working_pixelformat !=
                 SIXEL_PIXELFORMAT_RGB888 ||
-            context->current_colorspace != SIXEL_COLORSPACE_GAMMA ||
-            sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA ||
-            encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA ||
+            context->current_colorspace != SIXEL_COLORSPACE_SRGB ||
+            sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_SRGB ||
+            encoder->output_colorspace != SIXEL_COLORSPACE_SRGB ||
             encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY ||
             encoder->output_icc != NULL || encoder->gamut_mapper != NULL ||
             encoder->gpu_policy != SIXEL_GPU_POLICY_FORCE ||
@@ -5728,7 +5728,7 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
     if (status != SIXEL_OK)
         return status;
     sixel_filter_bind_input(&sample_filter, &context->frame,
-        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_GAMMA);
+        SIXEL_PIXELFORMAT_RGB888, SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(&sample_filter, encoder->allocator,
                               encoder->logger);
     sixel_filter_teardown(&sample_filter);
@@ -5850,7 +5850,7 @@ sixel_encoder_gpu_resident(sixel_encode_dag_context_t *context)
     storage.width = width;
     storage.height = height;
     storage.pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    storage.colorspace = SIXEL_COLORSPACE_GAMMA;
+    storage.colorspace = SIXEL_COLORSPACE_SRGB;
     storage.ncolors = (int)colors;
     storage.kind = SIXEL_FRAME_PIXELS_U8;
     status = indexed_if->vtbl->init_pixels(indexed_if, &storage);
@@ -6538,7 +6538,7 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
         (context->encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
          !sixel_dither_is_terminal_mono(context->dither)) &&
         context->dither->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-        context->current_colorspace == SIXEL_COLORSPACE_GAMMA &&
+        context->current_colorspace == SIXEL_COLORSPACE_SRGB &&
         sixel_encoder_gpu_diffusion_eligible(context->encoder,
             context->dither->method_for_diffuse) &&
         sixel_encoder_dither_lookup_on_gpu(context->encoder,
@@ -6957,7 +6957,7 @@ sixel_encoder_sample_frame(
     status = SIXEL_FALSE;
     filter = NULL;
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    colorspace = SIXEL_COLORSPACE_GAMMA;
+    colorspace = SIXEL_COLORSPACE_SRGB;
 
     if (encoder == NULL || frame == NULL || samples == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -7517,7 +7517,7 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
     size_t index;
 
     if (!preserve_float &&
-            encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
+            encoder->working->space == SIXEL_COLORSPACE_SRGB &&
             encoder->output_color_definition ==
                 SIXEL_PALETTE_OUTPUT_LEGACY) {
         return SIXEL_OK;
@@ -7542,7 +7542,7 @@ sixel_encoder_import_srgb_palette(sixel_encoder_t *encoder,
         return status;
     }
     return sixel_encoder_convert_palette_colorspace(dither->palette,
-        SIXEL_COLORSPACE_GAMMA, encoder->working->space, NULL);
+        SIXEL_COLORSPACE_SRGB, encoder->working->space, NULL);
 }
 
 /* Create a palette from a structured file or an image mapfile. */
@@ -7598,7 +7598,7 @@ sixel_prepare_specified_palette(
     treat_as_image = 0;
     path_has_extension = 0;
     mapfile_message[0] = '\0';
-    *palette_colorspace = SIXEL_COLORSPACE_GAMMA;
+    *palette_colorspace = SIXEL_COLORSPACE_SRGB;
 
     if (dither == NULL || encoder == NULL || encoder->mapfile == NULL) {
         sixel_helper_set_additional_message(
@@ -8273,7 +8273,7 @@ sixel_encoder_attach_alpha_keycolor(unsigned char const *bgcolor,
                 ? bgcolor[channel] / 255.0 : 0.0;
         }
         if (!sixel_color_convert(key_work, key_source,
-                SIXEL_COLORSPACE_GAMMA, working_colorspace)) {
+                SIXEL_COLORSPACE_SRGB, working_colorspace)) {
             sixel_allocator_free(dither->allocator, expanded);
             return SIXEL_BAD_INPUT;
         }
@@ -8507,8 +8507,8 @@ sixel_encoder_palette_capacity(sixel_encoder_t const *encoder)
 static int
 sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 {
-    if ((encoder->output_colorspace != SIXEL_COLORSPACE_GAMMA &&
-         encoder->output_colorspace != SIXEL_COLORSPACE_LINEAR &&
+    if ((encoder->output_colorspace != SIXEL_COLORSPACE_SRGB &&
+         encoder->output_colorspace != SIXEL_COLORSPACE_SRGB_LINEAR &&
          encoder->output_colorspace != SIXEL_COLORSPACE_SMPTEC) ||
             (encoder->output_icc == NULL &&
              sixel_cdef_named_name(encoder->output_color_definition) == NULL) ||
@@ -8793,7 +8793,7 @@ sixel_encoder_unpack_alpha_candidate(sixel_encoder_t const *encoder,
 {
     return sixel_encoder_pixelformat_has_alpha(
             sixel_frame_format(frame)) &&
-        sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA &&
+        sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_SRGB &&
         (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR
             ? sixel_encoder_highcolor_options(encoder) &&
               (!encoder->fdrcs ||
@@ -8815,8 +8815,8 @@ sixel_encoder_rgb101_candidate(sixel_encoder_t const *encoder,
      * definition, whether snap is active or not. Only the wire cache
      * applies -U; selecting linear/SMPTE-C must not restore byte projection
      * or bounded intermediate conversions in construction/application. */
-    return (encoder->output_colorspace == SIXEL_COLORSPACE_GAMMA ||
-            encoder->output_colorspace == SIXEL_COLORSPACE_LINEAR ||
+    return (encoder->output_colorspace == SIXEL_COLORSPACE_SRGB ||
+            encoder->output_colorspace == SIXEL_COLORSPACE_SRGB_LINEAR ||
             encoder->output_colorspace == SIXEL_COLORSPACE_SMPTEC) &&
         (format == SIXEL_PIXELFORMAT_RGB888 ||
          SIXEL_WORKFORMAT_IS_FLOAT32(format)) &&
@@ -8849,7 +8849,7 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
     return (encoder->prefer_float32 || SIXEL_WORKFORMAT_IS_FLOAT32(
                 sixel_frame_format(frame)) ||
             (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
-             sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA)) &&
+             sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_SRGB)) &&
         sixel_encoder_rgb101_candidate(encoder, frame);
 }
 
@@ -8863,16 +8863,10 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     char message[256];
     sixel_color_def_t *linear;
 
-    if (encoder->progressive_enabled) {
-        /* The final endpoint is known here, after option overrides. */
-        if (sixel_repair_validate_output(encoder) != SIXEL_OK) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        if (encoder->working_icc != NULL) {
-            sixel_helper_set_additional_message(
-                "Progressive repair does not support ICC working coordinates.");
-            return SIXEL_BAD_ARGUMENT;
-        }
+    if (encoder->working_icc != NULL && encoder->progressive_enabled) {
+        sixel_helper_set_additional_message(
+            "Progressive repair does not support ICC working coordinates.");
+        return SIXEL_BAD_ARGUMENT;
     }
     if (encoder->output_bpc &&
             encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
@@ -8886,10 +8880,10 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
      * the extended palette coordinates that the bytes cannot hold. */
     if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT &&
             encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR) {
-        if (encoder->working->space != SIXEL_COLORSPACE_GAMMA) {
+        if (encoder->working->space != SIXEL_COLORSPACE_SRGB) {
             sixel_helper_set_additional_message(
-                "precision-policy=8bit requires the gamma working "
-                "colorspace (-W gamma).");
+                "precision-policy=8bit requires the srgb working "
+                "colorspace (-W srgb).");
             return SIXEL_BAD_ARGUMENT;
         }
         if (encoder->output_color_definition !=
@@ -8923,7 +8917,7 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
         sixel_helper_set_additional_message(
             "named-color high-color requires CPU RGB/HLS SIXEL "
             "(ordinary, macro, opaque DRCS or ordinary PNG snapshot), "
-            "-W gamma|linear|oklab|cielab|din99d and inactive snap; "
+            "-W srgb|srgb-linear|oklab|lab-d65|din99d and inactive snap; "
             "delta, OR and macro/DRCS PNG snapshots are unsupported; "
             "DRCS excludes macros and offsets.");
         return SIXEL_BAD_ARGUMENT;
@@ -8964,14 +8958,14 @@ sixel_encoder_validate_output_definition_frame(sixel_encoder_t const *encoder,
             (pixelformat & (SIXEL_FORMATTYPE_PALETTE |
                             SIXEL_FORMATTYPE_GRAYSCALE)) == 0) {
         if (encoder->working_override != NULL &&
-                encoder->working_override->space != SIXEL_COLORSPACE_GAMMA) {
+                encoder->working_override->space != SIXEL_COLORSPACE_SRGB) {
             sixel_helper_set_additional_message(
-                "forced GPU palette application requires -W gamma.");
+                "forced GPU palette application requires -W srgb.");
             return SIXEL_BAD_ARGUMENT;
         }
         if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
                 encoder->clustering_override &&
-                encoder->clustering_override->space != SIXEL_COLORSPACE_GAMMA &&
+                encoder->clustering_override->space != SIXEL_COLORSPACE_SRGB &&
                 encoder->precision_requested != SIXEL_OPTION_PRECISION_8BIT) {
             sixel_helper_set_additional_message(
                 "forced GPU palette application cannot use a native float "
@@ -9004,7 +8998,7 @@ sixel_encoder_validate_output_definition_frame(sixel_encoder_t const *encoder,
                   sixel_frame_format(frame)) &&
               !(sixel_encoder_pixelformat_has_alpha(
                     sixel_frame_format(frame)) &&
-                sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_GAMMA)) ||
+                sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_SRGB)) ||
              !sixel_encoder_rgb101_alpha(encoder, frame))) {
         sixel_helper_set_additional_message(
             "named-color output requires RGB or packed-alpha frames; "
@@ -9068,7 +9062,7 @@ sixel_encoder_copy_fixed_palette(sixel_encoder_t *encoder,
             status = sixel_encoder_convert_palette_colorspace(copy->palette,
                 source_colorspace, encoder->working->space, NULL);
         }
-    } else if (source_colorspace == SIXEL_COLORSPACE_GAMMA) {
+    } else if (source_colorspace == SIXEL_COLORSPACE_SRGB) {
         status = sixel_encoder_import_srgb_palette(encoder, copy, native);
     } else {
         status = sixel_encoder_convert_palette_colorspace(copy->palette,
@@ -9199,7 +9193,7 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     cluster = encoder->clustering_override != NULL
         ? encoder->clustering_icc : encoder->working_icc;
     if (cluster != NULL) {
-        request->linear_srgb = sixel_color_def_new_named("linear-srgb");
+        request->linear_srgb = sixel_color_def_new_named("srgb-linear");
         request->clustering_icc = sixel_cdef_clone(cluster);
         if (!request->linear_srgb || !request->clustering_icc) {
             sixel_palette_build_request_free(request);
@@ -9606,7 +9600,7 @@ sixel_encoder_attach_reserved_palette(
         for (c = 0U; c < 3U; ++c) {
             source[c] = request->reserved_palette[i * 3U + c] / 255.0;
         }
-        if (!sixel_color_convert(working, source, SIXEL_COLORSPACE_GAMMA,
+        if (!sixel_color_convert(working, source, SIXEL_COLORSPACE_SRGB,
                                 request->working->space)) {
             return SIXEL_BAD_INPUT;
         }
@@ -9703,8 +9697,8 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     cover_scope = 0;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     palette_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
-    working_colorspace = SIXEL_COLORSPACE_GAMMA;
+    clustering_colorspace = SIXEL_COLORSPACE_SRGB;
+    working_colorspace = SIXEL_COLORSPACE_SRGB;
     prefer_float32 = 0;
     reserve_alpha_key = 0;
     palette_reqcolors = 0;
@@ -10570,7 +10564,7 @@ sixel_encoder_prepare_palette(
     cache_allowed = allow_cache != 0;
     fixed_palette_cache_candidate = 0;
     dither_cache_hit = 0;
-    fixed_colorspace = SIXEL_COLORSPACE_GAMMA;
+    fixed_colorspace = SIXEL_COLORSPACE_SRGB;
     fixed_native = 0;
     if (encoder == NULL || frame == NULL || dither == NULL ||
             palette_state == NULL) {
@@ -10688,7 +10682,7 @@ sixel_encoder_prepare_palette(
         } else {
             *dither = fixed_source;
             sixel_dither_ref(*dither);
-            if (fixed_colorspace == SIXEL_COLORSPACE_GAMMA &&
+            if (fixed_colorspace == SIXEL_COLORSPACE_SRGB &&
                     encoder->color_option != SIXEL_COLOR_OPTION_MONOCHROME) {
                 status = sixel_encoder_import_srgb_palette(encoder, *dither,
                     sixel_encoder_rgb101_frame(encoder, frame));
@@ -11399,7 +11393,7 @@ sixel_encoder_output_without_macro(
     int pixelformat = 0;
     int multiframe;
     size_t size;
-    int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
+    int frame_colorspace = SIXEL_COLORSPACE_SRGB;
     int output_colorspace;
     sixel_encode_session_t session;
     SIXELSTATUS binding_status;
@@ -11411,7 +11405,7 @@ sixel_encoder_output_without_macro(
     memset(&session, 0, sizeof(session));
     p = NULL;
     borrowed = dither->resident_indexed || sixel_output_is_resolve_only(output);
-    output_colorspace = SIXEL_COLORSPACE_GAMMA;
+    output_colorspace = SIXEL_COLORSPACE_SRGB;
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_output_without_macro: encoder object is null.");
@@ -11544,7 +11538,7 @@ sixel_encoder_output_without_macro(
                                               multiframe);
     if (sixel_encoder_6delta_accumulation_requested(encoder) &&
             encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
-            output_colorspace == SIXEL_COLORSPACE_GAMMA && !encoder->ormode &&
+            output_colorspace == SIXEL_COLORSPACE_SRGB && !encoder->ormode &&
             sixel_encoder_resolve_6delta_plane(encoder, width, height,
                 &session.plane_width, &session.plane_height,
                 &session.origin_x, &session.origin_y)) {
@@ -11672,7 +11666,7 @@ sixel_encoder_output_with_macro(
     int multiframe;
     int depth;
     size_t size = 0;
-    int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
+    int frame_colorspace = SIXEL_COLORSPACE_SRGB;
     int output_colorspace;
     unsigned char *converted = NULL;
     sixel_allocator_t *allocator;
@@ -11985,7 +11979,7 @@ sixel_encoder_frame_job_prepare(
         binning_policy,
         binning_origin);
     job->context.current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    job->context.current_colorspace = SIXEL_COLORSPACE_GAMMA;
+    job->context.current_colorspace = SIXEL_COLORSPACE_SRGB;
     if (metadata != NULL) {
         job->context.frame_no = metadata->frame_no;
         job->context.loop_no = metadata->loop_no;
@@ -12070,9 +12064,9 @@ sixel_encoder_frame_job_prepare(
             encoder->prefer_float32 ||
             encoder->output_color_definition !=
                 SIXEL_PALETTE_OUTPUT_LEGACY ||
-            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
+            encoder->working->space != SIXEL_COLORSPACE_SRGB ||
             (encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR &&
-             sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA));
+             sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_SRGB));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -12174,7 +12168,7 @@ sixel_encoder_frame_job_prepare(
          (pipeline->independent && pipeline->playback != NULL &&
           pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST &&
           !encoder->prefer_float32 &&
-          encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
+          encoder->working->space == SIXEL_COLORSPACE_SRGB &&
           encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY)) &&
         !encoder->fdrcs &&
         encoder->presentation == NULL && encoder->progressive_context == NULL &&
@@ -12900,13 +12894,13 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
     if (sixel_encoder_pixelformat_has_alpha(
             sixel_frame_format(context.frame)) &&
             sixel_frame_get_colorspace(context.frame) ==
-                SIXEL_COLORSPACE_GAMMA) {
+                SIXEL_COLORSPACE_SRGB) {
         status = sixel_frame_unpack_alpha(context.frame, encoder->bgcolor,
             encoder->prefer_float32 ||
             encoder->output_color_definition ==
                 SIXEL_PALETTE_OUTPUT_DISPLAY_P3 ||
-            encoder->working->space != SIXEL_COLORSPACE_GAMMA ||
-            sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_GAMMA);
+            encoder->working->space != SIXEL_COLORSPACE_SRGB ||
+            sixel_encoder_cluster_space(encoder) != SIXEL_COLORSPACE_SRGB);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -13340,9 +13334,9 @@ sixel_encoder_new(
     (*ppencoder)->clustering_icc = NULL;
     (*ppencoder)->working_icc = NULL;
     (*ppencoder)->working_linear = NULL;
-    (*ppencoder)->working = sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
+    (*ppencoder)->working = sixel_color_geometry(SIXEL_COLORSPACE_SRGB);
     (*ppencoder)->working_override = NULL;
-    (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_SRGB;
     (*ppencoder)->output_bpc            = 0;
     (*ppencoder)->output_bpc_black      = 0.0;
     (*ppencoder)->output_color_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
@@ -13372,7 +13366,7 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppencoder)->accumulation_color_definition =
         SIXEL_PALETTE_OUTPUT_LEGACY;
-    (*ppencoder)->accumulation_colorspace = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->accumulation_colorspace = SIXEL_COLORSPACE_SRGB;
     (*ppencoder)->update_policy = SIXEL_UPDATE_POLICY_FULL;
     (*ppencoder)->progressive_enabled = 0;
     (*ppencoder)->progressive_override = 0;
@@ -13411,9 +13405,9 @@ sixel_encoder_new(
     (*ppencoder)->cancel_context        = NULL;
     (*ppencoder)->dither_cache          = NULL;
     (*ppencoder)->fixed_palette_source  = NULL;
-    (*ppencoder)->fixed_palette_colorspace = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->fixed_palette_colorspace = SIXEL_COLORSPACE_SRGB;
     (*ppencoder)->fixed_palette_working = NULL;
-    (*ppencoder)->fixed_palette_output = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->fixed_palette_output = SIXEL_COLORSPACE_SRGB;
     (*ppencoder)->fixed_palette_definition = SIXEL_PALETTE_OUTPUT_LEGACY;
     (*ppencoder)->fixed_palette_hls = 0;
     (*ppencoder)->diagnostic_dither     = NULL;
@@ -13427,6 +13421,9 @@ sixel_encoder_new(
     (*ppencoder)->output_png_to_stdout  = 0;
     (*ppencoder)->png_output_path       = NULL;
     (*ppencoder)->sixel_output_path     = NULL;
+    (*ppencoder)->defer_sixel_outfile   = 0;
+    (*ppencoder)->cli_input_count       = 0;
+    (*ppencoder)->cli_inputs            = NULL;
     (*ppencoder)->clipboard_output_active = 0;
     (*ppencoder)->clipboard_output_format[0] = '\0';
     (*ppencoder)->clipboard_output_path = NULL;
@@ -13655,7 +13652,7 @@ sixel_encoder_new(
 
     /* Common output tuning applies even when -U is omitted. The default
      * endpoint is still sRGB; an ICC path never selects ICC on its own. */
-    status = sixel_encoder_set_output_color(*ppencoder, "gamma");
+    status = sixel_encoder_set_output_color(*ppencoder, "srgb");
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -13709,7 +13706,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_encoder_clear_dither_cache(encoder);
         sixel_dither_unref((sixel_dither_t *)encoder->diagnostic_dither);
-        if (encoder->outfd
+        if (encoder->outfd >= 0
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
             (void)sixel_compat_close(encoder->outfd);
@@ -14423,14 +14420,14 @@ sixel_encoder_set_geometry_icc(sixel_encoder_t *encoder, int option,
         return SIXEL_BAD_ARGUMENT;
     }
     if (option == SIXEL_OPTFLAG_WORKING_COLORSPACE) {
-        encoder->working_linear = sixel_color_def_new_named("linear-srgb");
+        encoder->working_linear = sixel_color_def_new_named("srgb-linear");
         if (!encoder->working_linear) {
             sixel_cdef_free(profile);
             return SIXEL_BAD_ALLOCATION;
         }
         encoder->working_icc = profile;
         encoder->working_override = sixel_color_geometry(
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         encoder->working = encoder->working_override;
         sixel_encoder_update_precision(encoder);
         return SIXEL_OK;
@@ -14440,7 +14437,7 @@ sixel_encoder_set_geometry_icc(sixel_encoder_t *encoder, int option,
      * the profile only to its private palette samples, never to the frame
      * used later for lookup and error diffusion. */
     encoder->clustering_override =
-        sixel_color_geometry(SIXEL_COLORSPACE_LINEAR);
+        sixel_color_geometry(SIXEL_COLORSPACE_SRGB_LINEAR);
     /* Cached animation palettes have already finished construction.
      * Generated palettes use the new option on their next build. */
     return SIXEL_OK;
@@ -14510,7 +14507,7 @@ sixel_encoder_set_output_color(sixel_encoder_t *encoder, char const *value)
     encoder->output_bpc_black = black;
     encoder->output_color_definition = base < 0
         ? -base : SIXEL_PALETTE_OUTPUT_LEGACY;
-    encoder->output_colorspace = base < 0 ? SIXEL_COLORSPACE_GAMMA : base;
+    encoder->output_colorspace = base < 0 ? SIXEL_COLORSPACE_SRGB : base;
     sixel_encoder_update_precision(encoder);
     return SIXEL_OK;
 }
@@ -15614,6 +15611,84 @@ sixel_encoder_apply_mapfile_output_option(
 }
 
 
+/* The CLI owns the argument vector for the lifetime of its encoder. */
+SIXEL_INTERNAL_API void
+sixel_encoder_defer_sixel_outfile(sixel_encoder_t *encoder,
+                                  int input_count, char *const *inputs)
+{
+    encoder->defer_sixel_outfile = 1;
+    encoder->cli_input_count = input_count;
+    encoder->cli_inputs = inputs;
+}
+
+static SIXELSTATUS
+sixel_encoder_check_outfile_inputs(sixel_encoder_t const *encoder,
+                                   int fd, char const *path)
+{
+    int i;
+    char const *input;
+
+    /* With no positional arguments, the sole input is standard input. */
+    i = 0;
+    do {
+        input = encoder->cli_input_count == 0 ? NULL : encoder->cli_inputs[i];
+        if (sixel_compat_same_file(fd, path, input)) {
+            sixel_helper_set_additional_message(
+                "Input and output refer to the same file.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        ++i;
+    } while (i < encoder->cli_input_count);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_open_sixel_outfile(sixel_encoder_t *encoder)
+{
+    SIXELSTATUS status;
+    char const *path;
+    int flags;
+    int fd;
+
+    path = encoder->sixel_output_path;
+    flags = O_RDWR | O_CREAT;
+    if (!encoder->defer_sixel_outfile || !SIXEL_HAVE_FD_TRUNCATE) {
+        if (encoder->defer_sixel_outfile) {
+            status = sixel_encoder_check_outfile_inputs(encoder, -1, path);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+        flags |= O_TRUNC;
+    }
+#if defined(O_BINARY)
+    flags |= O_BINARY;
+#endif
+    fd = sixel_compat_open(path, flags, S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_setopt: failed to open output path.");
+        return SIXEL_LIBC_ERROR | (errno & 0xff);
+    }
+
+    if (encoder->defer_sixel_outfile && SIXEL_HAVE_FD_TRUNCATE) {
+        /* Validate the descriptor that will be truncated, even if the
+         * output pathname was redirected between opening and writing. */
+        status = sixel_encoder_check_outfile_inputs(encoder, fd, path);
+        if (SIXEL_SUCCEEDED(status) && sixel_compat_truncate_output(fd) < 0) {
+            status = SIXEL_LIBC_ERROR | (errno & 0xff);
+            sixel_helper_set_additional_message(
+                "Failed to truncate the output file.");
+        }
+        if (SIXEL_FAILED(status)) {
+            (void)sixel_compat_close(fd);
+            return status;
+        }
+    }
+    encoder->outfd = fd;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_encoder_apply_outfile_option(
     sixel_encoder_t *encoder,
@@ -15624,26 +15699,22 @@ sixel_encoder_apply_outfile_option(
     SIXELSTATUS clip_status;
     char *spool_path;
     int spool_fd;
-    int output_open_flags;
     int png_argument_has_prefix;
     size_t png_path_length;
     size_t libc_buffer_size;
     char *libc_buffer;
     char const *png_path_view;
-    char const *outfile_open_path;
     char const *libc_path;
 
     status = SIXEL_OK;
     clip_status = SIXEL_OK;
     spool_path = NULL;
     spool_fd = (-1);
-    output_open_flags = 0;
     png_argument_has_prefix = 0;
     png_path_length = 0u;
     libc_buffer_size = 0u;
     libc_buffer = NULL;
     png_path_view = NULL;
-    outfile_open_path = value;
     libc_path = NULL;
     clipboard_spec.is_clipboard = 0;
     clipboard_spec.format[0] = '\0';
@@ -15735,9 +15806,6 @@ sixel_encoder_apply_outfile_option(
                 }
             }
         }
-        outfile_open_path = encoder->output_png_to_stdout
-            ? "-"
-            : encoder->png_output_path;
     } else {
         encoder->output_is_png = 0;
         encoder->output_png_to_stdout = 0;
@@ -15802,31 +15870,15 @@ sixel_encoder_apply_outfile_option(
                                       strlen(value) + 1u,
                                       value);
         }
-        outfile_open_path = value;
     }
 
-    /*
-     * Keep "png:" handling in the option layer so the encode phase can
-     * assume filesystem paths or stdout sentinels only.
-     */
-    if (!encoder->clipboard_output_active
-        && !encoder->output_is_png
-        && outfile_open_path != NULL
-        && strcmp(outfile_open_path, "-") != 0) {
-        if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
-            (void)sixel_compat_close(encoder->outfd);
-        }
-        output_open_flags = O_RDWR | O_CREAT | O_TRUNC;
-#if defined(O_BINARY)
-        output_open_flags |= O_BINARY;
-#endif
-        encoder->outfd = sixel_compat_open(outfile_open_path,
-                                           output_open_flags,
-                                           S_IRUSR | S_IWUSR);
-        if (encoder->outfd < 0) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: failed to open output path.");
-            return SIXEL_LIBC_ERROR | (errno & 0xff);
+    if (encoder->sixel_output_path != NULL &&
+            !encoder->clipboard_output_active) {
+        /* A pending CLI path has no descriptor until final validation. */
+        if (encoder->defer_sixel_outfile) {
+            encoder->outfd = -1;
+        } else {
+            return sixel_encoder_open_sixel_outfile(encoder);
         }
     }
 
@@ -16706,7 +16758,7 @@ sixel_encoder_setopt_owned(
             encoder->working_linear = NULL;
             encoder->working_override = geometry;
             encoder->working = geometry != NULL ? geometry
-                : sixel_color_geometry(SIXEL_COLORSPACE_GAMMA);
+                : sixel_color_geometry(SIXEL_COLORSPACE_SRGB);
             sixel_encoder_update_precision(encoder);
         }
         break;
@@ -16822,6 +16874,9 @@ sixel_encoder_setopt_owned(
          * detached candidate must not close a live descriptor on failure. */
         if (strcmp(value, "-") == 0) {
             encoder->outfd = destination->outfd;
+            if (destination->defer_sixel_outfile && encoder->outfd < 0) {
+                encoder->sixel_output_path = destination->sixel_output_path;
+            }
         }
         break;
     case SIXEL_OPTFLAG_THREADING_POLICY:  /* = */
@@ -18305,7 +18360,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
              (playback &&
               pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST
               && !encoder->prefer_float32 &&
-              encoder->working->space == SIXEL_COLORSPACE_GAMMA &&
+              encoder->working->space == SIXEL_COLORSPACE_SRGB &&
               encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY))
             && !encoder->fdrcs &&
             encoder->presentation == NULL &&
@@ -18751,6 +18806,19 @@ sixel_encoder_load_callback_dispatch(
     return status;
 }
 
+static SIXELSTATUS
+sixel_encoder_load_init_presentation(sixel_encoder_load_context_t *context)
+{
+    SIXELSTATUS status;
+
+    status = sixel_presentation_init_owned(&context->presentation,
+        context->encoder, context->output, context->encoder->outfd);
+    if (status == SIXEL_OK) {
+        context->frame_pipeline.presentation = &context->presentation;
+    }
+    return status;
+}
+
 /* called when image loader component load a image frame */
 static SIXELSTATUS
 load_image_callback(sixel_frame_t *frame, void *data)
@@ -18815,10 +18883,24 @@ load_image_callback(sixel_frame_t *frame, void *data)
         if (status != SIXEL_OK) {
             return status;
         }
-        status = sixel_encoder_load_callback_resolve_handoff(pipeline,
-                                                              planner,
-                                                              encoder,
-                                                              frame);
+        if (encoder->defer_sixel_outfile && encoder->outfd < 0 &&
+                encoder->sixel_output_path != NULL) {
+            /* Let the loader and frame-specific checks reject the input
+             * before a named CLI destination can be truncated. Set up the
+             * sink before dispatch so the worker sees the final descriptor. */
+            status = sixel_encoder_validate_output_definition_frame(encoder,
+                                                                    frame);
+            if (status == SIXEL_OK) {
+                status = sixel_encoder_open_sixel_outfile(encoder);
+            }
+            if (status == SIXEL_OK && encoder->progressive_enabled) {
+                status = sixel_encoder_load_init_presentation(context);
+            }
+        }
+        if (status == SIXEL_OK) {
+            status = sixel_encoder_load_callback_resolve_handoff(pipeline,
+                planner, encoder, frame);
+        }
         sixel_encoder_operation_leave(encoder);
     }
     if (SIXEL_FAILED(status)) {
@@ -19544,17 +19626,16 @@ write_png_from_sixel(char const *sixel_path,
      * only tags the decoded snapshot; applying another transform would
      * convert an already converted palette twice. Legacy linear/SMPTE-C
      * snapshots retain their existing sRGB decoder interpretation. */
+    sixel_cdef_free(decoder->input_icc);
+    decoder->input_icc = NULL;
+    decoder->input_colorspace = encoder->output_color_definition;
     if (encoder->output_icc != NULL) {
-        sixel_cdef_free(decoder->input_icc);
         decoder->input_icc = sixel_cdef_clone(encoder->output_icc);
         decoder->input_colorspace = SIXEL_NAMED_COLOR_COUNT;
-        status = decoder->input_icc != NULL ? SIXEL_OK : SIXEL_BAD_ALLOCATION;
-    } else {
-        status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT_COLORSPACE,
-            sixel_cdef_named_name(encoder->output_color_definition));
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
+        if (decoder->input_icc == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
     }
 
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, sixel_path);
@@ -19701,6 +19782,14 @@ sixel_encoder_encode_owned(
     if (status != SIXEL_OK) {
         return status;
     }
+    /* Only file presentation runs automatic repair. Check the final
+     * endpoint before opening the destination or writing a baseline. */
+    if (encoder->progressive_enabled) {
+        status = sixel_repair_validate_output(encoder);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+    }
     sixel_encoder_ref(encoder);
     effective_static = encoder->fstatic ||
         encoder->update_policy == SIXEL_UPDATE_POLICY_PROGRESSIVE;
@@ -19725,6 +19814,13 @@ sixel_encoder_encode_owned(
     status = sixel_encoder_validate_output_definition(encoder);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+    if (encoder->defer_sixel_outfile && encoder->png_output_path != NULL) {
+        status = sixel_encoder_check_outfile_inputs(encoder, -1,
+                                                   encoder->png_output_path);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
     (void)sixel_timeline_logger_prepare_env(encoder->allocator, &logger);
     logger_prepared = logger != NULL;
@@ -20024,12 +20120,14 @@ sixel_encoder_encode_owned(
     }
 
     if (encoder->progressive_enabled) {
-        status = sixel_presentation_init_owned(&load_context.presentation,
-            encoder, load_context.output, encoder->outfd);
-        if (status != SIXEL_OK) {
-            goto end;
+        /* A deferred file presentation is initialized with its descriptor
+         * in the first loader callback. */
+        if (encoder->outfd >= 0) {
+            status = sixel_encoder_load_init_presentation(&load_context);
+            if (status != SIXEL_OK) {
+                goto end;
+            }
         }
-        load_context.frame_pipeline.presentation = &load_context.presentation;
         /* A generated baseline and its source snapshot must share the same
          * composed pixels, including originally indexed input. */
         fuse_palette = 0;

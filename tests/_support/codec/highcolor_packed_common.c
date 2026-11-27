@@ -51,7 +51,7 @@ test_highcolor_packed(int scenario)
         SIXEL_PIXELFORMAT_GA88, SIXEL_PIXELFORMAT_AG88
     };
     static char const *const spaces[] = {
-        "gamma", "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static unsigned char const rgb[4][3] = {
         {17, 91, 203}, {201, 73, 19}, {5, 151, 227}, {43, 99, 177}
@@ -138,7 +138,7 @@ test_highcolor_packed(int scenario)
     /* High color bypasses clustering. An irrelevant non-gamma -X must not
      * promote an otherwise exact binary-alpha job to float. */
     if (scenario == 72 &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "cielab"))) {
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "lab-d65"))) {
         goto end;
     }
     /* Exercise -B parsing with unequal nibbles against the byte oracle. */
@@ -163,7 +163,7 @@ test_highcolor_packed(int scenario)
         interpret = scenario != 74 && !(scenario == 79 && phase == 1);
         want_float = p3 || scenario == 73 || (interpret && !binary);
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma"))) {
+                p3 ? "display-p3" : "srgb"))) {
             goto end;
         }
         alpha[0] = 0;

@@ -36,11 +36,11 @@ test_gamut_0062_filter_standalone(int argc, char **argv)
                 &mask));
         }
         ok = ok && SIXEL_SUCCEEDED(sixel_gamut_apply_float32(f.mapper,
-            expected, 3, SIXEL_COLORSPACE_LINEAR, hidden, 1));
+            expected, 3, SIXEL_COLORSPACE_SRGB_LINEAR, hidden, 1));
         ok = ok && SIXEL_SUCCEEDED(sixel_filter_run(f.gamut,
             f.allocator, NULL));
         ok = ok && !memcmp(pixels, expected, sizeof(pixels)) &&
-            sixel_frame_get_colorspace(f.frame) == SIXEL_COLORSPACE_LINEAR;
+            sixel_frame_get_colorspace(f.frame) == SIXEL_COLORSPACE_SRGB_LINEAR;
     }
     gamut_filter_free(&f);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

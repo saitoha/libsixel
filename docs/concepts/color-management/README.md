@@ -54,10 +54,10 @@ The PCS is a connection used during a conversion, not a space that libsixel's en
 | --- | --- | --- |
 | ICC PCS | XYZ or Lab, D50 | Connect source and destination profile interpretations. |
 | XYZ in the internal sRGB/Oklab route | XYZ D65 | Relate the sRGB primary basis to other color coordinates. |
-| libsixel `linear` | Linear sRGB, D65 | Common internal RGB conversion basis and light-mixing coordinates. |
-| libsixel `cielab` | Project-normalized CIELAB derived using D65 | Palette/CMS-target working coordinates; distinct from ICC Lab PCS encoding and white point. |
+| libsixel `srgb-linear` | Linear sRGB, D65 | Common internal RGB conversion basis and light-mixing coordinates. |
+| libsixel `lab-d65` | Project-normalized CIELAB derived using D65 | Palette/CMS-target working coordinates; distinct from ICC Lab PCS encoding and white point. |
 
-An intermediate PCS is therefore neither the loader's requested `cms_target` nor the encoder's `-W`. In particular, `cms_target=cielab` does not request that the loader expose its raw ICC Lab PCS.
+An intermediate PCS is therefore neither the loader's requested `cms_target` nor the encoder's `-W`. In particular, `cms_target=lab-d65` does not request that the loader expose its raw ICC Lab PCS.
 
 ## Chromatic adaptation
 
@@ -84,7 +84,7 @@ The perceptual and saturation mappings are not fixed formulas: each profile cont
 
 ## Color management in libsixel
 
-In libsixel, color management is **input normalization**. A loader that finds a usable profile converts the image into a known internal space, such as linear sRGB, before the encoder sees it. This prevents images authored for different primaries or transfer functions from being misinterpreted as sRGB. The default `-Ugamma` output remains gamma-encoded sRGB; CMS does not expand the output gamut. Mapping that result to a physical display, or deliberately enhancing it beyond sRGB, belongs to the receiving terminal and display stack. See [Why loader CMS matters](../../loader/color-management/README.md#why-loader-cms-matters) for the limits of this division of responsibility.
+In libsixel, color management is **input normalization**. A loader that finds a usable profile converts the image into a known internal space, such as linear sRGB, before the encoder sees it. This prevents images authored for different primaries or transfer functions from being misinterpreted as sRGB. The default `-Usrgb` output remains gamma-encoded sRGB; CMS does not expand the output gamut. Mapping that result to a physical display, or deliberately enhancing it beyond sRGB, belongs to the receiving terminal and display stack. See [Why loader CMS matters](../../loader/color-management/README.md#why-loader-cms-matters) for the limits of this division of responsibility.
 
 A SIXEL stream carries palette numbers but no profile, so the receiver must assume what they mean. Unless a terminal states otherwise, it treats them as sRGB. The CLI's `-Uauto` option can ask a terminal which definition it uses through the [terminal graphics color management proposal](../../protocols/graphics-color-management.md).
 

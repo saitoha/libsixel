@@ -5,7 +5,7 @@
 set -eux
 result=0
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract \
-    SIXEL_LOADER_CMS_TARGET_COLORSPACE=linear \
+    SIXEL_LOADER_CMS_TARGET_COLORSPACE=srgb-linear \
     SIXEL_BACKGROUND_POLICY=file_first \
     SIXEL_LOADER_PREFER_8BIT=0 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gifc/0026_gif_icc_cms_none_duplicate_numeric 2>&1) || result=$?

@@ -12,7 +12,7 @@
 #include "tests/data/color-numeric/builtin-native.h"
 
 static char const *const mn_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const mn_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -20,7 +20,7 @@ static int const mn_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const mn_outputs[] = {
-    "gamma", "display-p3", "linear", "smpte-c"
+    "srgb", "display-p3", "srgb-linear", "smpte-c"
 };
 
 typedef struct mn_capture {

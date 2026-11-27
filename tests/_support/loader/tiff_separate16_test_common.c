@@ -1083,8 +1083,8 @@ ts_capture(sixel_frame_t *frame, void *context)
         frame->alpha_zero_is_transparent == 0 &&
         sixel_frame_format(frame) == (ts.fallback ? SIXEL_PIXELFORMAT_RGBFLOAT32
                             : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) &&
-        frame->format.coordinates == (ts.fallback ? SIXEL_COLORSPACE_GAMMA
-                                         : SIXEL_COLORSPACE_LINEAR);
+        frame->format.coordinates == (ts.fallback ? SIXEL_COLORSPACE_SRGB
+                                         : SIXEL_COLORSPACE_SRGB_LINEAR);
     if (!ts.ok) { return SIXEL_BAD_INPUT; }
     if (reference) {
         memcpy(ts.reference, frame->pixels.u8ptr, sizeof(ts.reference));

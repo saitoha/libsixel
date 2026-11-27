@@ -188,8 +188,8 @@ fhedt_build_encode(int quality, int overlap, char const *path)
     if (quality &&
             (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "kmeans")) ||
              SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "ward")) ||
-             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "cielab")) ||
-             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "cielab")) ||
+             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "lab-d65")) ||
+             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "lab-d65")) ||
              SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "lso2")))) {
         goto end;
     }

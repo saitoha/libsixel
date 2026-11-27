@@ -23,7 +23,7 @@ static int const ward_formats[] = {
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
 };
 static char const *const ward_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const ward_models[] = {
     SIXEL_QUANTIZE_MODEL_KMEANS, SIXEL_QUANTIZE_MODEL_KCENTER,
@@ -551,7 +551,7 @@ ward_wire(int model, int x, int w, int p3, char const *mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                 ward_spaces[w])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }

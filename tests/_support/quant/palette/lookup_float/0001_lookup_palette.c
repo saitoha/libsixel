@@ -18,7 +18,7 @@ static char const *const lookup_options[] = {
     "mahalanobis", "eytzinger", "fhedt", "delaunay"
 };
 static char const *const lookup_spaces[] = {
-    "gamma", "linear", "oklab", "cielab", "din99d"
+    "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
 };
 static int const palette_lookup_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -61,7 +61,7 @@ lookup_encode(int policy, int space, int p3, int byte,
         { '=', "greedy:B1" }, { 'p', "2" }, { 'Q', "kmeans:seed=1" },
         { 'F', "none" }, { 'a', "off" }, { '_', "none" },
         { 'd', "none" }, { 't', "rgb" }, { '5', "none" },
-        { '4', "full-frame" }, { 'X', "gamma" }
+        { '4', "full-frame" }, { 'X', "srgb" }
     };
     float pixels[6] = { -.25f, -.25f, -.25f, 1.25f, 1.25f, 1.25f };
     unsigned char bytes[6] = { 32, 32, 32, 224, 224, 224 };
@@ -99,7 +99,7 @@ lookup_encode(int policy, int space, int p3, int byte,
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                 lookup_spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame,
                 byte ? (void *)bytes : (void *)pixels, 2, 1,
@@ -179,7 +179,7 @@ lookup_setup(sixel_dither_t *dither, int policy, int shared)
     return SIXEL_SUCCEEDED(dither->palette->vtbl->init_entries_float32(
         dither->palette, &request)) &&
         SIXEL_SUCCEEDED(sixel_palette_prepare_rgb101(dither->palette,
-            SIXEL_COLORSPACE_GAMMA, SIXEL_PALETTE_OUTPUT_LEGACY)) &&
+            SIXEL_COLORSPACE_SRGB, SIXEL_PALETTE_OUTPUT_LEGACY)) &&
         SIXEL_SUCCEEDED(sixel_dither_set_clamp_policy(dither,
             SIXEL_DITHER_CLAMP_SOFT, 1.01));
 }

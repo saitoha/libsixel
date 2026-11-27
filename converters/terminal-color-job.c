@@ -120,6 +120,8 @@ SIXELSTATUS
 img2sixel_color_job_option(img2sixel_color_job_t *job,
                            sixel_encoder_t *encoder, char const *argument)
 {
+    static char const fallback[] = "srgb";
+    size_t const fallback_length = sizeof(fallback) - 1u;
     img2sixel_color_key_t const *key;
     char const *suffix;
     char const *end;
@@ -143,10 +145,10 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
     base_size = suffix == NULL ? strlen(argument)
                               : (size_t)(suffix - argument);
     /* CLI adds auto to the library's choices. Its one-letter prefix now
-     * collides with adobe-rgb; do not silently select either meaning. */
+     * collides with a98-rgb; do not silently select either meaning. */
     if (base_size == 1u && tolower((unsigned char)argument[0]) == 'a') {
         return img2sixel_color_job_argument(
-            "ambiguous output-colorspace: a matches auto and adobe-rgb.");
+            "ambiguous output-colorspace: a matches auto and a98-rgb.");
     }
     automatic = base_size > 0u && base_size <= strlen(key->base);
     for (i = 0u; automatic && i < base_size; ++i) {
@@ -155,7 +157,7 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
     timeout = key->initial;
     override = 0;
     used = 0u;
-    memcpy(resolved, "gamma", 6u);
+    memcpy(resolved, fallback, sizeof(fallback));
     while (automatic && suffix != NULL) {
         ++suffix;
         end = strchr(suffix, ':');
@@ -178,10 +180,10 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
                 return img2sixel_color_job_argument(
                     "output-colorspace auto suboptions are too long.");
             }
-            resolved[5u + used++] = ':';
-            memcpy(resolved + 5u + used, suffix, part_size);
+            resolved[fallback_length + used++] = ':';
+            memcpy(resolved + fallback_length + used, suffix, part_size);
             used += part_size;
-            resolved[5u + used] = '\0';
+            resolved[fallback_length + used] = '\0';
             suffix = *end == ':' ? end : NULL;
             continue;
         }
@@ -199,7 +201,7 @@ img2sixel_color_job_option(img2sixel_color_job_t *job,
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    memcpy(job->output_suboptions, resolved + 5, used + 1u);
+    memcpy(job->output_suboptions, resolved + fallback_length, used + 1u);
     job->automatic = automatic;
     *img2sixel_color_job_field(job, key->value_offset) = timeout;
     *img2sixel_color_job_field(job, key->override_offset) = override;
@@ -231,7 +233,7 @@ img2sixel_color_job_prepare(img2sixel_color_job_t *job,
     if (!job->requested) {
         value = img2sixel_compat_getenv("SIXEL_OUTPUT_COLORSPACE");
         if (value == NULL || value[0] == '\0') {
-            value = "gamma";
+            value = "srgb";
         }
         if (value != NULL && value[0] != '\0') {
             /* The base environment is a choice, not a structured CLI token.
@@ -425,7 +427,7 @@ img2sixel_color_job_encode(img2sixel_color_job_t *job,
         goto cleanup;
     }
     snprintf(resolved, sizeof(resolved), "%s%s",
-        job->selected_policy == 2 ? "display-p3" : "gamma",
+        job->selected_policy == 2 ? "display-p3" : "srgb",
         job->output_suboptions);
     status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT_COLORSPACE,
         resolved);

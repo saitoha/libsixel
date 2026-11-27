@@ -2553,8 +2553,8 @@ sixel_builtin_psd_descriptor_parse_color_object(
         status = sixel_helper_convert_colorspace((unsigned char *)lab_pixel,
                                                  sizeof(lab_pixel),
                                                  SIXEL_PIXELFORMAT_CIELABFLOAT32,
-                                                 SIXEL_COLORSPACE_CIELAB,
-                                                 SIXEL_COLORSPACE_GAMMA);
+                                                 SIXEL_COLORSPACE_LAB_D65,
+                                                 SIXEL_COLORSPACE_SRGB);
         if (SIXEL_FAILED(status)) {
             return 0;
         }
@@ -4602,8 +4602,8 @@ sixel_builtin_psd_apply_tysh_fillcolor_engine_lab(
     status = sixel_helper_convert_colorspace((unsigned char *)lab_pixel,
                                              sizeof(lab_pixel),
                                              SIXEL_PIXELFORMAT_CIELABFLOAT32,
-                                             SIXEL_COLORSPACE_CIELAB,
-                                             SIXEL_COLORSPACE_GAMMA);
+                                             SIXEL_COLORSPACE_LAB_D65,
+                                             SIXEL_COLORSPACE_SRGB);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -16684,8 +16684,8 @@ sixel_builtin_psd_decode_layer_to_linear(
             (unsigned char *)lab,
             pixel_count * 3u * sizeof(float),
             SIXEL_PIXELFORMAT_CIELABFLOAT32,
-            SIXEL_COLORSPACE_CIELAB,
-            SIXEL_COLORSPACE_LINEAR);
+            SIXEL_COLORSPACE_LAB_D65,
+            SIXEL_COLORSPACE_SRGB_LINEAR);
         if (SIXEL_FAILED(status)) {
             sixel_allocator_free(info->allocator, lab);
             goto cleanup;
@@ -25477,8 +25477,8 @@ sixel_builtin_psd_finalize_multilayer_output(
                 (unsigned char *)pixels_f32,
                 pixel_count * 3u * sizeof(float),
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                SIXEL_COLORSPACE_LINEAR,
-                SIXEL_COLORSPACE_CIELAB);
+                SIXEL_COLORSPACE_SRGB_LINEAR,
+                SIXEL_COLORSPACE_LAB_D65);
             if (SIXEL_FAILED(status)) {
                 sixel_allocator_free(info->allocator, pixels_f32);
                 sixel_allocator_free(info->allocator, transparent_mask);
@@ -34553,8 +34553,8 @@ sixel_builtin_psd_rgb_bgcolor_to_cielab(unsigned char const *bgcolor,
     status = sixel_helper_convert_colorspace(lab8,
                                              3u,
                                              SIXEL_PIXELFORMAT_RGB888,
-                                             SIXEL_COLORSPACE_GAMMA,
-                                             SIXEL_COLORSPACE_CIELAB);
+                                             SIXEL_COLORSPACE_SRGB,
+                                             SIXEL_COLORSPACE_LAB_D65);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -34587,8 +34587,8 @@ sixel_builtin_psd_rgb_bgcolor_to_linear(unsigned char const *bgcolor,
     status = sixel_helper_convert_colorspace((unsigned char *)rgbf32,
                                              sizeof(rgbf32),
                                              SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                             SIXEL_COLORSPACE_GAMMA,
-                                             SIXEL_COLORSPACE_LINEAR);
+                                             SIXEL_COLORSPACE_SRGB,
+                                             SIXEL_COLORSPACE_SRGB_LINEAR);
     if (SIXEL_FAILED(status)) {
         return status;
     }

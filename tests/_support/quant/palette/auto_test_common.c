@@ -40,7 +40,7 @@ test_auto_palette(int mode, int space)
         { 't', "rgb" }, { '4', "full-frame" }, { '0', "hard" }
     };
     static char const *const spaces[] = {
-        "gamma", "linear", "oklab", "cielab", "din99d"
+        "srgb", "srgb-linear", "oklab", "lab-d65", "din99d"
     };
     static int const formats[] = {
         SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
@@ -115,7 +115,7 @@ test_auto_palette(int mode, int space)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
-                p3 ? "display-p3" : "gamma")) ||
+                p3 ? "display-p3" : "srgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 mode == 5 ? "float32" : mode == 3 || byte_work
                 ? "8bit" : "auto")) ||

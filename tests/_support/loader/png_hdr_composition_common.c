@@ -183,7 +183,7 @@ hdrp_capture(sixel_frame_t *frame, void *context)
     if (probe->count >= probe->frames || sixel_frame_get_width(frame) != 4 ||
         sixel_frame_get_height(frame) != 1 ||
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-        || sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_LINEAR) {
+        || sixel_frame_get_colorspace(frame) != SIXEL_COLORSPACE_SRGB_LINEAR) {
         fprintf(stderr, "HDR frame dimensions/count/float representation\n");
         return SIXEL_BAD_INPUT;
     }

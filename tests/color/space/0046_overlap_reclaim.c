@@ -199,8 +199,8 @@ test_parallel_float_0008(int argc, char **argv)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B8")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "kmeans")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "ward")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "cielab")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "cielab")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "lab-d65")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', "lab-d65")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "lso2")) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 1920, 1080,
                 SIXEL_PIXELFORMAT_RGB888, NULL, -1))) {

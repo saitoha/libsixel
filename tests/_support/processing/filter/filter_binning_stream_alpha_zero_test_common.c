@@ -133,7 +133,7 @@ filter_binning_stream_alpha_zero_run(int alpha_zero_is_transparent,
     sixel_filter_bind_sample_input(filter, &samples);
     sixel_filter_bind_weighted_output(filter,
                                       &output,
-                                      SIXEL_COLORSPACE_GAMMA);
+                                      SIXEL_COLORSPACE_SRGB);
     status = sixel_filter_run(filter, allocator, NULL);
     if (SIXEL_FAILED(status) ||
         output.point_count != expected_point_count ||

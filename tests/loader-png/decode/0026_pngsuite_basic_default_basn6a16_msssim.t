@@ -32,7 +32,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a16.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/quality/b76e0a9e-0033_pngsuite_basic_default_basn6a16_msssim.ppm"
 output_sixel="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-basn6a16.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -r nearest -w 192 -h 192 -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W srgb -r nearest -w 192 -h 192 -Acomposite -B#000 -Nexplicit_first --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 -Llibpng:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     printf '\n%s\n' "not ok 1 - img2sixel failed"
     exit 0
 }

@@ -18,6 +18,11 @@ import statistics
 import subprocess
 from pathlib import Path
 
+from measurement_commands import (
+    canonical_encoder_arguments,
+    encoder_precision_matches,
+)
+
 
 POLICIES = ("vptree", "delaunay", "5bit", "6bit")
 REPRESENTATIONS = ("8bit", "float32")
@@ -83,7 +88,7 @@ def measure(args):
               "vimperator3": source / "images/vimperator3.png"}
     common = [str(exe), "--threading-policy=greedy:global_budget=1", "--precision-policy=auto", "--quality=full",
               "--loaders=libpng!", "--quantize-model=kmeans:seed=1",
-              "--merge-policy=ward", "-Wgamma", "--gpu-policy=off"]
+              "--merge-policy=ward", "-Wsrgb", "--gpu-policy=off"]
     payload = {
         "schema_version": 1, "study": PREFIX,
         "generated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -196,6 +201,10 @@ def load_validated(directory):
         raise ValueError("unexpected hyperfine sampling protocol")
     if protocol["sixel_environment_removed"] is not True:
         raise ValueError("missing SIXEL environment isolation")
+    # The published run requested byte precision for both representations.
+    # The palette lookup trace establishes what actually ran.
+    archived = source["revision"] == "d1acd91280d9e97247aaf6f2f96abe7b8e60345b"
+    precision = "8bit" if archived else "auto"
     expected = set(itertools.product(REPRESENTATIONS, IMAGES, DIFFUSIONS, COLORS, POLICIES))
     actual = set()
     for row in data["results"]:
@@ -221,11 +230,13 @@ def load_validated(directory):
         command = row["command"]
         required = [f"--lookup-policy={policy}", f"--diffusion={diffusion}",
                     "--threading-policy=greedy:global_budget=1", "--gpu-policy=off", "--loaders=libpng!",
-                    "--precision-policy=auto", "--quality=full",
-                    "--quantize-model=kmeans:seed=1", "--merge-policy=ward", "-Wgamma"]
+                    "--quality=full",
+                    "--quantize-model=kmeans:seed=1", "--merge-policy=ward", "-Wsrgb"]
         required += ["--cms-engine=none"] if rep == "8bit" else ["-Xoklab"]
-        arguments = shlex.split(command)
-        if any(flag not in arguments for flag in required):
+        recorded = shlex.split(command)
+        arguments = canonical_encoder_arguments(recorded)
+        if (not encoder_precision_matches(arguments, precision)
+                or any(flag not in arguments for flag in required)):
             raise ValueError("command differs from the comparison protocol")
         if "-p" not in arguments or arguments[arguments.index("-p") + 1] != str(colors):
             raise ValueError("command palette size differs from its result")

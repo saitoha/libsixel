@@ -2,8 +2,8 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 set -eux
 
-SIXEL_HDR_CASE_LABEL='hdr matrix numeric case=103 target=gamma gamma=none primaries=none ev=-2 tonemap=reinhard cms=auto fallback=srgb'
-SIXEL_HDR_TARGET='gamma'
+SIXEL_HDR_CASE_LABEL='hdr matrix numeric case=103 target=srgb gamma=none primaries=none ev=-2 tonemap=reinhard cms=auto fallback=srgb'
+SIXEL_HDR_TARGET='srgb'
 SIXEL_HDR_GAMMA='none'
 SIXEL_HDR_PRIMARIES='none'
 SIXEL_HDR_EXPOSURE_EV='-2'

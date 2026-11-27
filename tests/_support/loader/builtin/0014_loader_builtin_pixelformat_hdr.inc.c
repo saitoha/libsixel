@@ -102,12 +102,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr exposure numeric",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "1",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 1.0f, 0.5f, 0.25f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -120,12 +120,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr tonemap numeric",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "reinhard",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.33333334f, 0.2f, 0.11111111f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -138,12 +138,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr header exposure numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.25f, 0.125f, 0.0625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -156,12 +156,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr header exposure multi numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2x4.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.0625f, 0.03125f, 0.015625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -174,12 +174,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr header exposure disabled numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_exposure2.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "0",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.5f, 0.25f, 0.125f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -192,12 +192,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr xyze numeric",
         "/tests/data/inputs/formats/stbi_midtones_xyze.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 1.1738129f, -0.01043556f, 0.10894224f },
         0.0012f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -210,12 +210,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin loader hdr colorcorr single numeric",
         "/tests/data/inputs/formats/stbi_midtones_hdrmeta_colorcorr_2_4_8.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.25f, 0.0625f, 0.015625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -229,12 +229,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "/tests/data/inputs/formats/"
         "stbi_midtones_hdrmeta_colorcorr_2x4x8_multiline.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.25f, 0.0625f, 0.015625f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -247,12 +247,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin hdr exposure overflow none",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "200",
         "none",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.0f, 0.0f, 0.0f },
         0.0f,
         HDR_NUMERIC_CASE_VALIDATE_CLAMP_RANGE,
@@ -265,12 +265,12 @@ static hdr_numeric_static_case_spec_t const hdr_numeric_static_cases[] = {
         "builtin hdr exposure overflow reinhard",
         "/tests/data/inputs/formats/stbi_midtones.hdr",
         SIXEL_CMS_ENGINE_NONE,
-        "linear-srgb",
+        "srgb-linear",
         "200",
         "reinhard",
         "1",
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 1.0f, 1.0f, 1.0f },
         0.0007f,
         HDR_NUMERIC_CASE_VALIDATE_EXACT,
@@ -563,7 +563,7 @@ run_builtin_loader_hdr_orientation_numeric_test(void)
             return result;
         }
         if (probe.pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-            probe.colorspace != SIXEL_COLORSPACE_LINEAR) {
+            probe.colorspace != SIXEL_COLORSPACE_SRGB_LINEAR) {
             fprintf(stderr,
                     "%s: frame contract mismatch (pf=%d cs=%d)\n",
                     hdr_orientation_cases[case_index].label,
@@ -642,11 +642,11 @@ static hdr_numeric_dual_case_spec_t const hdr_numeric_dual_cases[] = {
         "builtin loader hdr numeric cms=off",
         SIXEL_CMS_ENGINE_NONE,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         "builtin loader hdr numeric cms=on",
         SIXEL_CMS_ENGINE_AUTO,
         SIXEL_PIXELFORMAT_RGBFLOAT32,
-        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_SRGB,
         { 0.5f, 0.25f, 0.125f },
         0.0005f,
         1,
@@ -663,11 +663,11 @@ static hdr_numeric_dual_case_spec_t const hdr_numeric_dual_cases[] = {
         "builtin loader hdr fallback numeric cms=off",
         SIXEL_CMS_ENGINE_NONE,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         "builtin loader hdr fallback numeric cms=on",
         SIXEL_CMS_ENGINE_BUILTIN,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.5f, 0.25f, 0.125f },
         0.0007f,
         1,
@@ -684,11 +684,11 @@ static hdr_numeric_dual_case_spec_t const hdr_numeric_dual_cases[] = {
         "builtin loader hdr header-priority numeric cms=off",
         SIXEL_CMS_ENGINE_NONE,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         "builtin loader hdr header-priority numeric cms=on",
         SIXEL_CMS_ENGINE_BUILTIN,
         SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_SRGB_LINEAR,
         { 0.5f, 0.25f, 0.125f },
         0.0007f,
         1,
@@ -1075,7 +1075,7 @@ typedef enum hdr_numeric_compare_case_id {
 
 static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1092,7 +1092,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1109,7 +1109,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1125,7 +1125,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1142,7 +1142,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0012f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1158,7 +1158,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1174,7 +1174,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1190,7 +1190,7 @@ static hdr_numeric_compare_case_spec_t const hdr_numeric_compare_cases[] = {
         0.0007f
     },
     {
-        "linear-srgb",
+        "srgb-linear",
         "0",
         "none",
         "1",
@@ -1485,7 +1485,7 @@ hdr_test_parse_fallback_mode(char const *text,
                              hdr_test_fallback_mode_t *out_mode)
 {
     static char const * const keys[] = {
-        "linear-srgb",
+        "srgb-linear",
         "srgb"
     };
     static int const values[] = {
@@ -1621,7 +1621,7 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
     }
 
     if (fallback_text == NULL || fallback_text[0] == '\0') {
-        fallback_text = "linear-srgb";
+        fallback_text = "srgb-linear";
     }
     if (tonemap_text == NULL || tonemap_text[0] == '\0') {
         tonemap_text = "none";
@@ -1663,7 +1663,7 @@ run_builtin_loader_hdr_single_case_numeric_test(void)
 
     if (cms_engine == SIXEL_CMS_ENGINE_NONE) {
         expected_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        expected_colorspace = SIXEL_COLORSPACE_LINEAR;
+        expected_colorspace = SIXEL_COLORSPACE_SRGB_LINEAR;
     } else {
         expected_pixelformat = target_pixelformat;
         expected_colorspace = target_colorspace;

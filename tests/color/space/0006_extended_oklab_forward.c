@@ -16,7 +16,7 @@ int test_color_0006(int argc, char **argv)
     for (i = 0; i < sizeof(color_opponents) / sizeof(color_opponents[0]);
          ++i) {
         if (!sixel_color_convert(actual, color_opponents[i] + 0,
-                SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
+                SIXEL_COLORSPACE_SRGB_LINEAR, SIXEL_COLORSPACE_OKLAB)) {
             return EXIT_FAILURE;
         }
         for (channel = 0; channel < 3; ++channel) {

@@ -129,7 +129,7 @@ test_fs_gpu_spatial_threshold(int deferred)
     memset(&wire, 0, sizeof(wire));
     wire.definitions = definitions;
     wire.count = 5;
-    wire.colorspace = SIXEL_COLORSPACE_GAMMA;
+    wire.colorspace = SIXEL_COLORSPACE_SRGB;
     sixel_wire_palette_unref(f.wire);
     f.wire = NULL;
     LSO2_GPU_CHECK(sixel_wire_palette_new(&f.wire, &wire, f.allocator)
