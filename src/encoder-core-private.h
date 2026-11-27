@@ -87,6 +87,7 @@ struct sixel_output {
 
     int penetrate_multiplexer;
     int encode_policy;
+    size_t gpu_body_threshold;
     int ormode;
     int transparent_policy;
     /* Emit the specified registers even for two colors with a key.

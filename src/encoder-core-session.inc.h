@@ -518,6 +518,8 @@ sixel_output_encode_resolved(sixel_output_t *output,
                 return status;
         }
         sixel_encoder_core_set_gpu_body(output->core, resolved->gpu_body);
+        sixel_encoder_core_set_gpu_body_threshold(output->core,
+            output->gpu_body_threshold);
         memset(&body, 0, sizeof(body));
         body.image = resolved->image;
         body.options = resolved->options;
@@ -798,6 +800,8 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (output->core != NULL) {
         sixel_encoder_core_set_gpu_body(output->core,
             dither->gpu_policy != SIXEL_GPU_POLICY_OFF);
+        sixel_encoder_core_set_gpu_body_threshold(output->core,
+            output->gpu_body_threshold);
     }
     body.image = image;
     body.options.has_gri_arg_limit = output->has_gri_arg_limit;

@@ -419,6 +419,8 @@ struct sixel_encoder {
     int gpu_policy;
     int gpu_palette_threshold_override;
     size_t gpu_palette_threshold;
+    int gpu_body_threshold_override;
+    size_t gpu_body_threshold;
     int method_for_resampling;
     int loop_mode;
     int palette_type;

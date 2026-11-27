@@ -50,6 +50,12 @@ sixel_encoder_core_test_clock(sixel_encoder_core_t *core,
 SIXEL_INTERNAL_API void
 sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *core, int enabled);
 
+/* Sets the minimum frame pixels for GPU body spelling; 0 admits every size.
+ * Other core implementations ignore it. */
+SIXEL_INTERNAL_API void
+sixel_encoder_core_set_gpu_body_threshold(sixel_encoder_core_t *core,
+                                          size_t threshold);
+
 /* @classid codec/encoder-core */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object);

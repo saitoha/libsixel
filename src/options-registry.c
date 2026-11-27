@@ -2167,6 +2167,14 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "GPU palette threshold must be an unsigned integer.",
         gpu_palette_threshold,
         gpu_palette_threshold_override),
+    SIXEL_REGISTRY_ENCODER_SIZE(
+        SIXEL_OPTION_SCHEMA_GPU_POLICY, NULL,
+        "body_threshold", 'B', "SIXEL_GPU_BODY_THRESHOLD",
+        NULL, NULL,
+        SIXEL_SUBOPTION_ENV_RANGE_SATURATE_UNSIGNED_LONG,
+        "GPU body threshold must be an unsigned integer.",
+        gpu_body_threshold,
+        gpu_body_threshold_override),
     SIXEL_REGISTRY_DECODER_SIZE(
         SIXEL_OPTION_SCHEMA_GPU_POLICY, NULL,
         "dequant_threshold", 'D', "SIXEL_GPU_DEQUANT_THRESHOLD",

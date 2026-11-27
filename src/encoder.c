@@ -530,6 +530,9 @@ static SIXELSTATUS sixel_encoder_set_output_transparent_offset(
     sixel_output_t *output,
     int left,
     int top);
+static SIXELSTATUS sixel_encoder_set_output_gpu_body_threshold(
+    sixel_output_t *output,
+    sixel_encoder_t const *encoder);
 static SIXELSTATUS sixel_encoder_validate_alpha_feature_policy(
     sixel_encoder_t const *encoder);
 static int sixel_encoder_frame_has_transparent_mask(
@@ -6950,6 +6953,11 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     sixel_output_set_encode_policy(context->output,
                                    context->encoder->encode_policy);
     sixel_output_set_ormode(context->output, context->encoder->ormode);
+    status = sixel_encoder_set_output_gpu_body_threshold(context->output,
+                                                         context->encoder);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     status = sixel_encoder_validate_alpha_feature_policy(context->encoder);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -8230,6 +8238,33 @@ sixel_encoder_set_output_transparent_policy(sixel_output_t *output,
     }
 
     options.transparent_policy = transparent_policy;
+    return sixel_output_set_encoder_options(output, &options);
+}
+
+/* force skips the size floor; the CPU/GPU cost comparison still applies. */
+static SIXELSTATUS
+sixel_encoder_set_output_gpu_body_threshold(sixel_output_t *output,
+                                            sixel_encoder_t const *encoder)
+{
+    SIXELSTATUS status;
+    sixel_output_options_t options;
+
+    memset(&options, 0, sizeof(options));
+    status = sixel_output_get_encoder_options(output, &options);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    options.gpu_body_threshold =
+        encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE
+        ? 0U : encoder->gpu_body_threshold;
+    if (sixel_trace_topic_is_enabled("gpu_contract")) {
+        fprintf(stderr,
+                "LSXGPU1|consumer=body|policy=%d|threshold=%" SIXEL_PRI_SIZE
+                "\n",
+                encoder->gpu_policy,
+                SIXEL_PRINTF_SIZE(options.gpu_body_threshold));
+    }
     return sixel_output_set_encoder_options(output, &options);
 }
 
@@ -13533,6 +13568,9 @@ sixel_encoder_new(
     (*ppencoder)->gpu_palette_threshold_override = 0;
     (*ppencoder)->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
+    (*ppencoder)->gpu_body_threshold_override = 0;
+    (*ppencoder)->gpu_body_threshold =
+        (size_t)SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
     (*ppencoder)->palette_type          = SIXEL_PALETTETYPE_AUTO;
@@ -14918,6 +14956,8 @@ sixel_encoder_apply_gpu_policy_argument(sixel_encoder_t *encoder,
     encoder->gpu_policy = resolution.resolved_base_value;
     encoder->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
+    encoder->gpu_body_threshold =
+        (size_t)SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT;
     sixel_option_reset_suboption_overrides(
         schema,
         SIXEL_OPTION_SCOPE_ENCODER,

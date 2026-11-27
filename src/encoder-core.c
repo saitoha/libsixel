@@ -128,6 +128,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->pos = 0;
     output->penetrate_multiplexer = 0;
     output->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
+    output->gpu_body_threshold = SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT;
     output->ormode = 0;
     output->transparent_policy = SIXEL_ALPHA_POLICY_COMPOSITE;
     output->emit_keyed_palette = 0;
@@ -174,6 +175,7 @@ sixel_output_get_encoder_options(sixel_output_t *output,
     options->pixelformat = output->pixelformat;
     options->source_colorspace = output->source_colorspace;
     options->colorspace = output->colorspace;
+    options->gpu_body_threshold = output->gpu_body_threshold;
 
     return SIXEL_OK;
 }
@@ -198,6 +200,7 @@ sixel_output_set_encoder_options(
     output->pixelformat = options->pixelformat;
     output->source_colorspace = options->source_colorspace;
     output->colorspace = options->colorspace;
+    output->gpu_body_threshold = options->gpu_body_threshold;
 
     return SIXEL_OK;
 }

@@ -27,6 +27,9 @@
 
 #include <6cells.h>
 
+/* Default minimum frame size for --gpu-policy=auto GPU body spelling. */
+#define SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT 1048576U
+
 typedef struct sixel_output_options {
     int has_gri_arg_limit;
     int palette_type;
@@ -38,6 +41,8 @@ typedef struct sixel_output_options {
     int pixelformat;
     int source_colorspace;
     int colorspace;
+    /* Minimum frame pixels for GPU body spelling; 0 admits every size. */
+    size_t gpu_body_threshold;
 } sixel_output_options_t;
 
 typedef struct sixel_legacy_encode_request {

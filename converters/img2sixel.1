@@ -224,6 +224,11 @@ that skip diffusion because their palette is exact.
 The encoder suboption \fB:palette_threshold=PIXELS\fP, with short form
 \fB:PPIXELS\fP, sets the minimum image size used by \fBauto\fP
 for positional palette application.
+The encoder suboption \fB:body_threshold=PIXELS\fP, with short form
+\fB:BPIXELS\fP, sets the minimum frame size used by \fBauto\fP
+for spelling the SIXEL body on the GPU (default 1048576).
+It currently applies to thread-disabled WebGPU builds; \fBforce\fP
+ignores it.
 .TP 5
 .B \-j \fIPOLICY[:KEY=VALUE]\fP, \-\-runtime\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,

@@ -871,6 +871,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    encoder sub-option:\n"
         "      :palette_threshold=PIXELS (:PPIXELS)\n"
         "      set the auto-policy minimum for positional palette apply\n"
+        "      :body_threshold=PIXELS (:BPIXELS)\n"
+        "      set the auto-policy minimum for GPU SIXEL body spelling\n"
         "    gates -Qkmeans:backend=gpu|auto and eligible GPU stages\n"
         "    -d auto resolves FS or Atkinson before GPU selection\n"
         "    RGB8 GPU lookup auto uses ordered for spatial diffusion\n"
@@ -2599,6 +2601,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "set the positional palette-apply cutoff for --gpu-policy=auto.\n"
         "Invalid values keep the built-in default 262144. The -G\n"
         "palette_threshold suboption (short form PPIXELS) takes precedence."
+    },
+    {
+        "SIXEL_GPU_BODY_THRESHOLD",
+        "set the GPU SIXEL body-spelling cutoff for --gpu-policy=auto.\n"
+        "Invalid values keep the built-in default 1048576. The -G\n"
+        "body_threshold suboption (short form BPIXELS) takes precedence."
     },
     {
         "SIXEL_GPU_DEQUANT_THRESHOLD",

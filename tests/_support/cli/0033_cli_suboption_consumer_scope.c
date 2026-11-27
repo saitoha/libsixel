@@ -79,7 +79,7 @@ test_cli_0033_consumer_scope(int argc, char **argv)
     if (sixel_option_registry_suboption_count_for_scope(
             gpu_schema,
             NULL,
-            SIXEL_OPTION_SCOPE_ENCODER) != 1u ||
+            SIXEL_OPTION_SCOPE_ENCODER) != 2u ||
         sixel_option_registry_suboption_count_for_scope(
             gpu_schema,
             NULL,
@@ -112,6 +112,19 @@ test_cli_0033_consumer_scope(int argc, char **argv)
         0u);
     if (SIXEL_SUCCEEDED(status)) {
         fprintf(stderr, "decoder accepted encoder GPU suboption\n");
+        sixel_option_free_argument_resolution(&resolution);
+        return EXIT_FAILURE;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        "auto:body_threshold=17",
+        gpu_schema,
+        SIXEL_OPTION_SCOPE_DECODER,
+        &resolution,
+        NULL,
+        0u);
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr, "decoder accepted encoder GPU body suboption\n");
         sixel_option_free_argument_resolution(&resolution);
         return EXIT_FAILURE;
     }

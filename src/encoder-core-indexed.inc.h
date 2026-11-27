@@ -21,6 +21,7 @@ typedef struct sixel_indexed_core {
     /* GPU band composition: requested per frame by the session, created on
      * first use, and disabled for this core after the device fails once. */
     int gpu_body;
+    size_t gpu_body_threshold;  /* Minimum frame pixels; 0 admits all. */
     int gpu_unavailable;
     sixel_body_gpu_t *gpu;
     sixel_body_gpu_result_t gpu_result;
@@ -349,7 +350,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
             desc->encoded_width != desc->width ||
             desc->encoded_height != desc->height ||
             desc->width > 2048 || desc->height > 2160 ||
-            (size_t)desc->width * desc->height < 1024U * 1024U ||
+            (size_t)desc->width * desc->height < core->gpu_body_threshold ||
             ncolors < 1 || ncolors > 256) {
         return 0;
     }
@@ -652,6 +653,17 @@ sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *self, int enabled)
     ((sixel_indexed_core_t *)self)->gpu_body = enabled != 0;
 }
 
+/* Internal: minimum frame pixels for GPU body spelling. */
+SIXEL_INTERNAL_API void
+sixel_encoder_core_set_gpu_body_threshold(sixel_encoder_core_t *self,
+                                          size_t threshold)
+{
+    if (self == NULL || self->vtbl != &g_indexed_core_vtbl) {
+        return;
+    }
+    ((sixel_indexed_core_t *)self)->gpu_body_threshold = threshold;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)
 {
@@ -669,6 +681,7 @@ sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)
     core->iface.vtbl = &g_indexed_core_vtbl;
     core->ref = 1;
     core->allocator = allocator;
+    core->gpu_body_threshold = SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT;
     sixel_encode_work_init(&core->work);
     status = sixel_output_storage_new(allocator, &core->body, 0);
     if (SIXEL_FAILED(status)) {

@@ -118,7 +118,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         expected_dither_contract[key] = 1
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_GPU_POLICY" &&
-            name == "dequant_threshold") {
+            (name == "dequant_threshold" || name == "body_threshold")) {
         expected_gpu_contract[key] = 1
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_RUNTIME_POLICY") {

@@ -461,8 +461,23 @@ async function bodySpellEquivalence(createConverter) {
             throw Error('span_order_group fixture expected 86 spans, got ' + groupSpans);
         if (singleSpans !== 8)
             throw Error('span_order fixture expected 8 spans, got ' + singleSpans);
+        // One pixel row below the default auto floor of 1048576 pixels.
+        const small = bodyAnimation(1023, 1024, 3);
+        const smallOff = await encode('off', small, []);
+        for (const [label, policy, admitted] of [
+            ['auto below the default threshold', 'auto', false],
+            ['auto with a lowered threshold', 'auto:B1047552', true],
+            ['force without a size floor', 'force', true],
+        ]) {
+            dispatches.clear();
+            const output = await encode(policy, small, []);
+            if (dispatches.has('span_write') !== admitted)
+                throw Error(label + (admitted ? ' did not dispatch' :
+                    ' dispatched') + ' the WebGPU body');
+            if (await sha256(smallOff) !== await sha256(output))
+                throw Error(label + ' SIXEL digest differs from the CPU');
+        }
         for (const [label, width, height, extra] of [
-            ['below pixel threshold', 1023, 1024, []],
             ['over width limit', 2049, 512, []],
             ['OR mode', 1024, 1024, ['-O']],
         ]) {
