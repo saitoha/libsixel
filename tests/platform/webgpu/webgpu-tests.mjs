@@ -379,9 +379,23 @@ async function bodySpellEquivalence(createConverter) {
         'classify', 'count_spans', 'span_offsets', 'span_bases', 'write_spans',
         'span_lengths', 'span_order', 'span_order_group', 'byte_offsets', 'span_write',
     ]);
+    const createBuffer = device.createBuffer;
     const pipelines = new WeakMap(), passes = new WeakMap();
     const dispatches = new Map(), bandReadbacks = [];
+    // A resident index plane keeps one invalid-index word per palette chunk
+    // in the only buffer created for copies alone. Its copies tell where the
+    // indexes went: palette chunks write it, the body reads it with its
+    // length word, and a host consumer reads it with the indexes.
+    const U = GPUBufferUsage;
+    const statusUsage = U.COPY_SRC | U.COPY_DST;
+    const copies = new WeakSet();
+    const route = {resident: 0, readback: 0, bound: 0, synced: 0};
     let bodyDevice;
+    device.createBuffer = function (descriptor) {
+        const buffer = createBuffer.call(this, descriptor);
+        if (descriptor.usage === statusUsage) copies.add(buffer);
+        return buffer;
+    };
     device.createComputePipeline = function (descriptor) {
         const pipeline = create.call(this, descriptor);
         const entry = descriptor.compute.entryPoint;
@@ -407,6 +421,11 @@ async function bodySpellEquivalence(createConverter) {
         return dispatch.apply(this, groups);
     };
     encoder.copyBufferToBuffer = function (source, offset, target, targetOffset, size) {
+        if (copies.has(target)) ++route.resident;
+        else if (copies.has(source))
+            ++route[targetOffset === 4 ? 'bound' : 'synced'];
+        else if (size === 4 && (target.usage & U.MAP_READ) &&
+                 targetOffset === target.size - 4) ++route.readback;
         // The host dispatches both ordering pipelines for every frame.
         // Read the first two band bases alongside its length readback to
         // tell which shader actually handled the first band.
@@ -423,6 +442,10 @@ async function bodySpellEquivalence(createConverter) {
     const encode = (policy, input, extra) => convert(createConverter, policy,
         'none', 'none', 'xterm16', input, ['-7', '-g', ...extra], 'input.gif',
         true);
+    const reset = () => {
+        dispatches.clear();
+        for (const key in route) route[key] = 0;
+    };
     try {
         const frames = 5;
         const animation = bodyAnimation(1024, 1024, frames);
@@ -449,6 +472,15 @@ async function bodySpellEquivalence(createConverter) {
         // the consumer back on the CPU for the rest of the animation.
         if (bandReadbacks.length < 3)
             throw Error('WebGPU body did not complete both warm-up frames');
+        // Resident route: every frame applied its palette into the plane
+        // without the per-chunk index readback. The device body bound the
+        // plane, and the CPU-measured first frame read it back once.
+        if (route.resident < frames || route.readback)
+            throw Error('palette indexes were not kept on the device: ' +
+                JSON.stringify(route));
+        if (route.bound < 3 || !route.synced)
+            throw Error('resident indexes missed the body or the CPU frame: ' +
+                JSON.stringify(route));
         const [groupSpans, singleSpans] = await Promise.all(
             bandReadbacks.slice(0, 2).map(async bands => {
                 await bands.mapAsync(GPUMapMode.READ);
@@ -461,39 +493,61 @@ async function bodySpellEquivalence(createConverter) {
             throw Error('span_order_group fixture expected 86 spans, got ' + groupSpans);
         if (singleSpans !== 8)
             throw Error('span_order fixture expected 8 spans, got ' + singleSpans);
-        // One pixel row below the default auto floor of 1048576 pixels.
+        // One pixel row below the default auto floor of 262144 pixels, and
+        // one row below a raised floor of 1048576.
+        const tiny = bodyAnimation(511, 512, 3);
         const small = bodyAnimation(1023, 1024, 3);
+        const tinyOff = await encode('off', tiny, []);
         const smallOff = await encode('off', small, []);
-        for (const [label, policy, admitted] of [
-            ['auto below the default threshold', 'auto', false],
-            ['auto with a lowered threshold', 'auto:B1047552', true],
-            ['force without a size floor', 'force', true],
+        for (const [label, policy, input, off, admitted] of [
+            ['auto below the default threshold', 'auto', tiny, tinyOff, false],
+            ['auto below a raised threshold', 'auto:B1048576', small, smallOff,
+             false],
+            ['auto at the default threshold', 'auto', small, smallOff, true],
+            ['force without a size floor', 'force', small, smallOff, true],
         ]) {
-            dispatches.clear();
-            const output = await encode(policy, small, []);
+            reset();
+            const output = await encode(policy, input, []);
             if (dispatches.has('span_write') !== admitted)
                 throw Error(label + (admitted ? ' did not dispatch' :
                     ' dispatched') + ' the WebGPU body');
-            if (await sha256(smallOff) !== await sha256(output))
+            if (await sha256(off) !== await sha256(output))
                 throw Error(label + ' SIXEL digest differs from the CPU');
+        }
+        // Retained history (6delta) stages host indexes after the body, so
+        // every resident frame must be read back before staging.
+        {
+            const input = bodyAnimation(1024, 1024, 3);
+            const extra = ['-Zdelta'];
+            const off = await encode('off', input, extra);
+            reset();
+            const force = await encode('force', input, extra);
+            if (route.resident && route.synced < 3)
+                throw Error('6delta staged indexes left on the device: ' +
+                    JSON.stringify(route));
+            if (!off.length || await sha256(off) !== await sha256(force))
+                throw Error('6delta SIXEL digest differs from the CPU');
         }
         for (const [label, width, height, extra] of [
             ['over width limit', 2049, 512, []],
             ['OR mode', 1024, 1024, ['-O']],
         ]) {
-            dispatches.clear();
             const input = bodyAnimation(width, height, 2);
             const off = await encode('off', input, extra);
+            reset();
             const force = await encode('force', input, extra);
             if (dispatches.size)
                 throw Error(label + ' dispatched WebGPU body stages: ' +
                     [...dispatches.keys()].join(', '));
+            if (route.resident)
+                throw Error(label + ' kept palette indexes on the device');
             if (!off.length || await sha256(off) !== await sha256(force))
                 throw Error(label + ' CPU fallback SIXEL digest differs');
         }
         return 'ok 1 - WebGPU body composition and spelling preserve SIXEL bytes';
     } finally {
         encoder.copyBufferToBuffer = copy;
+        device.createBuffer = createBuffer;
         pass.dispatchWorkgroups = dispatch;
         pass.setPipeline = setPipeline;
         device.createComputePipelineAsync = createAsync;
