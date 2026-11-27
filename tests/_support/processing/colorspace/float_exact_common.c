@@ -69,6 +69,7 @@ test_color_float_exact(int argc, char **argv)
     float *input;
     float *expected;
     float *actual;
+    float last_pixel[3];
     float value;
     size_t i;
     size_t bytes;
@@ -174,14 +175,15 @@ test_color_float_exact(int argc, char **argv)
                      * the full raster and every worker's repeated hits. */
                     ok = exact_float_reference(expected, input, 256U,
                         spaces[source], spaces[target]);
-                    for (i = 256U; ok && i < count; ++i) {
-                        memcpy(expected + i * 3U,
-                            expected + (i % 256U) * 3U, 3U * sizeof(float));
-                    }
-                    ok = ok && exact_float_reference(
-                        expected + (count - 1U) * 3U,
+                    ok = ok && exact_float_reference(last_pixel,
                         input + (count - 1U) * 3U, 1U,
                         spaces[source], spaces[target]);
+                    for (i = 256U; ok && i < count; ++i) {
+                        memcpy(expected + i * 3U,
+                            i == count - 1U ? last_pixel :
+                                expected + (i % 256U) * 3U,
+                            sizeof(last_pixel));
+                    }
                 } else {
                     ok = exact_float_reference(expected, input, count,
                         spaces[source], spaces[target]);
