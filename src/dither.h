@@ -217,6 +217,8 @@ struct sixel_dither {
     sixel_gpu_lookup_preparer_interface_t *gpu_lookup;
     sixel_lookup_policy_configuration_t gpu_lookup_configuration;
     struct sixel_icc_workspace const *icc_workspace;
+    /* Owned -Y evaluator; NULL keeps the source as the diffusion target. */
+    struct sixel_target_color *target_color;
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
     sixel_gpu_dither_preparer_interface_t *gpu_dither;
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */
@@ -243,6 +245,10 @@ struct sixel_dither {
     unsigned char const *pipeline_transparent_mask; /* alpha==0 pixels */
     size_t pipeline_transparent_mask_size; /* transparent mask length */
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
+    /* Frame-absolute target-minus-source triplets for one apply call. */
+    float const *pipeline_target_offset;
+    size_t pipeline_target_offset_size; /* offset float count */
+    int pipeline_last_target_offset; /* last apply diffused to a target */
     unsigned char const *pipeline_accumulation_pixels; /* retained RGB888 */
     size_t pipeline_accumulation_pixels_size; /* retained RGB byte length */
     unsigned char const *pipeline_accumulation_valid_mask; /* valid pixels */
@@ -583,6 +589,32 @@ sixel_dither_lookup_ncolors(sixel_dither_t const *dither)
     return dither->ncolors;
 }
 
+
+/* Offset from the working source to its -Y target at one pixel, or NULL
+ * when diffusion targets the source itself. Bands span full rows, so the
+ * frame-absolute index matches the transparent mask convention. */
+static inline float const *
+sixel_dither_target_offset_at(sixel_dither_t const *dither, int x,
+                              int absolute_y, int width)
+{
+    size_t index;
+
+    if (dither == NULL || dither->pipeline_target_offset == NULL ||
+            x < 0 || absolute_y < 0 || width <= 0) {
+        return NULL;
+    }
+    index = ((size_t)absolute_y * (size_t)width + (size_t)x) * 3u;
+    if (index > dither->pipeline_target_offset_size ||
+            dither->pipeline_target_offset_size - index < 3u) {
+        return NULL;
+    }
+    return dither->pipeline_target_offset + index;
+}
+
+/* Take ownership of TARGET, replacing any previous evaluator. */
+SIXEL_INTERNAL_API void
+sixel_dither_set_target_color(sixel_dither_t *dither,
+                              struct sixel_target_color *target);
 
 #ifdef __cplusplus
 }

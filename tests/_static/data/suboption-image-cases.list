@@ -106,6 +106,9 @@ tests/cli/option-syntax/0088_threading_prepare_workers_image_regression.t
 tests/cli/option-syntax/0089_threading_decode_image_regression.t
 tests/cli/option-syntax/0090_threading_global_budget_image_regression.t
 tests/cli/option-syntax/0091_decoder_threading_budget_image_regression.t
+tests/cli/option-syntax/0092_target_color_method_image_regression.t
+tests/cli/option-syntax/0093_target_color_lut_size_image_regression.t
+tests/cli/option-syntax/0094_target_color_tolerance_image_regression.t
 tests/cli/output-options/0013_update_delta_threshold_image_regression.t
 tests/cli/output-options/0014_update_delta_error_image_regression.t
 tests/cli/output-options/0015_update_delta_progressive_image_regression.t

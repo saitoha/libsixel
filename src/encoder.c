@@ -101,6 +101,7 @@
 #include "decoder.h"
 #include "color-option.h"
 #include "gamut.h"
+#include "target-color.h"
 #include "filter-gamut.h"
 #include "filter-pipeline.h"
 #include "frame.h"
@@ -624,6 +625,8 @@ typedef enum sixel_palette_job_failure_stage {
 struct sixel_palette_build_request {
     sixel_allocator_t *allocator;
     sixel_gamut_t *gamut_mapper;
+    /* Owned -Y evaluator for clustering samples; NULL keeps the source. */
+    sixel_target_color_t *target_color;
     sixel_color_def_t *output_icc;
     unsigned char const *bgcolor;
     unsigned char background[3];
@@ -1397,7 +1400,12 @@ sixel_encoder_gpu_diffusion_lookup_available(sixel_encoder_t const *encoder,
 SIXEL_INTERNAL_API int
 sixel_encoder_diffuse_on_gpu(sixel_encoder_t const *encoder)
 {
-    /* Before the palette is known, AUTO is only a planning estimate. */
+    /* Before the palette is known, AUTO is only a planning estimate.
+     * Target offsets are a CPU float feedback input; GPU kernels and the
+     * RGB8 component path do not carry them. */
+    if (encoder->target_color_policy != SIXEL_TARGET_COLOR_POLICY_SOURCE) {
+        return 0;
+    }
     return sixel_encoder_gpu_diffusion_eligible(encoder,
         encoder->method_for_diffuse) &&
         sixel_encoder_gpu_diffusion_lookup_available(encoder,
@@ -1487,9 +1495,12 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
     unsigned int threads_max;
     int threads_max_set;
     sixel_threading_policy_options_t threading;
+    sixel_target_color_options_t target;
 
     dither = NULL;
     first = 1;
+    memset(&target, 0, sizeof(target));
+    target.policy = SIXEL_TARGET_COLOR_POLICY_SOURCE;
     threads_max = 0u;
     threads_max_set = 0;
     memset(&threading, 0, sizeof(threading));
@@ -1510,6 +1521,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
     threads_max_set = sixel_threading_policy_stage_threads(
         SIXEL_THREADING_STAGE_DITHER, &threads_max);
     sixel_threading_policy_load(&threading);
+    sixel_target_color_get_options(dither->target_color, &target);
 
     fprintf(stderr,
             "LSXDTH1|rc=%d|diffuse=%s|scan=%s|shared=%d|"
@@ -1526,6 +1538,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "deadzone=%.9g|deadzone_override=%d|"
             "clamp_requested=%d|clamp_effective=%d|"
             "clamp_threshold=%.9g|rgb101=%d|diffuse_on_gpu=%d|"
+            "target_policy=%d|target_method=%d|target_lut_size=%d|"
+            "target_tolerance=%.9g|target_offset=%d|"
             "allocation_mode=%s|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
@@ -1563,6 +1577,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
                 ? SIXEL_DITHER_CLAMP_SOFT : dither->clamp_policy,
             dither->clamp_threshold, dither->use_rgb101_palette,
             dither->diffuse_on_gpu,
+            target.policy, target.method, target.lut_size,
+            target.tolerance, dither->pipeline_last_target_offset,
             dither->pipeline_last_mode == SIXEL_DITHER_ENCODE_PIPELINE
                 ? "pipeline" : dither->pipeline_last_mode ==
                     SIXEL_DITHER_ENCODE_STAGED ? "staged" : "serial");
@@ -3942,6 +3958,59 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     return status;
 }
 
+static void
+sixel_encoder_reset_target_color_options(sixel_encoder_t *encoder)
+{
+    encoder->target_color_method = SIXEL_TARGET_COLOR_METHOD_EXACT;
+    encoder->target_color_method_override = 0;
+    encoder->target_color_lut_size = SIXEL_TARGET_COLOR_LUT_SIZE_DEFAULT;
+    encoder->target_color_lut_size_override = 0;
+    encoder->target_color_tolerance = SIXEL_TARGET_COLOR_TOLERANCE_DEFAULT;
+    encoder->target_color_tolerance_override = 0;
+}
+
+/* Build the target evaluator for the current -U endpoint. The source
+ * policy needs none, so *out stays NULL and every consumer keeps its
+ * existing arithmetic. */
+static SIXELSTATUS
+sixel_encoder_new_target_color(sixel_encoder_t const *encoder,
+                               sixel_target_color_t **out)
+{
+    sixel_target_color_options_t options;
+
+    *out = NULL;
+    if (encoder->target_color_policy == SIXEL_TARGET_COLOR_POLICY_SOURCE) {
+        return SIXEL_OK;
+    }
+    options.policy = encoder->target_color_policy;
+    options.method = encoder->target_color_method;
+    options.lut_size = (int)encoder->target_color_lut_size;
+    options.tolerance = encoder->target_color_tolerance;
+    return sixel_target_color_new(out, &options,
+        encoder->output_color_definition, encoder->output_colorspace,
+        encoder->output_icc, encoder->gamut_mapper, encoder->allocator);
+}
+
+/* Rebuild the dither's evaluator from the current options on every bind:
+ * a cached dither can outlive a later -U or -Y change. */
+static SIXELSTATUS
+sixel_encoder_bind_target_color(sixel_encoder_t const *encoder,
+                                sixel_dither_t *dither)
+{
+    sixel_target_color_t *target;
+    SIXELSTATUS status;
+
+    if (dither == NULL) {
+        return SIXEL_OK;
+    }
+    status = sixel_encoder_new_target_color(encoder, &target);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    sixel_dither_set_target_color(dither, target);
+    return SIXEL_OK;
+}
+
 /* Map only source/sample planes owned by this encode. Error-adjusted
  * diffusion candidates never enter this operation. Hidden pixels retain
  * their original storage and cannot fail a visible-color conversion. */
@@ -3969,6 +4038,121 @@ sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
     }
     sixel_filter_free(filter);
     return status;
+}
+
+/* Map packed RGB888/RGBA8888 samples through a float staging copy. The
+ * alpha-key clustering path keeps the source byte layout; alpha==0 pixels
+ * are hidden like masked pixels, and targets are rounded back into the
+ * byte cube of the frame colorspace. */
+static SIXELSTATUS
+sixel_encoder_map_target_bytes(sixel_target_color_t *target,
+                               unsigned char *pixels, size_t count,
+                               int depth, int colorspace,
+                               sixel_frame_transparency_t const *mask,
+                               sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    float *staged;
+    unsigned char *hidden;
+    double value;
+    size_t i;
+    int c;
+
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    staged = sixel_allocator_malloc(allocator, count * 3u * sizeof(float));
+    hidden = sixel_allocator_calloc(allocator, count, 1u);
+    if (staged == NULL || hidden == NULL) {
+        sixel_allocator_free(allocator, staged);
+        sixel_allocator_free(allocator, hidden);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (i = 0; i < count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            staged[i * 3u + (size_t)c] =
+                (float)pixels[i * (size_t)depth + (size_t)c] / 255.0f;
+        }
+        if ((depth == 4 && pixels[i * 4u + 3u] == 0u) ||
+                (mask->transparent_mask != NULL &&
+                 i < mask->transparent_mask_size &&
+                 mask->transparent_mask[i] != 0u)) {
+            hidden[i] = 1u;
+        }
+    }
+    status = sixel_target_color_map_rgbf32(target, staged, count,
+                                           colorspace, hidden, count);
+    if (SIXEL_SUCCEEDED(status)) {
+        for (i = 0; i < count; ++i) {
+            if (hidden[i] != 0u) {
+                continue;
+            }
+            for (c = 0; c < 3; ++c) {
+                value = (double)staged[i * 3u + (size_t)c] * 255.0 + 0.5;
+                pixels[i * (size_t)depth + (size_t)c] = (unsigned char)
+                    (value <= 0.0 ? 0.0 : value >= 255.0 ? 255.0 : value);
+            }
+        }
+    }
+    sixel_allocator_free(allocator, staged);
+    sixel_allocator_free(allocator, hidden);
+    return status;
+}
+
+/* Replace owned clustering samples by their -Y targets. The samples are
+ * already in -X (or staged linear sRGB before a -X ICC transform), so the
+ * target is the -U reproduction expressed in the clustering geometry. */
+static SIXELSTATUS
+sixel_encoder_map_target_samples(sixel_target_color_t *target,
+                                 sixel_frame_t *frame,
+                                 sixel_allocator_t *allocator)
+{
+    sixel_frame_transparency_t transparency;
+    SIXELSTATUS status;
+    void *pixels;
+    size_t count;
+    int format;
+    int width;
+    int height;
+
+    if (target == NULL) {
+        return SIXEL_OK;
+    }
+    format = sixel_frame_format(frame);
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    if (width <= 0 || height <= 0) {
+        return SIXEL_OK;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    count = (size_t)width * (size_t)height;
+    memset(&transparency, 0, sizeof(transparency));
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    pixels = sixel_frame_get_pixels(frame);
+    if (pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (format == SIXEL_PIXELFORMAT_RGB888 ||
+            format == SIXEL_PIXELFORMAT_RGBA8888) {
+        return sixel_encoder_map_target_bytes(target,
+            (unsigned char *)pixels, count,
+            format == SIXEL_PIXELFORMAT_RGBA8888 ? 4 : 3,
+            sixel_frame_get_colorspace(frame), &transparency, allocator);
+    }
+    if (!SIXEL_WORKFORMAT_IS_FLOAT32(format) ||
+            sixel_helper_compute_depth(format) != (int)(3u * sizeof(float))) {
+        sixel_helper_set_additional_message(
+            "target-color-policy requires RGB clustering samples.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_target_color_map_rgbf32(target, (float *)pixels, count,
+        sixel_frame_get_colorspace(frame), transparency.transparent_mask,
+        transparency.transparent_mask_size);
 }
 
 /*
@@ -6206,8 +6390,12 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     }
 
     /* Gamut stays after every geometry/working-space filter and before
-     * palette collection or application. It is also independently runnable. */
-    if (context->encoder->gamut_mapper != NULL) {
+     * palette collection or application. It is also independently runnable.
+     * A target color policy keeps the lookup source unmapped and applies
+     * the mapper to the diffusion target and clustering samples instead. */
+    if (context->encoder->gamut_mapper != NULL &&
+            context->encoder->target_color_policy ==
+                SIXEL_TARGET_COLOR_POLICY_SOURCE) {
         gamut_config.mapper = context->encoder->gamut_mapper;
         status = sixel_encoder_filter_plan_append(&context->pre_plan,
             SIXEL_FILTER_KIND_GAMUT, &gamut_config, &context->frame,
@@ -9149,6 +9337,7 @@ sixel_palette_build_request_free(sixel_palette_build_request_t *request)
     }
     allocator = request->allocator;
     sixel_gamut_free(request->gamut_mapper);
+    sixel_target_color_free(request->target_color);
     sixel_cdef_free(request->clustering_icc);
     sixel_cdef_free(request->linear_srgb);
     sixel_cdef_free(request->output_icc);
@@ -9520,6 +9709,10 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
         status = sixel_gamut_clone(encoder->gamut_mapper,
                                    &request->gamut_mapper);
     }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_new_target_color(encoder,
+                                                &request->target_color);
+    }
     if (SIXEL_FAILED(status)) {
         sixel_palette_build_request_free(request);
         return status;
@@ -9657,6 +9850,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     int working_colorspace;
     int prefer_float32;
     int reserve_alpha_key;
+    int cluster_target;
     int palette_reqcolors;
     int quantize_override_lock_acquired;
     int effective_quantize_model;
@@ -9867,6 +10061,26 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         palette_target_pixelformat =
             sixel_geometry_format(request->clustering, prefer_float32);
     }
+    /* A fixed map image defines its palette; it has no samples to retarget.
+     * Bounded gamma bytes are their own targets for an identical -U. */
+    cluster_target = request->target_color != NULL &&
+        !request->from_map_image;
+    if (cluster_target &&
+            !SIXEL_WORKFORMAT_IS_FLOAT32(palette_target_pixelformat) &&
+            request->clustering_icc == NULL &&
+            clustering_colorspace == SIXEL_COLORSPACE_SRGB &&
+            sixel_target_color_is_identity(request->target_color,
+                                           SIXEL_COLORSPACE_SRGB)) {
+        cluster_target = 0;
+    }
+    if (cluster_target &&
+            !SIXEL_WORKFORMAT_IS_FLOAT32(palette_target_pixelformat) &&
+            (request->clustering_icc || !reserve_alpha_key ||
+             (*dither)->use_rgb101_palette)) {
+        /* Targets can leave the byte cube of an encoded geometry. */
+        palette_target_pixelformat =
+            sixel_geometry_format(request->clustering, 1);
+    }
 
     colors_config.target_layout =
         SIXEL_WORKFORMAT_IS_FLOAT32(palette_target_pixelformat)
@@ -9876,6 +10090,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         sixel_frame_format(frame) != palette_target_pixelformat ||
         sixel_frame_get_colorspace(frame) != clustering_colorspace;
     colors_config.copy_payload = request->clustering_icc != NULL ||
+        cluster_target ||
         (request->gamut_mapper != NULL &&
          (!reserve_alpha_key || (*dither)->use_rgb101_palette));
     /* Collect only stable RGB populations here. Alpha adaptation, gamut
@@ -9886,7 +10101,8 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         (request->palette_range_strength_override
             ? request->palette_range_strength != 0u
             : sixel_palette_bin_range_get_strength() != 0u) &&
-        request->gamut_mapper == NULL && !reserve_alpha_key &&
+        request->gamut_mapper == NULL && !cluster_target &&
+        !reserve_alpha_key &&
         sixel_frame_format(frame) != SIXEL_PIXELFORMAT_RGBA8888 &&
         (effective_quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT ||
          (!SIXEL_WORKFORMAT_IS_FLOAT32(palette_target_pixelformat) &&
@@ -9923,7 +10139,12 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     /* A map image defines the immutable fixed-palette source. Map only
      * its application copy after the caller selects the destination. */
     if (!request->from_map_image) {
-        status = sixel_encoder_map_gamut(request->gamut_mapper, palette_frame);
+        /* The target evaluator owns its own copy of the gamut mapper. */
+        status = cluster_target
+            ? sixel_encoder_map_target_samples(request->target_color,
+                                               palette_frame,
+                                               request->allocator)
+            : sixel_encoder_map_gamut(request->gamut_mapper, palette_frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -11568,6 +11789,9 @@ sixel_encoder_output_without_macro(
         sixel_output_bind_session(output, &session);
     }
     status = sixel_encoder_bind_transparent_mask(encoder, dither, frame);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_bind_target_color(encoder, dither);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -11765,6 +11989,9 @@ sixel_encoder_output_with_macro(
         status = sixel_encoder_bind_transparent_mask(encoder,
                                                      dither,
                                                      frame);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_encoder_bind_target_color(encoder, dither);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -13262,6 +13489,9 @@ sixel_encoder_new(
     (*ppencoder)->clamp_policy_override = 0;
     (*ppencoder)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
     (*ppencoder)->clamp_threshold_override = 0;
+    sixel_encoder_reset_target_color_options(*ppencoder);
+    (*ppencoder)->target_color_policy = SIXEL_TARGET_COLOR_POLICY_SOURCE;
+    (*ppencoder)->target_color_policy_override = 0;
     (*ppencoder)->snap_policy_override = 0;
     (*ppencoder)->snap_policy =
         SIXEL_PALETTE_SNAP_POLICY_NONE;
@@ -13595,6 +13825,22 @@ sixel_encoder_new(
             &policy_value)) {
         (*ppencoder)->clamp_policy = policy_value;
         (*ppencoder)->clamp_policy_override = 1;
+    }
+
+    policy_schema = sixel_option_registry_get(
+        SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY);
+    sixel_option_apply_suboption_environment(
+        policy_schema,
+        policy_schema != NULL ? policy_schema->values : NULL,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        *ppencoder,
+        SIXEL_SUBOPTION_TARGET_ENCODER);
+    if (sixel_option_resolve_registered_base_environment(
+            SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            &policy_value)) {
+        (*ppencoder)->target_color_policy = policy_value;
+        (*ppencoder)->target_color_policy_override = 1;
     }
 
     policy_schema = sixel_option_registry_get(
@@ -14547,6 +14793,9 @@ sixel_encoder_apply_registered_policy_argument(
 
     if (option_id == SIXEL_OPTION_SCHEMA_CLAMP_POLICY) {
         encoder->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
+    }
+    if (option_id == SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY) {
+        sixel_encoder_reset_target_color_options(encoder);
     }
     sixel_option_reset_suboption_overrides(
         schema,
@@ -16483,6 +16732,22 @@ sixel_encoder_setopt_owned(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        break;
+    case SIXEL_OPTFLAG_TARGET_COLOR_POLICY:  /* Y */
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
+            SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY,
+            value,
+            &encoder->target_color_policy,
+            &encoder->target_color_policy_override,
+            match_detail,
+            sizeof(match_detail));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        /* Targets change palette samples and diffusion feedback. */
+        sixel_encoder_clear_dither_cache(encoder);
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
         break;
     case SIXEL_OPTFLAG_SNAP_POLICY:  /* _ */
         status = sixel_encoder_apply_registered_policy_argument(

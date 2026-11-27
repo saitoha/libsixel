@@ -312,6 +312,8 @@ srcs = [
   'chunk-view.h',
   'gamut.c',
   'gamut.h',
+  'target-color.c',
+  'target-color.h',
   'color-option.c',
   'color-option.h',
   'cms.c',

@@ -46,6 +46,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
+#include "target-color.h"
 #include "dither-policy-private.h"
 #include "cms.h"
 #include "palette-common-snap.h"
@@ -2242,6 +2243,10 @@ sixel_dither_new(
     (*ppdither)->ref = 1U;
     (*ppdither)->palette = NULL;
     (*ppdither)->icc_workspace = NULL;
+    (*ppdither)->target_color = NULL;
+    (*ppdither)->pipeline_target_offset = NULL;
+    (*ppdither)->pipeline_target_offset_size = 0u;
+    (*ppdither)->pipeline_last_target_offset = 0;
     (*ppdither)->reqcolors = ncolors;
     (*ppdither)->force_palette = 0;
     (*ppdither)->ncolors = ncolors;
@@ -2474,6 +2479,7 @@ sixel_dither_destroy(
         sixel_dither_release_pipeline_accumulation_result_rgb(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_cdef_free(dither->highcolor_icc);
+        sixel_target_color_free(dither->target_color);
         sixel_allocator_free(allocator, dither);
         sixel_allocator_unref(allocator);
     }
@@ -4346,6 +4352,41 @@ sixel_dither_icc_palette(sixel_palette_t **out, sixel_dither_t *dither)
     return (*out)->vtbl->init_entries_float32(*out, &float_request);
 }
 
+void
+sixel_dither_set_target_color(sixel_dither_t *dither,
+                              struct sixel_target_color *target)
+{
+    if (dither == NULL) {
+        sixel_target_color_free(target);
+        return;
+    }
+    if (dither->target_color != target) {
+        sixel_target_color_free(dither->target_color);
+    }
+    dither->target_color = target;
+}
+
+/* Only error diffusion has feedback; positional and hard lookup do not
+ * consume a target, so the source remains their only input. */
+static int
+sixel_dither_method_diffuses_error(int method_for_diffuse)
+{
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_LSO2:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 /* apply palette */
 SIXEL_INTERNAL_API sixel_index_t *
 sixel_dither_apply_palette(
@@ -4412,6 +4453,11 @@ sixel_dither_apply_palette(
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
+    int target_needed = 0;
+    int target_nonzero = 0;
+    float *target_offset = NULL;
+    float *target_pixels = NULL;
+    size_t target_index;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -4612,6 +4658,29 @@ sixel_dither_apply_palette(
     source_has_float = SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat);
     float_backend_available =
         sixel_dither_method_supports_float_pipeline(dither);
+    /* Byte sources are bounded gamma sRGB. With the same -U definition
+     * their target is the source itself, so the byte path is kept. */
+    target_needed = dither->target_color != NULL &&
+        sixel_dither_method_diffuses_error(dither->method_for_diffuse) &&
+        (source_has_float || dither->icc_workspace != NULL ||
+         !sixel_target_color_is_identity(dither->target_color,
+                                         SIXEL_COLORSPACE_SRGB));
+    dither->pipeline_last_target_offset = 0;
+    if (target_needed &&
+            (dither->apply_8bit != 0 || float_backend_available == 0)) {
+        sixel_helper_set_additional_message(
+            "target-color-policy requires float32 error diffusion; "
+            "precision-policy=8bit fixes byte feedback.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (target_needed && dither->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+        sixel_helper_set_additional_message(
+            "target-color-policy requires CPU error diffusion; "
+            "gpu-policy=force cannot apply target offsets.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
     /* Palette lookup uses three color coordinates, including after packed
      * source normalization. An alpha/padding byte is not a fourth palette
      * coordinate and must not hide an authoritative RGB float palette. */
@@ -4626,7 +4695,8 @@ sixel_dither_apply_palette(
             && dither->apply_8bit == 0
             && (dither->prefer_float32 != 0
                 || source_has_float != 0
-                || palette_has_float != 0)) {
+                || palette_has_float != 0
+                || target_needed != 0)) {
         prefer_float_pipeline = 1;
     }
     if (dither->apply_8bit != 0 && dither->use_rgb101_palette != 0) {
@@ -4785,6 +4855,29 @@ sixel_dither_apply_palette(
                     pipeline_pixelformat), SIXEL_COLORSPACE_SRGB_LINEAR);
             if (SIXEL_FAILED(status)) goto end;
         }
+        if (target_needed) {
+            /* The -U round trip is defined outside the working ICC. Map a
+             * linear copy, then express both views through the same ICC
+             * so the offset does not include the profile's own A2B/B2A
+             * asymmetry. */
+            target_pixels = sixel_allocator_malloc(dither->allocator,
+                total_pixels * 3U * sizeof(float));
+            if (target_pixels == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            memcpy(target_pixels, float_pipeline_pixels,
+                   total_pixels * 3U * sizeof(float));
+            status = sixel_target_color_map_rgbf32(dither->target_color,
+                target_pixels, total_pixels, SIXEL_COLORSPACE_SRGB_LINEAR,
+                dither->pipeline_transparent_mask,
+                dither->pipeline_transparent_mask_size);
+            if (SIXEL_FAILED(status)) goto end;
+            status = sixel_palette_convert_icc_rgbf32(target_pixels,
+                total_pixels, dither->icc_workspace->linear,
+                dither->icc_workspace->profile);
+            if (SIXEL_FAILED(status)) goto end;
+        }
         status = sixel_palette_convert_icc_rgbf32(float_pipeline_pixels,
             total_pixels, dither->icc_workspace->linear,
             dither->icc_workspace->profile);
@@ -4806,6 +4899,53 @@ sixel_dither_apply_palette(
          * Delta crosses the actual profile before any wire comparison. */
         pipeline_pixelformat = sixel_pixelformat_for_colorspace(
             SIXEL_COLORSPACE_SRGB_LINEAR, 1);
+    }
+
+    if (target_needed) {
+        if (!prefer_float_pipeline ||
+                !SIXEL_WORKFORMAT_IS_FLOAT32(pipeline_pixelformat) ||
+                sixel_helper_compute_depth(pipeline_pixelformat) !=
+                    (int)(3U * sizeof(float)) ||
+                total_pixels > SIZE_MAX / (3U * sizeof(float))) {
+            sixel_helper_set_additional_message(
+                "target-color-policy requires RGB float32 diffusion.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        target_offset = sixel_allocator_malloc(dither->allocator,
+            total_pixels * 3U * sizeof(float));
+        if (target_offset == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        if (target_pixels != NULL) {
+            for (target_index = 0U; target_index < total_pixels * 3U;
+                    ++target_index) {
+                target_offset[target_index] = target_pixels[target_index]
+                    - ((float const *)(void const *)input_pixels)
+                        [target_index];
+                if (fabs(target_offset[target_index]) <
+                        SIXEL_TARGET_COLOR_OFFSET_EPSILON) {
+                    target_offset[target_index] = 0.0f;
+                } else {
+                    target_nonzero = 1;
+                }
+            }
+        } else {
+            status = sixel_target_color_offset_rgbf32(dither->target_color,
+                (float const *)(void const *)input_pixels, total_pixels,
+                sixel_pixelformat_get_colorspace(pipeline_pixelformat),
+                dither->pipeline_transparent_mask,
+                dither->pipeline_transparent_mask_size,
+                target_offset, &target_nonzero);
+            if (SIXEL_FAILED(status)) goto end;
+        }
+        if (target_nonzero) {
+            /* Borrowed by every band through the execution view. */
+            dither->pipeline_target_offset = target_offset;
+            dither->pipeline_target_offset_size = total_pixels * 3U;
+            dither->pipeline_last_target_offset = 1;
+        }
     }
 
     method_for_scan = dither->method_for_scan;
@@ -5247,6 +5387,14 @@ end:
         if (normalized_pixels != NULL) {
             sixel_allocator_free(dither->allocator, normalized_pixels);
         }
+        if (target_offset != NULL) {
+            if (dither->pipeline_target_offset == target_offset) {
+                dither->pipeline_target_offset = NULL;
+                dither->pipeline_target_offset_size = 0u;
+            }
+            sixel_allocator_free(dither->allocator, target_offset);
+        }
+        sixel_allocator_free(dither->allocator, target_pixels);
         if (icc_palette != NULL) {
             if (!reuse_icc_fhedt && dither->lookup_policy != NULL) {
                 dither->lookup_policy->vtbl->unref(dither->lookup_policy);

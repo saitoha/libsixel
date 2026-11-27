@@ -226,6 +226,7 @@ sixel_dither_apply_atkinson_float32(
     int step;
     int direction;
     int x;
+    float const *target_offset;
     int pos;
     size_t base;
     float *source_pixel;
@@ -303,6 +304,8 @@ sixel_dither_apply_atkinson_float32(
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
+            target_offset = sixel_dither_target_offset_at(
+                dither, x, absolute_y, context->width);
             base = (size_t)pos * (size_t)context->depth;
             is_transparent = 0;
             if (use_transparent_fence && absolute_y >= 0) {
@@ -385,6 +388,10 @@ sixel_dither_apply_atkinson_float32(
                     palette_value_float = retained[n];
                 }
                 error = working_float[n] - palette_value_float;
+                if (target_offset != NULL) {
+                    /* Lookup kept the source; feedback follows the target. */
+                    error += target_offset[n];
+                }
                 source_pixel[n] = palette_value_float;
                 atkinson_diffuse_atkinson_float(data + (size_t)n,
                           context->width,

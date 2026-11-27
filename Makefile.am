@@ -761,6 +761,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/encoder/palette-construction/cover-policy/figures/cover-reachability-limits.svg \
 	docs/encoder/palette-construction/cover-policy/figures/cover-rgb-corners.svg \
 	docs/encoder/palette-application/clamp-policy.md \
+	docs/encoder/palette-application/target-color-policy.md \
 	docs/encoder/palette-construction/snap-policy/README.md \
 	docs/encoder/palette-construction/snap-policy/measurements/snap-policy-controls.csv \
 	docs/encoder/palette-construction/snap-policy/measurements/snap-policy-controls.png \

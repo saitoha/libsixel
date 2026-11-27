@@ -590,6 +590,25 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto soft hard none' -- "${cur}" ) )
     }
 
+    _img2sixel_complete_target_color_policy()
+    {
+        local item prefix candidate
+
+        if [[ ${cur} == *:* ]]; then
+            item="${cur##*:}"
+            prefix="${cur%"${item}"}"
+            for candidate in method= method=exact method=lut method=auto \
+                lut_size= lut_size=17 lut_size=33 lut_size=65 \
+                tolerance= tolerance=0.001 tolerance=0.01 \
+                Mexact Mlut Mauto S33 T0.001; do
+                [[ ${candidate} == ${item}* ]] || continue
+                COMPREPLY+=("${prefix}${candidate}")
+            done
+            return 0
+        fi
+        COMPREPLY=( $( compgen -W 'source gamut full auto' -- "${cur}" ) )
+    }
+
     _img2sixel_complete_snap_policy()
     {
         local base item key value prefix candidate candidates
@@ -800,6 +819,10 @@ _img2sixel()
         ;;
     -0|--clamp-policy)
         _img2sixel_complete_clamp_policy
+        return 0
+        ;;
+    -Y|--target-color-policy)
+        _img2sixel_complete_target_color_policy
         return 0
         ;;
     '-_'|--snap-policy)
@@ -1130,6 +1153,7 @@ _img2sixel()
                                    -F --merge-policy \
                                    -a --cover-policy \
                                    -0 --clamp-policy \
+                                   -Y --target-color-policy \
                                    -_ --snap-policy \
                                    -m --mapfile \
                                    -M --mapfile-output \

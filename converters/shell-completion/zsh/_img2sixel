@@ -884,6 +884,27 @@ _clamppolicy() {
     'none[do not limit feedback]'
 }
 
+_targetcolorpolicy() {
+  local current segment prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    segment=${current##*:}
+    prefix=${current%"${segment}"}
+    compadd -- "${prefix}method=exact" "${prefix}method=lut" \
+               "${prefix}method=auto" "${prefix}lut_size=" \
+               "${prefix}lut_size=33" "${prefix}tolerance=" \
+               "${prefix}tolerance=0.001" "${prefix}Mlut" "${prefix}S33" \
+               "${prefix}T0.001"
+    return 0
+  fi
+  _values 'TARGETCOLORPOLICY' \
+    'source[target the source in -W/-X]' \
+    'gamut[correct colors outside the -U gamut]' \
+    'full[also correct -U encode/interpret mismatch]' \
+    'auto[measure the mismatch, then use gamut or full]'
+}
+
 _snappolicy() {
   local current base segment key prefix
 
@@ -1177,6 +1198,7 @@ _arguments -S -s -A "-*" -S \
   {-F,--merge-policy=}'[choose final palette merge policy]':mergepolicy:_mergepolicy \
   {-a,--cover-policy=}'[choose palette coverage policy]':coverpolicy:_coverpolicy \
   {-0,--clamp-policy=}'[limit error-diffusion feedback]':clamppolicy:_clamppolicy \
+  {-Y,--target-color-policy=}'[target of dither error and clustering]':targetcolorpolicy:_targetcolorpolicy \
   {-_,--snap-policy=}'[choose reversible tone snap policy]':snappolicy:_snappolicy \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \

@@ -112,6 +112,8 @@ sixel_dither_policy_capture_execution(sixel_dither_t const *dither,
     execution->height = dither->pipeline_image_height;
     execution->transparent_mask = dither->pipeline_transparent_mask;
     execution->transparent_size = dither->pipeline_transparent_mask_size;
+    execution->target_offset = dither->pipeline_target_offset;
+    execution->target_offset_size = dither->pipeline_target_offset_size;
     execution->keycolor = dither->pipeline_transparent_keycolor;
     execution->retained_rgb = dither->pipeline_accumulation_pixels;
     execution->retained_rgb_size = dither->pipeline_accumulation_pixels_size;
@@ -211,6 +213,8 @@ sixel_dither_policy_bind(sixel_dither_policy_object_t const *policy,
     dither->pipeline_accumulation_frame_height = execution->height;
     dither->pipeline_transparent_mask = execution->transparent_mask;
     dither->pipeline_transparent_mask_size = execution->transparent_size;
+    dither->pipeline_target_offset = execution->target_offset;
+    dither->pipeline_target_offset_size = execution->target_offset_size;
     dither->pipeline_transparent_keycolor = execution->keycolor;
     dither->pipeline_accumulation_keycolor = execution->delta_keycolor;
     dither->pipeline_accumulation_pixels = execution->retained_rgb;

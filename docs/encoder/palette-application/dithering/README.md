@@ -33,7 +33,7 @@ kernels. The current base methods are:
 
 The `none`, `a_dither`, `x_dither` and `bluenoise` GPU implementations each have a `dither-policy-<name>-gpu` component, with their own Metal and GLSL query code, configuration and prepared-plan lifetime. Their factory IDs are `dither/none.gpu`, `dither/a_dither.gpu`, `dither/x_dither.gpu` and `dither/bluenoise.gpu`. Like the GPU error-diffusion components, they implement `IGPUDitherPreparer` and `IGPUDitherPlan`; PaletteApply owns output validation and row publication. Native runtime code composes and executes supplied dither and lookup programs without a dither-mode branch. Compiled-code identity includes both programs, while lookup tables retain their lookup-specific ownership. Reconfiguring a preparer or dispatching another dither does not change an existing plan. Gradient-modulated blue noise continues through the synchronous source-map adapter.
 
-The [dither clamp policy](../clamp-policy.md) controls signed error-feedback headroom independently of the selected kernel.
+The [dither clamp policy](../clamp-policy.md) controls signed error-feedback headroom independently of the selected kernel. The [target color policy](../target-color-policy.md) can measure the residual against the `-U` reproduction instead of the source.
 
 Methods have suboptions for concerns such as scan order, kernel variants,
 and strength. Use `img2sixel -H` or the

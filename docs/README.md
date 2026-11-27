@@ -177,6 +177,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 - [GPU LSO2 diffusion](encoder/palette-application/dithering/lso2-gpu.md) describes four-phase spatial error propagation, gain knots and GPU-only execution; each fixed kernel has its own GPU component page beside it.
 - [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, each error-diffusion and positional method, and their cost and measured quality.
 - [Dither clamp policy](encoder/palette-application/clamp-policy.md) explains `-0` and how extended source values and diffusion feedback are clamped.
+- [Target color policy](encoder/palette-application/target-color-policy.md) explains `-Y` and how diffusion and clustering aim at the color the `-U` receiver reproduces.
 
 ### SIXEL output
 

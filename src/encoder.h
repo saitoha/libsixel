@@ -372,6 +372,16 @@ struct sixel_encoder {
     int clamp_policy_override;
     double clamp_threshold;
     int clamp_threshold_override;
+    /* Target color policy (-Y): which -U deviations dither error and
+     * clustering samples account for, and how they are evaluated. */
+    int target_color_policy;
+    int target_color_policy_override;
+    int target_color_method;
+    int target_color_method_override;
+    unsigned int target_color_lut_size;
+    int target_color_lut_size_override;
+    double target_color_tolerance;
+    int target_color_tolerance_override;
     int snap_policy_override;
     int snap_policy;
     int snap_policy_timing_override;

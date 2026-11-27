@@ -679,7 +679,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     saved_gpu_policy = dither->gpu_policy;
     /* No change to the legacy mono shortcut, explicit precision or output
      * interpretation is allowed merely to qualify for this physical plan. */
-    if (output->indexed_disabled ||
+    if (output->indexed_disabled || dither->target_color != NULL ||
             !sixel_encode_delta_is_legacy(dither, output) ||
             output->source_colorspace != SIXEL_COLORSPACE_SRGB ||
             (clear && (saved_gpu_policy == SIXEL_GPU_POLICY_FORCE ||

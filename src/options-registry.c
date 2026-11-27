@@ -53,6 +53,7 @@
 #include "decoder.h"
 #include "encoder.h"
 #include "gamut.h"
+#include "target-color.h"
 #include "fromhdr.h"
 #include "loader-common.h"
 #include "lookup-policy.h"
@@ -1208,6 +1209,13 @@ static sixel_option_value_schema_t const g_clamp_policy_values[] = {
     { "none", SIXEL_DITHER_CLAMP_NONE, 0u }
 };
 
+static sixel_option_value_schema_t const g_target_color_policy_values[] = {
+    { "source", SIXEL_TARGET_COLOR_POLICY_SOURCE, 0u },
+    { "gamut", SIXEL_TARGET_COLOR_POLICY_GAMUT, 0u },
+    { "full", SIXEL_TARGET_COLOR_POLICY_FULL, 0u },
+    { "auto", SIXEL_TARGET_COLOR_POLICY_AUTO, 0u }
+};
+
 static sixel_option_value_schema_t const g_snap_policy_values[] = {
     {
         "none", SIXEL_PALETTE_SNAP_POLICY_NONE, 0u
@@ -1658,6 +1666,12 @@ static sixel_suboption_choice_t const g_kcenter_swap_update_choices[] = {
 static sixel_suboption_choice_t const g_palette_cover_mode_choices[] = {
     { "hard", SIXEL_PALETTE_COVER_MODE_HARD },
     { "soft", SIXEL_PALETTE_COVER_MODE_SOFT }
+};
+
+static sixel_suboption_choice_t const g_target_color_method_choices[] = {
+    { "exact", SIXEL_TARGET_COLOR_METHOD_EXACT },
+    { "lut", SIXEL_TARGET_COLOR_METHOD_LUT },
+    { "auto", SIXEL_TARGET_COLOR_METHOD_AUTO }
 };
 
 static sixel_suboption_choice_t const g_palette_snap_timing_choices[] = {
@@ -2314,6 +2328,24 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "threshold", 'T', "SIXEL_DITHER_CLAMP_THRESHOLD", NULL, NULL,
         1.0, 16.0, "-0 threshold must be in range 1.0-16.0.",
         clamp_threshold, clamp_threshold_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY, NULL,
+        "method", 'M', "SIXEL_TARGET_COLOR_METHOD", NULL, NULL,
+        g_target_color_method_choices,
+        target_color_method, target_color_method_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY, NULL,
+        "lut_size", 'S', "SIXEL_TARGET_COLOR_LUT_SIZE", NULL, NULL,
+        (double)SIXEL_TARGET_COLOR_LUT_SIZE_MIN,
+        (double)SIXEL_TARGET_COLOR_LUT_SIZE_MAX, 0,
+        "-Y lut_size must be an integer in range 5..65.",
+        target_color_lut_size, target_color_lut_size_override),
+    SIXEL_REGISTRY_ENCODER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY, NULL,
+        "tolerance", 'T', "SIXEL_TARGET_COLOR_TOLERANCE", NULL, NULL,
+        0.0, SIXEL_TARGET_COLOR_TOLERANCE_MAX,
+        "-Y tolerance must be a finite number in range 0..0.1.",
+        target_color_tolerance, target_color_tolerance_override),
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_SNAP_POLICY, NULL,
         "timing", 'I', "SIXEL_PALETTE_SNAP_TIMING_POLICY", NULL, NULL,
@@ -3560,6 +3592,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_DITHER_CLAMP_AUTO,
         g_clamp_policy_values,
         "SIXEL_DITHER_CLAMP_POLICY"),
+    SIXEL_REGISTRY_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER,
+        SIXEL_OPTFLAG_TARGET_COLOR_POLICY,
+        "target-color-policy",
+        SIXEL_OPTION_ARGUMENT_SINGLE,
+        SIXEL_OPTION_DEFAULT_FIXED,
+        SIXEL_TARGET_COLOR_POLICY_SOURCE,
+        g_target_color_policy_values,
+        "SIXEL_TARGET_COLOR_POLICY"),
     SIXEL_REGISTRY_OPTION_SCHEMA(
         SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
         SIXEL_OPTION_SCOPE_DECODER,

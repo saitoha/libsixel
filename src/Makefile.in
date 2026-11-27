@@ -480,7 +480,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter.c $(srcdir)/filter.h $(srcdir)/scale.c \
 	$(srcdir)/scale.h $(srcdir)/chunk.c $(srcdir)/chunk.h \
 	$(srcdir)/chunk-factory.h $(srcdir)/chunk-view.h \
-	$(srcdir)/gamut.c $(srcdir)/gamut.h $(srcdir)/color-option.c \
+	$(srcdir)/gamut.c $(srcdir)/gamut.h $(srcdir)/target-color.c \
+	$(srcdir)/target-color.h $(srcdir)/color-option.c \
 	$(srcdir)/color-option.h $(srcdir)/cms.c $(srcdir)/cms-hdr.c \
 	$(srcdir)/cms-hdr.h $(srcdir)/png-chrm-arithmetic.c \
 	$(srcdir)/png-chrm-arithmetic.h $(srcdir)/cms.h \
@@ -794,6 +795,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-scale.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-chunk.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gamut.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-target-color.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-color-option.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cms.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cms-hdr.lo \
@@ -1149,6 +1151,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-sleep.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
+	./$(DEPDIR)/libsixel_la-target-color.Plo \
 	./$(DEPDIR)/libsixel_la-threading.Plo \
 	./$(DEPDIR)/libsixel_la-threadpool.Plo \
 	./$(DEPDIR)/libsixel_la-timeline-logger.Plo \
@@ -2102,6 +2105,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk-view.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gamut.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gamut.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/target-color.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/target-color.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/color-option.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/color-option.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms.c \
@@ -2841,6 +2846,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sleep.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-target-color.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-threading.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-threadpool.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-timeline-logger.Plo@am__quote@ # am--include-marker
@@ -3983,6 +3989,13 @@ libsixel_la-gamut.lo: gamut.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gamut.c' object='libsixel_la-gamut.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gamut.lo `test -f 'gamut.c' || echo '$(srcdir)/'`gamut.c
+
+libsixel_la-target-color.lo: target-color.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-target-color.lo -MD -MP -MF $(DEPDIR)/libsixel_la-target-color.Tpo -c -o libsixel_la-target-color.lo `test -f 'target-color.c' || echo '$(srcdir)/'`target-color.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-target-color.Tpo $(DEPDIR)/libsixel_la-target-color.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='target-color.c' object='libsixel_la-target-color.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-target-color.lo `test -f 'target-color.c' || echo '$(srcdir)/'`target-color.c
 
 libsixel_la-color-option.lo: color-option.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-color-option.lo -MD -MP -MF $(DEPDIR)/libsixel_la-color-option.Tpo -c -o libsixel_la-color-option.lo `test -f 'color-option.c' || echo '$(srcdir)/'`color-option.c
@@ -5212,6 +5225,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-target-color.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-threading.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-threadpool.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-timeline-logger.Plo
@@ -5523,6 +5537,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-target-color.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-threading.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-threadpool.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-timeline-logger.Plo

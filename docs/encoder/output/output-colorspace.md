@@ -58,7 +58,7 @@ For explicit ICC output, palette application uses the colors represented by the 
 
 ## Gamut mapping
 
-Every output choice accepts `gamut=auto|clip|local-minde|edge-seeker|ray-trace` (compact `G`), with environment default `SIXEL_OUTPUT_COLORSPACE_GAMUT`. See [output gamut mapping](gamut-mapping.md) for the algorithm, float source/palette preparation, ICC restrictions and interaction with sampling, snap and diffusion. The conversion-only pipeline below describes the default `auto`/`clip` behavior.
+Every output choice accepts `gamut=auto|clip|local-minde|edge-seeker|ray-trace` (compact `G`), with environment default `SIXEL_OUTPUT_COLORSPACE_GAMUT`. See [output gamut mapping](gamut-mapping.md) for the algorithm, float source/palette preparation, ICC restrictions and interaction with sampling, snap and diffusion. The [target color policy](../palette-application/target-color-policy.md) lets diffusion and clustering aim at the `-U` reproduction while lookup keeps the source. The conversion-only pipeline below describes the default `auto`/`clip` behavior.
 
 ## Where the conversion happens
 

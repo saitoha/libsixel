@@ -890,6 +890,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     int step;
     int direction;
     int x;
+    float const *target_offset;
     int pos;
     size_t base;
     int depth;
@@ -998,6 +999,8 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                                      &direction);
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
+            target_offset = sixel_dither_target_offset_at(
+                dither, x, absolute_y, context->width);
             base = (size_t)pos * (size_t)depth;
             is_transparent = 0;
             if (use_transparent_fence && absolute_y >= 0) {
@@ -1095,6 +1098,10 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                     palette_value_float = retained[n];
                 }
                 error = lookup_pixel_float[n] - palette_value_float;
+                if (target_offset != NULL) {
+                    /* Lookup kept the source; feedback follows the target. */
+                    error += target_offset[n];
+                }
                 /* Saturate the coefficient index before integer conversion;
                  * an extended coordinate need not fit an integer. */
                 if (!isfinite(error)) {
