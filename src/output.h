@@ -27,8 +27,10 @@
 
 #include <6cells.h>
 
-/* Default minimum frame size for --gpu-policy=auto GPU body spelling. */
-#define SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT 1048576U
+/* Default minimum frame size for --gpu-policy=auto GPU body spelling. It
+ * equals the palette floor, so an admitted frame keeps its indexes on the
+ * device; the measured chain comparison decides above it. */
+#define SIXEL_GPU_BODY_AUTO_THRESHOLD_DEFAULT 262144U
 
 typedef struct sixel_output_options {
     int has_gri_arg_limit;

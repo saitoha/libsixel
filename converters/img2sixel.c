@@ -2605,7 +2605,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_GPU_BODY_THRESHOLD",
         "set the GPU SIXEL body-spelling cutoff for --gpu-policy=auto.\n"
-        "Invalid values keep the built-in default 1048576. The -G\n"
+        "Invalid values keep the built-in default 262144. The -G\n"
         "body_threshold suboption (short form BPIXELS) takes precedence."
     },
     {

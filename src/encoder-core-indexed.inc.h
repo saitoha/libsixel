@@ -30,6 +30,7 @@ typedef struct sixel_indexed_core {
     int webgpu_width, webgpu_height, webgpu_colors;
     int webgpu_body_frames;
     int webgpu_body_warm;
+    int webgpu_body_slow;  /* Consecutive device frames no faster. */
     double webgpu_body_cpu_seconds;
 #endif
 #if SIXEL_ENABLE_THREADS
@@ -113,6 +114,11 @@ sixel_indexed_core_unref(sixel_encoder_core_t *self)
 }
 
 #if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+/* A CPU chain below this never tries the device. On an M3 Max (Dawn over
+ * Metal) the fastest device chain, a 512 x 512 frame, took 4.3 ms: two
+ * readbacks behind palette application and the body passes. */
+#define SIXEL_WEBGPU_BODY_CPU_FLOOR 0.004
+
 /* Only consider a complete, full-origin raster. Size mode's first sweep
  * can underpaint, so it must retain its own emission path. */
 static int
@@ -383,9 +389,11 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
         core->webgpu_colors = ncolors;
         core->webgpu_body_frames = 0;
         core->webgpu_body_warm = 0;
+        core->webgpu_body_slow = 0;
     }
     /* Recheck the CPU chain every sixteen frames. High resolution alone
-     * cannot pay for two GPU readbacks on a low-complexity scene. */
+     * cannot pay for two GPU readbacks on a low-complexity scene, while a
+     * complex one pays for them well below a megapixel. */
     if (core->webgpu_body_frames == 0) {
         *cpu_start = sixel_timer_monotonic();
         return 0;
@@ -416,10 +424,14 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
         return 0;
     }
     /* Let a new working set finish first-use allocation and compilation
-     * before applying the steady-state comparison. */
+     * before applying the steady-state comparison. One slow frame is not
+     * a trend: device times of a 1920 x 1080 frame spread from 6.7 to
+     * 10 ms around a CPU chain of 10 ms. */
     if (core->webgpu_body_warm < 2) {
         ++core->webgpu_body_warm;
-    } else if (gpu_ms * 0.001 >= core->webgpu_body_cpu_seconds) {
+    } else if (gpu_ms * 0.001 < core->webgpu_body_cpu_seconds) {
+        core->webgpu_body_slow = 0;
+    } else if (++core->webgpu_body_slow >= 2) {
         core->webgpu_body_frames = -15;
     }
 
@@ -569,8 +581,9 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
 #if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
     if (cpu_start > 0.0 && SIXEL_SUCCEEDED(status)) {
         core->webgpu_body_cpu_seconds = sixel_timer_monotonic() - cpu_start;
-        core->webgpu_body_frames = core->webgpu_body_cpu_seconds >= 0.0025
-            ? 15 : -15;
+        core->webgpu_body_slow = 0;
+        core->webgpu_body_frames = core->webgpu_body_cpu_seconds >=
+            SIXEL_WEBGPU_BODY_CPU_FLOOR ? 15 : -15;
     }
 #endif
     /* The parallel writer owns body_status until finish joins it. Submission
