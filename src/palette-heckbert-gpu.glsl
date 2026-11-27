@@ -416,55 +416,61 @@ void heckbert_solve()
         barrier();
 
         /* Replay only the cuts that the parallel phase has already solved.
-         * A missing cut starts another large/small pass for the new box. */
-        if (group == 0u) {
-            for (;;) {
+         * A missing cut starts another large/small pass for the new box.
+         * Use workgroup barriers even though only subgroup zero selects
+         * cuts. A subgroup barrier in this loop corrupts the partition on
+         * llvmpipe. */
+        for (;;) {
+            if (group == 0u) {
                 float best = -1.0 / 0.0;
                 uint best_start = 0xffffffffu;
                 uint best_index = 0xffffffffu;
                 nboxes = control[0];
-                if (nboxes >= colors) {
-                    if (lane == 0u) control[1] = 1u;
-                    break;
+                uint chosen = 0xffffffffu;
+                if (nboxes < colors) {
+                    for (uint i = lane; i < nboxes; i += width) {
+                        if (box_size[i] >= 2u &&
+                                (box_priority[i] > best ||
+                                 (box_priority[i] == best &&
+                                  box_start[i] < best_start))) {
+                            best = box_priority[i];
+                            best_start = box_start[i];
+                            best_index = i;
+                        }
+                    }
+                    float top = subgroupMax(best);
+                    uint first = subgroupMin(best == top ? best_start
+                        : 0xffffffffu);
+                    chosen = subgroupMin(best == top &&
+                        best_start == first ? best_index : 0xffffffffu);
                 }
-                for (uint i = lane; i < nboxes; i += width) {
-                    if (box_size[i] >= 2u &&
-                            (box_priority[i] > best ||
-                             (box_priority[i] == best &&
-                              box_start[i] < best_start))) {
-                        best = box_priority[i];
-                        best_start = box_start[i];
-                        best_index = i;
+                if (lane == 0u) {
+                    control[3] = 0u;
+                    if (chosen == 0xffffffffu) {
+                        control[1] = 1u;
+                    } else if (cut_at[chosen] != 0u) {
+                        uint cut = cut_at[chosen];
+                        uint lower = cut_lower[chosen];
+                        box_start[nboxes] = box_start[chosen] + cut;
+                        box_size[nboxes] = box_size[chosen] - cut;
+                        box_sum[nboxes] = box_sum[chosen] - lower;
+                        box_priority[nboxes] = cut_right[chosen];
+                        cut_at[nboxes] = 0u;
+                        box_size[chosen] = cut;
+                        box_sum[chosen] = lower;
+                        box_priority[chosen] = cut_left[chosen];
+                        cut_at[chosen] = 0u;
+                        control[0] = nboxes + 1u;
+                        control[3] = 1u;
                     }
                 }
-                float top = subgroupMax(best);
-                uint first = subgroupMin(best == top ? best_start
-                    : 0xffffffffu);
-                uint chosen = subgroupMin(best == top &&
-                    best_start == first ? best_index : 0xffffffffu);
-                if (chosen == 0xffffffffu) {
-                    if (lane == 0u) control[1] = 1u;
-                    break;
-                }
-                if (cut_at[chosen] == 0u) break;
-                if (lane == 0u) {
-                    uint cut = cut_at[chosen];
-                    uint lower = cut_lower[chosen];
-                    box_start[nboxes] = box_start[chosen] + cut;
-                    box_size[nboxes] = box_size[chosen] - cut;
-                    box_sum[nboxes] = box_sum[chosen] - lower;
-                    box_priority[nboxes] = cut_right[chosen];
-                    cut_at[nboxes] = 0u;
-                    box_size[chosen] = cut;
-                    box_sum[chosen] = lower;
-                    box_priority[chosen] = cut_left[chosen];
-                    cut_at[chosen] = 0u;
-                    control[0] = nboxes + 1u;
-                }
-                subgroupBarrier();
             }
+            barrier();
+            bool advanced = control[3] != 0u;
+            /* All invocations must read the flag before it is reused. */
+            barrier();
+            if (!advanced) break;
         }
-        barrier();
         if (control[1] != 0u) break;
     }
 
