@@ -4,13 +4,15 @@
 # a function, a declaration, or a #define with its continuation lines.
 # Comments and preprocessor lines before a construct belong to it, so a tag
 # written directly above a function is part of that function's unit. A
-# GLSL file is one unit as a whole.
+# GLSL or WGSL file is one unit as a whole.
 #
 # A unit is reported when it uses SIMD vector types or intrinsics, declares
-# a Metal kernel, or embeds Metal kernel source in a string.
+# a Metal kernel, or embeds Metal kernel source in a string, and for every
+# GLSL program (vulkan) and WGSL program (webgpu).
 # Output, one tab-separated record per unit:
 #   path  line  name  families  tags
-# families is a comma list of neon, sse2, avx2, wasm, metal and vulkan;
+# families is a comma list of neon, sse2, avx2, wasm, metal, vulkan and
+# webgpu;
 # tags is a space list of ID/backend pairs. A malformed tag is reported as
 #   !malformed  path  line
 
@@ -95,7 +97,7 @@ function scan_tags(s,   rest, token, id, count, i, parts) {
             continue
         }
         for (i = 2; i <= count; i++) {
-            if (parts[i] !~ /^(scalar|neon|sse2|avx2|wasm|metal|vulkan)$/) {
+            if (parts[i] !~ /^(scalar|neon|sse2|avx2|wasm|metal|vulkan|webgpu)$/) {
                 print "!malformed\t" path "\t" FNR
                 break
             }
@@ -179,8 +181,9 @@ function begin_file() {
     start = 1
     is_metal = FILENAME ~ /\.metal$/
     is_glsl = FILENAME ~ /\.glsl$/
-    if (is_glsl) {
-        families = "vulkan"
+    is_wgsl = FILENAME ~ /\.wgsl$/
+    if (is_glsl || is_wgsl) {
+        whole_family = is_glsl ? "vulkan" : "webgpu"
         name = path
         sub(/.*\//, "", name)
     }
@@ -188,19 +191,20 @@ function begin_file() {
 
 FNR == 1 {
     if (NR > 1) {
-        if (was_glsl)
-            print last_path "\t1\t" glsl_name "\tvulkan\t" glsl_tags
+        if (was_whole)
+            print last_path "\t1\t" whole_name "\t" last_family "\t" whole_tags
         else
             flush()
     }
     begin_file()
-    was_glsl = is_glsl
+    was_whole = is_glsl || is_wgsl
 }
 
-is_glsl {
+is_glsl || is_wgsl {
     scan_tags($0)
-    glsl_tags = tags
-    glsl_name = name
+    whole_tags = tags
+    whole_name = name
+    last_family = whole_family
     last_path = path
     next
 }
@@ -252,8 +256,8 @@ is_glsl {
 
 END {
     if (NR > 0) {
-        if (was_glsl)
-            print last_path "\t1\t" glsl_name "\tvulkan\t" glsl_tags
+        if (was_whole)
+            print last_path "\t1\t" whole_name "\t" last_family "\t" whole_tags
         else
             flush()
     }

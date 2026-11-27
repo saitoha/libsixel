@@ -14,13 +14,24 @@ cp "$src_root/tests/_static/awk/accel-units.awk" \
     "$src_root/tests/_static/awk/accel-ledger.awk" "$root/tests/_static/awk/"
 
 cat > "$root/docs/acceleration/ledger.md" <<'EOF'
-<!-- accel-ledger -->
+<!-- accel-ledger simd -->
 
-| ID | Operation | Scalar | NEON | SSE2 | AVX2 | WASM | Metal | Vulkan | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A-ONE | Tagged on several backends | done | done | n/a | done | planned | done | done | |
-| A-TWO | Only planned | done | planned | planned | planned | planned | n/a | n/a | |
-| C-BAD | Unknown state | done | maybe | n/a | n/a | n/a | n/a | n/a | |
+| ID | Operation | Scalar | NEON | SSE2 | AVX2 | WASM | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A-ONE | Tagged on several backends | done | done | n/a | done | planned | |
+| A-TWO | Only planned | done | planned | planned | planned | planned | |
+| C-BAD | Unknown state | done | maybe | n/a | n/a | n/a | |
+| D-GPU | Listed in both tables without a SIMD backend | done | n/a | n/a | n/a | n/a | |
+
+<!-- accel-ledger-end -->
+
+<!-- accel-ledger gpu -->
+
+| ID | Operation | Scalar | Metal | Vulkan | WebGPU | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| A-ONE | Tagged on several backends | done | done | done | done | |
+| D-GPU | Listed in both tables without a SIMD backend | planned | n/a | planned | n/a | |
+| E-NONE | Listed without a GPU backend | done | n/a | n/a | n/a | |
 
 <!-- accel-ledger-end -->
 EOF
@@ -28,7 +39,7 @@ printf '%s\t%s\t%s\n' 'src/legacy.c' 1 old_loop 'src/legacy.c' 1 gone \
     > "$root/tests/_static/data/accel-untagged-legacy.tsv"
 
 # Accepted: a tagged NEON function, an AVX2 function whose 128-bit helpers
-# count as AVX2, a tagged GLSL program, prose that names a vector type, and
+# count as AVX2, tagged GLSL and WGSL programs, prose that names a vector type, and
 # a vendored decoder that is never scanned.
 cat > "$root/src/tagged.c" <<'EOF'
 /* Accel: A-ONE neon */
@@ -51,6 +62,8 @@ wide(void)
 EOF
 printf '%s\n' '/* SPDX-License-Identifier: MIT */' '/* Accel: A-ONE vulkan */' \
     '#version 450' 'void main() {}' > "$root/src/program.glsl"
+printf '%s\n' '// SPDX-License-Identifier: MIT' '// Accel: A-ONE webgpu' \
+    '@compute @workgroup_size(1) fn main() {}' > "$root/src/program.wgsl"
 printf '%s\n' 'static void s(void) { __m128i v; }' > "$root/src/stb_image.h"
 
 # Rejected: each file holds one kind of drift.
@@ -104,6 +117,7 @@ old_loop(int n)
 EOF
 printf '%s\n' 'kernel void lone(device uint *x [[buffer(0)]]) {}' \
     > "$root/src/lone.metal"
+printf '%s\n' '@compute @workgroup_size(1) fn main() {}' > "$root/src/lone.wgsl"
 
 status=0
 sh "$src_root/tests/_static/sh/staticcheck-accel-ledger.sh" "$root" \
@@ -117,6 +131,9 @@ cat > "$tmpdir/expected" <<'EOF'
 not ok 1 - acceleration units agree with the ledger
 # ledger: A-ONE metal is done but no Accel tag names it
 # ledger: C-BAD neon has unknown state "maybe"
+# ledger: D-GPU has no SIMD backend; remove its SIMD row
+# ledger: D-GPU scalar differs between the tables
+# ledger: E-NONE has no GPU backend; remove its GPU row
 # legacy: src/legacy.c gone is no longer untagged; lower or remove its row
 # src/drift.c:1 untagged (neon): acceleration without an Accel tag
 # src/drift.c:13 planned: Accel tag A-TWO neon but the ledger says planned
@@ -126,6 +143,7 @@ not ok 1 - acceleration units agree with the ledger
 # src/drift.c:6 mismatch: uses sse2 but its Accel tag names neon
 # src/legacy.c:6 old_loop (neon): more untagged units than the legacy list allows
 # src/lone.metal:1 lone (metal): acceleration without an Accel tag
+# src/lone.wgsl:1 lone.wgsl (webgpu): acceleration without an Accel tag
 EOF
 if cmp -s "$tmpdir/expected" "$tmpdir/actual"; then
     echo 'ok 1 - acceleration ledger drift fails the check'

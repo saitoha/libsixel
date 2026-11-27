@@ -18,29 +18,46 @@ function covered(family, backends) {
 
 BEGIN {
     FS = "\t"
-    ncolumns = split("scalar neon sse2 avx2 wasm metal vulkan", column, " ")
-    header = "| ID | Operation | Scalar | NEON | SSE2 | AVX2 | WASM | Metal | Vulkan | Notes |"
-    in_ledger = 0
-    seen_header = 0
+    nbackends = split("scalar neon sse2 avx2 wasm metal vulkan webgpu",
+                      backend, " ")
+    columns["simd"] = "scalar neon sse2 avx2 wasm"
+    columns["gpu"] = "scalar metal vulkan webgpu"
+    headers["simd"] = "| ID | Operation | Scalar | NEON | SSE2 | AVX2 | WASM | Notes |"
+    headers["gpu"] = "| ID | Operation | Scalar | Metal | Vulkan | WebGPU | Notes |"
+    table = ""
 }
 
-/^<!-- accel-ledger -->$/ {
-    in_ledger = 1
+/^<!-- accel-ledger (simd|gpu) -->$/ {
+    if (table != "")
+        fail("ledger: " $0 " opens inside the " table " table")
+    table = $0
+    sub(/^<!-- accel-ledger /, "", table)
+    sub(/ -->$/, "", table)
+    if (table in opened)
+        fail("ledger: duplicate " table " table")
+    opened[table] = 1
+    ncolumns = split(columns[table], column, " ")
+    seen_header = 0
     next
 }
 
 /^<!-- accel-ledger-end -->$/ {
-    in_ledger = 0
-    closed = 1
+    if (table == "")
+        fail("ledger: <!-- accel-ledger-end --> without an open table")
+    else if (!seen_header)
+        fail("ledger: " table " table has no header")
+    else
+        closed[table] = 1
+    table = ""
     next
 }
 
-in_ledger {
+table != "" {
     if ($0 == "")
         next
     if (!seen_header) {
-        if ($0 != header)
-            fail("ledger: unexpected table header: " $0)
+        if ($0 != headers[table])
+            fail("ledger: unexpected " table " table header: " $0)
         seen_header = 1
         next
     }
@@ -48,7 +65,7 @@ in_ledger {
         next
     count = split($0, cell, /[ \t]*\|[ \t]*/)
     # A row "| a | b |" splits into "", a, b, "".
-    if (count != 12 || cell[1] != "" || cell[12] != "") {
+    if (count != ncolumns + 5 || cell[1] != "" || cell[count] != "") {
         fail("ledger: malformed row: " $0)
         next
     }
@@ -57,21 +74,45 @@ in_ledger {
         fail("ledger: malformed ID: " id)
         next
     }
-    if (id in ledger_row)
-        fail("ledger: duplicate ID " id)
-    ledger_row[id] = FNR
+    if ((table, id) in table_row)
+        fail("ledger: duplicate ID " id " in the " table " table")
+    table_row[table, id] = FNR
+    applies = 0
     for (k = 1; k <= ncolumns; k++) {
         state = cell[k + 3]
         if (state !~ /^(done|planned|n\/a|rejected)$/)
             fail("ledger: " id " " column[k] " has unknown state \"" state "\"")
+        if (k > 1 && state != "n/a")
+            applies = 1
+        if (column[k] == "scalar" && (id, "scalar") in ledger &&
+            ledger[id, "scalar"] != state)
+            fail("ledger: " id " scalar differs between the tables")
         ledger[id, column[k]] = state
     }
+    if (!applies)
+        all_na[table, id] = 1
+    ledger_row[id] = FNR
     next
 }
 
 END {
-    if (!seen_header || !closed)
-        fail("ledger: missing <!-- accel-ledger --> table")
+    if (table != "")
+        fail("ledger: " table " table is not closed")
+    if (!("simd" in closed))
+        fail("ledger: missing <!-- accel-ledger simd --> table")
+    if (!("gpu" in closed))
+        fail("ledger: missing <!-- accel-ledger gpu --> table")
+    # A table lists an operation only when one of its backends applies;
+    # an operation with no backend at all stays in the SIMD table.
+    for (id in ledger_row) {
+        for (k = 2; k <= nbackends; k++)
+            if (!((id, backend[k]) in ledger))
+                ledger[id, backend[k]] = "n/a"
+        if (("gpu", id) in all_na)
+            fail("ledger: " id " has no GPU backend; remove its GPU row")
+        else if (("simd", id) in all_na && ("gpu", id) in table_row)
+            fail("ledger: " id " has no SIMD backend; remove its SIMD row")
+    }
 
     while ((getline line < legacy) > 0) {
         if (line ~ /^#/ || line == "")
@@ -132,9 +173,9 @@ END {
     }
 
     for (id in ledger_row)
-        for (k = 2; k <= ncolumns; k++)
-            if (ledger[id, column[k]] == "done" && !((id, column[k]) in tagged))
-                fail("ledger: " id " " column[k] " is done but no Accel tag names it")
+        for (k = 2; k <= nbackends; k++)
+            if (ledger[id, backend[k]] == "done" && !((id, backend[k]) in tagged))
+                fail("ledger: " id " " backend[k] " is done but no Accel tag names it")
 
     exit failed
 }

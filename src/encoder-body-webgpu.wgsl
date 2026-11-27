@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// Accel: BODY-COMPOSE webgpu
+// Accel: BODY-SPELL webgpu
 // The Vulkan body shaders own the wire algorithm: classify columns, join
 // spans across small gaps, then emit greedy nonoverlapping sweeps. The
 // WebGPU passes keep all span offsets on the device.

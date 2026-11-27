@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: SAMPLE-VARY-POINTS webgpu
 struct SolidParams {
     width: i32, height: i32, clip_x: i32, clip_y: i32,
     points: u32, rows: u32, tolerance: i32, stride: u32,
