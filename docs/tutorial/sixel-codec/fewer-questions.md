@@ -71,12 +71,12 @@ Which SIXEL decoder first stayed in a loop over data characters, or first read p
 <!-- measurements:begin:fewer-questions -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.79 ms | 1.0× | 1.66 ms | 1.1× | 328,750 bytes |
-| Photograph, 1920×1080 | 22.0 ms | 1.0× | 10.0 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.34 ms | 1.0× | 0.96 ms | 2.2× | 692,322 bytes |
-| Random noise, 1920×1080 | 151.3 ms | 1.0× | 25.4 ms | 1.2× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.86 ms | 1.0× | 1.72 ms | 1.1× | 328,750 bytes |
+| Photograph, 1920×1080 | 22.0 ms | 1.0× | 9.93 ms | 1.1× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.31 ms | 1.0× | 0.94 ms | 2.3× | 692,322 bytes |
+| Random noise, 1920×1080 | 152.0 ms | 1.0× | 25.6 ms | 1.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The two-color pattern decodes 2.2 times faster and random noise 1.2 times, but the photograph gains only a few percent. The questions about each *byte* are gone, yet the six questions about each *bit* remain, and in a dithered photograph those are the expensive ones. The [next chapter](masks.md) explains why, and removes them.
+The two-color pattern decodes 2.3 times faster and random noise 1.2 times, but the photograph gains only a few percent. The questions about each *byte* are gone, yet the six questions about each *bit* remain, and in a dithered photograph those are the expensive ones. The [next chapter](masks.md) explains why, and removes them.
 
 Previous: [A decoder for every stream](full-decoder.md) · Next: [Store with masks instead of branches](masks.md)

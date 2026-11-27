@@ -1,6 +1,6 @@
 # Decode Bands in Parallel
 
-A stream is harder to share out than a picture. Where band 3 starts is only known after finding the `-` that ends band 2. The first pixels of a band are painted with the color selected somewhere before it. And the picture's size is only certain at the end. This chapter finds the bands first and then decodes them in parallel, falling back to one thread when the plan does not fit the stream. The encoder is the [parallel-bands](parallel-bands.md) chapter's. The source is [`code/parallel-decoder.c`](code/parallel-decoder.c); it includes `transpose.c` and reuses its decoder, its vector operations and its transpose.
+A stream is harder to share out than a picture. Where band 3 starts is only known after finding the `-` that ends band 2. The first pixels of a band are painted with the color selected somewhere before it. And the picture's size is only certain at the end. This chapter finds the bands first and then decodes them in parallel, falling back to one thread when the plan does not fit the stream. The encoder is the [parallel-bands](parallel-bands.md) chapter's. The source is [`code/parallel-decoder.c`](code/parallel-decoder.c); it includes `wide-stores.c` and reuses its decoder, its vector operations and its transpose.
 
 **You will learn:**
 
@@ -46,7 +46,7 @@ A band with no `#` at all keeps the color it inherited. The prescan writes down 
 
 ## 2. Paint in parallel
 
-The decoder takes the size from the raster attributes, makes room for the column words of every band, and cuts the stream into pieces of similar length, each starting at a recorded band start. Each thread runs the transpose chapter's loop over its piece, starting with the recorded color, and then turns its own bands into rows. Different threads always work on different bands, so they never write to the same picture memory and do not need to wait for each other.
+The decoder takes the size from the raster attributes, makes room for the column words of every band, and cuts the stream into pieces of similar length, each starting at a recorded band start. Each thread runs the [literal-lanes](literal-lanes.md) chapter's loop over its piece, starting with the recorded color, and then turns its own bands into rows. Different threads always work on different bands, so they never write to the same picture memory and do not need to wait for each other.
 
 The palette needs care. A color can be defined anywhere in a stream, and two threads must not write the same register. So each thread only collects the definitions it passes, and when all threads have finished the program applies them in stream order. The last definition wins, as it does when decoding on one thread.
 
@@ -75,12 +75,12 @@ The earliest parallel SIXEL decoder found is libsixel's, from 2025-11. Whether a
 <!-- measurements:begin:parallel-decoder -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.90 ms | 1.0× | 0.14 ms | 4.1× | 328,750 bytes |
-| Photograph, 1920×1080 | 1.88 ms | 1.0× | 0.53 ms | 5.1× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 0.34 ms | 1.0× | 0.27 ms | 3.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 10.8 ms | 1.0× | 2.32 ms | 6.6× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.65 ms | 1.0× | 0.16 ms | 3.1× | 328,750 bytes |
+| Photograph, 1920×1080 | 1.55 ms | 1.0× | 0.49 ms | 5.7× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 0.29 ms | 1.0× | 0.29 ms | 1.9× | 692,322 bytes |
+| Random noise, 1920×1080 | 11.0 ms | 0.9× | 2.18 ms | 6.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The Full HD photograph decodes 5.1 times faster than with one thread, and random noise 6.6 times. The prescan is not what limits this: it takes about 0.06 ms on the Full HD photograph, against about 0.5 ms for the whole decode, because it stops only at band ends. In the [thread sweep](measurements.md#thread-scaling), the decoder reaches about 5 times at 8 to 10 threads and then gets slightly slower, which the fixed ranges and the 4 slower efficiency cores of the machine probably explain, although this was not measured separately. The two-color pattern scales less well, less than 3 times; its total time is so short that the cost of starting threads and of materializing starts to matter.
+The Full HD photograph decodes 5.7 times faster than with one thread, and random noise 6.2 times. The prescan is not what limits this: it takes about 0.07 ms on the Full HD photograph, against about 0.5 ms for the whole decode, because it stops only at band ends. In the [thread sweep](measurements.md#thread-scaling), the decoder reaches about 5.5 times at 8 threads and gains nothing after that, which the fixed ranges and the 4 slower efficiency cores of the machine probably explain, although this was not measured separately. The two-color pattern scales less well, less than 2 times; its total time is so short that the cost of starting threads and of materializing starts to matter. The [next chapter](thread-pool.md) removes the first of those costs.
 
-Previous: [Encode bands in parallel](parallel-bands.md) · Next: [Smaller streams by overpainting](overpaint.md)
+Previous: [Encode bands in parallel](parallel-bands.md) · Next: [Keep the threads](thread-pool.md)

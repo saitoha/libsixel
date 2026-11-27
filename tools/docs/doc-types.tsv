@@ -183,8 +183,12 @@ docs/tutorial/sixel-codec/direct-writes.md	tutorial	both	codec-implementation le
 docs/tutorial/sixel-codec/word-decoder.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
 docs/tutorial/sixel-codec/vector-lanes.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/transpose.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/number-load.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/literal-lanes.md	tutorial	both	codec-implementation lesson + measurements and libsixel decoder-worker comparison
+docs/tutorial/sixel-codec/wide-stores.md	tutorial	both	codec-implementation lesson + measurements and libsixel node-emission comparison
 docs/tutorial/sixel-codec/parallel-bands.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
 docs/tutorial/sixel-codec/parallel-decoder.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
+docs/tutorial/sixel-codec/thread-pool.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
 docs/tutorial/sixel-codec/overpaint.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/measurements.md	reference	both	measurement record and reproduction for the tutorial
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger

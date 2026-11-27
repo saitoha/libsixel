@@ -69,13 +69,13 @@ Software decoders are as old as the hand-written files: Chiesa's 1990 tutorial c
 <!-- measurements:begin:full-decoder -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 3.63 ms | 1.0× | 1.79 ms | 1.3× | 328,750 bytes |
-| Photograph, 1920×1080 | 21.8 ms | 1.0× | 10.3 ms | 1.4× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 2.34 ms | 1.0× | 2.14 ms | 1.1× | 692,322 bytes |
-| Random noise, 1920×1080 | 149.5 ms | 1.0× | 30.1 ms | 1.3× | 9,316,560 bytes |
+| Photograph, 600×450 | 3.80 ms | 1.0× | 1.83 ms | 1.3× | 328,750 bytes |
+| Photograph, 1920×1080 | 21.8 ms | 1.0× | 10.4 ms | 1.4× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.32 ms | 1.0× | 2.19 ms | 1.1× | 692,322 bytes |
+| Random noise, 1920×1080 | 151.9 ms | 1.0× | 30.5 ms | 1.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The photograph decodes 1.4 times faster, random noise 1.3 times, and the two-color pattern a little. The encoder has not changed; its row only shows how much one measurement differs from the next.
+The photograph decodes 1.4 times faster, random noise 1.2 times, and the two-color pattern a little. The encoder has not changed; its row only shows how much one measurement differs from the next.
 
 The decoder now reads every stream it meets, but it asks several questions about every byte and six more about every character. The next two chapters take those questions away: [fewer questions](fewer-questions.md) about each byte, and [masks](masks.md) instead of questions about each bit.
 

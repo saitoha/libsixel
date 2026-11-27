@@ -407,8 +407,12 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/word-decoder.md \
 	docs/tutorial/sixel-codec/vector-lanes.md \
 	docs/tutorial/sixel-codec/transpose.md \
+	docs/tutorial/sixel-codec/number-load.md \
+	docs/tutorial/sixel-codec/literal-lanes.md \
+	docs/tutorial/sixel-codec/wide-stores.md \
 	docs/tutorial/sixel-codec/parallel-bands.md \
 	docs/tutorial/sixel-codec/parallel-decoder.md \
+	docs/tutorial/sixel-codec/thread-pool.md \
 	docs/tutorial/sixel-codec/overpaint.md \
 	docs/tutorial/sixel-codec/measurements.md \
 	docs/tutorial/sixel-codec/measurements/results.json \
@@ -422,10 +426,12 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/figures/full-decoder-repeat-fill.svg \
 	docs/tutorial/sixel-codec/figures/heart-columns.svg \
 	docs/tutorial/sixel-codec/figures/journey.svg \
+	docs/tutorial/sixel-codec/figures/literal-lanes-block.svg \
 	docs/tutorial/sixel-codec/figures/masks-branchless.svg \
 	docs/tutorial/sixel-codec/figures/next-node-starts.svg \
 	docs/tutorial/sixel-codec/figures/nodes-classify.svg \
 	docs/tutorial/sixel-codec/figures/nodes-cut.svg \
+	docs/tutorial/sixel-codec/figures/number-load-swar.svg \
 	docs/tutorial/sixel-codec/figures/occupancy-lights.svg \
 	docs/tutorial/sixel-codec/figures/overpaint-fill.svg \
 	docs/tutorial/sixel-codec/figures/packing-shelves.svg \
@@ -437,10 +443,12 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/figures/sixel-codec-tutorial-figures.json \
 	docs/tutorial/sixel-codec/figures/speed.svg \
 	docs/tutorial/sixel-codec/figures/stream-anatomy.svg \
+	docs/tutorial/sixel-codec/figures/thread-pool-timeline.svg \
 	docs/tutorial/sixel-codec/figures/transpose-zip.svg \
 	docs/tutorial/sixel-codec/figures/tree-cursor.svg \
 	docs/tutorial/sixel-codec/figures/vector-lanes-block.svg \
 	docs/tutorial/sixel-codec/figures/vector-lanes-compare.svg \
+	docs/tutorial/sixel-codec/figures/wide-stores-runs.svg \
 	docs/tutorial/sixel-codec/figures/word-decoder-column-word.svg \
 	docs/tutorial/sixel-codec/figures/word-decoder-masked-store.svg \
 	docs/tutorial/sixel-codec/code/Makefile \
@@ -459,8 +467,12 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/tutorial/sixel-codec/code/word-decoder.c \
 	docs/tutorial/sixel-codec/code/vector-lanes.c \
 	docs/tutorial/sixel-codec/code/transpose.c \
+	docs/tutorial/sixel-codec/code/number-load.c \
+	docs/tutorial/sixel-codec/code/literal-lanes.c \
+	docs/tutorial/sixel-codec/code/wide-stores.c \
 	docs/tutorial/sixel-codec/code/parallel-bands.c \
 	docs/tutorial/sixel-codec/code/parallel-decoder.c \
+	docs/tutorial/sixel-codec/code/thread-pool.c \
 	docs/tutorial/sixel-codec/code/overpaint.c \
 	docs/tutorial/sixel-codec/code/tutorial.h \
 	docs/ci/design.md \

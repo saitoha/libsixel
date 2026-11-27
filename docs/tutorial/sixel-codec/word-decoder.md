@@ -63,10 +63,10 @@ Packing the six pixels of a column into one value is old. Ghostscript's LN03 pri
 <!-- measurements:begin:word-decoder -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.75 ms | 1.0× | 0.62 ms | 1.3× | 328,750 bytes |
-| Photograph, 1920×1080 | 8.78 ms | 1.0× | 3.10 ms | 1.4× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 4.21 ms | 1.0× | 1.22 ms | 1.2× | 692,322 bytes |
-| Random noise, 1920×1080 | 60.9 ms | 1.0× | 15.7 ms | 1.2× | 9,316,560 bytes |
+| Photograph, 600×450 | 1.71 ms | 1.0× | 0.60 ms | 1.4× | 328,750 bytes |
+| Photograph, 1920×1080 | 8.80 ms | 1.0× | 3.12 ms | 1.4× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 4.22 ms | 1.0× | 1.21 ms | 1.3× | 692,322 bytes |
+| Random noise, 1920×1080 | 61.3 ms | 1.0× | 15.7 ms | 1.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
 One store instead of six makes decoding 1.2 to 1.4 times faster on every input, including the pass back to rows, which takes about 0.6 ms for a Full HD picture. The encoder has not changed.

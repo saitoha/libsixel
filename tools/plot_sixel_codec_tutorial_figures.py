@@ -141,9 +141,13 @@ ASSET_NAMES = (
     "vector-lanes-compare.svg",
     "vector-lanes-block.svg",
     "transpose-zip.svg",
+    "number-load-swar.svg",
+    "literal-lanes-block.svg",
+    "wide-stores-runs.svg",
     "parallel-bands-split.svg",
     "parallel-decoder-prescan.svg",
     "parallel-bands-amdahl.svg",
+    "thread-pool-timeline.svg",
     "overpaint-fill.svg",
     "sixel-codec-tutorial-figures.json",
 )
@@ -152,7 +156,8 @@ ASSET_NAMES = (
 CHAPTERS = (
     "first-codec", "nodes", "packing", "full-decoder", "fewer-questions",
     "masks", "next-node", "occupancy", "direct-writes", "word-decoder",
-    "vector-lanes", "transpose", "parallel-bands", "parallel-decoder",
+    "vector-lanes", "transpose", "number-load", "literal-lanes",
+    "wide-stores", "parallel-bands", "parallel-decoder", "thread-pool",
 )
 
 
@@ -496,8 +501,10 @@ JOURNEY = (
     ("A better plan", ("nodes", "packing", "full-decoder"), BLUE),
     ("Less wasted work", ("fewer-questions", "masks", "next-node",
                           "occupancy", "direct-writes"), BLUE),
-    ("Wider words", ("word-decoder", "vector-lanes", "transpose"), MAGENTA),
-    ("More cores", ("parallel-bands", "parallel-decoder"), GOLD),
+    ("Wider words", ("word-decoder", "vector-lanes", "transpose",
+                     "number-load", "literal-lanes", "wide-stores"), MAGENTA),
+    ("More cores", ("parallel-bands", "parallel-decoder", "thread-pool"),
+     GOLD),
     ("Fewer bytes", ("overpaint",), TEAL),
 )
 
@@ -578,12 +585,12 @@ def speed() -> str:
             body.append(text(x0 + w + 6, by + 13, label(ms), 13, 700, color))
     body.append(note(32, top + len(times) * row + 24, (
         "Logarithmic scale: each grid line is ten times the one before.",
-        "Apple M3 Max; the two parallel chapters use all cores.",
+        "Apple M3 Max; the three parallel chapters use all cores.",
     ), 15))
     return document(height, "How fast does it get?",
                     "Bar chart, on a logarithmic scale, of the milliseconds "
                     "needed to encode and to decode one Full HD photograph "
-                    "in each chapter, from first-codec to parallel-decoder: "
+                    "in each chapter, from first-codec to thread-pool: "
                     "encode "
                     + ", ".join(label(e) for e, _ in times)
                     + "; decode "
@@ -1813,6 +1820,189 @@ def overpaint_fill() -> str:
                     f"Body with the fill: {SCENE_FILLED}.", body)
 
 
+def number_load_swar() -> str:
+    """Four bytes at once find where a number ends."""
+    height = 610
+    size = 64
+    text_bytes = "123N"
+    word = [ord(c) for c in text_bytes]
+    minus = [(b - 0x30) & 0xff for b in word]
+    plus = [(b + 0x46) & 0xff for b in word]
+    stop = [(m | p) & 0x80 for m, p in zip(minus, plus)]
+    digits = stop.index(0x80)
+    value = int(text_bytes[:digits])
+    body = [title("Read a number in one load",
+                  'The bytes after "#": three digits and a sixel character.')]
+    x0 = 220
+    rows = (
+        ("the 4 bytes", [f"'{c}'" for c in text_bytes], BLUE, None),
+        ("hex", [f"{b:02x}" for b in word], MUTED, None),
+        ("minus 0x30", [f"{b:02x}" for b in minus], TEAL, minus),
+        ("plus 0x46", [f"{b:02x}" for b in plus], MAGENTA, plus),
+        ("top bit set?", ["yes" if v else "no" for v in stop], GOLD, stop),
+    )
+    for k, (label, cells, color, values) in enumerate(rows):
+        y = 120 + k * 74
+        body.append(text(x0 - 16, y + 40, label, 16, 750, color, "end"))
+        for i, value_label in enumerate(cells):
+            hot = values is not None and (values[i] & 0x80) != 0
+            body.append(cell(x0 + i * (size + 8), y, size,
+                             GOLD_LIGHT if hot else PAPER, value_label,
+                             INK if hot or values is None else MUTED,
+                             color if hot or values is None else GRID, 18))
+    y = 120 + len(rows) * 74 + 16
+    body.append(text(32, y, f"The first byte with its top bit set is byte "
+                     f"{digits}, so the number has {digits} digits:", 17,
+                     700, INK))
+    body.append(mono(32, y + 40, " + ".join(
+        f"{minus[i]}×{10 ** (digits - 1 - i)}" for i in range(digits))
+        + f" = {value}", 20, 750, TEAL))
+    body.append(note(32, height - 22, (
+        "No digit is looked at by itself; the same arithmetic works for 1, 2 or 3 digits.",
+    ), 15))
+    return document(height, "Read a number in one load",
+                    "The four bytes 1, 2, 3 and N are loaded at once. "
+                    "Subtracting 0x30 and adding 0x46 to every byte sets "
+                    "the top bit of each byte that is not a digit; the first "
+                    f"such byte is byte {digits}, so the digits are combined "
+                    f"into {value}.", body)
+
+
+LANES_INPUT = "~~NNNB@@??B!4~#3"
+
+
+def literal_lanes_block() -> str:
+    """One compare finds the run, one pass paints it."""
+    height = 520
+    size = 40
+    data = [("?" <= c <= "~") for c in LANES_INPUT]
+    count = data.index(False)
+    body = [title("Sixteen characters, one compare",
+                  "Which of the next sixteen bytes are data characters?")]
+    x0 = 40
+    body.append(text(x0, 122, "input bytes", 15, 750, BLUE))
+    for i, c in enumerate(LANES_INPUT):
+        hot = i < count
+        body.append(cell(x0 + i * size, 132, size - 4,
+                         BLUE_LIGHT if hot else PAPER, c,
+                         INK if hot else MUTED, BLUE if hot else GRID, 17))
+    body.append(text(x0, 210, "is it '?' to '~'?", 15, 750, GOLD))
+    for i, flag in enumerate(data):
+        hot = flag and i < count
+        body.append(cell(x0 + i * size, 220, size - 4,
+                         GOLD_LIGHT if hot else PAPER,
+                         "ff" if flag else "00",
+                         INK if hot else MUTED, GOLD if hot else GRID, 13))
+    body.append(text(x0, 296, f"the first 00 is lane {count}: the run has "
+                     f"{count} characters", 17, 750, INK))
+    body.append(text(x0, 340, "column words painted", 15, 750, TEAL))
+    for i in range(16):
+        hot = i < count
+        body.append(cell(x0 + i * size, 350, size - 4,
+                         TEAL_LIGHT if hot else PAPER,
+                         str(ord(LANES_INPUT[i]) - 63) if hot else "",
+                         INK if hot else MUTED, TEAL if hot else GRID, 13))
+    body.append(note(x0, 430, (
+        "All sixteen words are written; the lanes past the run carry no row",
+        "bits, so they keep what they held. '!' and '#' go to the usual loop.",
+    ), 16))
+    return document(height, "Sixteen characters, one compare",
+                    f"The sixteen bytes {LANES_INPUT} are compared with the "
+                    f"data range in one instruction. The first {count} are "
+                    "data, so those columns are painted with vector stores "
+                    "and the rest are left unchanged.", body)
+
+
+WIDE_NODE = (5, 5, 12, 40, 40, 40, 40, 40, 40, 3, 3, 3, 7, 0, 63, 63)
+
+
+def wide_stores_runs() -> str:
+    """Short runs are copied with one store; a long run is cut out."""
+    height = 500
+    size = 40
+    values = WIDE_NODE
+    long_start = next(i for i in range(len(values) - 3)
+                      if len(set(values[i:i + 4])) == 1)
+    end = long_start
+    while end < len(values) and values[end] == values[long_start]:
+        end += 1
+    body = [title("Write a node in wide stores",
+                  "Sixteen columns of one node, as six-bit values.")]
+    x0 = 40
+    body.append(text(x0, 122, "column values", 15, 750, BLUE))
+    for i, v in enumerate(values):
+        body.append(cell(x0 + i * size, 132, size - 4, PAPER, str(v), INK,
+                         BLUE, 14))
+    body.append(text(x0, 210, "equal to the next three?", 15, 750, GOLD))
+    for i in range(16):
+        hot = i + 3 < len(values) and len(set(values[i:i + 4])) == 1
+        body.append(cell(x0 + i * size, 220, size - 4,
+                         GOLD_LIGHT if hot else PAPER,
+                         "yes" if hot else "", INK, GOLD if hot else GRID, 12))
+    body.append(text(x0, 296, f"lanes 0 to {long_start - 1} are short runs: "
+                     "one 16-byte store writes their characters", 16, 700,
+                     INK))
+    shown = "".join(sixel_char(v) for v in values[:long_start])
+    long_run = run(sixel_char(values[long_start]), end - long_start)
+    body.append(mono(x0, 340, shown, 22, 750, TEAL))
+    body.append(mono(x0 + 16 * len(shown) + 24, 340, long_run, 22, 750,
+                     MAGENTA))
+    body.append(text(x0, 380, f"lane {long_start} starts a run of "
+                     f"{end - long_start}: written as {long_run} by the usual"
+                     " code, then the next sixteen", 16, 650, MUTED))
+    body.append(note(x0, height - 62, (
+        "A run of three or fewer is written as plain copies anyway, so a",
+        "block without a long run is exactly its sixteen characters.",
+    ), 16))
+    return document(height, "Write a node in wide stores",
+                    "A node's sixteen column values. Lanes that equal the "
+                    "next three start a long run. The columns before the "
+                    f"first one, {shown}, are written with one store; the "
+                    f"run of {end - long_start} becomes {long_run}.", body)
+
+
+def thread_pool_timeline() -> str:
+    """Starting threads per picture against threads that stay."""
+    height = 400
+    scale = 120.0           # pixels per millisecond
+    body = [title("Keep the threads",
+                  "Three pictures in a row, on the caller and one helper.")]
+    x0 = 210
+    start, work, gap = 0.12, 1.2, 0.25
+
+    def bar(x: float, y: float, width: float, fill: str, label: str) -> str:
+        return rect(x, y, width, 26, fill, radius=4) + (
+            text(x + width / 2, y + 18, label, 12, 700, PAPER, "middle")
+            if width > 40 else "")
+    for k, (label, per_picture) in enumerate((
+            ("start each time", True), ("threads that stay", False))):
+        y = 140 + k * 100
+        body.append(text(32, y + 18, label, 15, 750, INK))
+        t = 0.0
+        for picture in range(3):
+            first = picture == 0
+            if per_picture or first:
+                body.append(bar(x0 + t * scale, y + 36, start * scale, GOLD,
+                                ""))
+                t += start
+            body.append(bar(x0 + t * scale, y, work * scale / 2, BLUE,
+                            "caller"))
+            body.append(bar(x0 + t * scale, y + 36, work * scale / 2,
+                            MAGENTA, "helper"))
+            t += work / 2 + gap
+        body.append(text(x0 + t * scale + 8, y + 54,
+                         "slower" if per_picture else "sooner", 14, 700,
+                         MUTED))
+    body.append(rect(32, 350, 18, 14, GOLD, radius=3))
+    body.append(text(58, 362, "starting a thread: tens of microseconds, "
+                     "paid before the helper can work", 15, 650, MUTED))
+    return document(height, "Keep the threads",
+                    "Three pictures encoded by the caller and one helper. "
+                    "Starting the helper for each picture delays every "
+                    "picture; a helper that stays is started once and then "
+                    "waits for the next picture.", body)
+
+
 FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("big-picture.svg", big_picture),
     ("journey.svg", journey),
@@ -1840,9 +2030,13 @@ FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("vector-lanes-compare.svg", vector_lanes_compare),
     ("vector-lanes-block.svg", vector_lanes_block),
     ("transpose-zip.svg", transpose_zip),
+    ("number-load-swar.svg", number_load_swar),
+    ("literal-lanes-block.svg", literal_lanes_block),
+    ("wide-stores-runs.svg", wide_stores_runs),
     ("parallel-bands-split.svg", parallel_bands_split),
     ("parallel-decoder-prescan.svg", parallel_decoder_prescan),
     ("parallel-bands-amdahl.svg", parallel_bands_amdahl),
+    ("thread-pool-timeline.svg", thread_pool_timeline),
     ("overpaint-fill.svg", overpaint_fill),
 )
 

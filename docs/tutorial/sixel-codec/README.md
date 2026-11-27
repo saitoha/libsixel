@@ -8,7 +8,7 @@ The goal is that you can write a practical, fast SIXEL encoder and decoder of yo
 
 For serious product code, we recommend that you do not depend on libsixel, and write the small codec your program needs instead. A library brings everything it can do into your build, whether you use it or not: image loaders, color quantizers, resamplers, animation and many options, together with their own dependencies, build systems and release schedules. Every line of it that reads untrusted input is also part of your attack surface. libsixel parses images and streams from outside, and it has had its share of [security problems](../../project-history.md#2018-2020-security-and-distribution-hardening), from integer overflows and buffer errors to hangs, several of them with CVE numbers.
 
-SIXEL itself is small. The encoding and decoding functions of [the first codec](first-codec.md) take about 60 lines, and about 100 with the helpers that read numbers and colors. The fastest codec of this tutorial, with every speed-up including SIMD and threads, is about 1,000 lines, comments included; a practical codec needs no more than about 2,000. This tutorial therefore keeps its code as short as it can while staying fast: every line has to earn its place. A codec that does only what your program needs is easier to read, test, fuzz and keep up to date. Use libsixel where its breadth is worth that cost, for example in a converter tool or for quick experiments, and read its code as a reference either way.
+SIXEL itself is small. The encoding and decoding functions of [the first codec](first-codec.md) take about 60 lines, and about 100 with the helpers that read numbers and colors. The fastest codec of this tutorial, with every speed-up including SIMD and threads, is about 1,200 lines, comments included; a practical codec needs no more than about 2,000. This tutorial therefore keeps its code as short as it can while staying fast: every line has to earn its place. A codec that does only what your program needs is easier to read, test, fuzz and keep up to date. Use libsixel where its breadth is worth that cost, for example in a converter tool or for quick experiments, and read its code as a reference either way.
 
 You do not need libsixel, and you do not need to know anything about image formats. If you can write a loop over an array in C and know what `|`, `&` and `<<` do, you are ready. [The first chapter](by-hand.md) needs no programming at all: you draw a picture with a pencil and print it with `printf`.
 
@@ -103,8 +103,12 @@ Each chapter adds one idea, to either the encoder or the decoder, and keeps the 
 | [Decode into column words](word-decoder.md) | Six pixels in one 64-bit number, one masked store per character | Decoder | `ite`, 2016 |
 | [Sixteen columns in one instruction](vector-lanes.md) | SIMD compares for sixteen columns | Encoder | Not known |
 | [Turn columns back into rows](transpose.md) | An 8×8 byte transpose with SIMD | Decoder | Not known |
+| [Read a number in one load](number-load.md) | Up to three digits from one 32-bit word, without a loop | Decoder | libsixel, 2026 |
+| [Paint sixteen characters at once](literal-lanes.md) | One compare finds the run, interleaving paints it | Decoder | libsixel, 2026 |
+| [Write a node in wide stores](wide-stores.md) | Short runs in one 16-byte store, numbers from a table | Encoder | libsixel, 2026 |
 | [Encode bands in parallel](parallel-bands.md) | Threads, one range of bands each | Encoder | chafa, 2019 |
 | [Decode bands in parallel](parallel-decoder.md) | Find the bands first, then decode them in parallel | Decoder | libsixel, 2025 |
+| [Keep the threads](thread-pool.md) | Start threads once and wake them for each picture | Both | chafa, 2019 |
 | [Smaller streams by overpainting](overpaint.md) | The same pixels with fewer bytes | Encoder | libsixel (Araki Ken), 2014 |
 
 Each chapter follows the same pattern: the problem, the idea in a picture, the code, where the idea came from, things to try yourself, and how fast the result is.
@@ -122,27 +126,31 @@ make bench      # time every chapter on the pictures of the table below
 
 ## How fast does it get?
 
-![Bar chart, on a logarithmic scale, of the milliseconds needed to encode and to decode one Full HD photograph in each chapter, falling from 181 and 53 ms in the first chapter to about 1.9 and 0.5 ms in the parallel chapters](figures/speed.svg)
+![Bar chart, on a logarithmic scale, of the milliseconds needed to encode and to decode one Full HD photograph in each chapter, falling from 184 and 54 ms in the first chapter to about 1.5 and 0.5 ms in the parallel chapters](figures/speed.svg)
 
 The table gives the time to encode and to decode one picture, in milliseconds, as measured by `make bench`. The inputs are two photographs with an adaptive 256-color palette and error diffusion, the kind of picture `img2sixel` writes, a 1920×1080 pattern of two colors, and 1920×1080 random pixels in 256 colors, the hardest case.
 
 <!-- measurements:begin:summary -->
 | Chapter | Photograph, 600×450 | Photograph, 1920×1080 | Two colors, 1920×1080 | Random noise, 1920×1080 |
 | --- | --- | --- | --- | --- |
-| [first-codec](first-codec.md) | 25.4 / 6.86 | 181.4 / 53.4 | 1.68 / 2.27 | 275.1 / 156.1 |
-| [nodes](nodes.md) | 3.04 / 6.77 | 19.2 / 53.0 | 2.16 / 2.29 | 64.3 / 155.7 |
-| [packing](packing.md) | 3.77 / 2.31 | 21.3 / 14.3 | 2.34 / 2.32 | 148.1 / 38.9 |
-| [full-decoder](full-decoder.md) | 3.63 / 1.79 | 21.8 / 10.3 | 2.34 / 2.14 | 149.5 / 30.1 |
-| [fewer-questions](fewer-questions.md) | 3.79 / 1.66 | 22.0 / 10.0 | 2.34 / 0.96 | 151.3 / 25.4 |
-| [masks](masks.md) | 3.82 / 0.79 | 21.8 / 4.29 | 2.27 / 1.51 | 151.3 / 18.6 |
-| [next-node](next-node.md) | 3.49 / 0.81 | 20.8 / 4.26 | 2.16 / 1.50 | 101.7 / 18.7 |
-| [occupancy](occupancy.md) | 2.01 / 0.78 | 10.5 / 4.25 | 4.97 / 1.50 | 67.0 / 18.8 |
-| [direct-writes](direct-writes.md) | 1.72 / 0.80 | 8.73 / 4.26 | 4.19 / 1.50 | 60.5 / 18.7 |
-| [word-decoder](word-decoder.md) | 1.75 / 0.62 | 8.78 / 3.10 | 4.21 / 1.22 | 60.9 / 15.7 |
-| [vector-lanes](vector-lanes.md) | 1.90 / 0.61 | 8.60 / 3.09 | 1.73 / 1.21 | 65.7 / 15.7 |
-| [transpose](transpose.md) | 1.88 / 0.54 | 8.61 / 2.67 | 1.72 / 0.81 | 65.4 / 15.0 |
-| [parallel-bands](parallel-bands.md) | 1.91 / 0.57 | 1.88 / 2.69 | 0.35 / 0.81 | 10.4 / 15.2 |
-| [parallel-decoder](parallel-decoder.md) | 1.90 / 0.14 | 1.88 / 0.53 | 0.34 / 0.27 | 10.8 / 2.32 |
+| [first-codec](first-codec.md) | 25.6 / 6.88 | 183.7 / 54.1 | 1.69 / 2.33 | 279.8 / 158.5 |
+| [nodes](nodes.md) | 3.13 / 6.80 | 19.8 / 53.8 | 2.18 / 2.32 | 64.5 / 158.5 |
+| [packing](packing.md) | 3.68 / 2.31 | 22.1 / 14.4 | 2.31 / 2.30 | 151.8 / 37.9 |
+| [full-decoder](full-decoder.md) | 3.80 / 1.83 | 21.8 / 10.4 | 2.32 / 2.19 | 151.9 / 30.5 |
+| [fewer-questions](fewer-questions.md) | 3.86 / 1.72 | 22.0 / 9.93 | 2.31 / 0.94 | 152.0 / 25.6 |
+| [masks](masks.md) | 3.79 / 0.75 | 22.2 / 4.30 | 2.37 / 1.50 | 152.2 / 18.9 |
+| [next-node](next-node.md) | 3.43 / 0.79 | 20.8 / 4.28 | 2.22 / 1.50 | 102.9 / 18.8 |
+| [occupancy](occupancy.md) | 2.04 / 0.77 | 10.6 / 4.31 | 5.00 / 1.49 | 67.7 / 18.9 |
+| [direct-writes](direct-writes.md) | 1.71 / 0.82 | 8.87 / 4.33 | 4.12 / 1.52 | 61.2 / 18.9 |
+| [word-decoder](word-decoder.md) | 1.71 / 0.60 | 8.80 / 3.12 | 4.22 / 1.21 | 61.3 / 15.7 |
+| [vector-lanes](vector-lanes.md) | 1.91 / 0.58 | 8.70 / 3.11 | 1.81 / 1.23 | 66.0 / 15.7 |
+| [transpose](transpose.md) | 1.93 / 0.53 | 8.67 / 2.68 | 1.79 / 0.82 | 66.4 / 15.2 |
+| [number-load](number-load.md) | 1.99 / 0.52 | 8.68 / 2.71 | 1.79 / 0.82 | 66.6 / 13.1 |
+| [literal-lanes](literal-lanes.md) | 1.91 / 0.59 | 8.68 / 2.79 | 1.79 / 0.55 | 66.0 / 13.5 |
+| [wide-stores](wide-stores.md) | 1.65 / 0.48 | 7.25 / 2.84 | 1.43 / 0.55 | 63.3 / 13.5 |
+| [parallel-bands](parallel-bands.md) | 1.68 / 0.50 | 1.50 / 2.81 | 0.30 / 0.55 | 10.2 / 13.4 |
+| [parallel-decoder](parallel-decoder.md) | 1.65 / 0.16 | 1.55 / 0.49 | 0.29 / 0.29 | 11.0 / 2.18 |
+| [thread-pool](thread-pool.md) | 1.63 / 0.13 | 1.45 / 0.45 | 0.27 / 0.22 | 10.5 / 2.14 |
 <!-- measurements:end -->
 
 Each cell is encode / decode time in milliseconds; smaller is faster. A chapter that changes only one half leaves the other half's time as it was, up to the noise of measuring. Stream sizes are listed on the chapter pages. The numbers come from one Apple M3 Max, and the [measurement record](measurements.md) gives the conditions, the time of each phase, the thread sweep and the commands to reproduce them.
@@ -169,6 +177,6 @@ Three lessons hide in these numbers. The biggest single jump in the encoder come
 
 ## From the tutorial to libsixel
 
-The tutorial codecs are deliberately small. On the same indexed pictures, the tutorial decoders [keep pace with libsixel's](measurements.md#comparison-with-libsixel), and the encoders are at most about 1.5 times slower, but libsixel's [encoder](../../encoder/pipeline/README.md) and [decoder](../../decoder/pipeline/README.md) also handle transparency, OR mode, high-color and 6delta output, the safety checks of the size-oriented [encoding policy](../../encoder/output/encode-policy/README.md), streaming output, palette history during decoding, and the many [robustness](../../sixel-format/README.md#robustness-and-security) concerns of untrusted input. The [SIXEL format overview](../../sixel-format/README.md) is the full reference for the format. Many chapters point to the part of libsixel where their idea appears with those concerns included, as one way of doing it, not the only one. Most programs need only a few of these features; take the ones yours needs into your own codec, rather than taking the whole library.
+The tutorial codecs are deliberately small. On the same indexed pictures, the tutorial decoders [keep pace with libsixel's](measurements.md#comparison-with-libsixel), and the encoders are at most about 1.2 times slower, but libsixel's [encoder](../../encoder/pipeline/README.md) and [decoder](../../decoder/pipeline/README.md) also handle transparency, OR mode, high-color and 6delta output, the safety checks of the size-oriented [encoding policy](../../encoder/output/encode-policy/README.md), streaming output, palette history during decoding, and the many [robustness](../../sixel-format/README.md#robustness-and-security) concerns of untrusted input. The [SIXEL format overview](../../sixel-format/README.md) is the full reference for the format. Many chapters point to the part of libsixel where their idea appears with those concerns included, as one way of doing it, not the only one. Most programs need only a few of these features; take the ones yours needs into your own codec, rather than taking the whole library.
 
 The figures are generated by [`tools/plot_sixel_codec_tutorial_figures.py`](../../../tools/plot_sixel_codec_tutorial_figures.py), which computes every SIXEL fragment it draws with the same rules as the tutorial code. Regenerate them with `tools/reproduce_sixel_codec_tutorial_figures.sh`; pass `--check` to verify that they are up to date.

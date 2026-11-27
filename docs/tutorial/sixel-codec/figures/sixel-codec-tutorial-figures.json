@@ -26,9 +26,13 @@
     "vector-lanes-compare.svg",
     "vector-lanes-block.svg",
     "transpose-zip.svg",
+    "number-load-swar.svg",
+    "literal-lanes-block.svg",
+    "wide-stores-runs.svg",
     "parallel-bands-split.svg",
     "parallel-decoder-prescan.svg",
     "parallel-bands-amdahl.svg",
+    "thread-pool-timeline.svg",
     "overpaint-fill.svg"
   ],
   "fixtures": {

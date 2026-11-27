@@ -59,13 +59,13 @@ chafa's SIXEL encoder kept a bitmap per color from its first version in 2019, wh
 <!-- measurements:begin:occupancy -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 2.01 ms | 1.7× | 0.78 ms | 1.0× | 328,750 bytes |
-| Photograph, 1920×1080 | 10.5 ms | 2.0× | 4.25 ms | 1.0× | 1,663,155 bytes |
-| Two colors, 1920×1080 | 4.97 ms | 0.4× | 1.50 ms | 1.0× | 692,322 bytes |
-| Random noise, 1920×1080 | 67.0 ms | 1.5× | 18.8 ms | 1.0× | 9,316,560 bytes |
+| Photograph, 600×450 | 2.04 ms | 1.7× | 0.77 ms | 1.0× | 328,750 bytes |
+| Photograph, 1920×1080 | 10.6 ms | 2.0× | 4.31 ms | 1.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 5.00 ms | 0.4× | 1.49 ms | 1.0× | 692,322 bytes |
+| Random noise, 1920×1080 | 67.7 ms | 1.5× | 18.9 ms | 1.0× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-Cutting nodes takes 2.3 ms instead of 14 ms on the photograph, so the whole encoder is twice as fast, and random noise is 1.5 times faster. The two-color pattern loses: every pixel of a 64-column stretch sets a bit in the same occupancy word of one of only two colors, so the stores wait for one another, and cutting nodes was already cheap there. The [vector-lanes](vector-lanes.md) chapter wins that time back. libsixel faces the same trade-off: its [`sixel_band_classify()`](../../../src/encoder-core-encode.c) uses plain per-pixel stores plus occupancy bits for most palettes and a different path for palettes of one or two colors.
+Cutting nodes takes 2.3 ms instead of 15 ms on the photograph, so the whole encoder is twice as fast, and random noise is 1.5 times faster. The two-color pattern loses: every pixel of a 64-column stretch sets a bit in the same occupancy word of one of only two colors, so the stores wait for one another, and cutting nodes was already cheap there. The [vector-lanes](vector-lanes.md) chapter wins that time back. libsixel faces the same trade-off: its [`sixel_band_classify()`](../../../src/encoder-core-encode.c) uses plain per-pixel stores plus occupancy bits for most palettes and a different path for palettes of one or two colors.
 
 Writing the stream is now more than half of the photograph's time. The [next chapter](direct-writes.md) works on that.
 

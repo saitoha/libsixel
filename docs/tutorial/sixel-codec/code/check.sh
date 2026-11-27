@@ -27,13 +27,16 @@ trap 'rm -rf "$work"' EXIT INT TERM
 failures=0
 
 # Encoders that must write packing's bytes, and decoders that must read like
-# full-decoder. The two threaded programs are checked separately.
+# full-decoder. The threaded programs are checked separately.
 same_encoders="full-decoder fewer-questions masks next-node occupancy
-    direct-writes word-decoder vector-lanes transpose"
+    direct-writes word-decoder vector-lanes transpose number-load
+    literal-lanes wide-stores"
 full_decoders="fewer-questions masks next-node occupancy direct-writes
-    word-decoder vector-lanes transpose parallel-bands"
+    word-decoder vector-lanes transpose number-load literal-lanes
+    wide-stores parallel-bands"
+parallel_decoders="parallel-decoder thread-pool"
 serial="first-codec nodes packing full-decoder $same_encoders overpaint"
-threaded="parallel-bands parallel-decoder"
+threaded="parallel-bands $parallel_decoders"
 
 fail() {
     echo "FAIL: $*"
@@ -112,11 +115,12 @@ for img in "$work"/*.ppm; do
                 "$s decoding of $(basename "$six") differs" \
                 "$bin/$s" decode "$six"
         done
-        for t in 1 3 16; do
-            same "$work/ref.ppm" "$work/out.ppm" \
-                "parallel-decoder decoding of $(basename "$six"), $t threads" \
-                env TUTORIAL_THREADS="$t" \
-                "$bin/parallel-decoder" decode "$six"
+        for s in $parallel_decoders; do
+            for t in 1 3 16; do
+                same "$work/ref.ppm" "$work/out.ppm" \
+                    "$s decoding of $(basename "$six"), $t threads" \
+                    env TUTORIAL_THREADS="$t" "$bin/$s" decode "$six"
+            done
         done
     done
 done
@@ -183,10 +187,12 @@ for six in "$work"/map8.six "$work"/map64.six "$work"/noraster.six \
             "$s decoding of $(basename "$six") differs" \
             "$bin/$s" decode "$six"
     done
-    for t in 1 2 4; do
-        same "$work/ref.ppm" "$work/out.ppm" \
-            "parallel-decoder decoding of $(basename "$six"), $t threads" \
-            env TUTORIAL_THREADS="$t" "$bin/parallel-decoder" decode "$six"
+    for s in $parallel_decoders; do
+        for t in 1 2 4; do
+            same "$work/ref.ppm" "$work/out.ppm" \
+                "$s decoding of $(basename "$six"), $t threads" \
+                env TUTORIAL_THREADS="$t" "$bin/$s" decode "$six"
+        done
     done
 done
 
