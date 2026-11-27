@@ -12159,9 +12159,18 @@ sixel_encoder_frame_job_prepare(
     job->context.independent = pipeline != NULL && pipeline->independent;
     job->context.sequence = metadata != NULL ? metadata->sequence : 0;
     job->context.frame = frame;
-    job->context.palette_source = metadata == NULL ? NULL :
-        metadata->decoded_palette_source != NULL
-            ? metadata->decoded_palette_source : metadata->palette_source;
+    /* Packed sources reach the palette pipeline only as decoded RGB.
+     * Fixed palettes bypass that decoding, so keep their source out of
+     * the fallback sample stream as well. */
+    if (metadata != NULL) {
+        if (metadata->decoded_palette_source != NULL) {
+            job->context.palette_source = metadata->decoded_palette_source;
+        } else if (metadata->palette_source != NULL &&
+            !sixel_pixelformat_is_ycbcr422(
+                sixel_frame_get_pixelformat(metadata->palette_source))) {
+            job->context.palette_source = metadata->palette_source;
+        }
+    }
     job->context.output = output;
     job->context.status = SIXEL_FALSE;
     job->context.dither = NULL;
@@ -17736,7 +17745,10 @@ sixel_encoder_pipeline_decode_packed(
     }
     status = sixel_frame_decode_ycbcr422_copy(frame,
         pipeline->encoder->allocator, decoded);
-    if (status == SIXEL_OK && meta->palette_source != NULL) {
+    /* Only generated palettes sample a source for packed RGB work frames.
+     * Bypass source conversion under the same color option as job prep. */
+    if (status == SIXEL_OK && meta->palette_source != NULL &&
+        pipeline->encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         status = sixel_frame_decode_ycbcr422_copy(meta->palette_source,
             pipeline->encoder->allocator, &meta->decoded_palette_source);
         if (status != SIXEL_OK) {

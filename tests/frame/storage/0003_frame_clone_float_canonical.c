@@ -3333,6 +3333,115 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static SIXELSTATUS
+y422_fixed_playback(y422_capture_t *capture, sixel_frame_t *image,
+                    sixel_frame_t *source)
+{
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    sixel_playback_t *playback = NULL;
+    sixel_playback_config_t config;
+    sixel_playback_options_t options;
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    if (sixel_encoder_new(&encoder, NULL) ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_BUILTIN_PALETTE,
+                             "vt340color") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
+        sixel_output_new(&output, playback_test_write, &capture->stream,
+                         NULL) ||
+        sixel_playback_config_init(&config, sizeof(config)) ||
+        sixel_playback_options_init(&options, sizeof(options))) {
+        goto end;
+    }
+    config.done = y422_playback_done;
+    config.done_context = capture;
+    status = sixel_playback_new(&playback, encoder, output, &config, NULL);
+    if (status == SIXEL_OK) {
+        options.palette_source = source;
+        status = sixel_playback_submit(playback, image, SIXEL_PLAYBACK_WAIT,
+                                       -1, &options);
+    }
+    if (status == SIXEL_OK) {
+        status = sixel_playback_drain(playback, -1);
+    }
+end:
+    sixel_playback_unref(playback);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    return status;
+}
+
+static int
+test_y422_fixed_palette_source(void)
+{
+    enum { width = 4096, height = 3072, stride = width * 2 };
+    y422_capture_t with = {0}, without = {0};
+    sixel_ycbcr422_counts_t source_operations = {0}, image_operations = {0};
+    sixel_frame_t *image = NULL, *source = NULL;
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition;
+    unsigned char image_bytes[18];
+    float samples[24];
+    unsigned char *source_bytes = NULL;
+    size_t source_size = (size_t)stride * height;
+    SIXELSTATUS status;
+    int pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb");
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    /* Packed storage fits in 24 MiB. Its 144 MiB RGB expansion would
+     * exceed the frame allocation limit even though no sampling is needed. */
+    source_bytes = calloc(1, source_size);
+    if (definition == NULL || source_bytes == NULL ||
+        sixel_frame_new(&source, NULL) ||
+        y422_fixture(&image, SIXEL_PIXELFORMAT_YUYV, 0, 0, definition,
+                     rgb, image_bytes, samples, &image_operations)) {
+        goto end;
+    }
+    sixel_frame_observe_ycbcr422(source, &source_operations);
+    if (sixel_frame_init_ycbcr422_borrowed(source, source_bytes, source_size,
+            width, height, stride, SIXEL_PIXELFORMAT_YUYV, definition) ||
+        y422_fixed_playback(&without, image, NULL)) {
+        goto end;
+    }
+    status = y422_fixed_playback(&with, image, source);
+    if (status != SIXEL_OK) {
+        fprintf(stderr, "Fixed palette playback with source failed: 0x%x\n",
+                (unsigned)status);
+        goto end;
+    }
+    pass = !with.failed && !without.failed &&
+        with.completed == 1 && without.completed == 1 &&
+        with.stream.size != 0 && with.stream.size == without.stream.size &&
+        memcmp(with.stream.bytes, without.stream.bytes, with.stream.size)
+            == 0 &&
+        source_operations.rgb_conversions == 0 &&
+        source_operations.packed_copies == 0 &&
+        image_operations.rgb_conversions == 2;
+    if (!pass) {
+        fprintf(stderr, "Bytes with/without source: %zu/%zu, "
+                        "source copies/conversions: %u/%u, "
+                        "image conversions: %u, completions: %d/%d\n",
+                with.stream.size, without.stream.size,
+                (unsigned)source_operations.packed_copies,
+                (unsigned)source_operations.rgb_conversions,
+                (unsigned)image_operations.rgb_conversions,
+                with.completed, without.completed);
+    }
+end:
+    free(with.stream.bytes);
+    free(without.stream.bytes);
+    sixel_frame_unref(source);
+    sixel_frame_unref(image);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    free(source_bytes);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
@@ -3353,6 +3462,9 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 2 && strcmp(argv[1], "ycbcr422-fixed-palette-source") == 0) {
+        return test_y422_fixed_palette_source();
+    }
     if (argc == 2 && strcmp(argv[1], "ycbcr422-operation-observer") == 0) {
         return test_y422_operation_observer();
     }

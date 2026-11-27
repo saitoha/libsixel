@@ -239,6 +239,7 @@ set -- \
     frame/storage/0097_ycbcr422_palette_mismatch.t \
     frame/storage/0098_ycbcr422_delta.t \
     frame/storage/0099_ycbcr422_operation_observer.t \
+    frame/storage/0100_ycbcr422_fixed_palette_source.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \
