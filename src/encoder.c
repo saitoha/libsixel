@@ -19077,9 +19077,25 @@ sixel_encoder_load_callback_dispatch(
             metadata.loop_no = loop_no;
             metadata.delay = sixel_frame_get_delay(frame);
             metadata.multiframe = sixel_frame_get_multiframe(frame);
-            metadata.sequence = ++pipeline->next_sequence;
-            status = sixel_encoder_pipeline_encode_frame(pipeline, frame,
-                &metadata);
+#if defined(HAVE_WEBGPU) && !SIXEL_ENABLE_THREADS
+            /* Keep the serial animation's indexed core alive so the
+             * GPU body admission can use the previous frame's CPU cost. */
+            if (pipeline->output == NULL &&
+                    encoder->gpu_policy != SIXEL_GPU_POLICY_OFF &&
+                    metadata.multiframe && !encoder->fstatic &&
+                    !encoder->fuse_macro && encoder->macro_number < 0 &&
+                    !encoder->fdrcs) {
+                status = sixel_encoder_core_create_output_from_factory(
+                    &context->output, sixel_write_callback, &encoder->outfd,
+                    encoder->allocator);
+                pipeline->output = context->output;
+            }
+#endif
+            if (status == SIXEL_OK) {
+                metadata.sequence = ++pipeline->next_sequence;
+                status = sixel_encoder_pipeline_encode_frame(pipeline, frame,
+                    &metadata);
+            }
             sixel_encoder_operation_leave(encoder);
         }
     }
@@ -20754,6 +20770,7 @@ end:
     }
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
     sixel_encoder_frame_pipeline_dispose(&load_context.frame_pipeline);
+    sixel_output_unref(load_context.output);
     if (status != SIXEL_OK && load_context.presentation.repair != NULL) {
         (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
     }
