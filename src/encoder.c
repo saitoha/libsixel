@@ -19095,6 +19095,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     SIXELSTATUS status;
     int frame_no;
     int loop_no;
+    int deferred_outfile;
 
     context = (sixel_encoder_load_context_t *)data;
     pipeline = NULL;
@@ -19142,14 +19143,18 @@ load_image_callback(sixel_frame_t *frame, void *data)
         return SIXEL_OK;
     }
 
-    if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED) {
+    /* Builds without threads select serial handoff before loading starts.
+     * They still need to open the destination after validating the frame. */
+    deferred_outfile = encoder->defer_sixel_outfile && encoder->outfd < 0 &&
+        encoder->sixel_output_path != NULL;
+    if (deferred_outfile ||
+            pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_UNDECIDED) {
         status = sixel_encoder_operation_enter(encoder,
             SIXEL_ENCODER_OPERATION_PLAYBACK);
         if (status != SIXEL_OK) {
             return status;
         }
-        if (encoder->defer_sixel_outfile && encoder->outfd < 0 &&
-                encoder->sixel_output_path != NULL) {
+        if (deferred_outfile) {
             /* Let the loader and frame-specific checks reject the input
              * before a named CLI destination can be truncated. Set up the
              * sink before dispatch so the worker sees the final descriptor. */

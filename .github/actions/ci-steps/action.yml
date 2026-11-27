@@ -1115,7 +1115,7 @@ runs:
       run: |
         rem Every instrumented default executable needs a profile before use.
         set "PATH=%CD%\builddir\src;%PATH%"
-        builddir\tools\progressive-study.exe tests\data\inputs\small.ppm builddir\pgo-study.six 1 0.01 0.01 4096 linear
+        builddir\tools\progressive-study.exe tests\data\inputs\small.ppm builddir\pgo-study.six 1 0.01 0.01 4096 srgb-linear
         if errorlevel 1 exit /b %errorlevel%
 
     - name: Train progressive study (Meson PGO, bash)
@@ -1129,7 +1129,7 @@ runs:
         # The regular tests do not run this default-built executable.
         LLVM_PROFILE_FILE="$PWD/pgo/default-%p-%m.profraw" \
           builddir/tools/progressive-study tests/data/inputs/small.ppm \
-            builddir/pgo-study.six 1 0.01 0.01 4096 linear
+            builddir/pgo-study.six 1 0.01 0.01 4096 srgb-linear
 
     - name: Merge Clang PGO raw profiles
       if: >-
