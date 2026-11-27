@@ -175,7 +175,7 @@ or provide the desired directory path explicitly.
 | `--enable-xsave-probe` / `--disable-xsave-probe` | `auto` | Control `_xgetbv` probing during AVX capability detection. |
 | `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
 | `--disable-emscripten-retain_compiler_settings` | enabled | Disable `-sRETAIN_COMPILER_SETTINGS=1` in Emscripten builds. |
-| `--enable-emscripten-webgpu` | disabled | Enable browser WebGPU for RGB888 with all 13 GPU lookup policies. Supports `none`, `a_dither`, `x_dither`, 64×64 `bluenoise` and phased error diffusion with FS, Atkinson, JaJuNi, Stucki, Burkes, all three Sierra variants and serpentine LSO2. GPU FHEDT requires equal axis weights. Select `--gpu-policy=auto` or `--gpu-policy=force` at runtime. Browser builds also use `--disable-emscripten-noderawfs`. Static consumers need the Asyncify link flags from `libsixel.pc` and must await asynchronous Wasm calls. |
+| `--enable-emscripten-webgpu` | disabled | Enable WebGPU for RGB888 with all 13 GPU lookup policies. Supports `none`, `a_dither`, `x_dither`, 64×64 `bluenoise` and phased error diffusion with FS, Atkinson, JaJuNi, Stucki, Burkes, all three Sierra variants and serpentine LSO2. GPU FHEDT requires equal axis weights. Select `--gpu-policy=auto` or `--gpu-policy=force` at runtime. Browser builds also use `--disable-emscripten-noderawfs`. Static consumers need the Asyncify link flags from `libsixel.pc` and must await asynchronous Wasm calls. |
 | `--disable-emscripten-noderawfs` | enabled | Disable `-sNODERAWFS=1` in Emscripten builds. |
 | `--with-emscripten-stack_size=SIZE` | `786432` | Set Emscripten `-sSTACK_SIZE`. |
 | `--with-emscripten-initial_memory=SIZE` | `268435456` | Set Emscripten `-sINITIAL_MEMORY`. |
@@ -379,7 +379,7 @@ meson setup builddir
 | `-Dthumbnailer_command=` | feature, `auto` | Install the SIXEL thumbnailer command integration. |
 | `-Dxsave_probe=` | feature, `auto` | Control `_xgetbv` probing during AVX capability detection. |
 | `-Demscripten_retain_compiler_settings=` | boolean, `true` | Add `-sRETAIN_COMPILER_SETTINGS=1` for Emscripten builds. |
-| `-Demscripten_webgpu=` | boolean, `false` | Enable the browser WebGPU palette backend described under `--enable-emscripten-webgpu`. Pair with `-Demscripten_noderawfs=false` for browser file I/O. |
+| `-Demscripten_webgpu=` | boolean, `false` | Enable the WebGPU palette backend described under `--enable-emscripten-webgpu`. Pair with `-Demscripten_noderawfs=false` for browser file I/O. |
 | `-Demscripten_noderawfs=` | boolean, `true` | Add `-sNODERAWFS=1` for Emscripten builds. |
 | `-Demscripten_stack_size=` | integer, `786432` | Set Emscripten `-sSTACK_SIZE`. |
 | `-Demscripten_initial_memory=` | integer, `268435456` | Set Emscripten `-sINITIAL_MEMORY`. |

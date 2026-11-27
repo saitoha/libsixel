@@ -2715,7 +2715,7 @@ sixel_encoder_encode_bytes(
  * utilization, so other applications sharing the GPU never inflate them.
  * Sampling two snapshots gives a busy ratio:
  *   (b.busy_nanoseconds - a.busy_nanoseconds) / elapsed wall nanoseconds.
- * The browser WebGPU backend counts submissions without requiring optional
+ * The WebGPU backend counts submissions without requiring optional
  * timestamp queries; its busy_nanoseconds stays zero.
  * available stays zero until a GPU stage has initialized a backend; querying
  * statistics never probes or initializes a device. Builds without a GPU

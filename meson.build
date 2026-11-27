@@ -2008,7 +2008,7 @@ vulkan_opt = get_option('vulkan')
 if not vulkan_opt.disabled()
   if webgpu
     if vulkan_opt.enabled()
-      error('The browser WebGPU backend cannot be combined with Vulkan')
+      error('The WebGPU backend cannot be combined with Vulkan')
     endif
   elif have_metal
     if vulkan_opt.enabled()

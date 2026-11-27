@@ -1973,14 +1973,14 @@ AC_ARG_ENABLE([emscripten-assertions],
 
 AC_ARG_ENABLE([emscripten-webgpu],
     [AS_HELP_STRING([--enable-emscripten-webgpu],
-        [enable browser WebGPU palette application with Asyncify])],
+        [enable WebGPU palette application with Asyncify])],
     [], [enable_emscripten_webgpu=no])
 AM_CONDITIONAL([HAVE_WEBGPU], [test "x$enable_emscripten_webgpu" = xyes])
 EMSCRIPTEN_LDFLAGS=""
 AS_IF([test "x$enable_emscripten_webgpu" = xyes], [
     AS_CASE([$host_os], [emscripten*], [],
         [AC_MSG_ERROR([--enable-emscripten-webgpu requires Emscripten])])
-    AC_DEFINE([HAVE_WEBGPU], [1], [Enable browser WebGPU palette application.])
+    AC_DEFINE([HAVE_WEBGPU], [1], [Enable WebGPU palette application.])
     EMSCRIPTEN_LDFLAGS="-sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=131072"
 ])
 SIXEL_EMSCRIPTEN_STDIO=""
@@ -4137,7 +4137,7 @@ have_vulkan_prebuilt_spirv=no
 if test x$with_vulkan != xno; then
     if test x$enable_emscripten_webgpu = xyes; then
         if test x$with_vulkan = xyes; then
-            AC_MSG_ERROR([The browser WebGPU backend cannot be combined with Vulkan])
+            AC_MSG_ERROR([The WebGPU backend cannot be combined with Vulkan])
         fi
     elif test x$have_metal = xyes; then
         if test x$with_vulkan = xyes; then

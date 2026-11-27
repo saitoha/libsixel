@@ -335,7 +335,7 @@ lookup6_begin(sixel_gpu_lookup_plan_interface_t *self,
         return SIXEL_LOGIC_ERROR;
     }
     status = SIXEL_OK;
-    /* WebGPU leases its device-local table from the browser backend. */
+    /* WebGPU leases its device-local table from the WebGPU backend. */
     if (plan->workspace == NULL && !plan->webgpu) lookup6_borrow(plan);
     if (plan->workspace == NULL && !plan->webgpu) {
         status = plan->device->vtbl->create_buffer(plan->device,

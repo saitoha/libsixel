@@ -659,7 +659,7 @@
 /* Define to 1 for WASI libc. */
 #undef HAVE_WASI_API_H
 
-/* Enable browser WebGPU palette application. */
+/* Enable WebGPU palette application. */
 #undef HAVE_WEBGPU
 
 /* whether libwebp is available */

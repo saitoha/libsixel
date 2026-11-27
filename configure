@@ -1918,8 +1918,7 @@ Optional Features:
                           add -sASSERTIONS=0 on emscripten builds (default:
                           disabled)
   --enable-emscripten-webgpu
-                          enable browser WebGPU palette application with
-                          Asyncify
+                          enable WebGPU palette application with Asyncify
   --disable-threads       disable internal threadpool support (default: auto)
   --enable-amalgamated-lib
                           build libsixel from the amalgamated source (default:
@@ -25278,7 +25277,7 @@ have_vulkan_prebuilt_spirv=no
 if test x$with_vulkan != xno; then
     if test x$enable_emscripten_webgpu = xyes; then
         if test x$with_vulkan = xyes; then
-            as_fn_error $? "The browser WebGPU backend cannot be combined with Vulkan" "$LINENO" 5
+            as_fn_error $? "The WebGPU backend cannot be combined with Vulkan" "$LINENO" 5
         fi
     elif test x$have_metal = xyes; then
         if test x$with_vulkan = xyes; then
