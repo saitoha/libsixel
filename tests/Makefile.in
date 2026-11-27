@@ -806,6 +806,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	palette/sampling/0108_gpu_headroom_pin.c \
 	palette/sampling/0109_palette_colors_clone_allocation_failure.c \
 	palette/sampling/0110_sample_vulkan_separate_source.c \
+	palette/heckbert/0158_gpu_solver_partition.c \
+	palette/heckbert/0160_gpu_force_declined.c \
 	encoder/pipeline/0128_count_table.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	_support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
@@ -2219,6 +2221,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0108_gpu_headroom_pin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/sampling/test_runner-0110_sample_vulkan_separate_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/heckbert/test_runner-0158_gpu_solver_partition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/heckbert/test_runner-0160_gpu_force_declined.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0128_count_table.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
@@ -5404,6 +5408,8 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	palette/dispatch/$(DEPDIR)/test_runner-0039_palette_fallback_output.Po \
 	palette/heckbert/$(DEPDIR)/test_runner-0032_heckbert_subbyte_diffusion.Po \
 	palette/heckbert/$(DEPDIR)/test_runner-0125_heckbert_bucket_fractional_axis.Po \
+	palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Po \
+	palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Po \
 	palette/kcenter/$(DEPDIR)/test_runner-0001_kcenter_large_buffer.Po \
 	palette/kcenter/$(DEPDIR)/test_runner-0002_kcenter_float_grid_values.Po \
 	palette/kcenter/$(DEPDIR)/test_runner-0003_kcenter_packed_alpha_layouts.Po \
@@ -9955,6 +9961,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_SCORE_AVX2_EDGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_BOUNDS_AVX2_RANDOM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0153_BOUNDS_AVX2_EDGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0158_GPU_SOLVER_PARTITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0160_GPU_FORCE_DECLINED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_HECKBERT_AXIS_RGB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_HECKBERT_AXIS_CIELAB \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_HECKBERT_AXIS_DIN99D \
@@ -12592,6 +12600,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0108_gpu_headroom_pin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0109_palette_colors_clone_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/sampling/0110_sample_vulkan_separate_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/heckbert/0158_gpu_solver_partition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    palette/heckbert/0160_gpu_force_declined.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0128_count_table.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/filter/filter_binning_stream_alpha_zero_test_common.h \
@@ -22452,6 +22462,18 @@ palette/sampling/test_runner-0109_palette_colors_clone_allocation_failure.$(OBJE
 palette/sampling/test_runner-0110_sample_vulkan_separate_source.$(OBJEXT):  \
 	palette/sampling/$(am__dirstamp) \
 	palette/sampling/$(DEPDIR)/$(am__dirstamp)
+palette/heckbert/$(am__dirstamp):
+	@$(MKDIR_P) palette/heckbert
+	@: >>palette/heckbert/$(am__dirstamp)
+palette/heckbert/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) palette/heckbert/$(DEPDIR)
+	@: >>palette/heckbert/$(DEPDIR)/$(am__dirstamp)
+palette/heckbert/test_runner-0158_gpu_solver_partition.$(OBJEXT):  \
+	palette/heckbert/$(am__dirstamp) \
+	palette/heckbert/$(DEPDIR)/$(am__dirstamp)
+palette/heckbert/test_runner-0160_gpu_force_declined.$(OBJEXT):  \
+	palette/heckbert/$(am__dirstamp) \
+	palette/heckbert/$(DEPDIR)/$(am__dirstamp)
 encoder/pipeline/test_runner-0128_count_table.$(OBJEXT):  \
 	encoder/pipeline/$(am__dirstamp) \
 	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
@@ -24512,12 +24534,6 @@ _support/quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp):
 _support/quant/palette/snap_hooks/test_runner-snap_hook_test_common.$(OBJEXT):  \
 	_support/quant/palette/snap_hooks/$(am__dirstamp) \
 	_support/quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)
-palette/heckbert/$(am__dirstamp):
-	@$(MKDIR_P) palette/heckbert
-	@: >>palette/heckbert/$(am__dirstamp)
-palette/heckbert/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) palette/heckbert/$(DEPDIR)
-	@: >>palette/heckbert/$(DEPDIR)/$(am__dirstamp)
 palette/heckbert/test_runner-0125_heckbert_bucket_fractional_axis.$(OBJEXT):  \
 	palette/heckbert/$(am__dirstamp) \
 	palette/heckbert/$(DEPDIR)/$(am__dirstamp)
@@ -28865,6 +28881,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@palette/dispatch/$(DEPDIR)/test_runner-0039_palette_fallback_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/heckbert/$(DEPDIR)/test_runner-0032_heckbert_subbyte_diffusion.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/heckbert/$(DEPDIR)/test_runner-0125_heckbert_bucket_fractional_axis.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kcenter/$(DEPDIR)/test_runner-0001_kcenter_large_buffer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kcenter/$(DEPDIR)/test_runner-0002_kcenter_float_grid_values.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/kcenter/$(DEPDIR)/test_runner-0003_kcenter_packed_alpha_layouts.Po@am__quote@ # am--include-marker
@@ -37629,6 +37647,34 @@ palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj: palette/sam
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/sampling/0110_sample_vulkan_separate_source.c' object='palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/sampling/test_runner-0110_sample_vulkan_separate_source.obj `if test -f 'palette/sampling/0110_sample_vulkan_separate_source.c'; then $(CYGPATH_W) 'palette/sampling/0110_sample_vulkan_separate_source.c'; else $(CYGPATH_W) '$(srcdir)/palette/sampling/0110_sample_vulkan_separate_source.c'; fi`
+
+palette/heckbert/test_runner-0158_gpu_solver_partition.o: palette/heckbert/0158_gpu_solver_partition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/heckbert/test_runner-0158_gpu_solver_partition.o -MD -MP -MF palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Tpo -c -o palette/heckbert/test_runner-0158_gpu_solver_partition.o `test -f 'palette/heckbert/0158_gpu_solver_partition.c' || echo '$(srcdir)/'`palette/heckbert/0158_gpu_solver_partition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Tpo palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/heckbert/0158_gpu_solver_partition.c' object='palette/heckbert/test_runner-0158_gpu_solver_partition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/heckbert/test_runner-0158_gpu_solver_partition.o `test -f 'palette/heckbert/0158_gpu_solver_partition.c' || echo '$(srcdir)/'`palette/heckbert/0158_gpu_solver_partition.c
+
+palette/heckbert/test_runner-0158_gpu_solver_partition.obj: palette/heckbert/0158_gpu_solver_partition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/heckbert/test_runner-0158_gpu_solver_partition.obj -MD -MP -MF palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Tpo -c -o palette/heckbert/test_runner-0158_gpu_solver_partition.obj `if test -f 'palette/heckbert/0158_gpu_solver_partition.c'; then $(CYGPATH_W) 'palette/heckbert/0158_gpu_solver_partition.c'; else $(CYGPATH_W) '$(srcdir)/palette/heckbert/0158_gpu_solver_partition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Tpo palette/heckbert/$(DEPDIR)/test_runner-0158_gpu_solver_partition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/heckbert/0158_gpu_solver_partition.c' object='palette/heckbert/test_runner-0158_gpu_solver_partition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/heckbert/test_runner-0158_gpu_solver_partition.obj `if test -f 'palette/heckbert/0158_gpu_solver_partition.c'; then $(CYGPATH_W) 'palette/heckbert/0158_gpu_solver_partition.c'; else $(CYGPATH_W) '$(srcdir)/palette/heckbert/0158_gpu_solver_partition.c'; fi`
+
+palette/heckbert/test_runner-0160_gpu_force_declined.o: palette/heckbert/0160_gpu_force_declined.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/heckbert/test_runner-0160_gpu_force_declined.o -MD -MP -MF palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Tpo -c -o palette/heckbert/test_runner-0160_gpu_force_declined.o `test -f 'palette/heckbert/0160_gpu_force_declined.c' || echo '$(srcdir)/'`palette/heckbert/0160_gpu_force_declined.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Tpo palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/heckbert/0160_gpu_force_declined.c' object='palette/heckbert/test_runner-0160_gpu_force_declined.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/heckbert/test_runner-0160_gpu_force_declined.o `test -f 'palette/heckbert/0160_gpu_force_declined.c' || echo '$(srcdir)/'`palette/heckbert/0160_gpu_force_declined.c
+
+palette/heckbert/test_runner-0160_gpu_force_declined.obj: palette/heckbert/0160_gpu_force_declined.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/heckbert/test_runner-0160_gpu_force_declined.obj -MD -MP -MF palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Tpo -c -o palette/heckbert/test_runner-0160_gpu_force_declined.obj `if test -f 'palette/heckbert/0160_gpu_force_declined.c'; then $(CYGPATH_W) 'palette/heckbert/0160_gpu_force_declined.c'; else $(CYGPATH_W) '$(srcdir)/palette/heckbert/0160_gpu_force_declined.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Tpo palette/heckbert/$(DEPDIR)/test_runner-0160_gpu_force_declined.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/heckbert/0160_gpu_force_declined.c' object='palette/heckbert/test_runner-0160_gpu_force_declined.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o palette/heckbert/test_runner-0160_gpu_force_declined.obj `if test -f 'palette/heckbert/0160_gpu_force_declined.c'; then $(CYGPATH_W) 'palette/heckbert/0160_gpu_force_declined.c'; else $(CYGPATH_W) '$(srcdir)/palette/heckbert/0160_gpu_force_declined.c'; fi`
 
 encoder/pipeline/test_runner-0128_count_table.o: encoder/pipeline/0128_count_table.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0128_count_table.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0128_count_table.Tpo -c -o encoder/pipeline/test_runner-0128_count_table.o `test -f 'encoder/pipeline/0128_count_table.c' || echo '$(srcdir)/'`encoder/pipeline/0128_count_table.c

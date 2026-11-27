@@ -110,9 +110,14 @@ sixel_palette_heckbert_gpu_vulkan_choose(int gpu_policy)
     return gpu;
 }
 
+/* The device limits never change, so the first answer is kept. Callers
+ * hold the runtime lock, which also guards the cached value. */
+static int heckbert_threads_known;
+static uint32_t heckbert_threads_value;
+
 /* The 256-bin scan needs complete subgroups and at least 256 lanes. */
-uint32_t
-sixel_vk_heckbert_threads(sixel_vk_runtime_t *runtime)
+static uint32_t
+heckbert_threads_query(sixel_vk_runtime_t *runtime)
 {
     VkPhysicalDeviceSubgroupProperties subgroup;
     VkPhysicalDeviceProperties2 properties;
@@ -145,6 +150,16 @@ sixel_vk_heckbert_threads(sixel_vk_runtime_t *runtime)
     if (threads > 128u * width) threads = 128u * width;
     threads -= threads % width;
     return threads >= 256u ? threads : 0u;
+}
+
+uint32_t
+sixel_vk_heckbert_threads(sixel_vk_runtime_t *runtime)
+{
+    if (!heckbert_threads_known) {
+        heckbert_threads_value = heckbert_threads_query(runtime);
+        heckbert_threads_known = 1;
+    }
+    return heckbert_threads_value;
 }
 
 static SIXELSTATUS

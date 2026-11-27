@@ -3315,8 +3315,11 @@ mediancut(tupletable2 const colorfreqtable,
     gpu_policy = request->palette != NULL
         ? SIXEL_PALETTE_CONTEXT(request->palette)->gpu_policy
         : SIXEL_GPU_POLICY_OFF;
-    /* An absent GPU solver leaves median cut on the CPU without disabling
-     * any of the later GPU palette stages. */
+    /* The solver is optional even under the force policy: FEATURE_ERROR
+     * means no device or a histogram outside the solver's domain (Vulkan
+     * stops at 4096 entries), and median cut then stays on the CPU without
+     * disabling the later GPU palette stages. Force skips only the Vulkan
+     * headroom choice, so a supported histogram always reaches the GPU. */
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     if (gpu_policy != SIXEL_GPU_POLICY_OFF && multicolorBoxesExist &&
             depth == 3U && !colorfreqtable.preserve_extended &&
@@ -3325,7 +3328,8 @@ mediancut(tupletable2 const colorfreqtable,
             options->cut_sse && options->order_sse &&
             working_colors <= 256U
 #if defined(HAVE_VULKAN) && !defined(HAVE_METAL)
-            && sixel_palette_heckbert_gpu_vulkan_choose(gpu_policy)
+            && (gpu_policy == SIXEL_GPU_POLICY_FORCE ||
+                sixel_palette_heckbert_gpu_vulkan_choose(gpu_policy))
 #endif
             ) {
         status = sixel_palette_heckbert_solve_gpu(colorfreqtable,
@@ -3333,11 +3337,7 @@ mediancut(tupletable2 const colorfreqtable,
             &boxes, allocator);
         if (SIXEL_SUCCEEDED(status)) {
             multicolorBoxesExist = 0;
-        } else if (status != SIXEL_FEATURE_ERROR
-#if defined(HAVE_METAL)
-                || gpu_policy == SIXEL_GPU_POLICY_FORCE
-#endif
-                ) {
+        } else if (status != SIXEL_FEATURE_ERROR) {
             goto end;
         }
     }
