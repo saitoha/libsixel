@@ -137,7 +137,7 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
     unsigned char const *map;
     sixel_vk_compute_t *pipeline;
     unsigned int stage, num_bound, i, slot;
-    uint32_t width, capacity;
+    uint32_t width, capacity, mode;
     size_t chunks;
     SIXELSTATUS status;
 
@@ -154,6 +154,7 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
             continue;
         map = NULL;
         capacity = 0;
+        mode = 0;
         pipeline = &resident_pipelines[stage];
         if (stage >= RES_ASSIGN && stage <= RES_UPDATE) {
             source = resident_lloyd_source;
@@ -169,6 +170,7 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
             map = hb_map;
             num_bound = sizeof(hb_map);
             width = solve_width;
+            mode = runtime->driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
             if (ward) {
                 capacity = SIXEL_WARD_MAX_CLUSTERS;
                 pipeline = &ward_heckbert_pipeline;
@@ -186,7 +188,7 @@ resident_prepare_pipelines(sixel_vk_runtime_t *runtime, size_t const *length,
         }
         status = sixel_vk_compute_create_specialized(runtime,
             pipeline, source, chunks, entries[stage], num_bound, width,
-            capacity);
+            capacity, mode);
         if (status != SIXEL_OK)
             return status;
         for (i = 0; i < num_bound; ++i) {

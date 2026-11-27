@@ -84,12 +84,14 @@ SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_compute_create_local(
     sixel_vk_runtime_t *runtime, sixel_vk_compute_t *stage,
     char const *const *chunks, size_t count, char const *entry,
     unsigned int bindings, uint32_t local_size_x);
-/* A stage may specialize its scratch capacity (constant 1) independently
- * of the local size (constant 0). Zero leaves the default capacity. */
+/* A stage may specialize its scratch capacity (constant 1) and algorithm
+ * mode (constant 2) alongside the local size (constant 0). Zero leaves
+ * each optional constant at its shader default. */
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_compute_create_specialized(
     sixel_vk_runtime_t *runtime, sixel_vk_compute_t *stage,
     char const *const *chunks, size_t count, char const *entry,
-    unsigned int bindings, uint32_t local_size_x, uint32_t stage_capacity);
+    unsigned int bindings, uint32_t local_size_x, uint32_t stage_capacity,
+    uint32_t stage_mode);
 SIXEL_INTERNAL_API void sixel_vk_compute_destroy(
     sixel_vk_runtime_t *runtime, sixel_vk_compute_t *stage);
 SIXEL_INTERNAL_API SIXELSTATUS sixel_vk_compute_bind(

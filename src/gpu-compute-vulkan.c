@@ -277,7 +277,7 @@ SIXELSTATUS
 sixel_vk_compute_create_specialized(sixel_vk_runtime_t *runtime,
     sixel_vk_compute_t *stage, char const *const *chunks, size_t count,
     char const *entry, unsigned int bindings, uint32_t local_size_x,
-    uint32_t stage_capacity)
+    uint32_t stage_capacity, uint32_t stage_mode)
 {
     VkPhysicalDeviceLimits const *limits;
     VkDescriptorSetLayoutBinding slots[SIXEL_VK_COMPUTE_BINDINGS];
@@ -287,14 +287,15 @@ sixel_vk_compute_create_specialized(sixel_vk_runtime_t *runtime,
     VkDescriptorPoolCreateInfo pool_info;
     VkDescriptorSetAllocateInfo allocate;
     VkComputePipelineCreateInfo pipeline;
-    VkSpecializationMapEntry map[2];
-    uint32_t constants[2];
+    VkSpecializationMapEntry map[3];
+    uint32_t const constants[] = { local_size_x, stage_capacity, stage_mode };
     VkSpecializationInfo specialization;
     VkShaderModule module;
     sixel_vk_source_part_t parts[2];
     char suffix[128];
     char const *tail;
     unsigned int i;
+    uint32_t constant_count;
     int length;
     SIXELSTATUS status;
 
@@ -363,18 +364,18 @@ sixel_vk_compute_create_specialized(sixel_vk_runtime_t *runtime,
     pipeline.stage.pName = "main";
     if (local_size_x != 0) {
         memset(map, 0, sizeof(map));
-        map[0].constantID = 0;
-        map[0].size = sizeof(constants[0]);
-        map[1].constantID = 1;
-        map[1].offset = sizeof(constants[0]);
-        map[1].size = sizeof(constants[1]);
-        constants[0] = local_size_x;
-        constants[1] = stage_capacity;
+        constant_count = 0u;
+        for (i = 0; i < sizeof(constants) / sizeof(constants[0]); ++i) {
+            if (constants[i] == 0u) continue;
+            map[constant_count].constantID = i;
+            map[constant_count].offset = i * sizeof(constants[0]);
+            map[constant_count].size = sizeof(constants[0]);
+            ++constant_count;
+        }
         memset(&specialization, 0, sizeof(specialization));
-        specialization.mapEntryCount = stage_capacity ? 2u : 1u;
+        specialization.mapEntryCount = constant_count;
         specialization.pMapEntries = map;
-        specialization.dataSize =
-            specialization.mapEntryCount * sizeof(constants[0]);
+        specialization.dataSize = sizeof(constants);
         specialization.pData = constants;
         pipeline.stage.pSpecializationInfo = &specialization;
     }
@@ -395,7 +396,7 @@ sixel_vk_compute_create_local(sixel_vk_runtime_t *runtime,
     char const *entry, unsigned int bindings, uint32_t local_size_x)
 {
     return sixel_vk_compute_create_specialized(runtime, stage, chunks,
-        count, entry, bindings, local_size_x, 0);
+        count, entry, bindings, local_size_x, 0, 0);
 }
 
 SIXELSTATUS

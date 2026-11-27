@@ -37,6 +37,7 @@ typedef struct sixel_vk_runtime {
     int compute_timestamps_supported;
     uint64_t compute_timestamp_mask;
     VkPhysicalDeviceProperties properties;
+    VkDriverId driver_id;
     VkPhysicalDeviceMemoryProperties memory;
     /* Without timestamp support submit/wait wall time is recorded. */
     int timestamps_supported;

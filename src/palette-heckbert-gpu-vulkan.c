@@ -286,10 +286,11 @@ sixel_palette_heckbert_gpu_vulkan_solve(
     if (runtime == NULL) goto end;
     threads = sixel_vk_heckbert_threads(runtime);
     if (threads == 0u) goto end;
-    status = sixel_vk_compute_create_local(runtime, &heckbert_stage,
+    /* Only NVIDIA's proprietary driver has passed the subgroup replay tests. */
+    status = sixel_vk_compute_create_specialized(runtime, &heckbert_stage,
         heckbert_source, sizeof(heckbert_source) /
             sizeof(heckbert_source[0]), "heckbert_solve", HECKBERT_BUFFERS,
-        threads);
+        threads, 0u, runtime->driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY);
     if (status != SIXEL_OK) goto end;
     status = heckbert_submission_init(runtime);
     if (status != SIXEL_OK) goto end;

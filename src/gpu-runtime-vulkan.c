@@ -149,6 +149,8 @@ sixel_vk_select_device(sixel_vk_runtime_t *runtime)
 {
     VkPhysicalDevice *devices;
     VkPhysicalDeviceProperties properties;
+    VkPhysicalDeviceProperties2 selected;
+    VkPhysicalDeviceDriverProperties driver;
     char const *wanted;
     char *end;
     long wanted_index;
@@ -214,7 +216,14 @@ sixel_vk_select_device(sixel_vk_runtime_t *runtime)
     if (best_rank == 0) {
         return 0;
     }
-    vkGetPhysicalDeviceProperties(runtime->physical, &runtime->properties);
+    memset(&driver, 0, sizeof(driver));
+    driver.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+    memset(&selected, 0, sizeof(selected));
+    selected.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+    selected.pNext = &driver;
+    vkGetPhysicalDeviceProperties2(runtime->physical, &selected);
+    runtime->properties = selected.properties;
+    runtime->driver_id = driver.driverID;
     vkGetPhysicalDeviceMemoryProperties(runtime->physical, &runtime->memory);
     return 1;
 }

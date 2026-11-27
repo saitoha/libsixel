@@ -27,6 +27,8 @@ layout(std430, binding = 5) buffer Result { uint result[]; };
 
 /* Resident Ward oversplits before merging back to the wire palette. */
 layout(constant_id = 1) const uint HB_BOXES = 256u;
+/* The host enables subgroup replay only on the validated NVIDIA driver. */
+layout(constant_id = 2) const uint HB_SUBGROUP_REPLAY = 0u;
 #define HB_BINS 256u
 #define HB_GROUPS 128u
 #define HB_SLOTS 6u
@@ -173,6 +175,42 @@ HbCut hb_scan(uint start, uint size, uint begin, uint end,
         }
     }
     return c;
+}
+
+uint hb_choose_box(uint nboxes, uint lane, uint width)
+{
+    float best = -1.0 / 0.0;
+    uint best_start = 0xffffffffu;
+    uint best_index = 0xffffffffu;
+    for (uint i = lane; i < nboxes; i += width) {
+        if (box_size[i] >= 2u &&
+                (box_priority[i] > best ||
+                 (box_priority[i] == best && box_start[i] < best_start))) {
+            best = box_priority[i];
+            best_start = box_start[i];
+            best_index = i;
+        }
+    }
+    float top = subgroupMax(best);
+    uint first = subgroupMin(best == top ? best_start : 0xffffffffu);
+    return subgroupMin(best == top && best_start == first
+        ? best_index : 0xffffffffu);
+}
+
+void hb_commit_cut(uint chosen, uint nboxes)
+{
+    uint cut = cut_at[chosen];
+    uint lower = cut_lower[chosen];
+    box_start[nboxes] = box_start[chosen] + cut;
+    box_size[nboxes] = box_size[chosen] - cut;
+    box_sum[nboxes] = box_sum[chosen] - lower;
+    box_priority[nboxes] = cut_right[chosen];
+    cut_at[nboxes] = 0u;
+    box_size[chosen] = cut;
+    box_sum[chosen] = lower;
+    box_priority[chosen] = cut_left[chosen];
+    cut_at[chosen] = 0u;
+    control[0] = nboxes + 1u;
 }
 
 void heckbert_solve()
@@ -415,61 +453,46 @@ void heckbert_solve()
         memoryBarrierBuffer();
         barrier();
 
-        /* Replay only the cuts that the parallel phase has already solved.
-         * A missing cut starts another large/small pass for the new box.
-         * Use workgroup barriers even though only subgroup zero selects
-         * cuts. A subgroup barrier in this loop corrupts the partition on
-         * llvmpipe. */
-        for (;;) {
+        /* Replay solved cuts until a new box needs another parallel pass.
+         * llvmpipe can corrupt the partition with subgroup-only replay. */
+        if (HB_SUBGROUP_REPLAY != 0u) {
             if (group == 0u) {
-                float best = -1.0 / 0.0;
-                uint best_start = 0xffffffffu;
-                uint best_index = 0xffffffffu;
-                nboxes = control[0];
-                uint chosen = 0xffffffffu;
-                if (nboxes < colors) {
-                    for (uint i = lane; i < nboxes; i += width) {
-                        if (box_size[i] >= 2u &&
-                                (box_priority[i] > best ||
-                                 (box_priority[i] == best &&
-                                  box_start[i] < best_start))) {
-                            best = box_priority[i];
-                            best_start = box_start[i];
-                            best_index = i;
-                        }
-                    }
-                    float top = subgroupMax(best);
-                    uint first = subgroupMin(best == top ? best_start
-                        : 0xffffffffu);
-                    chosen = subgroupMin(best == top &&
-                        best_start == first ? best_index : 0xffffffffu);
-                }
-                if (lane == 0u) {
-                    control[3] = 0u;
+                for (;;) {
+                    nboxes = control[0];
+                    uint chosen = nboxes < colors
+                        ? hb_choose_box(nboxes, lane, width) : 0xffffffffu;
                     if (chosen == 0xffffffffu) {
-                        control[1] = 1u;
-                    } else if (cut_at[chosen] != 0u) {
-                        uint cut = cut_at[chosen];
-                        uint lower = cut_lower[chosen];
-                        box_start[nboxes] = box_start[chosen] + cut;
-                        box_size[nboxes] = box_size[chosen] - cut;
-                        box_sum[nboxes] = box_sum[chosen] - lower;
-                        box_priority[nboxes] = cut_right[chosen];
-                        cut_at[nboxes] = 0u;
-                        box_size[chosen] = cut;
-                        box_sum[chosen] = lower;
-                        box_priority[chosen] = cut_left[chosen];
-                        cut_at[chosen] = 0u;
-                        control[0] = nboxes + 1u;
-                        control[3] = 1u;
+                        if (lane == 0u) control[1] = 1u;
+                        break;
                     }
+                    if (cut_at[chosen] == 0u) break;
+                    if (lane == 0u) hb_commit_cut(chosen, nboxes);
+                    subgroupBarrier();
                 }
             }
             barrier();
-            bool advanced = control[3] != 0u;
-            /* All invocations must read the flag before it is reused. */
-            barrier();
-            if (!advanced) break;
+        } else {
+            for (;;) {
+                if (group == 0u) {
+                    nboxes = control[0];
+                    uint chosen = nboxes < colors
+                        ? hb_choose_box(nboxes, lane, width) : 0xffffffffu;
+                    if (lane == 0u) {
+                        control[3] = 0u;
+                        if (chosen == 0xffffffffu) {
+                            control[1] = 1u;
+                        } else if (cut_at[chosen] != 0u) {
+                            hb_commit_cut(chosen, nboxes);
+                            control[3] = 1u;
+                        }
+                    }
+                }
+                barrier();
+                bool advanced = control[3] != 0u;
+                /* All invocations must read the flag before it is reused. */
+                barrier();
+                if (!advanced) break;
+            }
         }
         if (control[1] != 0u) break;
     }
