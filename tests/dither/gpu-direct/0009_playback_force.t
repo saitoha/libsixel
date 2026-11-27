@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify queued 6delta frames apply on the GPU under a forced policy, with
-# apply and encode running as separate pipelined stages.
+# Verify forced GPU playback applies and encodes 6delta frames, with
+# separate pipeline stages when worker threads are enabled.
 set -eux
 
 echo "1..1"
@@ -15,8 +15,8 @@ test "$status" -ne 77 || {
     exit 0
 }
 test "$status" -eq 0 || {
-    printf '\n%s\n' "not ok 1 - forced GPU playback pipelines apply and encode for queued 6delta frames"
+    printf '\n%s\n' "not ok 1 - forced GPU playback encodes 6delta frames with the expected scheduling"
     exit 0
 }
-printf '\n%s\n' "ok 1 - forced GPU playback pipelines apply and encode for queued 6delta frames"
+printf '\n%s\n' "ok 1 - forced GPU playback encodes 6delta frames with the expected scheduling"
 exit 0

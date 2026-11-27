@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,34 +13,41 @@
 #define PLAYBACK_FRAMES 4
 
 static int g_playback_failures;
-static int g_playback_serial;
+static int g_playback_schedule_errors;
 static sixel_playback_t *g_playback;
 
 static void
 playback_force_done(sixel_playback_result_t const *result, void *context)
 {
     sixel_playback_pipeline_sample_t sample;
+    SIXELSTATUS status;
+#if SIXEL_ENABLE_THREADS
     unsigned int required;
+#endif
 
     (void)context;
-    /* Apply and encode must run as separate pipelined stages, so a direct
-     * backend never collapses them onto the synchronous controller. */
-    required = SIXEL_PLAYBACK_PIPELINE_INDEPENDENT |
-        SIXEL_PLAYBACK_PIPELINE_RESOLVE | SIXEL_PLAYBACK_PIPELINE_ENCODE;
-    memset(&sample, 0, sizeof(sample));
-    sample.struct_size = sizeof(sample);
-    if (SIXEL_SUCCEEDED(result->status) &&
-            (SIXEL_FAILED(sixel_playback_get_pipeline_sample(g_playback,
-                result->sequence, &sample)) ||
-             (sample.valid & required) != required)) {
-        g_playback_serial++;
-    }
     if (SIXEL_FAILED(result->status)) {
         fprintf(stderr, "frame %llu failed: %s\n",
             (unsigned long long)result->sequence,
             sixel_helper_format_error(result->status));
         g_playback_failures++;
+        return;
     }
+    memset(&sample, 0, sizeof(sample));
+    sample.struct_size = sizeof(sample);
+    status = sixel_playback_get_pipeline_sample(g_playback, result->sequence,
+        &sample);
+#if SIXEL_ENABLE_THREADS
+    /* A direct backend must preserve separate apply and encode stages. */
+    required = SIXEL_PLAYBACK_PIPELINE_INDEPENDENT |
+        SIXEL_PLAYBACK_PIPELINE_RESOLVE | SIXEL_PLAYBACK_PIPELINE_ENCODE;
+    if (status != SIXEL_OK || (sample.valid & required) != required)
+        g_playback_schedule_errors++;
+#else
+    /* GPU work still runs in the synchronous submitting thread. */
+    if (status != SIXEL_FALSE)
+        g_playback_schedule_errors++;
+#endif
 }
 
 static SIXELSTATUS
@@ -76,7 +86,7 @@ test_gpu_direct_0009_playback_force(int argc, char **argv)
     playback = NULL;
     result = 1;
     g_playback_failures = 0;
-    g_playback_serial = 0;
+    g_playback_schedule_errors = 0;
     g_playback = NULL;
     size = (size_t)PLAYBACK_WIDTH * PLAYBACK_HEIGHT * 3;
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
@@ -146,9 +156,9 @@ test_gpu_direct_0009_playback_force(int argc, char **argv)
         fprintf(stderr, "queued frames never reached the GPU\n");
         goto end;
     }
-    if (g_playback_serial != 0) {
-        fprintf(stderr, "%d frames ran apply and encode serially\n",
-            g_playback_serial);
+    if (g_playback_schedule_errors != 0) {
+        fprintf(stderr, "%d frames reported an unexpected pipeline sample\n",
+            g_playback_schedule_errors);
         goto end;
     }
     result = 0;

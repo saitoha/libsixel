@@ -32,11 +32,12 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
     sixel_playback_config_t config;
     sixel_playback_options_t options;
     sixel_playback_stage_sample_t sample;
+    sixel_gpu_statistics_t before, after;
     sixel_gpu_device_interface_t *device;
     sixel_frame_t *frame;
     SIXELSTATUS status;
     size_t ends[4], offset;
-    int outcome, i;
+    int outcome, i, expect_deferred;
 
     memset(&reference, 0, sizeof(reference));
     memset(&candidate, 0, sizeof(candidate));
@@ -92,6 +93,7 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
     config.capacity = capacity;
     LSO2_GPU_CHECK(sixel_playback_new(&playback, b, out_b, &config, NULL)
         == SIXEL_OK);
+    LSO2_GPU_CHECK(sixel_gpu_get_statistics(&before) == SIXEL_OK);
     for (i = 0; i < 4; ++i) {
         frame = resize == 1 && i == 2 ? playback_test_frame(i)
             : playback_test_small_frame(i);
@@ -106,13 +108,20 @@ lso2_gpu_playback_compare_impl(char const *method, char const *delta,
         frame = NULL;
     }
     LSO2_GPU_CHECK(sixel_playback_drain(playback, 5000) == SIXEL_OK);
+    LSO2_GPU_CHECK(sixel_gpu_get_statistics(&after) == SIXEL_OK);
+    LSO2_GPU_CHECK(after.dispatches > before.dispatches);
     memset(&sample, 0, sizeof(sample));
     sample.struct_size = sizeof(sample);
     LSO2_GPU_CHECK(sixel_playback_get_stage_sample(playback, 4, &sample)
         == SIXEL_OK);
-    /* Prove admission to the intended path before comparing its bytes. */
+    /* Serial builds dispatch GPU work directly without deferring frames. */
+#if SIXEL_ENABLE_THREADS
+    expect_deferred = capacity > 1 && resize != 2;
+#else
+    expect_deferred = 0;
+#endif
     LSO2_GPU_CHECK(!!(sample.valid & SIXEL_PLAYBACK_STAGE_DEFERRED)
-        == (capacity > 1 && resize != 2));
+        == expect_deferred);
     if (interval_only) {
         LSO2_GPU_CHECK(!(sample.valid &
             SIXEL_PLAYBACK_STAGE_COMPLETION_INTERVAL));

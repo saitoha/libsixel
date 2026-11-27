@@ -17716,6 +17716,24 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
     return status;
 }
 
+/* Preserve the timing generation before the frame job releases its geometry. */
+static void
+sixel_encoder_playback_record_geometry(
+    sixel_encoder_frame_handoff_meta_t *meta,
+    sixel_encode_dag_context_t const *context)
+{
+    sixel_encoder_t const *encoder;
+
+    encoder = context->encoder;
+    meta->stage_revision = context->configuration_revision;
+    meta->stage_geometry[0] = sixel_frame_get_width(context->frame);
+    meta->stage_geometry[1] = sixel_frame_get_height(context->frame);
+    meta->stage_geometry[2] = encoder->sixdelta_plane_width;
+    meta->stage_geometry[3] = encoder->sixdelta_plane_height;
+    meta->stage_geometry[4] = encoder->sixdelta_origin_x;
+    meta->stage_geometry[5] = encoder->sixdelta_origin_y;
+}
+
 /* Serial counterpart of the prepare-ahead worker for one frame. */
 static SIXELSTATUS
 sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
@@ -17731,6 +17749,8 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
     if (SIXEL_SUCCEEDED(status)) {
         (void)sixel_encoder_auto_boundary(pipeline, &job);
         status = sixel_encoder_frame_job_emit(&job);
+        if (status == SIXEL_OK && pipeline->playback != NULL)
+            sixel_encoder_playback_record_geometry(meta, &job.context);
     } else {
         pipeline->encoder->sixdelta_refinement_needed = 0;
         pipeline->encoder->sixdelta_painted_pixels = 0u;
@@ -18274,6 +18294,9 @@ sixel_encoder_frame_pipeline_run_ahead(
                 have_next = 1;
             }
             status = sixel_encoder_frame_job_emit(current->job);
+            if (status == SIXEL_OK && pipeline->playback != NULL)
+                sixel_encoder_playback_record_geometry(&current->metadata,
+                    &current->job->context);
         } else {
             encoder->sixdelta_refinement_needed = 0;
             encoder->sixdelta_painted_pixels = 0u;

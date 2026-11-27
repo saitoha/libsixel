@@ -10,7 +10,7 @@ status=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-lookup ordered \
     gpu-palette/0025_ordered_parallel_cache || status=$?
 test "$status" -ne 77 || {
-    printf '\n%s\n' "ok 1 # SKIP GPU palette backend is unavailable"
+    printf '\n%s\n' "ok 1 # SKIP requires a GPU palette backend and threads"
     exit 0
 }
 test "$status" -eq 0 || {

@@ -10,6 +10,7 @@
 #include "src/threading.h"
 #include "../../_support/processing/gpu-palette/ordered_state_common.h"
 
+#if SIXEL_ENABLE_THREADS
 typedef struct ordered_parallel_gate {
     sixel_mutex_t mutex;
     sixel_cond_t condition;
@@ -37,17 +38,19 @@ ordered_parallel_run(void *context)
     sixel_mutex_unlock(&worker->gate->mutex);
     worker->ok = 1;
     for (pass = 0; pass < 8 && worker->ok; ++pass) {
-        /* Each caller owns its buffers but shares the Metal cache. */
+        /* Each caller owns its buffers but shares the backend cache. */
         ordered_state_init(&fixture, pass % 2 ? 33 : 129,
                            worker->seed + pass);
         worker->ok = ordered_state_check(&fixture);
     }
     return 0;
 }
+#endif
 
 int
 test_gpupal_0025_ordered_parallel_cache(int argc, char **argv)
 {
+#if SIXEL_ENABLE_THREADS
     ordered_parallel_gate_t gate;
     ordered_parallel_worker_t workers[3];
     sixel_thread_t threads[3];
@@ -90,6 +93,11 @@ test_gpupal_0025_ordered_parallel_cache(int argc, char **argv)
     sixel_cond_destroy(&gate.condition);
     sixel_mutex_destroy(&gate.mutex);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+#else
+    (void)argc;
+    (void)argv;
+    return 77;
+#endif
 }
 
 /* emacs Local Variables:      */

@@ -487,16 +487,8 @@ sixel_playback_independent_resolve(void *context)
         }
         r->slot.metadata.stages = r->job.context.deferred.stages;
         if (r->job.active) {
-            r->slot.metadata.stage_revision =
-                r->job.context.configuration_revision;
-            r->slot.metadata.stage_geometry[0] =
-                sixel_frame_get_width(r->job.context.frame);
-            r->slot.metadata.stage_geometry[1] =
-                sixel_frame_get_height(r->job.context.frame);
-            r->slot.metadata.stage_geometry[2] = encoder->sixdelta_plane_width;
-            r->slot.metadata.stage_geometry[3] = encoder->sixdelta_plane_height;
-            r->slot.metadata.stage_geometry[4] = encoder->sixdelta_origin_x;
-            r->slot.metadata.stage_geometry[5] = encoder->sixdelta_origin_y;
+            sixel_encoder_playback_record_geometry(&r->slot.metadata,
+                &r->job.context);
         }
         sample->history_seconds = r->job.context.deferred.history_seconds;
         /* No provider state survives R. An E stall cannot pin S scratch. */
