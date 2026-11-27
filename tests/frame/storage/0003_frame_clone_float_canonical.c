@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* A byte derivative belongs to a clone, never to the canonical float frame. */
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2554,6 +2555,215 @@ test_collinear_primary(int adjacent)
     return !ok;
 }
 
+static int
+test_ycbcr422_definition(void)
+{
+    unsigned char pixels[4] = {16, 128, 235, 128};
+    sixel_frame_t *first = NULL, *next = NULL;
+    sixel_color_def_t *rgb = NULL;
+    sixel_color_def_t const *a = NULL, *b = NULL;
+    sixel_ycbcr_def_t *definition = NULL, *invalid = NULL;
+    size_t stride;
+    int encoding, range, location, pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb-linear");
+    invalid = sixel_ycbcr_def_new(0, SIXEL_YCBCR_RANGE_LIMITED,
+                                  SIXEL_CHROMA_LOCATION_LEFT, rgb);
+    if (invalid != NULL) {
+        goto end;
+    }
+    invalid = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709, 0,
+                                  SIXEL_CHROMA_LOCATION_LEFT, rgb);
+    if (invalid != NULL) {
+        goto end;
+    }
+    invalid = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+                                  SIXEL_YCBCR_RANGE_FULL, 0, rgb);
+    if (invalid != NULL) {
+        goto end;
+    }
+    invalid = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, NULL);
+    if (invalid != NULL) {
+        goto end;
+    }
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    sixel_color_def_free(rgb);
+    rgb = NULL;
+    if (SIXEL_FAILED(sixel_frame_new(&first, NULL)) ||
+        SIXEL_FAILED(sixel_frame_new(&next, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(first, pixels, 4,
+            2, 1, 4, SIXEL_PIXELFORMAT_YUYV, definition)) ||
+        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(next, pixels, 4,
+            2, 1, 4, SIXEL_PIXELFORMAT_UYVY, definition))) {
+        goto end;
+    }
+    sixel_ycbcr_def_free(definition);
+    definition = NULL;
+    if (SIXEL_FAILED(sixel_frame_get_ycbcr422(first, &stride, &encoding,
+            &range, &location, &a)) ||
+        SIXEL_FAILED(sixel_frame_get_ycbcr422(next, &stride, &encoding,
+            &range, &location, &b)) || a == NULL || a != b) {
+        goto end;
+    }
+    sixel_frame_unref(first);
+    first = NULL;
+    rgb = sixel_color_def_new_named("srgb-linear");
+    pass = rgb != NULL && sixel_cdef_same_rgb(rgb, b);
+end:
+    sixel_ycbcr_def_free(invalid);
+    sixel_ycbcr_def_free(definition);
+    sixel_frame_unref(first);
+    sixel_frame_unref(next);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/* Both layouts use unaligned borrowed bytes. The sentinel sits between
+ * rows. Nine bytes expose exactly the last active byte. */
+static int
+test_ycbcr422(char const *scenario, int format, int encoding, int range,
+              int location)
+{
+    unsigned char data[] = {0, 1, 2, 3, 4, 99, 5, 6, 7, 8, 99};
+    unsigned char expected[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    unsigned char *input = data + 1;
+    sixel_frame_t *frame = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    sixel_color_def_t *rgb = NULL;
+    sixel_color_def_t const *got_rgb = NULL;
+    sixel_ycbcr_def_t *definition = NULL;
+    sixel_frame_t *observed;
+    sixel_encoder_t *encoder = NULL;
+    size_t stride, retained, compact;
+    unsigned char *owned;
+    int got_encoding, got_range, got_location;
+    int pass = 0;
+
+    rgb = sixel_color_def_new_named("display-p3");
+    definition = sixel_ycbcr_def_new(encoding, range, location, rgb);
+    if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
+        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input, 9,
+            2, 2, 5, format, definition))) {
+        goto end;
+    }
+    iface = sixel_frame_as_interface(frame);
+    observed = frame;
+    if (strcmp(scenario, "borrow") == 0) {
+        if (sixel_frame_get_pixels(frame) != input) {
+            goto end;
+        }
+        input[5] = 77;
+        if (sixel_frame_get_pixels(frame)[5] != 77) {
+            goto end;
+        }
+    } else if (strcmp(scenario, "clone") == 0) {
+        /* A caller may retain final padding as well as the row gap. */
+        if (SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input, 10,
+                2, 2, 5, format, definition)) ||
+            SIXEL_FAILED(iface->vtbl->clone(iface, NULL, &clone)) ||
+            SIXEL_FAILED(iface->vtbl->measure_storage(iface, &retained)) ||
+            SIXEL_FAILED(clone->vtbl->measure_storage(clone, &compact)) ||
+            retained != compact + 2u) {
+            goto end;
+        }
+        observed = (sixel_frame_t *)clone;
+        owned = sixel_frame_get_pixels(observed);
+        /* A borrow of a clone-owned row would dangle after replacement. */
+        if (SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(observed,
+                owned + 4, 4, 2, 1, 4, format, definition)) ||
+            sixel_frame_get_pixels(observed) != owned) {
+            goto end;
+        }
+        sixel_frame_unref(frame);
+        frame = NULL;
+        memset(input, 0, 9);
+        if (memcmp(sixel_frame_get_pixels(observed), expected, 8) != 0) {
+            goto end;
+        }
+    } else if (strcmp(scenario, "bounds") == 0) {
+        /* One row never reads its trailing padding. Two rows need nine
+         * bytes here, although the packed pixel count is only eight. */
+        if (SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+                4, 2, 1, SIZE_MAX, format, definition)) ||
+            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+                8, 2, 2, 5, format, definition)) ||
+            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+                9, 2, 2, 3, format, definition)) ||
+            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+                SIZE_MAX, 2, 2, SIZE_MAX, format, definition)) ||
+            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+                9, 3, 1, 9, format, definition)) ||
+            SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+                9, 2, 2, 5, format, definition))) {
+            goto end;
+        }
+        sixel_frame_set_width(frame, 4);
+        sixel_frame_set_height(frame, 3);
+    } else if (strcmp(scenario, "retry") == 0) {
+        /* Invalid replacement has different storage, pitch and geometry. */
+        sixel_frame_set_delay(frame, 45);
+        if (SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame,
+                expected, 3, 2, 1, 4, SIXEL_PIXELFORMAT_YUYV, definition)) ||
+            sixel_frame_get_delay(frame) != 45 ||
+            sixel_frame_get_pixels(frame) != input ||
+            memcmp(data, (unsigned char[]){0,1,2,3,4,99,5,6,7,8}, 10) ||
+            SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, input, 2, 2,
+                format, NULL, -1))) {
+            goto end;
+        }
+    } else if (strcmp(scenario, "unsupported") == 0) {
+        if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
+            sixel_encoder_encode_frame(encoder, frame, NULL) !=
+                SIXEL_NOT_IMPLEMENTED ||
+            sixel_encoder_encode_bytes(encoder, input, 2, 2, format,
+                NULL, -1) != SIXEL_BAD_ARGUMENT ||
+            SIXEL_SUCCEEDED(sixel_frame_clip(frame, 0, 0, 1, 1)) ||
+            SIXEL_SUCCEEDED(sixel_frame_resize(frame, 1, 1,
+                                               SIXEL_RES_NEAREST)) ||
+            SIXEL_SUCCEEDED(sixel_frame_set_pixelformat(frame,
+                SIXEL_PIXELFORMAT_RGB888))) {
+            goto end;
+        }
+    } else {
+        goto end;
+    }
+    /* The getter remains valid even after the stream owner is released. */
+    sixel_ycbcr_def_free(definition);
+    definition = NULL;
+    if (SIXEL_FAILED(sixel_frame_get_ycbcr422(observed, &stride,
+            &got_encoding, &got_range, &got_location, &got_rgb)) ||
+        stride != (clone == NULL ? 5u : 4u) ||
+        got_encoding != encoding || got_range != range ||
+        got_location != location || !sixel_cdef_same_rgb(got_rgb, rgb) ||
+        sixel_frame_get_pixelformat(observed) != format ||
+        sixel_frame_get_colorspace(observed) != SIXEL_FRAME_COLORSPACE_YCBCR ||
+        sixel_frame_get_width(observed) != 2 ||
+        sixel_frame_get_height(observed) != 2) {
+        goto end;
+    }
+    if (strcmp(scenario, "retry") == 0) {
+        if (SIXEL_FAILED(sixel_frame_init_borrowed(frame, expected, 1, 1,
+                SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
+            sixel_frame_get_pixels(frame) != expected ||
+            SIXEL_SUCCEEDED(sixel_frame_get_ycbcr422(frame, &stride,
+                &got_encoding, &got_range, &got_location, &got_rgb))) {
+            goto end;
+        }
+    }
+    pass = 1;
+end:
+    if (clone != NULL) {
+        clone->vtbl->unref(clone);
+    }
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
@@ -2574,6 +2784,20 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr422") == 0) {
+        if (strcmp(argv[2], "definition") == 0) {
+            return test_ycbcr422_definition();
+        }
+        return test_ycbcr422(argv[2], SIXEL_PIXELFORMAT_YUYV,
+                   SIXEL_YCBCR_ENCODING_BT601, SIXEL_YCBCR_RANGE_FULL,
+                   SIXEL_CHROMA_LOCATION_CENTER) ||
+               test_ycbcr422(argv[2], SIXEL_PIXELFORMAT_UYVY,
+                   SIXEL_YCBCR_ENCODING_BT2020_NCL, SIXEL_YCBCR_RANGE_LIMITED,
+                   SIXEL_CHROMA_LOCATION_LEFT) ||
+               test_ycbcr422(argv[2], SIXEL_PIXELFORMAT_YUYV,
+                   SIXEL_YCBCR_ENCODING_BT709, SIXEL_YCBCR_RANGE_LIMITED,
+                   SIXEL_CHROMA_LOCATION_LEFT);
+    }
     if (argc == 2 && strcmp(argv[1], "keyed-registers") == 0) {
         return test_keyed_registers();
     }

@@ -28,6 +28,13 @@
 #include <sixel.h>
 #include "colorspace.h"
 
+static inline int
+sixel_pixelformat_is_ycbcr422(int layout)
+{
+    return layout == SIXEL_PIXELFORMAT_YUYV ||
+        layout == SIXEL_PIXELFORMAT_UYVY;
+}
+
 /* Internal sample representations for working buffers. The public frame
  * layout is RGBFLOAT32 for each of these coordinate systems. */
 #define SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x21)

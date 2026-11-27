@@ -20824,6 +20824,9 @@ sixel_encoder_encode_frame_owned(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
     if (encoder->output_bpc) {
         sixel_helper_set_additional_message(
             "ICC output bpc=1 requires a loaded PNG with an embedded ICC.");
@@ -20927,7 +20930,8 @@ sixel_encoder_encode_bytes_owned(
     int normalize_packed_pixels;
 
     normalized_pixels = NULL;
-    if (encoder == NULL || bytes == NULL) {
+    if (encoder == NULL || bytes == NULL ||
+        sixel_pixelformat_is_ycbcr422(pixelformat)) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -22053,6 +22057,12 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     if (options != NULL) {
         memcpy(&defaults, options, options->struct_size < sizeof(defaults)
             ? options->struct_size : sizeof(defaults));
+    }
+    if (sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame)) ||
+        (defaults.palette_source != NULL && sixel_pixelformat_is_ycbcr422(
+            sixel_frame_get_pixelformat(defaults.palette_source)))) {
+        sixel_playback_release_reservation(playback, ticket);
+        return SIXEL_NOT_IMPLEMENTED;
     }
     if (defaults.palette_source != NULL &&
         !sixel_playback_palette_source_matches(frame,

@@ -219,6 +219,12 @@ set -- \
     frame/storage/0077_public_rgbf32_init_retry.t \
     frame/storage/0078_public_icc_input_direction.t \
     frame/storage/0079_public_rgbf32_owned_slice.t \
+    frame/storage/0080_ycbcr422_borrow.t \
+    frame/storage/0081_ycbcr422_bounds.t \
+    frame/storage/0082_ycbcr422_clone.t \
+    frame/storage/0083_ycbcr422_retry.t \
+    frame/storage/0084_ycbcr422_unsupported.t \
+    frame/storage/0085_ycbcr422_definition.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \
