@@ -2557,67 +2557,213 @@ test_collinear_primary(int adjacent)
     return !ok;
 }
 
+static sixel_ycbcr_def_t *
+y422_test_definition(int encoding, int range, int x,
+                     sixel_color_def_t const *rgb)
+{
+    sixel_ycbcr_def_config_t config = {sizeof(config), encoding, range, x, 0,
+                                       rgb};
+
+    return sixel_ycbcr_def_new(&config);
+}
+
+static SIXELSTATUS
+y422_test_borrow(sixel_frame_t *frame, void const *pixels, size_t bytes,
+    int width, int height, ptrdiff_t stride, int layout,
+    sixel_ycbcr_def_t const *definition)
+{
+    sixel_ycbcr_frame_view_t view = {sizeof(view), layout, width, height, 1,
+                                    {{pixels, bytes, 0, stride}}, definition};
+
+    return sixel_frame_init_ycbcr_borrowed(frame, &view);
+}
+
 static int
 test_ycbcr422_definition(void)
 {
     unsigned char pixels[4] = {16, 128, 235, 128};
     sixel_frame_t *first = NULL, *next = NULL;
     sixel_color_def_t *rgb = NULL;
-    sixel_color_def_t const *a = NULL, *b = NULL;
     sixel_ycbcr_def_t *definition = NULL, *invalid = NULL;
-    size_t stride;
-    int encoding, range, location, pass = 0;
+    sixel_ycbcr_frame_view_t a = {0}, b = {0};
+    sixel_ycbcr_def_config_t config = {0};
+    int pass = 0;
 
     rgb = sixel_color_def_new_named("srgb-linear");
-    invalid = sixel_ycbcr_def_new(0, SIXEL_YCBCR_RANGE_LIMITED,
-                                  SIXEL_CHROMA_LOCATION_LEFT, rgb);
+    invalid = y422_test_definition(0, SIXEL_YCBCR_RANGE_LIMITED,
+                                  0, rgb);
     if (invalid != NULL) {
         goto end;
     }
-    invalid = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709, 0,
-                                  SIXEL_CHROMA_LOCATION_LEFT, rgb);
+    invalid = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709, 0,
+                                  0, rgb);
     if (invalid != NULL) {
         goto end;
     }
-    invalid = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-                                  SIXEL_YCBCR_RANGE_FULL, 0, rgb);
+    invalid = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+                                  SIXEL_YCBCR_RANGE_FULL, 2, rgb);
     if (invalid != NULL) {
         goto end;
     }
-    invalid = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, NULL);
+    invalid = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, NULL);
     if (invalid != NULL) {
         goto end;
     }
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, rgb);
     sixel_color_def_free(rgb);
     rgb = NULL;
     if (SIXEL_FAILED(sixel_frame_new(&first, NULL)) ||
         SIXEL_FAILED(sixel_frame_new(&next, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(first, pixels, 4,
+        SIXEL_FAILED(y422_test_borrow(first, pixels, 4,
             2, 1, 4, SIXEL_PIXELFORMAT_YUYV, definition)) ||
-        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(next, pixels, 4,
+        SIXEL_FAILED(y422_test_borrow(next, pixels, 4,
             2, 1, 4, SIXEL_PIXELFORMAT_UYVY, definition))) {
         goto end;
     }
     sixel_ycbcr_def_free(definition);
     definition = NULL;
-    if (SIXEL_FAILED(sixel_frame_get_ycbcr422(first, &stride, &encoding,
-            &range, &location, &a)) ||
-        SIXEL_FAILED(sixel_frame_get_ycbcr422(next, &stride, &encoding,
-            &range, &location, &b)) || a == NULL || a != b) {
+    a.struct_size = sizeof(a);
+    b.struct_size = sizeof(b);
+    if (SIXEL_FAILED(sixel_frame_get_ycbcr(first, &a)) ||
+        SIXEL_FAILED(sixel_frame_get_ycbcr(next, &b)) ||
+        a.definition == NULL || a.definition != b.definition) {
         goto end;
     }
     sixel_frame_unref(first);
     first = NULL;
     rgb = sixel_color_def_new_named("srgb-linear");
-    pass = rgb != NULL && sixel_cdef_same_rgb(rgb, b);
+    config.struct_size = sizeof(config);
+    pass = rgb != NULL &&
+        sixel_ycbcr_def_get(b.definition, &config) == SIXEL_OK &&
+        sixel_cdef_same_rgb(rgb, config.rgb);
 end:
     sixel_ycbcr_def_free(invalid);
     sixel_ycbcr_def_free(definition);
     sixel_frame_unref(first);
     sixel_frame_unref(next);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_ycbcr_frame_view(char const *scenario, int format)
+{
+    /* Store the brighter pair in logical row zero with padding at the middle.
+     * Pack neutral chroma in both byte orders. */
+    unsigned char bytes[] = {32, 128, 64, 128, 255, 96, 128, 160, 128};
+    static float const luma[] = {96, 160, 32, 64};
+    sixel_ycbcr_frame_view_t view = {sizeof(view), format, 2, 2, 1,
+                                    {{bytes, sizeof(bytes), 5, -5}}, NULL};
+    sixel_ycbcr_frame_view_t got = {0};
+    sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
+                                     SIXEL_YCBCR_RANGE_FULL, 1, 0, NULL};
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *definition = NULL;
+    sixel_frame_t *frame = NULL, *copy = NULL;
+    sixel_frame_interface_t *iface, *clone = NULL;
+    sixel_ycbcr422_counts_t counts = {0};
+    float const *pixels;
+    int i, pass = 0;
+
+    if (format == SIXEL_PIXELFORMAT_UYVY) {
+        memcpy(bytes, (unsigned char[]){128, 32, 128, 64, 255,
+                                         128, 96, 128, 160}, sizeof(bytes));
+    }
+    rgb = sixel_color_def_new_named("srgb");
+    color.rgb = rgb;
+    definition = sixel_ycbcr_def_new(&color);
+    view.definition = definition;
+    got.struct_size = sizeof(got);
+    if (definition == NULL || sixel_frame_new(&frame, NULL) ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view)) {
+        goto end;
+    }
+    if (strcmp(scenario, "bounds") == 0) {
+        view.planes[0].row0_offset = 4;
+        if (sixel_frame_init_ycbcr_borrowed(frame, &view) !=
+                SIXEL_BAD_ARGUMENT) {
+            goto end;
+        }
+        view.planes[0].row0_offset = 5;
+        view.planes[0].buffer_bytes = 8;
+        if (sixel_frame_init_ycbcr_borrowed(frame, &view) !=
+                SIXEL_BAD_ARGUMENT) {
+            goto end;
+        }
+        view.planes[0].buffer_bytes = sizeof(bytes);
+        view.planes[0].stride_bytes = -PTRDIFF_MAX - 1;
+        if (sixel_frame_init_ycbcr_borrowed(frame, &view) !=
+                SIXEL_BAD_ARGUMENT) {
+            goto end;
+        }
+        view.planes[0].stride_bytes = -5;
+        view.plane_count = 2;
+        if (sixel_frame_init_ycbcr_borrowed(frame, &view) !=
+                SIXEL_BAD_ARGUMENT) {
+            goto end;
+        }
+        view.plane_count = 1;
+        view.struct_size = offsetof(sixel_ycbcr_frame_view_t, planes);
+        if (sixel_frame_init_ycbcr_borrowed(frame, &view) !=
+                SIXEL_BAD_ARGUMENT ||
+            sixel_frame_get_ycbcr(frame, &got) || got.planes[0].base != bytes ||
+            got.planes[0].buffer_bytes != sizeof(bytes) ||
+            got.planes[0].row0_offset != 5 ||
+            got.planes[0].stride_bytes != -5 ||
+            got.width != 2 || got.height != 2 || got.definition != definition) {
+            goto end;
+        }
+        pass = 1;
+        goto end;
+    }
+
+    sixel_frame_observe_ycbcr422(frame, &counts);
+    if (strcmp(scenario, "lifetime") == 0) {
+        memset(&view, 0, sizeof(view));
+        sixel_ycbcr_def_free(definition);
+        definition = NULL;
+        sixel_color_def_free(rgb);
+        rgb = NULL;
+        if (sixel_frame_get_ycbcr(frame, &got) || got.plane_count != 1 ||
+            got.planes[0].base != bytes ||
+            sixel_ycbcr_def_get(got.definition, &color) ||
+            color.rgb == NULL || color.chroma_x_half != 1 ||
+            sixel_frame_get_pixels(frame) != bytes + 5) {
+            goto end;
+        }
+    } else {
+        iface = sixel_frame_as_interface(frame);
+        if (iface->vtbl->clone(iface, NULL, &clone) || clone == NULL) {
+            goto end;
+        }
+        copy = (sixel_frame_t *)clone;
+        if (sixel_frame_get_ycbcr(copy, &got) ||
+            got.planes[0].stride_bytes != 4 || got.planes[0].row0_offset != 0 ||
+            got.planes[0].buffer_bytes != 8 || counts.packed_copies != 1 ||
+            memcmp(got.planes[0].base, bytes + 5, 4) != 0 ||
+            memcmp((unsigned char const *)got.planes[0].base + 4,
+                   bytes, 4) != 0) {
+            goto end;
+        }
+    }
+    if (sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGBFLOAT32) ||
+        sixel_frame_get_ycbcr(frame, &got) != SIXEL_BAD_ARGUMENT ||
+        counts.rgb_conversions != 1 || counts.rgb_pixels != 4) {
+        goto end;
+    }
+    pixels = (float const *)(void *)sixel_frame_get_pixels(frame);
+    for (i = 0; i < 12; ++i) {
+        if (fabsf(pixels[i] - luma[i / 3] / 255.0f) > 2e-7f) {
+            goto end;
+        }
+    }
+    pass = 1;
+end:
+    sixel_frame_unref(copy);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(definition);
     sixel_color_def_free(rgb);
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -2634,19 +2780,19 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
     sixel_frame_t *frame = NULL;
     sixel_frame_interface_t *iface, *clone = NULL;
     sixel_color_def_t *rgb = NULL;
-    sixel_color_def_t const *got_rgb = NULL;
+    sixel_ycbcr_frame_view_t got = {0};
+    sixel_ycbcr_def_config_t config = {0};
     sixel_ycbcr_def_t *definition = NULL;
     sixel_frame_t *observed;
     sixel_encoder_t *encoder = NULL;
-    size_t stride, retained, compact;
+    size_t retained, compact;
     unsigned char *owned;
-    int got_encoding, got_range, got_location;
     int pass = 0;
 
     rgb = sixel_color_def_new_named("display-p3");
-    definition = sixel_ycbcr_def_new(encoding, range, location, rgb);
+    definition = y422_test_definition(encoding, range, location, rgb);
     if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input, 9,
+        SIXEL_FAILED(y422_test_borrow(frame, input, 9,
             2, 2, 5, format, definition))) {
         goto end;
     }
@@ -2662,7 +2808,7 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
         }
     } else if (strcmp(scenario, "clone") == 0) {
         /* A caller may retain final padding as well as the row gap. */
-        if (SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input, 10,
+        if (SIXEL_FAILED(y422_test_borrow(frame, input, 10,
                 2, 2, 5, format, definition)) ||
             SIXEL_FAILED(iface->vtbl->clone(iface, NULL, &clone)) ||
             SIXEL_FAILED(iface->vtbl->measure_storage(iface, &retained)) ||
@@ -2673,7 +2819,7 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
         observed = (sixel_frame_t *)clone;
         owned = sixel_frame_get_pixels(observed);
         /* A borrow of a clone-owned row would dangle after replacement. */
-        if (SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(observed,
+        if (SIXEL_SUCCEEDED(y422_test_borrow(observed,
                 owned + 4, 4, 2, 1, 4, format, definition)) ||
             sixel_frame_get_pixels(observed) != owned) {
             goto end;
@@ -2687,17 +2833,17 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
     } else if (strcmp(scenario, "bounds") == 0) {
         /* One row never reads its trailing padding. Two rows need nine
          * bytes here, although the packed pixel count is only eight. */
-        if (SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input,
-                4, 2, 1, SIZE_MAX, format, definition)) ||
-            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+        if (SIXEL_FAILED(y422_test_borrow(frame, input,
+                4, 2, 1, PTRDIFF_MAX, format, definition)) ||
+            SIXEL_SUCCEEDED(y422_test_borrow(frame, input,
                 8, 2, 2, 5, format, definition)) ||
-            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+            SIXEL_SUCCEEDED(y422_test_borrow(frame, input,
                 9, 2, 2, 3, format, definition)) ||
-            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
-                SIZE_MAX, 2, 2, SIZE_MAX, format, definition)) ||
-            SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+            SIXEL_SUCCEEDED(y422_test_borrow(frame, input,
+                SIZE_MAX, 2, 2, PTRDIFF_MAX, format, definition)) ||
+            SIXEL_SUCCEEDED(y422_test_borrow(frame, input,
                 9, 3, 1, 9, format, definition)) ||
-            SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input,
+            SIXEL_FAILED(y422_test_borrow(frame, input,
                 9, 2, 2, 5, format, definition))) {
             goto end;
         }
@@ -2706,7 +2852,7 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
     } else if (strcmp(scenario, "retry") == 0) {
         /* Invalid replacement has different storage, pitch and geometry. */
         sixel_frame_set_delay(frame, 45);
-        if (SIXEL_SUCCEEDED(sixel_frame_init_ycbcr422_borrowed(frame,
+        if (SIXEL_SUCCEEDED(y422_test_borrow(frame,
                 expected, 3, 2, 1, 4, SIXEL_PIXELFORMAT_YUYV, definition)) ||
             sixel_frame_get_delay(frame) != 45 ||
             sixel_frame_get_pixels(frame) != input ||
@@ -2732,11 +2878,15 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
     /* The getter remains valid even after the stream owner is released. */
     sixel_ycbcr_def_free(definition);
     definition = NULL;
-    if (SIXEL_FAILED(sixel_frame_get_ycbcr422(observed, &stride,
-            &got_encoding, &got_range, &got_location, &got_rgb)) ||
-        stride != (clone == NULL ? 5u : 4u) ||
-        got_encoding != encoding || got_range != range ||
-        got_location != location || !sixel_cdef_same_rgb(got_rgb, rgb) ||
+    got.struct_size = sizeof(got);
+    config.struct_size = sizeof(config);
+    if (SIXEL_FAILED(sixel_frame_get_ycbcr(observed, &got)) ||
+        SIXEL_FAILED(sixel_ycbcr_def_get(got.definition, &config)) ||
+        got.plane_count != 1 || got.planes[0].row0_offset != 0 ||
+        got.planes[0].stride_bytes != (clone == NULL ? 5 : 4) ||
+        config.encoding != encoding || config.range != range ||
+        config.chroma_x_half != location || config.chroma_y_half != 0 ||
+        !sixel_cdef_same_rgb(config.rgb, rgb) ||
         sixel_frame_get_pixelformat(observed) != format ||
         sixel_frame_get_colorspace(observed) != SIXEL_FRAME_COLORSPACE_YCBCR ||
         sixel_frame_get_width(observed) != 2 ||
@@ -2747,8 +2897,7 @@ test_ycbcr422(char const *scenario, int format, int encoding, int range,
         if (SIXEL_FAILED(sixel_frame_init_borrowed(frame, expected, 1, 1,
                 SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
             sixel_frame_get_pixels(frame) != expected ||
-            SIXEL_SUCCEEDED(sixel_frame_get_ycbcr422(frame, &stride,
-                &got_encoding, &got_range, &got_location, &got_rgb))) {
+            SIXEL_SUCCEEDED(sixel_frame_get_ycbcr(frame, &got))) {
             goto end;
         }
     }
@@ -2805,14 +2954,13 @@ test_ycbcr422_rgb(int matrix, int limited, int centered, int uyvy, int nearest)
     int pass = 0;
 
     memcpy(original, input, sizeof(original));
-    location = centered ? SIXEL_CHROMA_LOCATION_CENTER :
-                          SIXEL_CHROMA_LOCATION_LEFT;
+    location = centered;
     range = limited ? SIXEL_YCBCR_RANGE_LIMITED : SIXEL_YCBCR_RANGE_FULL;
     format = uyvy ? SIXEL_PIXELFORMAT_UYVY : SIXEL_PIXELFORMAT_YUYV;
     rgb = sixel_color_def_new_named("display-p3");
-    definition = sixel_ycbcr_def_new(encodings[matrix], range, location, rgb);
+    definition = y422_test_definition(encodings[matrix], range, location, rgb);
     if (definition == NULL || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
-        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input + 1, 18,
+        SIXEL_FAILED(y422_test_borrow(frame, input + 1, 18,
             4, 2, 10, format, definition))) {
         goto end;
     }
@@ -2874,14 +3022,14 @@ test_ycbcr422_rgb_transfer(int retry)
     int pass = 0;
 
     rgb = sixel_color_def_new_named("srgb-linear");
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_LIMITED, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_LIMITED, 1, rgb);
     if (definition == NULL ||
         SIXEL_FAILED(sixel_allocator_new(&allocator, ycbcr422_test_malloc,
                                          calloc, realloc, free)) ||
         SIXEL_FAILED(sixel_frame_new(&frame, allocator)) ||
-        SIXEL_FAILED(sixel_frame_init_ycbcr422_borrowed(frame, input, 4,
-            2, 1, SIZE_MAX, SIXEL_PIXELFORMAT_YUYV, definition))) {
+        SIXEL_FAILED(y422_test_borrow(frame, input, 4,
+            2, 1, PTRDIFF_MAX, SIXEL_PIXELFORMAT_YUYV, definition))) {
         goto end;
     }
     if (retry) {
@@ -2924,9 +3072,9 @@ test_ycbcr422_rgb_cases(char const *scenario)
     }
     if (strcmp(scenario, "invalid") == 0) {
         rgb = sixel_color_def_new_named("srgb");
-        def = sixel_ycbcr_def_new(
+        def = y422_test_definition(
             SIXEL_YCBCR_ENCODING_BT709, SIXEL_YCBCR_RANGE_LIMITED,
-            SIXEL_CHROMA_LOCATION_LEFT, rgb);
+            0, rgb);
         rejected = rgb != NULL && def == NULL;
 
         sixel_ycbcr_def_free(def);
@@ -3032,7 +3180,7 @@ y422_fixture(sixel_frame_t **frame, int layout, int crop, int variant,
     }
     if (layout != SIXEL_PIXELFORMAT_RGBFLOAT32) {
         sixel_frame_observe_ycbcr422(*frame, operations);
-        return sixel_frame_init_ycbcr422_borrowed(*frame, bytes, sizeof(yuyv),
+        return y422_test_borrow(*frame, bytes, sizeof(yuyv),
             4, 2, 10, layout, definition);
     }
     return sixel_frame_init_rgbf32_borrowed(*frame, samples,
@@ -3078,8 +3226,8 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
     own_source = mode == Y422_PALETTE || mode == Y422_PALETTE_REJECT || color;
     count = mode >= Y422_PLAYBACK && !color ? 2 : 1;
     rgb = sixel_color_def_new_named("srgb");
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, rgb);
     if (definition == NULL || sixel_encoder_new(&encoder, NULL) ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
                              deferred ? "auto" : "off") ||
@@ -3135,8 +3283,8 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
         sixel_frame_set_multiframe(image[i], count > 1);
     }
     if (mode == Y422_PALETTE_REJECT) {
-        different = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-            SIXEL_YCBCR_RANGE_LIMITED, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+        different = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+            SIXEL_YCBCR_RANGE_LIMITED, 1, rgb);
         if (different == NULL) {
             goto end;
         }
@@ -3410,8 +3558,8 @@ test_y422_operation_observer(void)
     int pass = 0;
 
     rgb = sixel_color_def_new_named("srgb");
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, rgb);
     if (definition == NULL ||
         y422_fixture(&frame, SIXEL_PIXELFORMAT_YUYV, 0, 0, definition, rgb,
                      bytes, samples, &operations)) {
@@ -3499,8 +3647,8 @@ test_y422_large_palette_source(int adaptive)
     int pass = 0;
 
     rgb = sixel_color_def_new_named("srgb");
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, rgb);
     /* Packed storage fits in 24 MiB. Its 144 MiB RGB expansion would
      * exceed the frame allocation limit even though no sampling is needed. */
     source_bytes = calloc(1, source_size);
@@ -3511,7 +3659,7 @@ test_y422_large_palette_source(int adaptive)
         goto end;
     }
     sixel_frame_observe_ycbcr422(source, &source_operations);
-    if (sixel_frame_init_ycbcr422_borrowed(source, source_bytes, source_size,
+    if (y422_test_borrow(source, source_bytes, source_size,
             width, height, stride, SIXEL_PIXELFORMAT_YUYV, definition) ||
         (!adaptive && y422_fixed_playback(&without, image, NULL, 0))) {
         goto end;
@@ -3592,10 +3740,10 @@ test_y422_grid_icc(void)
         }
     }
     rgb = sixel_color_def_new_icc(color_icc, sizeof(color_icc));
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, rgb);
     if (definition == NULL || sixel_frame_new(&packed, NULL) ||
-        sixel_frame_init_ycbcr422_borrowed(packed, bytes, sizeof(bytes),
+        y422_test_borrow(packed, bytes, sizeof(bytes),
             8, 4, 20, SIXEL_PIXELFORMAT_UYVY, definition) ||
         sixel_frame_decode_ycbcr422_copy(packed, NULL, &full)) {
         goto end;
@@ -3765,12 +3913,14 @@ y422_release_capture(sixel_playback_result_t const *result, void *context)
 static int
 y422_lifecycle_submit(struct y422_lifecycle *state,
     sixel_playback_t *playback, int index, int fail_source, int latest,
-    int layout, SIXELSTATUS expected)
+    int layout, int reversed, SIXELSTATUS expected)
 {
     sixel_frame_t *image = NULL, *palette = NULL;
     sixel_color_def_t *rgb = NULL;
     sixel_ycbcr_def_t *definition = NULL;
     sixel_playback_options_t options;
+    sixel_ycbcr_frame_view_t view = {0};
+    unsigned char row[8];
     float scratch[24];
     size_t bytes;
     int width, height;
@@ -3778,8 +3928,8 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
     int ok = 0;
 
     rgb = sixel_color_def_new_named("srgb");
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    definition = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, rgb);
     width = latest ? Y422_LATEST_SOURCE_WIDTH : 14;
     height = latest ? Y422_LATEST_SOURCE_HEIGHT : 11;
     bytes = fail_source || latest ? (size_t)width * height * 2u : 18u;
@@ -3804,7 +3954,7 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
             goto end;
         }
         sixel_frame_observe_ycbcr422(palette, &state->palette_ops[index]);
-        if (sixel_frame_init_ycbcr422_borrowed(palette, state->palette[index],
+        if (y422_test_borrow(palette, state->palette[index],
                 bytes, width, height, (size_t)width * 2u,
                 SIXEL_PIXELFORMAT_YUYV, definition)) {
             goto end;
@@ -3813,6 +3963,29 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
                    definition, rgb, state->palette[index], scratch,
                    &state->palette_ops[index])) {
         goto end;
+    }
+    if (reversed) {
+        view.struct_size = sizeof(view);
+        if (sixel_frame_get_ycbcr(image, &view)) {
+            goto end;
+        }
+        memcpy(row, state->image[index], 8);
+        memcpy(state->image[index], state->image[index] + 10, 8);
+        memcpy(state->image[index] + 10, row, 8);
+        view.planes[0].row0_offset = 10;
+        view.planes[0].stride_bytes = -10;
+        if (sixel_frame_init_ycbcr_borrowed(image, &view) ||
+            sixel_frame_get_ycbcr(palette, &view)) {
+            goto end;
+        }
+        memcpy(row, state->palette[index], 8);
+        memcpy(state->palette[index], state->palette[index] + 10, 8);
+        memcpy(state->palette[index] + 10, row, 8);
+        view.planes[0].row0_offset = 10;
+        view.planes[0].stride_bytes = -10;
+        if (sixel_frame_init_ycbcr_borrowed(palette, &view)) {
+            goto end;
+        }
     }
     sixel_frame_set_frame_no(image, index);
     sixel_frame_set_multiframe(image, 1);
@@ -3913,6 +4086,7 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
     config.done_context = &state;
     if (sixel_playback_new(&playback, encoder, output, &config, NULL) ||
         !y422_lifecycle_submit(&state, playback, 0, fail_source, latest, layout,
+            mode == Y422_RETRY_DELTA,
             synchronous ? SIXEL_BAD_ALLOCATION : SIXEL_OK) ||
         (synchronous && (state.callbacks != 1 ||
                          state.result[0] != SIXEL_BAD_ALLOCATION ||
@@ -3921,7 +4095,7 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
     }
     if (queued_failure) {
         if (!gpu_ahead_wait(&state.gate, &state.gate.helper_entered) ||
-            !y422_lifecycle_submit(&state, playback, 1, 0, 0, layout,
+            !y422_lifecycle_submit(&state, playback, 1, 0, 0, layout, 0,
                                    SIXEL_OK)) {
             goto end;
         }
@@ -3930,7 +4104,7 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
     if (!fail_source) {
         if (!gpu_ahead_wait(&state.gate, &state.gate.writer_entered) ||
             !y422_lifecycle_submit(&state, playback, 1, 0, latest, layout,
-                                   SIXEL_OK) ||
+                                   mode == Y422_RETRY_DELTA, SIXEL_OK) ||
             (ahead && (!gpu_ahead_wait(&state.gate,
                                       &state.gate.helper_complete) ||
                        state.gate.prepared_status != SIXEL_OK)) ||
@@ -4063,6 +4237,10 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr-frame-view") == 0) {
+        return test_ycbcr_frame_view(argv[2], SIXEL_PIXELFORMAT_YUYV) ||
+               test_ycbcr_frame_view(argv[2], SIXEL_PIXELFORMAT_UYVY);
+    }
     if (argc == 3 && strcmp(argv[1], "ycbcr422-palette-color") == 0) {
         return test_y422_palette_color(strcmp(argv[2], "auto") == 0);
     }
@@ -4097,13 +4275,13 @@ test_frame_0014_clone_float(int argc, char **argv)
         }
         return test_ycbcr422(argv[2], SIXEL_PIXELFORMAT_YUYV,
                    SIXEL_YCBCR_ENCODING_BT601, SIXEL_YCBCR_RANGE_FULL,
-                   SIXEL_CHROMA_LOCATION_CENTER) ||
+                   1) ||
                test_ycbcr422(argv[2], SIXEL_PIXELFORMAT_UYVY,
                    SIXEL_YCBCR_ENCODING_BT2020_NCL, SIXEL_YCBCR_RANGE_LIMITED,
-                   SIXEL_CHROMA_LOCATION_LEFT) ||
+                   0) ||
                test_ycbcr422(argv[2], SIXEL_PIXELFORMAT_YUYV,
                    SIXEL_YCBCR_ENCODING_BT709, SIXEL_YCBCR_RANGE_LIMITED,
-                   SIXEL_CHROMA_LOCATION_LEFT);
+                   0);
     }
     if (argc == 2 && strcmp(argv[1], "keyed-registers") == 0) {
         return test_keyed_registers();

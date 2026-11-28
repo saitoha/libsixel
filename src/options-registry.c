@@ -1061,7 +1061,7 @@ static sixel_option_value_schema_t const g_input_color_values[] = {
 };
 
 /* Untagged capture interpretation is explicit, never environment-driven. */
-static sixel_option_value_schema_t const g_ycbcr422_chroma_values[] = {
+static sixel_option_value_schema_t const g_ycbcr_chroma_values[] = {
     { "linear", 0, 0u },
     { "nearest", 1, 0u }
 };
@@ -3647,16 +3647,16 @@ static sixel_option_argument_schema_t const g_options[] = {
         g_threading_policy_values,
         "SIXEL_DECODER_THREADING_POLICY"),
     SIXEL_REGISTRY_SCALAR_CHOICE(
-        SIXEL_OPTION_SCHEMA_YCBCR422_CHROMA,
+        SIXEL_OPTION_SCHEMA_YCBCR_CHROMA,
         SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTION_NO_OPTFLAG,
-        "ycbcr422-chroma",
+        "ycbcr-chroma",
         SIXEL_OPTION_MATCH_EXACT,
         SIXEL_OPTION_MATCH_EXACT,
-        "SIXEL_FRAME_YCBCR422_CHROMA",
-        "SIXEL_FRAME_YCBCR422_CHROMA accepts linear or nearest.",
+        "SIXEL_FRAME_YCBCR_CHROMA",
+        "SIXEL_FRAME_YCBCR_CHROMA accepts linear or nearest.",
         0,
-        g_ycbcr422_chroma_values),
+        g_ycbcr_chroma_values),
 
 };
 

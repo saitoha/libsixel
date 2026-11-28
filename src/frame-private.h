@@ -55,7 +55,7 @@ struct sixel_frame {
     } pixels;
     sixel_frame_t *pixel_owner;     /* retained source of a private view */
     sixel_ycbcr_def_t *ycbcr;       /* shared immutable stream definition */
-    size_t stride_bytes;            /* packed 4:2:2 source row pitch */
+    sixel_frame_plane_view_t ycbcr_plane; /* packed storage descriptor */
     int packed_width, packed_height; /* active rectangle at acquisition */
     /* In-place crops keep backing storage beyond the logical rectangle.
      * Zero means the current layout describes the entire plane. Coverage

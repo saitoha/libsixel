@@ -4,7 +4,7 @@ echo '1..1'
 set -v
 
 status=0
-SIXEL_FRAME_YCBCR422_CHROMA=linear \
+SIXEL_FRAME_YCBCR_CHROMA=linear \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" frame/0014_clone_float_canonical \
     ycbcr422-lifecycle sync-allocation || status=$?
 test "$status" -ne 77 || {

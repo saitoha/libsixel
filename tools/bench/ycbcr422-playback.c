@@ -4,7 +4,7 @@
  * cc -O2 -Wall -Wextra -pthread -I"$build/include" \
  *   tools/bench/ycbcr422-playback.c -L"$build/src/.libs" -lsixel \
  *   -Wl,-rpath,"$build/src/.libs" -o ycbcr422-playback
- * Run each route in a fresh process with SIXEL_FRAME_YCBCR422_CHROMA=linear:
+ * Run each route in a fresh process with SIXEL_FRAME_YCBCR_CHROMA=linear:
  * ./ycbcr422-playback packed ahead 12
  * ./ycbcr422-playback rgb ahead 12
  * RGB uses the same public scalar conversion before submitting a frame.
@@ -189,6 +189,9 @@ submit_frame(sixel_playback_t *playback, sixel_allocator_t *allocator,
              int index, int prepare_rgb, double *prepare_seconds)
 {
     sixel_playback_ticket_t ticket;
+    sixel_ycbcr_frame_view_t view = {sizeof(view), SIXEL_PIXELFORMAT_YUYV,
+        WIDTH, HEIGHT, 1, {{pixels, (size_t)STRIDE * HEIGHT, 0, STRIDE}},
+        definition};
     sixel_frame_t *frame = NULL;
     SIXELSTATUS status;
     double start;
@@ -200,9 +203,7 @@ submit_frame(sixel_playback_t *playback, sixel_allocator_t *allocator,
     start = seconds();
     status = sixel_frame_new(&frame, allocator);
     if (status == SIXEL_OK) {
-        status = sixel_frame_init_ycbcr422_borrowed(frame, pixels,
-            (size_t)STRIDE * HEIGHT, WIDTH, HEIGHT, STRIDE,
-            SIXEL_PIXELFORMAT_YUYV, definition);
+        status = sixel_frame_init_ycbcr_borrowed(frame, &view);
     }
     if (status == SIXEL_OK && prepare_rgb) {
         status = sixel_frame_set_pixelformat(frame,
@@ -226,6 +227,8 @@ main(int argc, char **argv)
     sixel_allocator_t *allocator = NULL;
     sixel_encoder_t *encoder = NULL;
     sixel_ycbcr_def_t *definition = NULL;
+    sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 1, 0, NULL};
     sixel_color_def_t *rgb = NULL;
     sixel_output_t *output = NULL;
     sixel_playback_t *playback = NULL;
@@ -262,8 +265,8 @@ main(int argc, char **argv)
     }
 
     rgb = sixel_color_def_new_named("srgb");
-    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    color.rgb = rgb;
+    definition = sixel_ycbcr_def_new(&color);
     if (definition == NULL ||
         sixel_allocator_new(&allocator, bench_malloc, bench_calloc,
                             bench_realloc, bench_free) ||
