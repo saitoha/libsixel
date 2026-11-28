@@ -7177,7 +7177,7 @@ sixel_encoder_sample_frame(
             encoder->method_for_diffuse);
 
     if (palette_source != NULL &&
-        sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
+        sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(frame))) {
         cache = &palette_source->packed_full;
         step = 1;
         if (policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
@@ -7189,7 +7189,7 @@ sixel_encoder_sample_frame(
             }
         }
         if (*cache == NULL) {
-            status = sixel_frame_sample_ycbcr422(frame, allocator, step,
+            status = sixel_frame_sample_ycbcr(frame, allocator, step,
                 step == 1 ? palette_source->packed_grid : NULL,
                 palette_source->packed_grid_step, cache);
             if (SIXEL_FAILED(status)) {
@@ -12199,11 +12199,11 @@ sixel_encoder_frame_job_prepare(
     job->context.independent = pipeline != NULL && pipeline->independent;
     job->context.sequence = metadata != NULL ? metadata->sequence : 0;
     job->context.frame = frame;
-    /* Fixed palettes must not receive a packed source through the
+    /* Fixed palettes must not receive a YCbCr source through the
      * fallback sample stream. Keep the established RGB source path. */
     if (metadata != NULL && metadata->palette_source.frame != NULL &&
         (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT ||
-         !sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(
+         !sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(
              metadata->palette_source.frame)))) {
         job->context.palette_source = &metadata->palette_source;
     }
@@ -17778,15 +17778,15 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
  * The original packed storage stays with the caller. A speculative retry
  * works from the pristine RGB copy and reuses the same palette source. */
 static SIXELSTATUS
-sixel_encoder_pipeline_decode_packed(sixel_encoder_frame_pipeline_t *pipeline,
+sixel_encoder_pipeline_decode_ycbcr(sixel_encoder_frame_pipeline_t *pipeline,
                                     sixel_frame_t *frame,
                                     sixel_frame_t **decoded)
 {
     *decoded = NULL;
-    if (!sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
+    if (!sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(frame))) {
         return SIXEL_OK;
     }
-    return sixel_frame_decode_ycbcr422_copy(frame,
+    return sixel_frame_decode_ycbcr_copy(frame,
         pipeline->encoder->allocator, decoded);
 }
 
@@ -17800,7 +17800,7 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status;
     sixel_frame_t *decoded;
 
-    status = sixel_encoder_pipeline_decode_packed(pipeline, frame, &decoded);
+    status = sixel_encoder_pipeline_decode_ycbcr(pipeline, frame, &decoded);
     if (status != SIXEL_OK) {
         pipeline->encoder->sixdelta_refinement_needed = 0;
         pipeline->encoder->sixdelta_painted_pixels = 0u;
@@ -18032,7 +18032,7 @@ sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
     if (slot->metadata.cancelled != 0) {
         return;
     }
-    slot->bind_status = sixel_encoder_pipeline_decode_packed(
+    slot->bind_status = sixel_encoder_pipeline_decode_ycbcr(
         pipeline, slot->frame, &decoded);
     if (SIXEL_FAILED(slot->bind_status)) {
         slot->work_frame = NULL;
@@ -18065,7 +18065,7 @@ sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
 }
 
 /* Keep a retry source distinct from the work frame's mutable metadata.
- * Decoded packed RGB goes through out-of-place working conversion. Crop
+ * RGB decoded from YCbCr goes through out-of-place working conversion. Crop
  * and gamut paths may mutate the input before then and need private pixels. */
 static SIXELSTATUS
 sixel_encoder_pipeline_slot_save_source(
@@ -18077,7 +18077,7 @@ sixel_encoder_pipeline_slot_save_source(
     SIXELSTATUS status;
 
     encoder = pipeline->encoder;
-    if (!sixel_pixelformat_is_ycbcr422(
+    if (!sixel_pixelformat_is_ycbcr(
             sixel_frame_get_pixelformat(slot->frame)) ||
             (encoder->clipwidth > 0 && encoder->clipheight > 0) ||
             encoder->gamut_mapper != NULL) {
@@ -21071,7 +21071,7 @@ sixel_encoder_encode_bytes_owned(
 
     normalized_pixels = NULL;
     if (encoder == NULL || bytes == NULL ||
-        sixel_pixelformat_is_ycbcr422(pixelformat)) {
+        sixel_pixelformat_is_ycbcr(pixelformat)) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -21755,8 +21755,8 @@ sixel_encoder_encode_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
     sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
     decoded = NULL;
     if (frame != NULL &&
-        sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
-        status = sixel_frame_decode_ycbcr422_copy(frame, encoder->allocator,
+        sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(frame))) {
+        status = sixel_frame_decode_ycbcr_copy(frame, encoder->allocator,
                                                 &decoded);
         if (SIXEL_FAILED(status)) {
             encoder->sixdelta_refinement_needed = 0;
@@ -22174,8 +22174,8 @@ sixel_playback_palette_source_matches(sixel_frame_t *frame,
     if (image_layout != palette_layout) {
         return 0;
     }
-    if (sixel_pixelformat_is_ycbcr422(image_layout)) {
-        return sixel_frame_ycbcr422_matches(frame, source);
+    if (sixel_pixelformat_is_ycbcr(image_layout)) {
+        return sixel_frame_ycbcr_matches(frame, source);
     }
     if (image.rgb_definition == NULL && palette.rgb_definition == NULL) {
         return image.colorspace == palette.colorspace;

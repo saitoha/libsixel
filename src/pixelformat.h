@@ -29,10 +29,25 @@
 #include "colorspace.h"
 
 static inline int
-sixel_pixelformat_is_ycbcr422(int layout)
+sixel_pixelformat_ycbcr_planes(int layout)
 {
-    return layout == SIXEL_PIXELFORMAT_YUYV ||
-        layout == SIXEL_PIXELFORMAT_UYVY;
+    switch (layout) {
+    case SIXEL_PIXELFORMAT_YUYV:
+    case SIXEL_PIXELFORMAT_UYVY:
+        return 1;
+    case SIXEL_PIXELFORMAT_NV12:
+        return 2;
+    case SIXEL_PIXELFORMAT_YUV420P:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+static inline int
+sixel_pixelformat_is_ycbcr(int layout)
+{
+    return sixel_pixelformat_ycbcr_planes(layout) != 0;
 }
 
 /* Internal sample representations for working buffers. The public frame

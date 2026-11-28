@@ -2768,6 +2768,159 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* The weight tables are calculated from chroma centers at 0,2,4 or
+ * 0.5,2.5,4.5. They include the replicated top and left edge samples.
+ * Chroma corners vary on both axes, so swaps and one-axis-only filtering
+ * cannot accidentally produce the correct RGB triplets. */
+static int
+test_ycbcr420(int format, int xphase, int yphase, int nearest)
+{
+    static int const cb[2][3] = {{92, 128, 208}, {172, 116, 164}};
+    static int const cr[2][3] = {{188, 120, 84}, {100, 180, 148}};
+    static double const left[2][5] = {
+        {0, 0.5, 0, 0.5, 0}, {0, 0.25, 0.75, 0.25, 0.75}
+    };
+    static int const columns[2][5] = {
+        {0, 0, 1, 1, 2}, {0, 0, 0, 1, 1}
+    };
+    static double const bottom[2][3] = {{0, 0.5, 1}, {0, 0.25, 0.75}};
+    unsigned char y_plane[22], u_plane[9], v_plane[11], uv_plane[15];
+    sixel_ycbcr_frame_view_t view = {sizeof(view), format, 5, 3, 3,
+        {{y_plane, sizeof(y_plane), 1, 8}, {u_plane, sizeof(u_plane), 6, -5},
+         {v_plane, sizeof(v_plane), 2, 6}}, NULL};
+    sixel_ycbcr_frame_view_t cloned = {0};
+    sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, xphase, yphase, NULL};
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *definition = NULL;
+    sixel_frame_t *frame = NULL, *grid = NULL, *full = NULL, *reference = NULL;
+    sixel_frame_interface_t *iface, *copy = NULL;
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output[2] = {NULL, NULL};
+    playback_test_buffer_t encoded[2] = {{0}};
+    sixel_ycbcr422_counts_t counts = {0};
+    float expected[45];
+    float const *pixels;
+    double wx, wy, luma, u, v;
+    int x, y, x0, x1, y0, i, pass = 0;
+
+    memset(y_plane, 239, sizeof(y_plane));
+    memset(u_plane, 239, sizeof(u_plane));
+    memset(v_plane, 239, sizeof(v_plane));
+    memset(uv_plane, 239, sizeof(uv_plane));
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 5; ++x) {
+            y_plane[1 + y * 8 + x] = 55 + 31 * y + 11 * x;
+        }
+    }
+    for (y = 0; y < 2; ++y) {
+        for (x = 0; x < 3; ++x) {
+            u_plane[6 - 5 * y + x] = cb[y][x];
+            v_plane[2 + 6 * y + x] = cr[y][x];
+            uv_plane[9 - 8 * y + 2 * x] = cb[y][x];
+            uv_plane[10 - 8 * y + 2 * x] = cr[y][x];
+        }
+    }
+    if (format == SIXEL_PIXELFORMAT_NV12) {
+        view.plane_count = 2;
+        view.planes[1] = (sixel_frame_plane_view_t){
+            uv_plane, sizeof(uv_plane), 9, -8
+        };
+    }
+    rgb = sixel_color_def_new_named("srgb");
+    color.rgb = rgb;
+    definition = sixel_ycbcr_def_new(&color);
+    view.definition = definition;
+    if (definition == NULL || sixel_frame_new(&frame, NULL) ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view)) {
+        goto end;
+    }
+    --view.planes[view.plane_count - 1].buffer_bytes;
+    if (sixel_frame_init_ycbcr_borrowed(frame, &view) != SIXEL_BAD_ARGUMENT) {
+        goto end;
+    }
+    ++view.planes[view.plane_count - 1].buffer_bytes;
+    sixel_frame_observe_ycbcr422(frame, &counts);
+    iface = sixel_frame_as_interface(frame);
+    cloned.struct_size = sizeof(cloned);
+    if (iface->vtbl->clone(iface, NULL, &copy) || copy == NULL ||
+        sixel_frame_get_ycbcr((sixel_frame_t *)copy, &cloned) ||
+        cloned.plane_count != view.plane_count ||
+        cloned.planes[0].stride_bytes != 5 ||
+        cloned.planes[1].stride_bytes != (view.plane_count == 2 ? 6 : 3) ||
+        cloned.planes[1].buffer_bytes != (view.plane_count == 2 ? 12u : 6u) ||
+        (view.plane_count == 3 && (cloned.planes[2].stride_bytes != 3 ||
+                                  cloned.planes[2].buffer_bytes != 6)) ||
+        counts.packed_copies != 1) {
+        goto end;
+    }
+    if (sixel_frame_sample_ycbcr(frame, NULL, 2, NULL, 0, &grid) ||
+        sixel_frame_sample_ycbcr(frame, NULL, 1, grid, 2, &full) ||
+        counts.rgb_conversions != 2 || counts.rgb_pixels != 15 ||
+        sixel_frame_set_pixelformat((sixel_frame_t *)copy,
+                                    SIXEL_PIXELFORMAT_RGBFLOAT32)) {
+        goto end;
+    }
+    pixels = (float const *)(void *)sixel_frame_get_pixels(full);
+    if (memcmp(pixels, sixel_frame_get_pixels((sixel_frame_t *)copy),
+               sizeof(expected)) != 0) {
+        goto end;
+    }
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 5; ++x) {
+            i = 3 * (5 * y + x);
+            x0 = nearest ? x / 2 : columns[xphase][x];
+            x1 = x0 < 2 ? x0 + 1 : x0;
+            y0 = nearest ? y / 2 : 0;
+            wx = nearest ? 0 : left[xphase][x];
+            wy = nearest ? 0 : bottom[yphase][y];
+            luma = (55 + 31 * y + 11 * x) / 255.0;
+            u = ((1 - wy) * ((1 - wx) * cb[y0][x0] + wx * cb[y0][x1]) +
+                 wy * ((1 - wx) * cb[1][x0] + wx * cb[1][x1]) - 128) / 255;
+            v = ((1 - wy) * ((1 - wx) * cr[y0][x0] + wx * cr[y0][x1]) +
+                 wy * ((1 - wx) * cr[1][x0] + wx * cr[1][x1]) - 128) / 255;
+            expected[i] = (float)(luma + 1.5748 * v);
+            expected[i + 1] = (float)(luma - 0.18732427293 * u -
+                                      0.46812427293 * v);
+            expected[i + 2] = (float)(luma + 1.8556 * u);
+        }
+    }
+    for (i = 0; i < 45; ++i) {
+        if (fabsf(expected[i] - pixels[i]) > 2e-7f) {
+            fprintf(stderr, "4:2:0 sample %d: %.8g, expected %.8g\n",
+                    i, pixels[i], expected[i]);
+            goto end;
+        }
+    }
+    if (sixel_frame_new(&reference, NULL) ||
+        sixel_frame_init_rgbf32_borrowed(reference, expected, 5, 3, rgb) ||
+        sixel_encoder_new(&encoder, NULL) ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
+        sixel_output_new(&output[0], playback_test_write, &encoded[0], NULL) ||
+        sixel_output_new(&output[1], playback_test_write, &encoded[1], NULL) ||
+        sixel_encoder_encode_frame(encoder, frame, output[0]) ||
+        sixel_encoder_encode_frame(encoder, reference, output[1])) {
+        goto end;
+    }
+    pass = encoded[0].size != 0 && encoded[0].size == encoded[1].size &&
+        memcmp(encoded[0].bytes, encoded[1].bytes, encoded[0].size) == 0;
+end:
+    sixel_output_unref(output[0]);
+    sixel_output_unref(output[1]);
+    sixel_encoder_unref(encoder);
+    free(encoded[0].bytes);
+    free(encoded[1].bytes);
+    sixel_frame_unref(reference);
+    sixel_frame_unref((sixel_frame_t *)copy);
+    sixel_frame_unref(full);
+    sixel_frame_unref(grid);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 /* Both layouts use unaligned borrowed bytes. The sentinel sits between
  * rows. Nine bytes expose exactly the last active byte. */
 static int
@@ -3745,13 +3898,13 @@ test_y422_grid_icc(void)
     if (definition == NULL || sixel_frame_new(&packed, NULL) ||
         y422_test_borrow(packed, bytes, sizeof(bytes),
             8, 4, 20, SIXEL_PIXELFORMAT_UYVY, definition) ||
-        sixel_frame_decode_ycbcr422_copy(packed, NULL, &full)) {
+        sixel_frame_decode_ycbcr_copy(packed, NULL, &full)) {
         goto end;
     }
     sixel_frame_observe_ycbcr422(packed, &operations);
-    if (sixel_frame_sample_ycbcr422(packed, NULL, 3, NULL, 0, &sample) ||
+    if (sixel_frame_sample_ycbcr(packed, NULL, 3, NULL, 0, &sample) ||
         operations.rgb_pixels != 6 ||
-        sixel_frame_sample_ycbcr422(packed, NULL, 1, sample, 3, &reuse) ||
+        sixel_frame_sample_ycbcr(packed, NULL, 1, sample, 3, &reuse) ||
         operations.rgb_pixels != 32 || operations.rgb_conversions != 2 ||
         operations.packed_copies != 0 || operations.rgb_copies != 0) {
         goto end;
@@ -4237,6 +4390,14 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 4 && strcmp(argv[1], "ycbcr420") == 0) {
+        c = strcmp(argv[2], "nv12") == 0 ? SIXEL_PIXELFORMAT_NV12 :
+            SIXEL_PIXELFORMAT_YUV420P;
+        if (strcmp(argv[3], "nearest") == 0) {
+            return test_ycbcr420(c, 1, 0, 1);
+        }
+        return test_ycbcr420(c, 1, 1, 0) || test_ycbcr420(c, 0, 0, 0);
+    }
     if (argc == 3 && strcmp(argv[1], "ycbcr-frame-view") == 0) {
         return test_ycbcr_frame_view(argv[2], SIXEL_PIXELFORMAT_YUYV) ||
                test_ycbcr_frame_view(argv[2], SIXEL_PIXELFORMAT_UYVY);

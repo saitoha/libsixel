@@ -56,9 +56,9 @@ SIXEL_INTERNAL_API void
 sixel_frame_observe_ycbcr422(sixel_frame_t *frame,
                             sixel_ycbcr422_counts_t *counts);
 
-/* Produce a private RGB frame directly from packed rows. */
+/* Produce a private RGB frame directly from YCbCr planes. */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
+sixel_frame_decode_ycbcr_copy(sixel_frame_t const *frame,
                                 sixel_allocator_t *allocator,
                                 sixel_frame_t **frame_out);
 
@@ -71,13 +71,13 @@ sixel_frame_view_profile_rgb(sixel_frame_t *frame,
 /* Decode the original raster coordinates selected by a sampling grid.
  * A full decode can reuse the same source's previously decoded grid. */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frame_sample_ycbcr422(sixel_frame_t const *frame,
+sixel_frame_sample_ycbcr(sixel_frame_t const *frame,
     sixel_allocator_t *allocator, int step, sixel_frame_t const *grid,
     int grid_step, sixel_frame_t **frame_out);
 
 /* Match storage layout, decoding policy and RGB definition. */
 SIXEL_INTERNAL_API int
-sixel_frame_ycbcr422_matches(sixel_frame_t const *frame,
+sixel_frame_ycbcr_matches(sixel_frame_t const *frame,
                             sixel_frame_t const *source);
 
 /* Normalize packed gamma RGB/gray alpha for the native float encoder.

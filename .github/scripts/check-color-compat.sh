@@ -256,6 +256,9 @@ set -- \
     frame/storage/0114_ycbcr_negative_stride.t \
     frame/storage/0115_ycbcr_plane_bounds.t \
     frame/storage/0116_ycbcr_view_lifetime.t \
+    frame/storage/0117_ycbcr_i420_linear.t \
+    frame/storage/0118_ycbcr_nv12_linear.t \
+    frame/storage/0119_ycbcr_nv12_nearest.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

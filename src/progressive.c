@@ -505,7 +505,7 @@ sixel_repair_context_bind(sixel_repair_context_t *context,
         return SIXEL_BAD_ARGUMENT;
     }
     if (source != NULL &&
-        sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(source))) {
+        sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(source))) {
         return SIXEL_NOT_IMPLEMENTED;
     }
     status = sixel_encoder_operation_enter(context->encoder,

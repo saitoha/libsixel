@@ -147,7 +147,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_frame_t **frame_out,
                   sixel_frame_clone_options_t const *options);
 static SIXELSTATUS
-sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
+sixel_frame_decode_ycbcr_into(sixel_frame_t const *frame,
                                 sixel_frame_t *destination, int step,
                                 sixel_frame_t const *grid, int grid_step);
 static void
@@ -1202,6 +1202,25 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     return SIXEL_OK;
 }
 
+static void
+sixel_frame_ycbcr_plane_shape(int planes, int plane, int width, int height,
+                              size_t *row_bytes, int *rows)
+{
+    *row_bytes = plane == 0 ? (size_t)width :
+        (size_t)(width / 2 + (width & 1));
+    if (planes == 1 || (planes == 2 && plane == 1)) {
+        *row_bytes *= 2u;
+    }
+    *rows = plane == 0 ? height : height / 2 + (height & 1);
+}
+
+static unsigned char const *
+sixel_frame_ycbcr_row(sixel_frame_plane_view_t const *plane, int row)
+{
+    return (unsigned char const *)plane->base + plane->row0_offset +
+        row * plane->stride_bytes;
+}
+
 /* Copy frame metadata and coverage for a private worker frame. Its pixels
  * can be copied, decoded from packed rows, or shared with a retained
  * immutable source. Keep handoff metadata private in all cases. */
@@ -1224,7 +1243,8 @@ sixel_frame_clone(sixel_frame_t const *frame,
     size_t pixel_bytes;
     size_t palette_bytes;
     size_t mask_bytes;
-    int row, column, decode_step;
+    int row, column, decode_step, plane, planes = 0, rows;
+    size_t row_bytes, plane_offset;
 
     decode_step = options == NULL ? 0 : options->step;
     status = SIXEL_BAD_ARGUMENT;
@@ -1327,7 +1347,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
     if (decode_step) {
         clone->width = (view.width - 1) / decode_step + 1;
         clone->height = (view.height - 1) / decode_step + 1;
-        status = sixel_frame_decode_ycbcr422_into(frame, clone, decode_step,
+        status = sixel_frame_decode_ycbcr_into(frame, clone, decode_step,
             options->grid, options->grid_step);
         if (SIXEL_FAILED(status)) {
             goto error;
@@ -1340,12 +1360,17 @@ sixel_frame_clone(sixel_frame_t const *frame,
         clone->owns_pixels = 0;
     } else if (view.width > 0 && view.height > 0) {
         if (frame->ycbcr != NULL) {
-            /* Dimension setters keep this rectangle inside the original
-             * active rows. Drop all row padding when making an owned copy. */
-            clone->ycbcr_plane.stride_bytes = (ptrdiff_t)view.width * 2;
-            pixel_bytes = (size_t)clone->ycbcr_plane.stride_bytes * view.height;
-            clone->packed_width = view.width;
-            clone->packed_height = view.height;
+            /* Derive the clone's compact layout from its logical rectangle. */
+            planes = sixel_pixelformat_ycbcr_planes(frame->format.layout);
+            for (plane = 0; plane < planes; ++plane) {
+                sixel_frame_ycbcr_plane_shape(planes, plane, view.width,
+                    view.height, &row_bytes, &rows);
+                clone->ycbcr_planes[plane].stride_bytes = (ptrdiff_t)row_bytes;
+                clone->ycbcr_planes[plane].buffer_bytes = row_bytes * rows;
+                pixel_bytes += row_bytes * rows;
+            }
+            clone->ycbcr_width = view.width;
+            clone->ycbcr_height = view.height;
             clone->ycbcr = frame->ycbcr;
             (void)sixel_atomic_fetch_add_u32(&clone->ycbcr->ref, 1U);
         } else {
@@ -1381,13 +1406,27 @@ sixel_frame_clone(sixel_frame_t const *frame,
                     &frame->ycbcr_counts->rgb_copies, 1U);
             }
         }
-        if (frame->ycbcr != NULL &&
-                frame->ycbcr_plane.stride_bytes !=
-                    clone->ycbcr_plane.stride_bytes) {
-            for (row = 0; row < view.height; ++row) {
-                memcpy(pixels + row * clone->ycbcr_plane.stride_bytes,
-                       source_pixels + row * frame->ycbcr_plane.stride_bytes,
-                       (size_t)clone->ycbcr_plane.stride_bytes);
+        if (frame->ycbcr != NULL) {
+            plane_offset = 0;
+            for (plane = 0; plane < planes; ++plane) {
+                sixel_frame_ycbcr_plane_shape(planes, plane, view.width,
+                    view.height, &row_bytes, &rows);
+                clone->ycbcr_planes[plane].base = pixels + plane_offset;
+                if (frame->ycbcr_planes[plane].stride_bytes ==
+                        (ptrdiff_t)row_bytes) {
+                    memcpy(pixels + plane_offset,
+                           sixel_frame_ycbcr_row(
+                               &frame->ycbcr_planes[plane], 0),
+                           row_bytes * rows);
+                } else {
+                    for (row = 0; row < rows; ++row) {
+                        memcpy(pixels + plane_offset + (size_t)row * row_bytes,
+                               sixel_frame_ycbcr_row(
+                                   &frame->ycbcr_planes[plane], row),
+                               row_bytes);
+                    }
+                }
+                plane_offset += row_bytes * rows;
             }
         } else {
             memcpy(pixels, source_pixels, pixel_bytes);
@@ -1396,10 +1435,6 @@ sixel_frame_clone(sixel_frame_t const *frame,
             clone->pixels.f32ptr = (float *)(void *)pixels;
         } else {
             clone->pixels.u8ptr = pixels;
-        }
-        if (clone->ycbcr != NULL) {
-            clone->ycbcr_plane.base = pixels;
-            clone->ycbcr_plane.buffer_bytes = pixel_bytes;
         }
         clone->pixel_extent = pixel_bytes;
         clone->owns_pixels = 1;
@@ -1470,11 +1505,11 @@ sixel_frame_observe_ycbcr422(sixel_frame_t *frame,
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
+sixel_frame_decode_ycbcr_copy(sixel_frame_t const *frame,
                                 sixel_allocator_t *allocator,
                                 sixel_frame_t **frame_out)
 {
-    return sixel_frame_sample_ycbcr422(frame, allocator, 1, NULL, 0, frame_out);
+    return sixel_frame_sample_ycbcr(frame, allocator, 1, NULL, 0, frame_out);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -1493,7 +1528,7 @@ sixel_frame_view_profile_rgb(sixel_frame_t *frame,
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frame_sample_ycbcr422(sixel_frame_t const *frame,
+sixel_frame_sample_ycbcr(sixel_frame_t const *frame,
     sixel_allocator_t *allocator, int step, sixel_frame_t const *grid,
     int grid_step, sixel_frame_t **frame_out)
 {
@@ -1764,7 +1799,7 @@ sixel_frame_init_common(
 
     sixel_frame_ref(frame);
 
-    if (sixel_pixelformat_is_ycbcr422(pixelformat)) {
+    if (sixel_pixelformat_is_ycbcr(pixelformat)) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -1962,7 +1997,7 @@ sixel_ycbcr_def_new(sixel_ycbcr_def_config_t const *config)
         (config->range != SIXEL_YCBCR_RANGE_LIMITED &&
          config->range != SIXEL_YCBCR_RANGE_FULL) ||
         (config->chroma_x_half != 0 && config->chroma_x_half != 1) ||
-        config->chroma_y_half != 0 ||
+        (config->chroma_y_half != 0 && config->chroma_y_half != 1) ||
         !sixel_cdef_frame_input_ready(config->rgb)) {
         return NULL;
     }
@@ -2032,45 +2067,91 @@ sixel_frame_ranges_overlap(void const *a, size_t na, void const *b, size_t nb)
     return x == y || (x < y ? y - x < na : x - y < nb);
 }
 
+/* Validate row traversal before doing pointer arithmetic or taking a ref. */
+static SIXELSTATUS
+sixel_frame_validate_ycbcr_plane(sixel_frame_plane_view_t const *plane,
+    size_t row, int rows, size_t *span)
+{
+    size_t pitch, available;
+
+    if (plane->base == NULL || plane->buffer_bytes < row ||
+        plane->buffer_bytes > UINTPTR_MAX - (uintptr_t)plane->base ||
+        plane->row0_offset > plane->buffer_bytes - row) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    /* Magnitude of PTRDIFF_MIN is representable in size_t. */
+    pitch = plane->stride_bytes < 0
+        ? (size_t)(-(plane->stride_bytes + 1)) + 1u
+        : (size_t)plane->stride_bytes;
+    available = plane->stride_bytes < 0 ? plane->row0_offset
+        : plane->buffer_bytes - row - plane->row0_offset;
+    if (pitch < row || (size_t)(rows - 1) > available / pitch) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *span = (size_t)(rows - 1) * pitch + row;
+    return *span - row > PTRDIFF_MAX ? SIXEL_BAD_ALLOCATION : SIXEL_OK;
+}
+
+/* Count shared plane storage once, including partially overlapping spans. */
+static int
+sixel_frame_ycbcr_storage(sixel_ycbcr_frame_view_t const *view, size_t *bytes)
+{
+    struct { uintptr_t first, last; } ranges[3], range;
+    uintptr_t end = 0;
+    size_t extra;
+    unsigned int i, j;
+
+    *bytes = 0;
+    for (i = 0; i < view->plane_count; ++i) {
+        range.first = (uintptr_t)view->planes[i].base;
+        range.last = range.first + view->planes[i].buffer_bytes;
+        j = i;
+        while (j > 0 && ranges[j - 1].first > range.first) {
+            ranges[j] = ranges[j - 1];
+            --j;
+        }
+        ranges[j] = range;
+    }
+    for (i = 0; i < view->plane_count; ++i) {
+        if (ranges[i].last <= end) {
+            continue;
+        }
+        if (ranges[i].first > end) {
+            end = ranges[i].first;
+        }
+        extra = ranges[i].last - end;
+        if (*bytes > SIZE_MAX - extra) {
+            return 0;
+        }
+        *bytes += extra;
+        end = ranges[i].last;
+    }
+    return 1;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
     sixel_ycbcr_frame_view_t const *view)
 {
-    sixel_frame_plane_view_t plane;
+    sixel_frame_plane_view_t const *plane;
     sixel_ycbcr_def_t *definition;
-    size_t row, pitch, available, span, palette_bytes, mask_bytes, alpha_bytes;
-    void *pixels;
+    size_t row, span, active_span = 0;
+    size_t palette_bytes, mask_bytes, alpha_bytes, bytes;
+    int i, planes, rows;
+    SIXELSTATUS status;
 
     if (frame == NULL || view == NULL || view->struct_size < sizeof(*view) ||
-        view->definition == NULL || view->plane_count != 1 ||
-        !sixel_pixelformat_is_ycbcr422(view->pixelformat) ||
-        view->width <= 0 || view->width > SIXEL_WIDTH_LIMIT ||
-        (view->width & 1) != 0 ||
-        view->height <= 0 || view->height > SIXEL_HEIGHT_LIMIT) {
+        view->definition == NULL || view->width <= 0 ||
+        view->width > SIXEL_WIDTH_LIMIT || view->height <= 0 ||
+        view->height > SIXEL_HEIGHT_LIMIT) {
         return SIXEL_BAD_ARGUMENT;
     }
-    plane = view->planes[0];
-    row = (size_t)view->width * 2u;
-    if (plane.base == NULL || plane.buffer_bytes < row ||
-        plane.buffer_bytes > UINTPTR_MAX - (uintptr_t)plane.base ||
-        plane.row0_offset > plane.buffer_bytes - row) {
+    planes = sixel_pixelformat_ycbcr_planes(view->pixelformat);
+    if (planes == 0 || view->plane_count != (unsigned int)planes ||
+        (planes == 1 &&
+         ((view->width & 1) != 0 || view->definition->chroma_y_half != 0))) {
         return SIXEL_BAD_ARGUMENT;
     }
-    /* Bound row travel before multiplication. This also handles the
-     * signed minimum stride without negating it in its signed type. */
-    pitch = plane.stride_bytes < 0
-        ? (size_t)(-(plane.stride_bytes + 1)) + 1u
-        : (size_t)plane.stride_bytes;
-    available = plane.stride_bytes < 0 ? plane.row0_offset
-        : plane.buffer_bytes - row - plane.row0_offset;
-    if (pitch < row || (size_t)(view->height - 1) > available / pitch) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    span = (size_t)(view->height - 1) * pitch + row;
-    if (span > SIXEL_ALLOCATE_BYTES_MAX || span - row > PTRDIFF_MAX) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-
     palette_bytes = frame->palette_extent > 0
         ? (size_t)frame->palette_extent * 3u : 0u;
     mask_bytes = frame->transparent_mask_size;
@@ -2083,29 +2164,47 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
     if (frame->alpha != NULL && alpha_bytes < frame->coverage_extent) {
         alpha_bytes = frame->coverage_extent;
     }
-    if (((frame->owns_pixels || frame->pixel_owner != NULL) &&
-         sixel_frame_ranges_overlap(plane.base, plane.buffer_bytes,
-            sixel_frame_pixel_storage(frame), frame->pixel_extent)) ||
-        (frame->owns_palette &&
-         sixel_frame_ranges_overlap(plane.base, plane.buffer_bytes,
-            frame->palette, palette_bytes)) ||
-        sixel_frame_ranges_overlap(plane.base, plane.buffer_bytes,
-                                   frame->transparent_mask, mask_bytes) ||
-        sixel_frame_ranges_overlap(plane.base, plane.buffer_bytes,
-                                   frame->alpha, alpha_bytes)) {
-        return SIXEL_BAD_ARGUMENT;
+    for (i = 0; i < planes; ++i) {
+        plane = &view->planes[i];
+        sixel_frame_ycbcr_plane_shape(planes, i, view->width, view->height,
+                                     &row, &rows);
+        status = sixel_frame_validate_ycbcr_plane(plane, row, rows, &span);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (span > SIXEL_ALLOCATE_BYTES_MAX - active_span) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        active_span += span;
+        /* Reject a plane that would alias storage released by installation. */
+        if (((frame->owns_pixels || frame->pixel_owner != NULL) &&
+             sixel_frame_ranges_overlap(plane->base, plane->buffer_bytes,
+                 sixel_frame_pixel_storage(frame), frame->pixel_extent)) ||
+            (frame->owns_palette &&
+             sixel_frame_ranges_overlap(plane->base, plane->buffer_bytes,
+                 frame->palette, palette_bytes)) ||
+            sixel_frame_ranges_overlap(plane->base, plane->buffer_bytes,
+                frame->transparent_mask, mask_bytes) ||
+            sixel_frame_ranges_overlap(plane->base, plane->buffer_bytes,
+                frame->alpha, alpha_bytes)) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
+    if (!sixel_frame_ycbcr_storage(view, &bytes)) {
+        return SIXEL_BAD_ALLOCATION;
     }
 
     definition = (sixel_ycbcr_def_t *)view->definition;
-    pixels = (unsigned char *)plane.base + plane.row0_offset;
     (void)sixel_atomic_fetch_add_u32(&definition->ref, 1U);
-    sixel_frame_install_pixels(frame, pixels, view->width, view->height,
-        view->pixelformat, NULL, -1, 0, 0, 0, plane.buffer_bytes);
+    sixel_frame_install_pixels(frame,
+        (void *)sixel_frame_ycbcr_row(&view->planes[0], 0),
+        view->width, view->height, view->pixelformat, NULL, -1, 0, 0, 0, bytes);
     frame->format.coordinates = SIXEL_FRAME_COLORSPACE_YCBCR;
     frame->ycbcr = definition;
-    frame->ycbcr_plane = plane;
-    frame->packed_width = view->width;
-    frame->packed_height = view->height;
+    memcpy(frame->ycbcr_planes, view->planes,
+           (size_t)planes * sizeof(view->planes[0]));
+    frame->ycbcr_width = view->width;
+    frame->ycbcr_height = view->height;
     frame->transparent = -1;
     return SIXEL_OK;
 }
@@ -2121,15 +2220,16 @@ sixel_frame_get_ycbcr(sixel_frame_t const *frame,
     view->pixelformat = frame->format.layout;
     view->width = frame->width;
     view->height = frame->height;
-    view->plane_count = 1;
+    view->plane_count = sixel_pixelformat_ycbcr_planes(frame->format.layout);
     memset(view->planes, 0, sizeof(view->planes));
-    view->planes[0] = frame->ycbcr_plane;
+    memcpy(view->planes, frame->ycbcr_planes,
+           view->plane_count * sizeof(view->planes[0]));
     view->definition = frame->ycbcr;
     return SIXEL_OK;
 }
 
 SIXEL_INTERNAL_API int
-sixel_frame_ycbcr422_matches(sixel_frame_t const *frame,
+sixel_frame_ycbcr_matches(sixel_frame_t const *frame,
                             sixel_frame_t const *source)
 {
     sixel_ycbcr_def_t const *a = frame->ycbcr;
@@ -2189,8 +2289,9 @@ sixel_frame_get_width(sixel_frame_t /* in */ *frame)  /* frame object */
 SIXELAPI void
 sixel_frame_set_width(sixel_frame_t /* in */ *frame, int /* in */ width)
 {
-    if (frame->ycbcr == NULL || (width > 0 && (width & 1) == 0 &&
-            width <= frame->packed_width)) {
+    if (frame->ycbcr == NULL || (width > 0 && width <= frame->ycbcr_width &&
+            ((width & 1) == 0 ||
+             sixel_pixelformat_ycbcr_planes(frame->format.layout) > 1))) {
         frame->width = width;
     }
 }
@@ -2209,7 +2310,7 @@ SIXELAPI void
 sixel_frame_set_height(sixel_frame_t /* in */ *frame, int /* in */ height)
 {
     if (frame->ycbcr == NULL || (height > 0 &&
-            height <= frame->packed_height)) {
+            height <= frame->ycbcr_height)) {
         frame->height = height;
     }
 }
@@ -2624,7 +2725,7 @@ sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
             "sixel_frame_set_pixelformat: frame is null.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (frame->ycbcr != NULL || sixel_pixelformat_is_ycbcr422(layout)) {
+    if (frame->ycbcr != NULL || sixel_pixelformat_is_ycbcr(layout)) {
         return SIXEL_NOT_IMPLEMENTED;
     }
     /* A delivery boundary must resolve alpha before reducing RGB storage. */
@@ -2808,10 +2909,89 @@ sixel_frame_decode_ycbcr_sample(float *out, float y, float cb, float cr,
     out[2] = y + coefficients[3] * cb;
 }
 
-/* Read packed rows directly into the RGB allocation. The source and
+/* Interpolate at positions 2*k + phase/2 in luma coordinates. Negative
+ * positions and the right/bottom edge extend the nearest edge sample. */
+static void
+sixel_frame_ycbcr420_axis(int pixel, int phase, int count, int nearest,
+                         int *first, int *second, float *weight)
+{
+    int pos;
+
+    if (nearest) {
+        /* The two supported phases select the same pair at integer luma
+         * positions when midpoint ties go to the preceding sample. */
+        *first = *second = pixel / 2;
+        *weight = 0.0f;
+        return;
+    }
+    pos = 2 * pixel - phase;
+    if (pos < 0) {
+        pos = 0;
+    }
+    *first = pos / 4;
+    *second = *first + 1 < count ? *first + 1 : *first;
+    *weight = (pos % 4) * 0.25f;
+}
+
+static void
+sixel_frame_decode_ycbcr420(sixel_frame_t const *frame, float *out,
+    int step, sixel_frame_t const *grid, int grid_step, float luma_offset,
+    float luma_scale, float const coefficients[4])
+{
+    unsigned char const *luma, *cb_top, *cb_bottom, *cr_top, *cr_bottom;
+    float const *cached;
+    float wx, wy, cb, cr, top, bottom;
+    int x, y, x0, x1, y0, y1, grid_x, grid_y = 0;
+    int cw = frame->width / 2 + (frame->width & 1);
+    int ch = frame->height / 2 + (frame->height & 1);
+    int interleaved = frame->format.layout == SIXEL_PIXELFORMAT_NV12;
+    int spacing = interleaved ? 2 : 1;
+    int nearest = frame->ycbcr->nearest_chroma;
+
+    for (y = 0; y < frame->height; y += step) {
+        luma = sixel_frame_ycbcr_row(&frame->ycbcr_planes[0], y);
+        sixel_frame_ycbcr420_axis(y, frame->ycbcr->chroma_y_half,
+                                 ch, nearest, &y0, &y1, &wy);
+        cb_top = sixel_frame_ycbcr_row(&frame->ycbcr_planes[1], y0);
+        cb_bottom = sixel_frame_ycbcr_row(&frame->ycbcr_planes[1], y1);
+        cr_top = interleaved ? cb_top + 1 :
+            sixel_frame_ycbcr_row(&frame->ycbcr_planes[2], y0);
+        cr_bottom = interleaved ? cb_bottom + 1 :
+            sixel_frame_ycbcr_row(&frame->ycbcr_planes[2], y1);
+        cached = NULL;
+        if (grid != NULL && y == grid_y) {
+            cached = grid->pixels.f32ptr +
+                (size_t)(y / grid_step) * grid->width * 3u;
+            grid_y += grid_step;
+        }
+        grid_x = 0;
+        for (x = 0; x < frame->width; x += step, out += 3) {
+            if (cached != NULL && x == grid_x) {
+                memcpy(out, cached, 3u * sizeof(float));
+                cached += 3;
+                grid_x += grid_step;
+                continue;
+            }
+            sixel_frame_ycbcr420_axis(x, frame->ycbcr->chroma_x_half,
+                                     cw, nearest, &x0, &x1, &wx);
+            x0 *= spacing;
+            x1 *= spacing;
+            top = cb_top[x0] + wx * (cb_top[x1] - cb_top[x0]);
+            bottom = cb_bottom[x0] + wx * (cb_bottom[x1] - cb_bottom[x0]);
+            cb = top + wy * (bottom - top) - 128.0f;
+            top = cr_top[x0] + wx * (cr_top[x1] - cr_top[x0]);
+            bottom = cr_bottom[x0] + wx * (cr_bottom[x1] - cr_bottom[x0]);
+            cr = top + wy * (bottom - top) - 128.0f;
+            sixel_frame_decode_ycbcr_sample(out,
+                (luma[x] - luma_offset) * luma_scale, cb, cr, coefficients);
+        }
+    }
+}
+
+/* Read source planes directly into the RGB allocation. The source and
  * destination may be the same frame for explicit layout conversion. */
 static SIXELSTATUS
-sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
+sixel_frame_decode_ycbcr_into(sixel_frame_t const *frame,
                                 sixel_frame_t *destination, int step,
                                 sixel_frame_t const *grid, int grid_step)
 {
@@ -2834,7 +3014,7 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
     float const *grid_row;
     SIXELSTATUS status;
 
-    status = sixel_frame_validate_size("packed YCbCr conversion",
+    status = sixel_frame_validate_size("YCbCr conversion",
         destination->width, destination->height, SIXEL_PIXELFORMAT_RGBFLOAT32,
         NULL, &bytes, NULL);
     if (SIXEL_FAILED(status)) {
@@ -2879,13 +3059,16 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
             (unsigned int)converted);
     }
     out = pixels;
-    if (step > 1 || grid != NULL) {
+    if (sixel_pixelformat_ycbcr_planes(frame->format.layout) > 1) {
+        sixel_frame_decode_ycbcr420(frame, out, step, grid, grid_step,
+                                   luma_offset, luma_scale, coefficients);
+    } else if (step > 1 || grid != NULL) {
         /* Select in the source raster before reconstructing chroma. The
          * adjacent sample is still the original adjacent pair, not the
          * next grid point. Only the selected luma is converted. */
         grid_y = 0;
         for (y = 0; y < frame->height; y += step) {
-            row = frame->pixels.u8ptr + y * frame->ycbcr_plane.stride_bytes;
+            row = frame->pixels.u8ptr + y * frame->ycbcr_planes[0].stride_bytes;
             grid_row = NULL;
             if (grid != NULL && y == grid_y) {
                 grid_row = grid->pixels.f32ptr +
@@ -2924,7 +3107,7 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
         }
     } else {
         for (y = 0; y < frame->height; ++y) {
-            row = frame->pixels.u8ptr + y * frame->ycbcr_plane.stride_bytes;
+            row = frame->pixels.u8ptr + y * frame->ycbcr_planes[0].stride_bytes;
             pair = row;
             for (x = 0; x < frame->width; x += 2, pair += 4, out += 6) {
                 /* Even/odd luma samples fall on different sides of a centered
@@ -2971,7 +3154,7 @@ sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
     if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         if (frame->ycbcr != NULL) {
-            return sixel_frame_decode_ycbcr422_into(frame, frame, 1, NULL, 0);
+            return sixel_frame_decode_ycbcr_into(frame, frame, 1, NULL, 0);
         }
         if (frame->format.layout == pixelformat) {
             return SIXEL_OK;

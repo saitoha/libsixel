@@ -256,6 +256,8 @@ typedef int SIXELSTATUS;
 /* Two 8-bit luma samples share one pair of chroma samples. */
 #define SIXEL_PIXELFORMAT_YUYV (SIXEL_FORMATTYPE_COLOR | 0x30)
 #define SIXEL_PIXELFORMAT_UYVY (SIXEL_FORMATTYPE_COLOR | 0x31)
+#define SIXEL_PIXELFORMAT_YUV420P (SIXEL_FORMATTYPE_COLOR | 0x32)
+#define SIXEL_PIXELFORMAT_NV12 (SIXEL_FORMATTYPE_COLOR | 0x33)
 #define SIXEL_FRAME_COLORSPACE_YCBCR 0x101
 
 /* palette type */
@@ -1828,9 +1830,11 @@ sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
 
 typedef struct sixel_ycbcr_def sixel_ycbcr_def_t;
 
-/* Chroma offsets are half-luma-sample units relative to the first
- * luma sample of each chroma group. YUYV and UYVY accept x=0 (left)
- * or x=1 (center), and y=0. RGB describes the decoded samples. */
+/* Chroma offsets use half-luma-sample units relative to the first luma
+ * sample of each group. Each subsampled axis accepts 0 (cosited) or 1
+ * (centered). For YUYV and UYVY, y must be 0. RGB describes the decoded
+ * samples. Chroma reconstruction extends the first and last sample on
+ * each axis. Nearest uses the preceding sample at a tie. */
 typedef struct sixel_ycbcr_def_config {
     size_t struct_size;
     int encoding;
@@ -1872,10 +1876,12 @@ typedef struct sixel_ycbcr_frame_view {
 } sixel_ycbcr_frame_view_t;
 
 /* Set struct_size to sizeof the view. YUYV and UYVY require one plane and
- * positive even width. The plane describes accessible storage starting at
- * base. Logical row zero starts at row0_offset, and a negative stride
- * walks toward base. Each active row must fit and its final padding is
- * optional. Storage accounting includes the declared buffer_bytes.
+ * positive even width. YUV420P (I420) takes Y, Cb, Cr. NV12 takes Y and
+ * interleaved CbCr. Both 4:2:0 layouts allow odd sizes and use ceil(width/2)
+ * by ceil(height/2) chroma samples. Planes may share an allocation.
+ * Each plane has an accessible span starting at base, a logical row-zero
+ * offset and a signed byte stride. Only active bytes are required at the
+ * final row. Storage accounting includes the union of declared spans.
  *
  * Initialization copies the descriptor, retains the definition, and
  * borrows the read-only pixels. Failure preserves the frame. Keep pixels
@@ -1889,8 +1895,8 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
 /* Set struct_size to sizeof the view. The returned plane and definition are
  * borrowed until frame release, reinitialization or in-place conversion.
  * On failure the output view stays intact. A clone owns tightly packed rows
- * in logical order. For packed layouts get_pixels() returns logical row
- * zero. Use this view to obtain the stride and the other storage metadata. */
+ * in logical order. get_pixels() returns row zero of the first plane.
+ * Use this view to obtain all planes, strides and storage metadata. */
 SIXELAPI SIXELSTATUS
 sixel_frame_get_ycbcr(sixel_frame_t const *frame,
                      sixel_ycbcr_frame_view_t *view);
@@ -2404,7 +2410,7 @@ sixel_encoder_encode_frame(
  *
  * Ownership.  An admitted frame is referenced by the playback object and
  * may be modified by encoding; the caller must neither read nor modify it
- * until its completion callback has run. Packed YUYV and UYVY are read into
+ * until its completion callback has run. YCbCr inputs are read into
  * private RGB float32 storage after admission. Keep their borrowed buffers
  * alive until completion. Per-frame 6delta placement and threshold limits
  * are taken from the submission options at admission.
@@ -2525,7 +2531,7 @@ typedef struct sixel_playback_config {
 /* Optional palette_source is an independent, immutable frame used only
  * for palette sampling. Its geometry is independent of the submitted image:
  * output crop/resize do not apply to this source. Both frames must have the
- * same pixel format/colorspace. Packed YUYV and UYVY also require matching
+ * same pixel format/colorspace. YCbCr frames also require matching
  * YCbCr encoding, range, chroma location and interpolation policy, and RGB
  * definitions. NULL samples the submitted image as usual.
  * Playback retains the source through completion; borrowed pixels must remain
