@@ -326,10 +326,12 @@ sixel_gpu_palette_policy_may_apply(int policy,
     if (sixel_gpu_palette_policy_is_force(policy)) {
         return 1;
     }
-    if (policy != SIXEL_GPU_POLICY_AUTO) {
+    if (policy != SIXEL_GPU_POLICY_AUTO &&
+            policy != SIXEL_GPU_POLICY_OFFLOAD) {
         return 0;
     }
-    if (pixel_count < auto_threshold) {
+    /* OFFLOAD has no size floor; only AUTO weighs the submission cost. */
+    if (policy == SIXEL_GPU_POLICY_AUTO && pixel_count < auto_threshold) {
         return 0;
     }
 

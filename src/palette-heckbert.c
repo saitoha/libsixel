@@ -3319,7 +3319,8 @@ mediancut(tupletable2 const colorfreqtable,
      * means no device or a histogram outside the solver's domain (Vulkan
      * stops at 4096 entries), and median cut then stays on the CPU without
      * disabling the later GPU palette stages. Force skips only the Vulkan
-     * headroom choice, so a supported histogram always reaches the GPU. */
+     * headroom choice, so a supported histogram always reaches the GPU;
+     * offload's headroom step always chooses the device. */
 #if defined(HAVE_METAL) || defined(HAVE_VULKAN)
     if (gpu_policy != SIXEL_GPU_POLICY_OFF && multicolorBoxesExist &&
             depth == 3U && !colorfreqtable.preserve_extended &&

@@ -163,8 +163,9 @@ Empty or unset SIXEL_DECODER_THREADING_POLICY makes sixel2png use balanced.
 .TP 5
 .B \-G POLICY[:KEY=VALUE], \-\-gpu\-policy=POLICY[:KEY=VALUE]
 Choose the decoder accelerator policy.  \fBoff\fP keeps the CPU path,
-\fBauto\fP uses a supported GPU for sufficiently large images, and
-\fBforce\fP requires GPU acceleration.
+\fBauto\fP uses a supported GPU for sufficiently large images,
+\fBoffload\fP uses a supported GPU at any image size with CPU fallback,
+and \fBforce\fP requires GPU acceleration.
 The decoder suboption \fB:dequant_threshold=PIXELS\fP, with short form
 \fB:DPIXELS\fP, sets the minimum image size used by \fBauto\fP.
 .TP 5

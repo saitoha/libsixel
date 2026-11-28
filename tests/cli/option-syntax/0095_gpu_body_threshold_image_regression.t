@@ -63,13 +63,22 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 
-# force keeps its CPU/GPU cost comparison but has no size floor.
+# force and offload have no size floor and no CPU/GPU cost comparison.
 force_trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -G "force:B300" \
     "${input_image}" 2>&1 >/dev/null) || :
 
 case "${force_trace}" in *LSXGPU1\|*consumer=body\|policy=2\|threshold=0**) true ;; *) false ;; esac || {
     printf '\n%s\n' "not ok 1 - force kept the GPU body size floor"
+    exit 0
+}
+
+offload_trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -G "offload:B300" \
+    "${input_image}" 2>&1 >/dev/null) || :
+
+case "${offload_trace}" in *LSXGPU1\|*consumer=body\|policy=3\|threshold=0**) true ;; *) false ;; esac || {
+    printf '\n%s\n' "not ok 1 - offload kept the GPU body size floor"
     exit 0
 }
 
@@ -80,7 +89,7 @@ default_trace=$(set +xv; SIXEL_TRACE_TOPIC=gpu_contract \
     exit 0
 }
 
-case "${default_trace}" in *LSXGPU1\|*consumer=body\|policy=1\|threshold=1048576**) true ;; *) false ;; esac || {
+case "${default_trace}" in *LSXGPU1\|*consumer=body\|policy=1\|threshold=262144**) true ;; *) false ;; esac || {
     printf '\n%s\n' "not ok 1 - GPU body threshold default changed"
     exit 0
 }

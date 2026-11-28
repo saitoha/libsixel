@@ -48,7 +48,7 @@ test_progressive_gpu_lookup_case(int mode)
             case 3: invalid.colors = 0; break;
             case 4: invalid.queries = NULL; break;
             case 5: invalid.palette = NULL; break;
-            default: invalid.policy = 3; break;
+            default: invalid.policy = SIXEL_GPU_POLICY_OFFLOAD + 1; break;
             }
             APPLY_GPU_REQUIRE(sixel_repair_gpu_lookup(cache, &invalid,
                 matches) == SIXEL_BAD_ARGUMENT);

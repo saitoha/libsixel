@@ -206,6 +206,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             off   -> keep CPU path\n"
         "                             auto  -> use GPU only when\n"
         "                                      available and large\n"
+        "                             offload -> use GPU at any size\n"
+        "                                      when available\n"
         "                             force -> require GPU path\n"
         "                           decoder sub-option:\n"
         "                             :dequant_threshold=PIXELS\n"

@@ -369,10 +369,11 @@ end:
         prepare.gpu_lookup->vtbl->unref(prepare.gpu_lookup);
     if (prepare.device != NULL) prepare.device->vtbl->unref(prepare.device);
     /* Both methods selected by automatic diffusion have CPU components.
-     * AUTO may retry a declined GPU preparation here, before
+     * AUTO and OFFLOAD may retry a declined GPU preparation here, before
      * acquiring history or starting a writer. Execution errors propagate. */
     if ((status == SIXEL_FALSE || status == SIXEL_FEATURE_ERROR) &&
-            gpu_policy == SIXEL_GPU_POLICY_AUTO &&
+            (gpu_policy == SIXEL_GPU_POLICY_AUTO ||
+             gpu_policy == SIXEL_GPU_POLICY_OFFLOAD) &&
             dither->diffuse_on_gpu &&
             (dither->method_for_diffuse == SIXEL_DIFFUSE_FS ||
              dither->method_for_diffuse == SIXEL_DIFFUSE_ATKINSON)) {

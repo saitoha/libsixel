@@ -867,6 +867,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    choose upper-level GPU accelerator policy:\n"
         "      off   -> keep the CPU path (default)\n"
         "      auto  -> try eligible GPU stages, with CPU fallback\n"
+        "      offload -> move eligible stages to the GPU even when\n"
+        "               slower, with CPU fallback\n"
         "      force -> require a supported GPU path and fail otherwise\n"
         "    encoder sub-option:\n"
         "      :palette_threshold=PIXELS (:PPIXELS)\n"
@@ -2592,7 +2594,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_GPU_POLICY",
         "set default upper-level GPU accelerator policy. Accepts off, auto,\n"
-        "or force. Invalid values keep the built-in default off.\n"
+        "offload, or force. Invalid values keep the built-in default off.\n"
         "Overridden by -G/--gpu-policy. Gates GPU k-means and accelerates\n"
         "eligible RGB8 palette application."
     },

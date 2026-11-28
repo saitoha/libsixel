@@ -92,7 +92,7 @@ sixel_repair_gpu_request_valid(sixel_repair_gpu_request_t const *request)
     if (request == NULL) return 0;
     view = &request->view;
     if (request->policy < SIXEL_GPU_POLICY_OFF ||
-            request->policy > SIXEL_GPU_POLICY_FORCE ||
+            request->policy > SIXEL_GPU_POLICY_OFFLOAD ||
             view->source == NULL || view->retained == NULL ||
             view->domain == NULL || view->valid == NULL ||
             view->width <= 0 || view->height <= 0 ||
@@ -161,10 +161,11 @@ sixel_repair_gpu_scan(sixel_repair_gpu_t *cache,
 #endif
     if (status == SIXEL_OK) return status;
     /* A failed batch never publishes partial samples or reusable GPU state.
-     * AUTO may continue on the CPU; FORCE preserves the backend error. */
+     * AUTO and OFFLOAD may continue on the CPU; FORCE preserves the
+     * backend error. */
     sixel_repair_gpu_evict(cache);
     memset(result, 0, sizeof(*result));
-    return request->policy == SIXEL_GPU_POLICY_AUTO ? SIXEL_FALSE : status;
+    return request->policy != SIXEL_GPU_POLICY_FORCE ? SIXEL_FALSE : status;
 }
 
 SIXELSTATUS
@@ -180,7 +181,7 @@ sixel_repair_gpu_lookup(sixel_repair_gpu_t *cache,
             request->count > SIXEL_REPAIR_GPU_BATCH_MAX ||
             request->colors == 0 || request->colors > 255 ||
             request->policy < SIXEL_GPU_POLICY_OFF ||
-            request->policy > SIXEL_GPU_POLICY_FORCE) {
+            request->policy > SIXEL_GPU_POLICY_OFFLOAD) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (request->policy == SIXEL_GPU_POLICY_OFF) return SIXEL_FALSE;
@@ -192,5 +193,5 @@ sixel_repair_gpu_lookup(sixel_repair_gpu_t *cache,
 #endif
     if (status == SIXEL_OK) return status;
     sixel_repair_gpu_evict(cache);
-    return request->policy == SIXEL_GPU_POLICY_AUTO ? SIXEL_FALSE : status;
+    return request->policy != SIXEL_GPU_POLICY_FORCE ? SIXEL_FALSE : status;
 }

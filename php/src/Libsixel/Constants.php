@@ -84,6 +84,7 @@ final class Constants
     public const SIXEL_GPU_POLICY_OFF = 0x0;
     public const SIXEL_GPU_POLICY_AUTO = 0x1;
     public const SIXEL_GPU_POLICY_FORCE = 0x2;
+    public const SIXEL_GPU_POLICY_OFFLOAD = 0x3;
 
     public const SIXEL_COLORSPACE_SRGB = 0x0;
     public const SIXEL_COLORSPACE_SRGB_LINEAR = 0x1;

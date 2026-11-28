@@ -115,6 +115,7 @@ _gpupolicy() {
     'GPUPOLICY' \
     'off[keep all stages on CPU]' \
     'auto[try eligible GPU stages with CPU fallback]' \
+    'offload[move eligible stages to the GPU even when slower]' \
     'force[require supported GPU execution for selected stages]'
 }
 

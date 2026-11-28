@@ -292,7 +292,7 @@ test_progressive_context_case(int mode)
             case 8: invalid.swap_limit = 17; break;
             case 9: invalid.noise_strength = INFINITY; break;
             case 10: invalid.noise_phase_x = 64; break;
-            default: invalid.gpu_policy = 3; break;
+            default: invalid.gpu_policy = SIXEL_GPU_POLICY_OFFLOAD + 1; break;
             }
             CONTEXT_REQUIRE(sixel_repair_context_new(&context, encoder,
                 &invalid, allocator) == SIXEL_BAD_ARGUMENT);

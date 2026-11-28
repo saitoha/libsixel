@@ -45,6 +45,12 @@ sixel_gpu_headroom_step(
         memset(state, 0, sizeof(*state));
         return 0;
     }
+    /* OFFLOAD asks for the device to carry the work even while it is busy,
+     * so the load never sends a stage back to the CPU. */
+    if (gpu_policy == SIXEL_GPU_POLICY_OFFLOAD) {
+        state->gpu = 1;
+        return 1;
+    }
     /* Profiling can distort wall-time headroom. Pin only auto decisions;
      * an explicit CPU policy must continue to disable the GPU. */
     pin = sixel_test_environment_gpu_headroom();

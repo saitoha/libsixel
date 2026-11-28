@@ -358,6 +358,7 @@ SIXEL_LUT_POLICY_ORDERED = 0xe  # Exact distance-ordered candidates
 SIXEL_GPU_POLICY_OFF       = 0x0  # keep CPU palette apply
 SIXEL_GPU_POLICY_AUTO      = 0x1  # probe GPU above internal threshold
 SIXEL_GPU_POLICY_FORCE     = 0x2  # require a supported GPU path
+SIXEL_GPU_POLICY_OFFLOAD   = 0x3  # prefer the GPU even when slower
 
 # method for re-sampling
 SIXEL_RES_NEAREST          = 0   # Use nearest neighbor method

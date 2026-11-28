@@ -5692,6 +5692,7 @@ sixel_encoder_core_encode_dispatch(
 {
     SIXELSTATUS status;
     int cpu_mask_fallback;
+    int saved_gpu_policy;
 
     if (request == NULL || request->pixels == NULL ||
         request->dither == NULL || request->output == NULL) {
@@ -5731,8 +5732,10 @@ sixel_encoder_core_encode_dispatch(
         }
         /* The CPU writer implements clear with a reserved key. Disable
          * GPU palette application for this path before writing anything. */
+        saved_gpu_policy = request->dither->gpu_policy;
         cpu_mask_fallback = request->dither->diffuse_on_gpu &&
-            request->dither->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
+            (saved_gpu_policy == SIXEL_GPU_POLICY_AUTO ||
+             saved_gpu_policy == SIXEL_GPU_POLICY_OFFLOAD) &&
             !sixel_indexed_accepts_transparency(request->dither,
                                                 request->output);
         if (cpu_mask_fallback) {
@@ -5750,7 +5753,7 @@ sixel_encoder_core_encode_dispatch(
                                      request->dither,
                                      request->output);
         if (cpu_mask_fallback) {
-            request->dither->gpu_policy = SIXEL_GPU_POLICY_AUTO;
+            request->dither->gpu_policy = saved_gpu_policy;
         }
     }
 

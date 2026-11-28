@@ -349,8 +349,9 @@ sixel_indexed_core_compose_gpu(sixel_indexed_core_t *core, int ncolors)
     request.selectors = ncolors != 2 || desc->keycolor == -1 ||
         body->emit_keyed_palette;
     request.limited = body->has_gri_arg_limit;
-    request.gpu_policy = core->gpu_body
-        ? SIXEL_GPU_POLICY_AUTO : SIXEL_GPU_POLICY_OFF;
+    /* Vulkan weighs device headroom under AUTO and FORCE; OFFLOAD keeps
+     * spelling on the device however busy it is. */
+    request.gpu_policy = core->gpu_body;
     status = sixel_body_gpu_run(core->gpu, &request, &core->gpu_result);
     if (SIXEL_FAILED(status)) {
         core->gpu_unavailable = 1;
@@ -392,8 +393,8 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
         core->webgpu_body_slow = 0;
     }
     /* A device failure parks the body on the CPU for fifteen frames under
-     * either policy. FORCE otherwise spells every eligible frame: it asks
-     * for the device to carry the work, not for the faster chain. */
+     * any policy. FORCE and OFFLOAD otherwise spell every eligible frame:
+     * they ask for the device to carry the work, not for the faster chain. */
     if (core->webgpu_body_frames < 0) {
         ++core->webgpu_body_frames;
         return 0;
@@ -401,7 +402,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
     /* Under AUTO, recheck the CPU chain every sixteen frames. High
      * resolution alone cannot pay for two GPU readbacks on a low-complexity
      * scene, while a complex one pays for them well below a megapixel. */
-    if (core->gpu_body != SIXEL_GPU_POLICY_FORCE) {
+    if (core->gpu_body == SIXEL_GPU_POLICY_AUTO) {
         if (core->webgpu_body_frames == 0) {
             *cpu_start = sixel_timer_monotonic();
             return 0;
@@ -432,7 +433,7 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
      * before applying the steady-state comparison. One slow frame is not
      * a trend: device times of a 1920 x 1080 frame spread from 6.7 to
      * 10 ms around a CPU chain of 10 ms. */
-    if (core->gpu_body == SIXEL_GPU_POLICY_FORCE) {
+    if (core->gpu_body != SIXEL_GPU_POLICY_AUTO) {
         /* No comparison: the CPU chain is never measured. */
     } else if (core->webgpu_body_warm < 2) {
         ++core->webgpu_body_warm;

@@ -1209,7 +1209,7 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
                                  int clip_height,
                                  unsigned char *out,
                                  unsigned int out_max,
-                                 int gpu,
+                                 int gpu,  /* SIXEL_GPU_POLICY_* */
                                  sixel_frame_t *share_owner,
                                  sixel_allocator_t *allocator,
                                  sixel_timeline_logger_t *logger)
@@ -1260,15 +1260,17 @@ sixel_filter_sample_collect_solid(unsigned char const *pixels,
      * the upload for dither when possible; a separate palette source uses
      * the scanner's own input buffer under the same headroom policy.
      * WebGPU's separate upload and histogram readback need larger clips
-     * before the end-to-end scan pays off. */
-    if (gpu && mask == NULL && depth == 3
+     * before the end-to-end scan pays off. OFFLOAD has no size floor. */
+    if (gpu != SIXEL_GPU_POLICY_OFF && mask == NULL && depth == 3
             && sizeof(*cells) == 5u * sizeof(unsigned int)
-            && (size_t)clip_width * (size_t)clip_height
+            && (gpu == SIXEL_GPU_POLICY_OFFLOAD
+                || (size_t)clip_width * (size_t)clip_height
 #if defined(HAVE_WEBGPU)
                >= sixel_runtime_policy_sample_min_pixels(1048576u)
 #else
                >= sixel_runtime_policy_sample_min_pixels(524288u)
 #endif
+               )
 #if defined(HAVE_VULKAN)
             && sixel_filter_sample_vulkan_choose(gpu)
 #endif
@@ -1697,9 +1699,9 @@ sixel_filter_sample_copy_frame(
                                                        height,
                                                        solid,
                                                        SIXEL_SAMPLE_SOLID_MAX,
-                                                       config != NULL &&
-                                                       config->gpu_policy !=
-                                                       SIXEL_GPU_POLICY_OFF,
+                                                       config != NULL
+                                                       ? config->gpu_policy
+                                                       : SIXEL_GPU_POLICY_OFF,
                                                        share_owner,
                                                        allocator, logger);
     }

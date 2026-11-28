@@ -214,8 +214,13 @@ select the sample precision of palette application.
 .B \-G \fIPOLICY[:KEY=VALUE]\fP, \-\-gpu\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose the upper-level GPU accelerator policy.
 \fBoff\fP keeps all stages on CPU (default); \fBauto\fP tries eligible
-GPU stages with CPU fallback; \fBforce\fP requires supported GPU execution
+GPU stages with CPU fallback when they are expected to be faster;
+\fBoffload\fP moves every eligible stage to the GPU even when it is slower,
+to take the load off the CPU, and still falls back to CPU for unsupported
+input or a failed GPU attempt; \fBforce\fP requires supported GPU execution
 for selected GPU stages and palette application.
+\fBoffload\fP ignores the size thresholds below and the GPU load checks,
+and resolves an automatic working precision to bytes as \fBforce\fP does.
 K-means additionally requires \fB-Qkmeans:backend=gpu|auto\fP.
 With eligible gamma RGB8 input, automatic diffusion selects FS or Atkinson
 before choosing a backend. Automatic GPU lookup uses ordered for spatial
@@ -228,7 +233,7 @@ The encoder suboption \fB:body_threshold=PIXELS\fP, with short form
 \fB:BPIXELS\fP, sets the minimum frame size used by \fBauto\fP
 for spelling the SIXEL body on the GPU (default 262144).
 It currently applies to thread-disabled WebGPU builds; \fBforce\fP
-ignores it.
+and \fBoffload\fP ignore it.
 .TP 5
 .B \-j \fIPOLICY[:KEY=VALUE]\fP, \-\-runtime\-policy=\fIPOLICY[:KEY=VALUE]\fP
 choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,
@@ -351,7 +356,8 @@ Supported k-means suboptions:
 GPU Lloyd iteration requires a Metal-enabled build and an available device.
 It uses FP32 arithmetic and full center scans. Explicit \fBprune=elkan|yinyang|aabb\fP
 requests CPU iteration under AUTO and conflicts with FORCE.
-The \fBauto\fP backend adds a construction workload floor and uses CPU
+The \fBauto\fP backend adds a construction workload floor and a warm
+pipeline requirement, both skipped under OFFLOAD, and uses CPU
 when no device is available, including under FORCE. Native float and named
 output apply the resulting palette on CPU. Sampling, initialization,
 final assignment and merge remain on CPU.
@@ -2645,7 +2651,8 @@ k-means residual histogram feedback switch: 0 or 1 (default 0).
 .B SIXEL_PALETTE_KMEANS_BACKEND
 Select the k-means iteration backend: cpu (default) or gpu.
 Overridden by -Q kmeans:backend=NAME. GPU execution additionally requires
---gpu-policy=auto (CPU fallback) or force (error if unsupported).
+--gpu-policy=auto or offload (CPU fallback) or force (error if
+unsupported).
 .TP
 .B SIXEL_PALETTE_KMEANS_PRUNE
 .br

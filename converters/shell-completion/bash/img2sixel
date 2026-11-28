@@ -933,6 +933,7 @@ _img2sixel()
     -G|--gpu-policy)
         COMPREPLY=( $( compgen -W 'off \
                                    auto \
+                                   offload \
                                    force' -- "$cur" ) )
         return 0
         ;;

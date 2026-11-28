@@ -143,7 +143,7 @@ sixel_repair_config_valid(sixel_repair_config_t const *config)
         config->noise_phase_x < 64 && config->noise_phase_y < 64 &&
         (config->noise_channel_rgb == 0 || config->noise_channel_rgb == 1) &&
         config->gpu_policy >= -1 &&
-        config->gpu_policy <= SIXEL_GPU_POLICY_FORCE;
+        config->gpu_policy <= SIXEL_GPU_POLICY_OFFLOAD;
 }
 
 SIXELSTATUS

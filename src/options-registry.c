@@ -1410,7 +1410,8 @@ static sixel_option_value_schema_t const g_threading_policy_values[] = {
 static sixel_option_value_schema_t const g_gpu_policy_values[] = {
     { "off", SIXEL_GPU_POLICY_OFF, 0u },
     { "auto", SIXEL_GPU_POLICY_AUTO, 0u },
-    { "force", SIXEL_GPU_POLICY_FORCE, 0u }
+    { "force", SIXEL_GPU_POLICY_FORCE, 0u },
+    { "offload", SIXEL_GPU_POLICY_OFFLOAD, 0u }
 };
 
 static sixel_option_value_schema_t const g_runtime_policy_values[] = {

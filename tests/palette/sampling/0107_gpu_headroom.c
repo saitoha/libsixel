@@ -104,5 +104,17 @@ test_gpu_headroom(int argc, char **argv)
     state.gpu = 1;
     sixel_gpu_headroom_step(&state, SIXEL_GPU_POLICY_AUTO, 0, 60000100);
     if (state.windows != 0 || state.gpu != 0) return 17;
+    /* OFFLOAD takes the device at once, before any observation window,
+     * and keeps it under full device load. */
+    memset(&state, 0, sizeof(state));
+    choice = sixel_gpu_headroom_step(&state,
+        SIXEL_GPU_POLICY_OFFLOAD, 0, 100);
+    if (choice != 1 || state.gpu != 1) return 18;
+    for (i = 1; i <= 16; ++i) {
+        choice = sixel_gpu_headroom_step(&state, SIXEL_GPU_POLICY_OFFLOAD,
+            (unsigned long long)i * 10000000ULL,
+            100 + (unsigned long long)i * 10000000ULL);
+        if (choice != 1) return 19;
+    }
     return 0;
 }

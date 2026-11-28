@@ -47,7 +47,8 @@ sixel_encoder_core_test_clock(sixel_encoder_core_t *core,
 
 /* Requests GPU band composition for later frames under policy (one of
  * SIXEL_GPU_POLICY_*); a core without it, or without a usable device, keeps
- * composing on the CPU. FORCE pins eligible WebGPU frames to the device. */
+ * composing on the CPU. FORCE and OFFLOAD pin eligible WebGPU frames to the
+ * device. */
 SIXEL_INTERNAL_API void
 sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *core, int policy);
 

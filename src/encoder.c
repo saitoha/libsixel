@@ -4993,12 +4993,14 @@ sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
 }
 
 /* The GPU application backends accept gamma RGB888. Resolve an automatic
- * working space and precision for forced byte application, preserving
- * explicit native output, colorspaces and GPU K-means construction. */
+ * working space and precision for byte application under force and
+ * offload, preserving explicit native output, colorspaces and GPU K-means
+ * construction. */
 int
 sixel_encoder_force_byte_apply(sixel_encoder_t const *encoder)
 {
-    return encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+    return (encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
+            encoder->gpu_policy == SIXEL_GPU_POLICY_OFFLOAD) &&
         !encoder->prefer_float32 &&
         encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
         encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
@@ -8241,7 +8243,8 @@ sixel_encoder_set_output_transparent_policy(sixel_output_t *output,
     return sixel_output_set_encoder_options(output, &options);
 }
 
-/* force skips the size floor; the core also skips the CPU/GPU comparison. */
+/* force and offload skip the size floor; the core also skips the CPU/GPU
+ * comparison for both. */
 static SIXELSTATUS
 sixel_encoder_set_output_gpu_body_threshold(sixel_output_t *output,
                                             sixel_encoder_t const *encoder)
@@ -8256,7 +8259,8 @@ sixel_encoder_set_output_gpu_body_threshold(sixel_output_t *output,
     }
 
     options.gpu_body_threshold =
-        encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE
+        encoder->gpu_policy == SIXEL_GPU_POLICY_FORCE ||
+        encoder->gpu_policy == SIXEL_GPU_POLICY_OFFLOAD
         ? 0U : encoder->gpu_body_threshold;
     if (sixel_trace_topic_is_enabled("gpu_contract")) {
         fprintf(stderr,

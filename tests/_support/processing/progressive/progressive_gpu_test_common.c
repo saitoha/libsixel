@@ -196,7 +196,7 @@ test_progressive_gpu_case(int mode)
             case 8: invalid.stop_squared = NAN; break;
             case 9: invalid.selection_squared = -1; break;
             case 10: invalid.view.source = NULL; break;
-            case 11: invalid.policy = 3; break;
+            case 11: invalid.policy = SIXEL_GPU_POLICY_OFFLOAD + 1; break;
             case 12:
                 invalid.positions = positions;
                 invalid.first = 1;
