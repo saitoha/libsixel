@@ -279,6 +279,8 @@ set -- \
     frame/storage/0137_ycbcr_420_singleton_nearest.t \
     frame/storage/0138_ycbcr_yv12_delta_borrow.t \
     frame/storage/0139_ycbcr_yv12_cancel_borrow.t \
+    frame/storage/0140_ycbcr_i420_bilinear_resize.t \
+    frame/storage/0141_ycbcr_nv12_bilinear_resize.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

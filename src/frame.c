@@ -2975,8 +2975,8 @@ sixel_frame_ycbcr_axis(int pixel, int phase, int shift, int count, int nearest,
 
 static void
 sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
-    int step, sixel_frame_t const *grid, int grid_step, float luma_offset,
-    float luma_scale, float const coefficients[4])
+    int first_y, int end_y, int step, sixel_frame_t const *grid, int grid_step,
+    float luma_offset, float luma_scale, float const coefficients[4])
 {
     unsigned char const *luma, *cb_top, *cb_bottom, *cr_top, *cr_bottom;
     unsigned char const *triplet;
@@ -2998,7 +2998,7 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
     sixel_frame_ycbcr_shifts(layout, &x_shift, &y_shift);
     cw = (frame->width + (1 << x_shift) - 1) >> x_shift;
     ch = (frame->height + (1 << y_shift) - 1) >> y_shift;
-    for (y = 0; y < frame->height; y += step) {
+    for (y = first_y; y < end_y; y += step) {
         luma = sixel_frame_ycbcr_row(&frame->ycbcr_planes[0], y);
         /* With full chroma height, both taps belong to this luma row. */
         if (y_shift == 0) {
@@ -3061,6 +3061,30 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
     }
 }
 
+static void
+sixel_frame_ycbcr_matrix(sixel_ycbcr_def_t const *definition,
+    float *luma_offset, float *luma_scale, float coefficients[4])
+{
+    /* Luma weights from the 601, 709 and 2020 NCL encodings. */
+    static double const weights[][2] = {
+        {0.2990, 0.1140}, {0.2126, 0.0722}, {0.2627, 0.0593}
+    };
+    double kr, kb, kg, chroma_divisor;
+    int limited;
+
+    kr = weights[definition->encoding - 1][0];
+    kb = weights[definition->encoding - 1][1];
+    kg = 1.0 - kr - kb;
+    limited = definition->range == SIXEL_YCBCR_RANGE_LIMITED;
+    *luma_scale = limited ? 1.0f / 219.0f : 1.0f / 255.0f;
+    *luma_offset = limited ? 16.0f : 0.0f;
+    chroma_divisor = limited ? 224.0 : 255.0;
+    coefficients[0] = (float)(2.0 * (1.0 - kr) / chroma_divisor);
+    coefficients[1] = (float)(2.0 * kb * (1.0 - kb) / (kg * chroma_divisor));
+    coefficients[2] = (float)(2.0 * kr * (1.0 - kr) / (kg * chroma_divisor));
+    coefficients[3] = (float)(2.0 * (1.0 - kb) / chroma_divisor);
+}
+
 /* Read source planes directly into the RGB allocation. The source and
  * destination may be the same frame for explicit layout conversion. */
 static SIXELSTATUS
@@ -3068,20 +3092,15 @@ sixel_frame_decode_ycbcr_into(sixel_frame_t const *frame,
                                 sixel_frame_t *destination, int step,
                                 sixel_frame_t const *grid, int grid_step)
 {
-    /* Luma weights from the 601, 709 and 2020 NCL encodings. */
-    static double const weights[][2] = {
-        {0.2990, 0.1140}, {0.2126, 0.0722}, {0.2627, 0.0593}
-    };
     sixel_ycbcr_def_t const *definition;
     sixel_color_def_t *rgb;
     unsigned char const *row, *pair, *previous, *next;
     float *pixels, *out;
     float coefficients[4];
-    double kr, kb, kg, chroma_divisor;
     float luma_scale, luma_offset, left_weight, right_weight;
     float cb, cr, odd_cb, odd_cr;
     size_t bytes;
-    int y, x, uyvy, cb_offset, cr_offset, limited, centered;
+    int y, x, uyvy, cb_offset, cr_offset, centered;
     int pair_x, odd, grid_x, grid_y;
     size_t converted;
     float const *grid_row;
@@ -3103,17 +3122,8 @@ sixel_frame_decode_ycbcr_into(sixel_frame_t const *frame,
         sixel_allocator_free(destination->allocator, pixels);
         return SIXEL_BAD_ALLOCATION;
     }
-    kr = weights[definition->encoding - 1][0];
-    kb = weights[definition->encoding - 1][1];
-    kg = 1.0 - kr - kb;
-    limited = definition->range == SIXEL_YCBCR_RANGE_LIMITED;
-    luma_scale = limited ? 1.0f / 219.0f : 1.0f / 255.0f;
-    luma_offset = limited ? 16.0f : 0.0f;
-    chroma_divisor = limited ? 224.0 : 255.0;
-    coefficients[0] = (float)(2.0 * (1.0 - kr) / chroma_divisor);
-    coefficients[1] = (float)(2.0 * kb * (1.0 - kb) / (kg * chroma_divisor));
-    coefficients[2] = (float)(2.0 * kr * (1.0 - kr) / (kg * chroma_divisor));
-    coefficients[3] = (float)(2.0 * (1.0 - kb) / chroma_divisor);
+    sixel_frame_ycbcr_matrix(definition, &luma_offset, &luma_scale,
+                            coefficients);
     uyvy = frame->format.layout == SIXEL_PIXELFORMAT_UYVY;
     cb_offset = 1 - uyvy;
     cr_offset = 3 - uyvy;
@@ -3134,8 +3144,8 @@ sixel_frame_decode_ycbcr_into(sixel_frame_t const *frame,
     out = pixels;
     if (frame->format.layout == SIXEL_PIXELFORMAT_IYU2 ||
         sixel_pixelformat_ycbcr_planes(frame->format.layout) > 1) {
-        sixel_frame_decode_ycbcr_planes(frame, out, step, grid, grid_step,
-                                       luma_offset, luma_scale, coefficients);
+        sixel_frame_decode_ycbcr_planes(frame, out, 0, frame->height, step,
+            grid, grid_step, luma_offset, luma_scale, coefficients);
     } else if (step > 1 || grid != NULL) {
         /* Select in the source raster before reconstructing chroma. The
          * adjacent sample is still the original adjacent pair, not the
@@ -4311,12 +4321,91 @@ end:
     return status;
 }
 
+typedef struct sixel_ycbcr_resize_source {
+    sixel_frame_t const *frame;
+    float luma_offset, luma_scale, coefficients[4];
+} sixel_ycbcr_resize_source_t;
+
+static void
+sixel_frame_ycbcr_read_row(void *opaque, int y, float *out)
+{
+    sixel_ycbcr_resize_source_t const *source = opaque;
+
+    sixel_frame_decode_ycbcr_planes(source->frame, out, y, y + 1, 1, NULL, 0,
+        source->luma_offset, source->luma_scale, source->coefficients);
+}
+
+/* Preserve the decoded RGB coordinates and publish only a complete resize. */
+static SIXELSTATUS
+sixel_frame_resize_ycbcr(sixel_frame_t *frame, int width, int height,
+                        int method)
+{
+    sixel_ycbcr_resize_source_t source;
+    sixel_color_def_t *rgb;
+    float *pixels;
+    size_t bytes;
+    SIXELSTATUS status;
+
+    if ((frame->format.layout != SIXEL_PIXELFORMAT_YUV420P &&
+         frame->format.layout != SIXEL_PIXELFORMAT_NV12) ||
+        frame->transparent_mask != NULL || frame->alpha != NULL ||
+        method != SIXEL_RES_BILINEAR || width > frame->width ||
+        height > frame->height || frame->width > 8 * width ||
+        frame->height > 8 * height) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    if (width == frame->width && height == frame->height) {
+        return sixel_frame_decode_ycbcr_into(frame, frame, 1, NULL, 0);
+    }
+    status = sixel_frame_validate_size("YCbCr resize", width, height,
+        SIXEL_PIXELFORMAT_RGBFLOAT32, NULL, &bytes, NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    pixels = sixel_allocator_malloc(frame->allocator, bytes);
+    if (pixels == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    rgb = sixel_cdef_clone(frame->ycbcr->rgb);
+    if (rgb == NULL) {
+        sixel_allocator_free(frame->allocator, pixels);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    source.frame = frame;
+    sixel_frame_ycbcr_matrix(frame->ycbcr, &source.luma_offset,
+                             &source.luma_scale, source.coefficients);
+    status = sixel_scale_bilinear_rgbf32_rows(pixels, frame->width,
+        frame->height, width, height, sixel_frame_ycbcr_read_row,
+        &source, frame->allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_cdef_free(rgb);
+        sixel_allocator_free(frame->allocator, pixels);
+        return status;
+    }
+    if (frame->ycbcr_counts != NULL) {
+        (void)sixel_atomic_fetch_add_u32(&frame->ycbcr_counts->rgb_conversions,
+            1U);
+        (void)sixel_atomic_fetch_add_u32(&frame->ycbcr_counts->rgb_pixels,
+            (unsigned int)((size_t)frame->width * frame->height));
+    }
+    sixel_frame_release_owned_pixels(frame);
+    sixel_frame_assign_layout(frame, SIXEL_PIXELFORMAT_RGBFLOAT32,
+                             SIXEL_FRAME_COLORSPACE_PROFILE_RGB);
+    frame->format.rgb = rgb;
+    frame->pixels.f32ptr = pixels;
+    frame->pixel_extent = bytes;
+    frame->width = width;
+    frame->height = height;
+    return SIXEL_OK;
+}
+
 /*
  * Resize a frame using float buffers. Callers must supply RGB float32 input
  * that already matches the intended resampling basis (linear RGB). The
  * planner is responsible for any required color conversions prior to calling
  * this routine. Unexpected pixelformats are rejected so that order mistakes
- * surface early.
+ * surface early. Borrowed I420 and NV12 can also be decoded and resized
+ * in their decoded RGB coordinates with the bilinear row scaler.
  */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize_float32(
@@ -4347,9 +4436,6 @@ sixel_frame_resize_float32(
     resized_mask_size = 0u;
     has_transparent = 0;
 
-    if (frame->ycbcr != NULL) {
-        return SIXEL_NOT_IMPLEMENTED;
-    }
     /* Continuous coverage needs an alpha-aware resampler. Current loader
      * delivery resolves it before encoder geometry; never resize RGB alone. */
     if (frame->alpha != NULL &&
@@ -4385,6 +4471,12 @@ sixel_frame_resize_float32(
             "sixel_frame_resize_float32: "
             "given height parameter is too huge.");
         status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (frame->ycbcr != NULL) {
+        status = sixel_frame_resize_ycbcr(frame, width, height,
+                                        method_for_resampling);
         goto end;
     }
 

@@ -1664,6 +1664,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	tools/plot_builtin_loader_format_figures.py \
 	tools/measure_png_loaders.py tools/bench/png-loader.c \
 	tools/bench/ycbcr422-playback.c \
+	tools/bench/ycbcr420-resize.c \
 	tools/plot_loader_architecture_figures.py \
 	tools/plot_loader_cms_examples.py \
 	tools/plot_colorsync_gamma.py \

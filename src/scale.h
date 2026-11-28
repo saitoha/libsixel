@@ -55,6 +55,12 @@ sixel_scale_image_rgbf32(
     int method_for_resampling,
     sixel_allocator_t *allocator);
 
+/* The reader supplies exactly one unpacked RGB row per call. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_scale_bilinear_rgbf32_rows(float *dst, int srcw, int srch,
+    int dstw, int dsth, void (*read_row)(void *, int, float *),
+    void *source, sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API size_t
 sixel_scale_parallel_min_bytes(void);
 SIXEL_INTERNAL_API int

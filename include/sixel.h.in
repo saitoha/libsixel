@@ -2039,7 +2039,11 @@ sixel_frame_resize(
     int            /* in */ height,
     int            /* in */ method_for_resampling);
 
-/* resize a frame in float precision with specified resampling filter */
+/* Resize a frame in float precision with the specified filter.
+ * Bilinear resizing also accepts borrowed I420 and NV12 without coverage.
+ * Each dimension can stay the same or shrink by up to 8:1. On success
+ * the frame owns RGB float32 pixels in the decoded RGB definition.
+ * Failure preserves the original YCbCr frame and its borrowed planes. */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize_float32(
     sixel_frame_t  /* in */ *frame,

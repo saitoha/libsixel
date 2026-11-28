@@ -3035,12 +3035,60 @@ end:
     return pass;
 }
 
+/* Independent 5x3 -> 2x2 triangle weights at output pixel centers.
+ * The full-resolution RGB oracle is built separately from the YCbCr codes. */
+static int
+test_ycbcr420_resize(sixel_frame_t *source, sixel_frame_t *legacy,
+                     float const *reference, sixel_color_def_t *rgb)
+{
+    static int const wx[2][5] = {{7, 9, 5, 1, 0}, {0, 1, 5, 9, 7}};
+    static int const wy[2][3] = {{5, 3, 0}, {0, 3, 5}};
+    float expected[12];
+    float const *pixels, *old_pixels;
+    double sum;
+    int x, y, sx, sy, c, i;
+
+    if (sixel_frame_resize_float32(source, 2, 2, SIXEL_RES_BILINEAR) ||
+        sixel_frame_resize_float32(legacy, 2, 2, SIXEL_RES_BILINEAR) ||
+        sixel_frame_get_width(source) != 2 ||
+        sixel_frame_get_height(source) != 2 ||
+        sixel_frame_get_pixelformat(source) != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        sixel_frame_get_colorspace(source) !=
+            SIXEL_FRAME_COLORSPACE_PROFILE_RGB) {
+        return 0;
+    }
+    pixels = (float const *)(void *)sixel_frame_get_pixels(source);
+    old_pixels = (float const *)(void *)sixel_frame_get_pixels(legacy);
+    for (y = 0; y < 2; ++y) {
+        for (x = 0; x < 2; ++x) {
+            for (c = 0; c < 3; ++c) {
+                sum = 0.0;
+                for (sy = 0; sy < 3; ++sy) {
+                    for (sx = 0; sx < 5; ++sx) {
+                        sum += (double)reference[(sy * 5 + sx) * 3 + c] *
+                            wx[x][sx] * wy[y][sy];
+                    }
+                }
+                i = (y * 2 + x) * 3 + c;
+                expected[i] = (float)(sum / 176.0);
+                if (!(fabsf(pixels[i] - expected[i]) <= 4e-7f &&
+                      fabsf(pixels[i] - old_pixels[i]) <= 4e-7f)) {
+                    fprintf(stderr, "YCbCr resize sample %d differs\n", i);
+                    return 0;
+                }
+            }
+        }
+    }
+    return test_ycbcr_encoded_rgb(source, expected, rgb);
+}
+
 /* The weight tables are calculated from chroma centers at 0,2,4 or
  * 0.5,2.5,4.5. They include the replicated top and left edge samples.
  * Chroma corners vary on both axes, so swaps and one-axis-only filtering
  * cannot accidentally produce the correct RGB triplets. */
 static int
-test_ycbcr420(int format, int xphase, int yphase, int nearest, int even)
+test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
+               int resize)
 {
     static int const cb[2][3] = {{92, 128, 208}, {172, 116, 164}};
     static int const cr[2][3] = {{188, 120, 84}, {100, 180, 148}};
@@ -3165,7 +3213,8 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even)
             goto end;
         }
     }
-    pass = test_ycbcr_encoded_rgb(frame, expected, rgb);
+    pass = resize ? test_ycbcr420_resize(frame, full, expected, rgb) :
+        test_ycbcr_encoded_rgb(frame, expected, rgb);
 end:
     sixel_frame_unref((sixel_frame_t *)copy);
     sixel_frame_unref(full);
@@ -5161,14 +5210,18 @@ test_frame_0014_clone_float(int argc, char **argv)
         } else if (strcmp(argv[2], "yv12") == 0) {
             c = SIXEL_PIXELFORMAT_YV12;
         }
+        if (strcmp(argv[3], "resize") == 0) {
+            return test_ycbcr420(c, 0, 1, 0, 0, 1);
+        }
         if (strcmp(argv[3], "nearest") == 0) {
-            return test_ycbcr420(c, 1, 0, 1, 0);
+            return test_ycbcr420(c, 1, 0, 1, 0, 0);
         }
         if (strcmp(argv[3], "mixed-edges") == 0) {
-            return test_ycbcr420(c, 0, 1, 0, 1) ||
-                   test_ycbcr420(c, 1, 0, 0, 1);
+            return test_ycbcr420(c, 0, 1, 0, 1, 0) ||
+                   test_ycbcr420(c, 1, 0, 0, 1, 0);
         }
-        return test_ycbcr420(c, 1, 1, 0, 0) || test_ycbcr420(c, 0, 0, 0, 0);
+        return test_ycbcr420(c, 1, 1, 0, 0, 0) ||
+               test_ycbcr420(c, 0, 0, 0, 0, 0);
     }
     if (argc == 3 && strcmp(argv[1], "ycbcr-frame-view") == 0) {
         return test_ycbcr_frame_view(argv[2], SIXEL_PIXELFORMAT_YUYV) ||
