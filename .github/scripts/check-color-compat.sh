@@ -264,6 +264,12 @@ set -- \
     frame/storage/0122_ycbcr_nv21_order.t \
     frame/storage/0123_ycbcr_yv12_order.t \
     frame/storage/0124_ycbcr_iyu2_order.t \
+    frame/storage/0125_ycbcr_shared_span_limit.t \
+    frame/storage/0126_ycbcr_shared_plane_clone.t \
+    frame/storage/0127_ycbcr420_mixed_phase_edges.t \
+    frame/storage/0128_ycbcr_nv21_delta_borrow.t \
+    frame/storage/0129_ycbcr_nv21_cancel_borrow.t \
+    frame/storage/0130_ycbcr_nv21_allocation_borrow.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

@@ -2109,19 +2109,21 @@ sixel_frame_validate_ycbcr_plane(sixel_frame_plane_view_t const *plane,
     return *span - row > PTRDIFF_MAX ? SIXEL_BAD_ALLOCATION : SIXEL_OK;
 }
 
-/* Count shared plane storage once, including partially overlapping spans. */
+typedef struct sixel_ycbcr_range {
+    uintptr_t first, last;
+} sixel_ycbcr_range_t;
+
+/* Count shared byte ranges once, including partially overlapping spans. */
 static int
-sixel_frame_ycbcr_storage(sixel_ycbcr_frame_view_t const *view, size_t *bytes)
+sixel_frame_ycbcr_storage(sixel_ycbcr_range_t *ranges, int count, size_t *bytes)
 {
-    struct { uintptr_t first, last; } ranges[3], range;
+    sixel_ycbcr_range_t range;
     uintptr_t end = 0;
     size_t extra;
-    unsigned int i, j;
+    int i, j;
 
-    *bytes = 0;
-    for (i = 0; i < view->plane_count; ++i) {
-        range.first = (uintptr_t)view->planes[i].base;
-        range.last = range.first + view->planes[i].buffer_bytes;
+    for (i = 1; i < count; ++i) {
+        range = ranges[i];
         j = i;
         while (j > 0 && ranges[j - 1].first > range.first) {
             ranges[j] = ranges[j - 1];
@@ -2129,7 +2131,8 @@ sixel_frame_ycbcr_storage(sixel_ycbcr_frame_view_t const *view, size_t *bytes)
         }
         ranges[j] = range;
     }
-    for (i = 0; i < view->plane_count; ++i) {
+    *bytes = 0;
+    for (i = 0; i < count; ++i) {
         if (ranges[i].last <= end) {
             continue;
         }
@@ -2152,7 +2155,9 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
 {
     sixel_frame_plane_view_t const *plane;
     sixel_ycbcr_def_t *definition;
-    size_t row, span, active_span = 0;
+    sixel_ycbcr_range_t active[SIXEL_YCBCR_MAX_PLANES];
+    sixel_ycbcr_range_t declared[SIXEL_YCBCR_MAX_PLANES];
+    size_t row, span, active_span;
     size_t palette_bytes, mask_bytes, alpha_bytes, bytes;
     int i, planes, rows, x, y;
     SIXELSTATUS status;
@@ -2193,10 +2198,13 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        if (span > SIXEL_ALLOCATE_BYTES_MAX - active_span) {
-            return SIXEL_BAD_ALLOCATION;
+        declared[i].first = (uintptr_t)plane->base;
+        declared[i].last = declared[i].first + plane->buffer_bytes;
+        active[i].first = declared[i].first + plane->row0_offset;
+        if (plane->stride_bytes < 0) {
+            active[i].first -= span - row;
         }
-        active_span += span;
+        active[i].last = active[i].first + span;
         /* Reject a plane that would alias storage released by installation. */
         if (((frame->owns_pixels || frame->pixel_owner != NULL) &&
              sixel_frame_ranges_overlap(plane->base, plane->buffer_bytes,
@@ -2211,7 +2219,11 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
             return SIXEL_BAD_ARGUMENT;
         }
     }
-    if (!sixel_frame_ycbcr_storage(view, &bytes)) {
+    /* Bound the union of the traversed spans, including row padding.
+     * A separate union accounts for all declared storage kept alive. */
+    if (!sixel_frame_ycbcr_storage(active, planes, &active_span) ||
+        active_span > SIXEL_ALLOCATE_BYTES_MAX ||
+        !sixel_frame_ycbcr_storage(declared, planes, &bytes)) {
         return SIXEL_BAD_ALLOCATION;
     }
 
