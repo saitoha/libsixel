@@ -2218,7 +2218,7 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
         sixel_frame_ycbcr_plane_shape(view->pixelformat, planes, i,
                                      view->width, view->height, &row, &rows);
         status = sixel_frame_validate_ycbcr_plane(plane, row, rows, &span);
-        if (SIXEL_FAILED(status)) {
+        if (status != SIXEL_OK) {
             return status;
         }
         declared[i].first = (uintptr_t)plane->base;

@@ -2780,13 +2780,14 @@ sixel_scale_host_filter_new(int sw, int sh, int dw, int dh, int channels,
             if (phase[axis] >= 0) {
                 sixel_scale_chroma_taps(t, src[axis], phase[axis], nearest);
             }
-            /* The general footprint includes zero-weight endpoints.
-             * Remove them so identity and interpolation are explicit. */
-            while (channels == 1 && t->weights[t->count - 1] == 0.0) {
+            /* Trim zero-weight endpoints while retaining at least one tap. */
+            while (channels == 1 && t->count > 1 &&
+                    t->weights[t->count - 1] == 0.0) {
                 --t->count;
             }
             skip = 0;
-            while (channels == 1 && t->weights[skip] == 0.0) {
+            while (channels == 1 && skip + 1 < t->count &&
+                    t->weights[skip] == 0.0) {
                 ++skip;
             }
             t->first += skip;

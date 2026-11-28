@@ -294,8 +294,6 @@ set -- \
     frame/storage/0152_ycbcr_i420_rgb8_linear.t \
     frame/storage/0153_ycbcr_rgb8_host_fast.t \
     frame/storage/0154_ycbcr_rgb8_srgb_thresholds.t \
-    frame/storage/0155_ycbcr_rgb8_metal.t \
-    frame/storage/0156_ycbcr_rgb8_vulkan.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \
@@ -467,6 +465,9 @@ set -- \
     palette/output-diffusion/0127_continuous_output_target_fs.t \
     palette/output-diffusion/0128_generated_output_target_skip.t
 # A single invocation keeps every .trs and the combined suite report.
-make -j"$jobs" -C tests check TESTS="$required_pass $*"
+# Hardware-dependent conversions can SKIP on the Linux compatibility runner.
+gpu_tests='frame/storage/0155_ycbcr_rgb8_metal.t
+frame/storage/0156_ycbcr_rgb8_vulkan.t'
+make -j"$jobs" -C tests check TESTS="$required_pass $* $gpu_tests"
 check_results PASS "$required_pass"
 check_results XFAIL "$*"

@@ -3156,9 +3156,10 @@ test_ycbcr_rgb8(int nv12, int order, int transfer)
     sixel_ycbcr_def_t *def = NULL;
     sixel_ycbcr_def_config_t cfg = {sizeof(cfg), SIXEL_YCBCR_ENCODING_BT601,
         SIXEL_YCBCR_RANGE_FULL, 0, 0, NULL};
-    sixel_ycbcr_frame_view_t view = {sizeof(view), nv12 ?
-        SIXEL_PIXELFORMAT_NV12 : SIXEL_PIXELFORMAT_YUV420P, 3, 3,
-        nv12 ? 2u : 3u, {{0}}, NULL};
+    int format = nv12 ? SIXEL_PIXELFORMAT_NV12 : SIXEL_PIXELFORMAT_YUV420P;
+    unsigned int plane_count = nv12 ? 2u : 3u;
+    sixel_ycbcr_frame_view_t view = {sizeof(view), format, 3, 3,
+        plane_count, {{0}}, NULL};
     sixel_ycbcr_rgb8_t *converter = NULL;
     sixel_allocator_t *allocator = NULL;
     sixel_frame_t *frame = NULL;
