@@ -61,6 +61,7 @@ SIXEL_METAL_INPUTS = \
     $(srcdir)/lookup-policy-blockcull-gpu-apply.metal \
     $(srcdir)/lookup-policy-blockcull-gpu-scan.metal \
     $(srcdir)/gpu-dequant-fast4.metal \
+    $(srcdir)/gpu-ycbcr.metal \
     $(srcdir)/lookup-policy-none-gpu.metal \
     $(srcdir)/lookup-policy-blockcull-gpu.metal \
     $(srcdir)/lookup-policy-fhedt-gpu.metal \
@@ -112,6 +113,7 @@ SIXEL_VULKAN_CONSUMER_PAIRS = $(srcdir)/dither-policy-none-gpu-prefix.glsl:$(src
     $(srcdir)/dither-policy-sierra2-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra2-gpu.glsl \
     $(srcdir)/dither-policy-sierra3-gpu-prefix.glsl:$(srcdir)/dither-policy-sierra3-gpu.glsl
 SIXEL_VULKAN_STAGES = $(srcdir)/gpu-dequant-fast4.glsl \
+    $(srcdir)/gpu-ycbcr.glsl \
     $(srcdir)/filter-sample-gpu.glsl \
     $(srcdir)/palette-kmeans-gpu.glsl \
     $(srcdir)/palette-ward.glsl \
@@ -194,6 +196,7 @@ generated-vulkan/lookup-programs-spirv.inc.h: $(SIXEL_VULKAN_INPUTS) \
 SIXEL_VULKAN_CONSUMERS = libsixel_la-gpu-runtime-vulkan.lo \
     libsixel_la-gpu-palette-vulkan.lo \
     libsixel_la-gpu-dequant-vulkan.lo \
+    libsixel_la-gpu-ycbcr-vulkan.lo \
     libsixel_la-palette-kmeans-vulkan.lo \
     libsixel_la-palette-ward-vulkan.lo \
     libsixel_la-palette-resident-vulkan.lo \
@@ -254,6 +257,7 @@ SIXEL_METAL_CONSUMERS = \
     libsixel_la-dither-policy-sierra3-gpu-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-filter-sample-metal.lo \
+    libsixel_la-gpu-ycbcr-metal.lo \
     libsixel_la-decoder-gpu-metal.lo \
     libsixel_la-encoder-body-gpu-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
@@ -678,6 +682,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter.h \
                 $(srcdir)/scale.c \
                 $(srcdir)/scale.h \
+                $(srcdir)/gpu-ycbcr.h \
                 $(srcdir)/chunk.c \
                 $(srcdir)/chunk.h \
                 $(srcdir)/chunk-factory.h \
@@ -836,6 +841,7 @@ libsixel_la_SOURCES += \
 $(srcdir)/gpu-runtime-vulkan.c \
 $(srcdir)/gpu-compute-vulkan.c \
 $(srcdir)/gpu-dequant-vulkan.c \
+$(srcdir)/gpu-ycbcr-vulkan.c \
 $(srcdir)/palette-kmeans-vulkan.c \
 $(srcdir)/palette-ward-vulkan.c \
 $(srcdir)/palette-resident-vulkan.c \
@@ -871,6 +877,7 @@ $(srcdir)/gpu-palette-metal.m \
 $(srcdir)/encoder-body-gpu-metal.m \
 $(srcdir)/retained-plane-metal.m \
 $(srcdir)/filter-sample-metal.m \
+$(srcdir)/gpu-ycbcr-metal.m \
 $(srcdir)/decoder-gpu-metal.m \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/palette-heckbert-gpu-metal.m \

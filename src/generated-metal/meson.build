@@ -62,6 +62,7 @@ metal_sources = files(
   '../lookup-policy-blockcull-gpu-apply.metal',
   '../lookup-policy-blockcull-gpu-scan.metal',
   '../gpu-dequant-fast4.metal',
+  '../gpu-ycbcr.metal',
   '../lookup-policy-none-gpu.metal',
   '../lookup-policy-blockcull-gpu.metal',
   '../lookup-policy-fhedt-gpu.metal',

@@ -51,6 +51,7 @@
 #include "loader-common.h"
 #include "options.h"
 #include "scale.h"
+#include "gpu-ycbcr.h"
 #include "cpu.h"
 #include "sixel_atomic.h"
 
@@ -3088,6 +3089,10 @@ struct sixel_ycbcr_rgb8 {
     float srgb_threshold[256];
     unsigned char srgb_bin[SIXEL_YCBCR_SRGB_BINS];
     int sw, sh, width, height, xphase, yphase, nearest, order;
+    sixel_ycbcr_gpu_ops_t const *gpu;
+    void *device;
+    sixel_ycbcr_gpu_plan_t gpu_plan;
+    int transfer;
 };
 
 typedef struct sixel_ycbcr_rgb8_source {
@@ -3105,6 +3110,9 @@ sixel_ycbcr_rgb8_free(sixel_ycbcr_rgb8_t *converter)
 
     if (converter != NULL) {
         allocator = converter->allocator;
+        if (converter->gpu != NULL && converter->device != NULL) {
+            converter->gpu->destroy(converter->device, allocator);
+        }
         for (i = 0; i < 3; ++i) {
             sixel_scale_host_filter_free(converter->filter[i], allocator);
         }
@@ -3175,13 +3183,12 @@ sixel_ycbcr_rgb8_pack_srgb(sixel_ycbcr_rgb8_t const *c, float value)
     return (unsigned char)(code + (value >= c->srgb_threshold[code]));
 }
 
-SIXELAPI SIXELSTATUS
-sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
+static SIXELSTATUS
+sixel_ycbcr_rgb8_init(sixel_ycbcr_rgb8_t **converter,
     sixel_frame_t const *source, int width, int height, int order,
     sixel_allocator_t *allocator)
 {
     sixel_ycbcr_rgb8_t *c;
-    int i, filters, channels;
 
     if (converter == NULL || source == NULL || source->ycbcr == NULL ||
         width <= 0 || height <= 0 ||
@@ -3214,6 +3221,27 @@ sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
     c->xphase = source->ycbcr->chroma_x_half;
     c->yphase = source->ycbcr->chroma_y_half;
     c->nearest = source->ycbcr->nearest_chroma;
+    *converter = c;
+    return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
+    sixel_frame_t const *source, int width, int height, int order,
+    sixel_allocator_t *allocator)
+{
+    sixel_ycbcr_rgb8_t *c;
+    SIXELSTATUS status;
+    int i, filters, channels;
+
+    status = sixel_ycbcr_rgb8_init(converter, source, width, height,
+                                  order, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    c = *converter;
+    *converter = NULL;
+    allocator = c->allocator;
     filters = order == SIXEL_YCBCR_RESIZE_LINEAR ? 1 : 3;
     channels = order == SIXEL_YCBCR_RESIZE_LINEAR ? 3 : 1;
     for (i = 0; i < filters; ++i) {
@@ -3236,6 +3264,162 @@ sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
     sixel_ycbcr_rgb8_prepare_srgb(c);
     *converter = c;
     return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_new_gpu(sixel_ycbcr_rgb8_t **converter,
+    sixel_frame_t const *source, int width, int height, int backend,
+    int transfer, sixel_allocator_t *allocator)
+{
+    sixel_ycbcr_rgb8_t *c;
+    sixel_ycbcr_gpu_ops_t const *ops = NULL;
+    sixel_ycbcr_gpu_taps_t *taps;
+    SIXELSTATUS status;
+
+    if (converter == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *converter = NULL;
+    if ((transfer != SIXEL_YCBCR_GPU_SIGNAL &&
+         transfer != SIXEL_YCBCR_GPU_BT1886) ||
+        (backend != SIXEL_YCBCR_GPU_METAL &&
+         backend != SIXEL_YCBCR_GPU_VULKAN)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+#ifdef HAVE_METAL
+    if (backend == SIXEL_YCBCR_GPU_METAL) {
+        ops = &sixel_ycbcr_gpu_metal;
+    }
+#endif
+#ifdef HAVE_VULKAN
+    if (backend == SIXEL_YCBCR_GPU_VULKAN) {
+        ops = &sixel_ycbcr_gpu_vulkan;
+    }
+#endif
+    if (ops == NULL) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    status = sixel_ycbcr_rgb8_init(&c, source, width, height,
+                                  SIXEL_YCBCR_RESIZE_SIGNAL, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (transfer == SIXEL_YCBCR_GPU_BT1886 &&
+        !sixel_cdef_same_rgb(source->ycbcr->rgb, NULL)) {
+        sixel_ycbcr_rgb8_free(c);
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    allocator = c->allocator;
+    c->gpu = ops;
+    c->transfer = transfer;
+    /* Vulkan rounds the buffer copies to a word. Check before doing any
+     * size_t arithmetic, including on a 32-bit host. */
+    if ((uint64_t)c->sw * c->sh +
+            2u * (((uint64_t)c->sw + 1) / 2) * ((c->sh + 1) / 2) >
+            UINT32_MAX - 3u ||
+        (uint64_t)width * height * 3u > UINT32_MAX - 3u) {
+        sixel_ycbcr_rgb8_free(c);
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    c->gpu_plan.luma_bytes = (size_t)c->sw * c->sh;
+    c->gpu_plan.chroma_bytes = ((size_t)c->sw + 1) / 2 *
+                             ((c->sh + 1) / 2);
+    c->gpu_plan.input_bytes = c->gpu_plan.luma_bytes +
+                             2 * c->gpu_plan.chroma_bytes;
+    c->gpu_plan.output_bytes = (size_t)width * height * 3u;
+    c->gpu_plan.taps_bytes = ((size_t)width + height) * 2u * sizeof(*taps);
+    taps = sixel_allocator_calloc(allocator, 1, c->gpu_plan.taps_bytes);
+    status = SIXEL_BAD_ALLOCATION;
+    if (taps != NULL) {
+        sixel_scale_ycbcr_gpu_axis(taps, c->sw, width, -1, 0);
+        sixel_scale_ycbcr_gpu_axis(taps + width, c->sw, width,
+                                  c->xphase, c->nearest);
+        sixel_scale_ycbcr_gpu_axis(taps + 2 * width, c->sh, height, -1, 0);
+        sixel_scale_ycbcr_gpu_axis(taps + 2 * width + height,
+                                  c->sh, height, c->yphase, c->nearest);
+        status = ops->create(&c->device, &c->gpu_plan, taps, allocator);
+        sixel_allocator_free(allocator, taps);
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_ycbcr_rgb8_free(c);
+        return status;
+    }
+    *converter = c;
+    return SIXEL_OK;
+}
+
+void
+sixel_ycbcr_gpu_upload(unsigned char *dst, sixel_ycbcr_gpu_params_t const *p,
+                      sixel_ycbcr_frame_view_t const *source)
+{
+    sixel_frame_plane_view_t const *plane;
+    unsigned char const *row;
+    size_t stride;
+    int i, y, height;
+
+    for (i = 0; i < (int)source->plane_count; ++i) {
+        plane = &source->planes[i];
+        height = i == 0 ? source->height : (source->height + 1) / 2;
+        stride = i == 0 ? p->sw : p->cw * p->chroma_step;
+        if (i == 1) {
+            dst += p->cb_offset;
+        } else if (i == 2) {
+            dst += p->cr_offset - p->cb_offset;
+        }
+        row = sixel_frame_ycbcr_row(plane, 0);
+        if (plane->stride_bytes == (ptrdiff_t)stride) {
+            memcpy(dst, row, stride * height);
+            continue;
+        }
+        for (y = 0; y < height; ++y) {
+            memcpy(dst + stride * y, sixel_frame_ycbcr_row(plane, y), stride);
+        }
+    }
+}
+
+void
+sixel_ycbcr_gpu_readback(unsigned char *dst, size_t stride,
+    unsigned char const *src, sixel_ycbcr_gpu_params_t const *p)
+{
+    size_t row_bytes = (size_t)p->width * 3;
+    uint32_t y;
+
+    if (stride == row_bytes) {
+        memcpy(dst, src, row_bytes * p->height);
+        return;
+    }
+    for (y = 0; y < p->height; ++y) {
+        memcpy(dst + stride * y, src + row_bytes * y, row_bytes);
+    }
+}
+
+static SIXELSTATUS
+sixel_ycbcr_rgb8_run_gpu(sixel_ycbcr_rgb8_t *c, sixel_frame_t const *source,
+                       unsigned char *dst, size_t stride, int nv12)
+{
+    sixel_ycbcr_gpu_params_t p = {0};
+    sixel_ycbcr_frame_view_t view = {0};
+    SIXELSTATUS status;
+
+    view.struct_size = sizeof(view);
+    status = sixel_frame_get_ycbcr(source, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    p.bt1886 = c->transfer == SIXEL_YCBCR_GPU_BT1886;
+    if (p.bt1886 && !sixel_cdef_same_rgb(source->ycbcr->rgb, NULL)) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    p.sw = (uint32_t)c->sw;
+    p.cw = ((uint32_t)c->sw + 1u) / 2u;
+    p.width = (uint32_t)c->width;
+    p.height = (uint32_t)c->height;
+    p.cb_offset = (uint32_t)c->gpu_plan.luma_bytes;
+    p.cr_offset = p.cb_offset + (nv12 ? 1u :
+                                  (uint32_t)c->gpu_plan.chroma_bytes);
+    p.chroma_step = nv12 ? 2 : 1;
+    sixel_frame_ycbcr_matrix(source->ycbcr, &p.offset, &p.scale, p.matrix);
+    return c->gpu->run(c->device, &c->gpu_plan, &p, &view, dst, stride);
 }
 
 static void
@@ -3279,6 +3463,12 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
         source->ycbcr->nearest_chroma != converter->nearest ||
         source->transparent_mask != NULL || source->alpha != NULL) {
         return SIXEL_NOT_IMPLEMENTED;
+    }
+    if (converter->gpu != NULL) {
+        if (to_linear != NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        return sixel_ycbcr_rgb8_run_gpu(converter, source, dst, stride, nv12);
     }
     simd_level = sixel_cpu_simd_level();
     input.frame = source;

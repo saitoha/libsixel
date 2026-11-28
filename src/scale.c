@@ -59,6 +59,7 @@
 #include "timeline-logger.h"
 #include "compat_stub.h"
 #include "scale.h"
+#include "gpu-ycbcr.h"
 #include "threading.h"
 #include "options.h"
 
@@ -2685,6 +2686,33 @@ sixel_scale_bilinear_ycbcr420(float *dst, sixel_ycbcr_frame_view_t const *view,
     sixel_allocator_free(allocator, taps);
     sixel_allocator_free(allocator, ring);
     return SIXEL_OK;
+}
+
+void
+sixel_scale_ycbcr_gpu_axis(sixel_ycbcr_gpu_taps_t *out, int src, int dst,
+                          int phase, int nearest)
+{
+    sixel_bilinear_taps_t taps;
+    int x, i, n;
+
+    for (x = 0; x < dst; ++x) {
+        sixel_scale_bilinear_taps(&taps, x, src, dst);
+        if (phase >= 0) {
+            sixel_scale_chroma_taps(&taps, src, phase, nearest);
+        }
+        i = 0;
+        while (taps.weights[i] == 0.0) {
+            ++i;
+        }
+        while (taps.weights[taps.count - 1] == 0.0) {
+            --taps.count;
+        }
+        out[x].first = taps.first + i;
+        out[x].count = taps.count - i;
+        for (n = 0; n < out[x].count; ++n) {
+            out[x].weights[n] = (float)(taps.weights[i + n] / taps.total);
+        }
+    }
 }
 
 struct sixel_scale_host_filter {

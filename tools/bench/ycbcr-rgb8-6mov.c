@@ -13,9 +13,11 @@
  *                      libswscale libswresample) \
  *   -lm -o /tmp/ycbcr-rgb8-6mov
  * On macOS, set DYLD_LIBRARY_PATH="$SIXEL_BUILD/src/.libs" when running:
- * /tmp/ycbcr-rgb8-6mov [samples [6mov-cpu-threads [cpu|gpu]]]
+ * /tmp/ycbcr-rgb8-6mov [samples [6mov-cpu-threads [cpu|gpu|metal|vulkan]]]
  * To benchmark gpu, link the configured 6mov's scale_objects and backend
- * libraries in place of video-scale-stub.c. Use a host frame in both cases.
+ * libraries in place of video-scale-stub.c. "gpu" compares 6mov GPU to
+ * libsixel CPU. "metal" and "vulkan" use the same backend for both libraries.
+ * All GPU timings start with host planes and end with host RGB888.
  *
  * Use the production CPU conversion directly, including its FFmpeg flags,
  * context reuse, metadata resolution and final RGB8 packing. Timings
@@ -100,16 +102,20 @@ bench_route(int route, struct ffmpeg_state *state, AVFrame *av,
 
 static int
 bench_case(AVFrame *av, sixel_frame_t *frame, int width, int height,
-           int samples, int threads, int gpu, int nv12, int transfer)
+           int samples, int threads, int gpu, int backend, int nv12,
+           int transfer)
 {
+    char const *candidate;
     struct ffmpeg_state *state = NULL;
-    sixel_ycbcr_rgb8_t *converter = NULL;
+    sixel_ycbcr_rgb8_t *converter = NULL, *cpu = NULL;
     unsigned char *dst[2] = {NULL, NULL};
     uint64_t ticks[2][SAMPLES_MAX], elapsed, error_sum = 0;
     char error[256];
     size_t stride = (size_t)width * 3, size = stride * height, i;
     size_t worst = 0;
     int iteration, first, j, route, diff, max_diff = 0, ok = 0;
+    SIXELSTATUS result;
+    int cpu_max = 0;
 
     av->color_trc = transfer ? AVCOL_TRC_BT709 : AVCOL_TRC_IEC61966_2_1;
     state = calloc(1, sizeof(*state));
@@ -121,11 +127,23 @@ bench_case(AVFrame *av, sixel_frame_t *frame, int width, int height,
     state->source_format = SIXMOV_SOURCE_8BIT;
     state->scale_policy = gpu ? SIXMOV_SCALE_GPU : SIXMOV_SCALE_CPU;
     state->scale_threads = (unsigned int)threads;
-    if (ffmpeg_set_output(state, width, height, error, sizeof(error)) ||
-        sixel_ycbcr_rgb8_new(&converter, frame, width, height,
-                            SIXEL_YCBCR_RESIZE_SIGNAL, NULL)) {
+    if (ffmpeg_set_output(state, width, height, error, sizeof(error))) {
         goto end;
     }
+    if (backend) {
+        result = sixel_ycbcr_rgb8_new_gpu(&converter, frame, width, height,
+            backend, transfer ? SIXEL_YCBCR_GPU_BT1886 :
+            SIXEL_YCBCR_GPU_SIGNAL, NULL);
+    } else {
+        result = sixel_ycbcr_rgb8_new(&converter, frame, width, height,
+                                     SIXEL_YCBCR_RESIZE_SIGNAL, NULL);
+    }
+    if (result != SIXEL_OK) {
+        fprintf(stderr, "GPU/CPU converter setup failed: %d\n", result);
+        goto end;
+    }
+    candidate = backend == SIXEL_YCBCR_GPU_METAL ? "libsixel-metal" :
+        backend == SIXEL_YCBCR_GPU_VULKAN ? "libsixel-vulkan" : "libsixel";
     /* Warm both plans, then alternate first execution to balance cache
      * effects. An initial 6mov call prepares the shared transfer policy. */
     for (iteration = -4; iteration < samples; ++iteration) {
@@ -133,7 +151,7 @@ bench_case(AVFrame *av, sixel_frame_t *frame, int width, int height,
         for (j = 0; j < 2; ++j) {
             route = first ^ j;
             if (bench_route(route, state, av, converter, frame, dst[route],
-                            size, stride, transfer, &elapsed)) {
+                            size, stride, transfer && !backend, &elapsed)) {
                 goto end;
             }
             if (iteration >= 0) {
@@ -149,22 +167,43 @@ bench_case(AVFrame *av, sixel_frame_t *frame, int width, int height,
             worst = i;
         }
     }
+    if (backend) {
+        if (sixel_ycbcr_rgb8_new(&cpu, frame, width, height,
+                                 SIXEL_YCBCR_RESIZE_SIGNAL, NULL) ||
+            sixel_ycbcr_rgb8_run(cpu, frame, dst[0], size, stride,
+                                transfer ? bench_to_linear : NULL,
+                                &state->color)) {
+            goto end;
+        }
+        for (i = 0; i < size; ++i) {
+            diff = abs(dst[0][i] - dst[1][i]);
+            if (diff > cpu_max) {
+                cpu_max = diff;
+            }
+        }
+        if (cpu_max > 1) {
+            fprintf(stderr, "GPU differs from libsixel CPU by %d codes\n",
+                    cpu_max);
+            goto end;
+        }
+    }
     for (route = 0; route < 2; ++route) {
         qsort(ticks[route], (size_t)samples, sizeof(uint64_t),
               bench_compare_ticks);
-        printf("%s,%s,%dx%d,%s,%d,%d,%.3f,%.3f,%.5f,%d,%zu,%zu,%zu\n",
+        printf("%s,%s,%dx%d,%s,%d,%d,%.3f,%.3f,%.5f,%d,%zu,%zu,%zu,%d\n",
             nv12 ? "nv12" : "i420", transfer ? "bt1886" : "srgb",
-            width, height, route ? "libsixel" : gpu ? "6mov-gpu" : "6mov-cpu",
-            samples, route ? 1 : gpu ? 0 : (int)state->used_threads,
+            width, height, route ? candidate : gpu ? "6mov-gpu" : "6mov-cpu",
+            samples, route ? !backend : gpu ? 0 : (int)state->used_threads,
             (ticks[route][samples / 2] +
              ticks[route][(samples - 1) / 2]) * 0.5e-6,
             ticks[route][(95 * samples + 99) / 100 - 1] * 1e-6,
             route ? (double)error_sum / size : 0.0, route ? max_diff : 0,
             route ? worst % stride / 3 : 0, route ? worst / stride : 0,
-            route ? worst % 3 : 0);
+            route ? worst % 3 : 0, route ? cpu_max : 0);
     }
     ok = 1;
 end:
+    sixel_ycbcr_rgb8_free(cpu);
     sixel_ycbcr_rgb8_free(converter);
     ffmpeg_close(state);
     free(dst[0]);
@@ -186,12 +225,15 @@ main(int argc, char **argv)
         SOURCE_WIDTH, SOURCE_HEIGHT, 0, {{0}}, NULL};
     int samples = argc > 1 ? atoi(argv[1]) : 32;
     int threads = argc > 2 ? atoi(argv[2]) : 1;
-    int gpu = argc > 3 && strcmp(argv[3], "gpu") == 0;
+    char const *mode = argc > 3 ? argv[3] : "cpu";
+    int backend = strcmp(mode, "metal") == 0 ? SIXEL_YCBCR_GPU_METAL :
+        strcmp(mode, "vulkan") == 0 ? SIXEL_YCBCR_GPU_VULKAN : 0;
+    int gpu = backend || strcmp(mode, "gpu") == 0;
     int nv12, i, transfer, rows, ok = 0;
     unsigned int p;
 
     if (samples < 1 || samples > SAMPLES_MAX || threads < 1 || threads > 64 ||
-        argc > 4 || (argc > 3 && !gpu && strcmp(argv[3], "cpu") != 0)) {
+        argc > 4 || (!gpu && strcmp(mode, "cpu") != 0)) {
         return EXIT_FAILURE;
     }
     rgb = sixel_color_def_new_named("srgb");
@@ -202,7 +244,7 @@ main(int argc, char **argv)
     }
     view.definition = def;
     puts("layout,eotf,size,route,samples,threads,median_ms,p95_ms,"
-         "mae,max,max_x,max_y,max_channel");
+         "mae,max,max_x,max_y,max_channel,libsixel_cpu_max");
     for (nv12 = 0; nv12 < 2; ++nv12) {
         av = av_frame_alloc();
         if (av == NULL) {
@@ -232,7 +274,7 @@ main(int argc, char **argv)
         for (transfer = 0; transfer < 2; ++transfer) {
             for (i = 0; i < 3; ++i) {
                 if (!bench_case(av, frame, dims[i][0], dims[i][1], samples,
-                                threads, gpu, nv12, transfer)) {
+                                threads, gpu, backend, nv12, transfer)) {
                     goto end;
                 }
             }

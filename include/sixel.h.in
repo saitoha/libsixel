@@ -1914,7 +1914,7 @@ sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
     sixel_frame_t const *source, int width, int height, int order,
     sixel_allocator_t *allocator);
 
-/* Write RGB888 rows to caller-owned storage without internal allocations.
+/* Write RGB888 rows to caller-owned storage. The CPU run does not allocate.
  * The destination must not overlap any source plane. Run calls on a
  * converter must be serialized. A NULL callback packs source RGB signal
  * directly (SIGNAL order only). Otherwise apply the callback before or after
@@ -1926,6 +1926,24 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
 
 SIXELAPI void
 sixel_ycbcr_rgb8_free(sixel_ycbcr_rgb8_t *converter);
+
+#define SIXEL_HAVE_YCBCR_RGB8_GPU 1
+#define SIXEL_YCBCR_GPU_METAL 1
+#define SIXEL_YCBCR_GPU_VULKAN 2
+#define SIXEL_YCBCR_GPU_SIGNAL 0
+#define SIXEL_YCBCR_GPU_BT1886 1
+
+/* Prepare the requested GPU backend with the same geometry and chroma
+ * rules as SIGNAL-order CPU resize. SIGNAL writes encoded source RGB.
+ * BT1886 applies the SDR zero-black 2.4 transfer and encodes sRGB, and
+ * requires an sRGB source RGB definition. Run with a NULL callback.
+ * An unavailable backend reports SIXEL_NOT_IMPLEMENTED. No CPU fallback
+ * is implicit. The converter and its input/output buffers must follow the
+ * same lifetime and serialization rules as the CPU API. */
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_new_gpu(sixel_ycbcr_rgb8_t **converter,
+    sixel_frame_t const *source, int width, int height, int backend,
+    int transfer, sixel_allocator_t *allocator);
 
 /* get pixels */
 SIXELAPI unsigned char *

@@ -96,6 +96,7 @@ The `8bit` entries identify GPU implementations awaiting an FP32 data path. See 
 | PROGRESSIVE-REPAIR-SCAN | Score progressive repair candidates, reduce error and select samples | done | 8bit | 8bit | planned | |
 | RETAINED-EXPAND | Expand retained canvas rows on the GPU | done | 8bit | 8bit | planned | |
 | SAMPLE-VARY-POINTS | Test whether sample points lie in a solid region | done | 8bit | 8bit | 8bit | Metal scans large frames on the device; Vulkan scans when recent GPU busy time leaves clear headroom, uploads a separate palette source when needed, and shares the input upload with dither when possible. WebGPU scans unmasked RGB888 clips of at least 1,048,576 pixels and reads the histogram back for the shared CPU color selection. |
+| SCALE-YCBCR-RGB8 | Convert filtered YCbCr rows to RGB888 | done | 8bit | 8bit | planned | Signal-domain I420 and NV12 resize with host upload and RGB8 readback. |
 
 <!-- accel-ledger-end -->
 

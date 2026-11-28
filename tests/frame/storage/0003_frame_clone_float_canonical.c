@@ -3420,6 +3420,138 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static void
+ycbcr_rgb8_bt1886(void *context, float *rgb, int width)
+{
+    int i;
+
+    (void)context;
+    for (i = 0; i < width * 3; ++i) {
+        rgb[i] = rgb[i] > 0.0f ? (float)pow(rgb[i], 2.4) : 0.0f;
+    }
+}
+
+static int
+test_ycbcr_rgb8_gpu(int backend)
+{
+    enum { SW = 13, SH = 13, CW = 7, DW = 6, DH = 6, STRIDE = DW * 3 + 2 };
+    static unsigned char const border[3][3] = {
+        {192, 192, 64}, {192, 192, 64}, {64, 64, 65}
+    };
+    unsigned char luma[(SW + 2) * SH], cb[CW * CW], cr[CW * CW];
+    unsigned char uv[CW * CW * 2], expected[STRIDE * DH], actual[STRIDE * DH];
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *def = NULL;
+    sixel_ycbcr_def_config_t cfg = {sizeof(cfg), SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_LIMITED, 0, 1, NULL};
+    sixel_ycbcr_frame_view_t view = {sizeof(view), 0, 12, 12, 0, {{0}}, NULL};
+    sixel_ycbcr_rgb8_t *cpu = NULL, *gpu = NULL;
+    sixel_frame_t *frame = NULL;
+    SIXELSTATUS status;
+    int x, y, layout, transfer, i, size, width, height, result = EXIT_FAILURE;
+    size_t stride;
+
+    rgb = sixel_color_def_new_named("srgb");
+    cfg.rgb = rgb;
+    if (rgb == NULL || (def = sixel_ycbcr_def_new(&cfg)) == NULL ||
+        sixel_frame_new(&frame, NULL)) {
+        goto end;
+    }
+    view.definition = def;
+    view.planes[0] = (sixel_frame_plane_view_t){luma, sizeof(luma),
+        (SH - 1) * (SW + 2), -(SW + 2)};
+    for (y = 0; y < CW; ++y) {
+        for (x = 0; x < CW; ++x) {
+            i = y * CW + x;
+            cb[i] = x >= 1 && x <= 3 && y >= 1 && y <= 3 ?
+                border[y - 1][x - 1] : (unsigned char)(80 + 13 * x + y);
+            cr[i] = 119;
+            uv[2 * i] = cb[i];
+            uv[2 * i + 1] = cr[i];
+        }
+    }
+    memset(luma, 66, sizeof(luma));
+    for (size = 0; size < 2; ++size) {
+        view.width = view.height = size ? SW : 12;
+        width = size ? 9 : DW;
+        height = size ? 3 : DH;
+        stride = (size_t)width * 3u + 1u;
+        for (transfer = 0; transfer < 2; ++transfer) {
+            for (layout = 0; layout < 2; ++layout) {
+                view.pixelformat = layout ? SIXEL_PIXELFORMAT_NV12 :
+                    SIXEL_PIXELFORMAT_YUV420P;
+                view.plane_count = layout ? 2u : 3u;
+                view.planes[1] = layout ?
+                    (sixel_frame_plane_view_t){uv, sizeof(uv), 0, CW * 2} :
+                    (sixel_frame_plane_view_t){cb, sizeof(cb), 0, CW};
+                view.planes[2] = (sixel_frame_plane_view_t){
+                    cr, sizeof(cr), 0, CW};
+                if (sixel_frame_init_ycbcr_borrowed(frame, &view)) {
+                    goto end;
+                }
+                if (layout == 0) {
+                    status = sixel_ycbcr_rgb8_new_gpu(&gpu, frame,
+                        width, height, backend, transfer ?
+                        SIXEL_YCBCR_GPU_BT1886 : SIXEL_YCBCR_GPU_SIGNAL, NULL);
+                    if (status == SIXEL_NOT_IMPLEMENTED && !size && !transfer) {
+                        result = 77;
+                        goto end;
+                    }
+                    if (status != SIXEL_OK ||
+                        sixel_ycbcr_rgb8_new(&cpu, frame, width, height,
+                                            SIXEL_YCBCR_RESIZE_SIGNAL, NULL)) {
+                        fprintf(stderr, "GPU setup failed: %d\n", status);
+                        goto end;
+                    }
+                }
+                memset(expected, 0xa5, sizeof(expected));
+                memset(actual, 0xa5, sizeof(actual));
+                status = sixel_ycbcr_rgb8_run(gpu, frame, actual,
+                            sizeof(actual), stride, NULL, NULL);
+                if (status != SIXEL_OK ||
+                    sixel_ycbcr_rgb8_run(cpu, frame, expected,
+                        sizeof(expected), stride, transfer ?
+                        ycbcr_rgb8_bt1886 : NULL, NULL)) {
+                    fprintf(stderr, "GPU run failed: %d\n", status);
+                    goto end;
+                }
+                for (y = 0; y < height; ++y) {
+                    for (x = 0; x < width * 3; ++x) {
+                        i = (int)(y * stride) + x;
+                        if (abs(actual[i] - expected[i]) > 1) {
+                            fprintf(stderr, "byte %d GPU %u CPU %u\n", i,
+                                (unsigned int)actual[i],
+                                (unsigned int)expected[i]);
+                            goto end;
+                        }
+                    }
+                    if (actual[y * stride + width * 3] != 0xa5) {
+                        goto end;
+                    }
+                }
+                /* The previously measured Cb=192 to 64 boundary yields
+                 * 34703/256 with these phases and half-size footprints. */
+                if (!size && transfer && actual[2 * stride + 8] != 64) {
+                    fprintf(stderr, "blue at the chroma boundary: %u\n",
+                            (unsigned int)actual[2 * stride + 8]);
+                    goto end;
+                }
+            }
+            sixel_ycbcr_rgb8_free(gpu);
+            sixel_ycbcr_rgb8_free(cpu);
+            gpu = cpu = NULL;
+        }
+    }
+    result = EXIT_SUCCESS;
+end:
+    sixel_ycbcr_rgb8_free(gpu);
+    sixel_ycbcr_rgb8_free(cpu);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(def);
+    sixel_color_def_free(rgb);
+    return result;
+}
+
 /* Decode the two SIXEL streams so palettes may choose different indexes. */
 static int
 test_ycbcr_auto_resize(sixel_frame_t *source, float *reference,
@@ -5728,6 +5860,12 @@ test_frame_0014_clone_float(int argc, char **argv)
             c = SIXEL_PIXELFORMAT_NV21;
         } else if (strcmp(argv[2], "yv12") == 0) {
             c = SIXEL_PIXELFORMAT_YV12;
+        }
+        if (strcmp(argv[3], "rgb8-metal") == 0) {
+            return test_ycbcr_rgb8_gpu(SIXEL_YCBCR_GPU_METAL);
+        }
+        if (strcmp(argv[3], "rgb8-vulkan") == 0) {
+            return test_ycbcr_rgb8_gpu(SIXEL_YCBCR_GPU_VULKAN);
         }
         if (strcmp(argv[3], "rgb8-host-fast") == 0) {
             return test_ycbcr_rgb8_host_fast();

@@ -50,6 +50,7 @@ vulkan_policies = [
 vulkan_stages = [
   '../filter-sample-gpu.glsl',
   '../gpu-dequant-fast4.glsl',
+  '../gpu-ycbcr.glsl',
   '../palette-kmeans-gpu.glsl',
   '../palette-ward.glsl',
   '../palette-kmeans-resident.glsl',
