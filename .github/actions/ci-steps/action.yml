@@ -1729,6 +1729,14 @@ runs:
               # Registry scans can accumulate more than 2^32 hits in a suite.
               gcovr_options+=(--gcov-suspicious-hits-threshold=0)
               ;;
+            CC=gcc-14)
+              GCOV_TOOL="gcov-14"
+              # Full registry scans also exceed 2^32 hits with GCC 14.
+              # Older distro gcovr releases lack this option.
+              if [[ "$(gcovr --help)" == *--gcov-suspicious-hits-threshold* ]]; then
+                gcovr_options+=(--gcov-suspicious-hits-threshold=0)
+              fi
+              ;;
             CC=gcc-*) GCOV_TOOL="gcov-${compiler_assignment#CC=gcc-}" ;;
             *) GCOV_TOOL="gcov" ;;
           esac
