@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-STUCKI vulkan */
 /*
  * Stucki diffusion in four spatial phases and two cycles, the
  * Vulkan port of dither-policy-stucki-gpu.metal. k is a subpass, never video

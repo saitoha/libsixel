@@ -1,3 +1,4 @@
+/* Accel: PALETTE-MAP metal */
 #include <metal_stdlib>
 using namespace metal;
 struct Params {

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-BLUENOISE vulkan */
 /*
  * Closes the fused palette-apply kernel begun by
  * dither-policy-bluenoise-gpu-prefix.glsl around the lookup policy's lookup_rgb8(),

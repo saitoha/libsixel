@@ -1,7 +1,6 @@
-# Compare acceleration units, their Accel tags, the acceleration ledger and
-# the frozen list of untagged units.
+# Compare acceleration units and their Accel tags with the acceleration ledger.
 #
-# Usage: awk -v units=FILE -v legacy=FILE -f accel-ledger.awk LEDGER.md
+# Usage: awk -v units=FILE -f accel-ledger.awk LEDGER.md
 # units is the output of accel-units.awk. Every problem is printed on one
 # line; the exit status is 1 when any problem was found.
 
@@ -10,10 +9,10 @@ function fail(message) {
     failed = 1
 }
 
-function covered(family, backends) {
-    if (index(" " backends " ", " " family " "))
+function covered(family, backends, families) {
+    if (family in backends)
         return 1
-    return family == "sse2" && index(" " backends " ", " avx2 ")
+    return family == "sse2" && ("avx2" in backends) && ("avx2" in families)
 }
 
 BEGIN {
@@ -22,6 +21,7 @@ BEGIN {
                       backend, " ")
     columns["simd"] = "scalar neon sse2 avx2 wasm"
     columns["gpu"] = "scalar metal vulkan webgpu"
+    gpu["metal"] = gpu["vulkan"] = gpu["webgpu"] = 1
     headers["simd"] = "| ID | Operation | Scalar | NEON | SSE2 | AVX2 | WASM | Notes |"
     headers["gpu"] = "| ID | Operation | Scalar | Metal | Vulkan | WebGPU | Notes |"
     table = ""
@@ -38,6 +38,7 @@ BEGIN {
     opened[table] = 1
     ncolumns = split(columns[table], column, " ")
     seen_header = 0
+    previous_id = ""
     next
 }
 
@@ -76,11 +77,15 @@ table != "" {
     }
     if ((table, id) in table_row)
         fail("ledger: duplicate ID " id " in the " table " table")
+    else if (previous_id != "" && id < previous_id)
+        fail("ledger: " id " is out of order in the " table " table")
+    previous_id = id
     table_row[table, id] = FNR
     applies = 0
     for (k = 1; k <= ncolumns; k++) {
         state = cell[k + 3]
-        if (state !~ /^(done|planned|n\/a|rejected)$/)
+        if (state !~ /^(done|planned|n\/a|rejected)$/ &&
+            !(state == "8bit" && (column[k] in gpu)))
             fail("ledger: " id " " column[k] " has unknown state \"" state "\"")
         if (k > 1 && state != "n/a")
             applies = 1
@@ -114,68 +119,68 @@ END {
             fail("ledger: " id " has no SIMD backend; remove its SIMD row")
     }
 
-    while ((getline line < legacy) > 0) {
-        if (line ~ /^#/ || line == "")
-            continue
-        split(line, f, "\t")
-        key = f[1] "\t" f[3]
-        if (key in allowed)
-            fail("legacy: duplicate row " f[1] " " f[3])
-        allowed[key] = f[2] + 0
-    }
-    close(legacy)
-
-    while ((getline line < units) > 0) {
-        n = split(line, u, "\t")
+    while ((read_status = (getline line < units)) > 0) {
+        split(line, u, "\t")
         if (u[1] == "!malformed") {
             fail(u[2] ":" u[3] ": malformed Accel tag")
             continue
         }
-        where = u[1] ":" u[2] " " u[3]
-        if (u[5] == "") {
-            untagged[u[1] "\t" u[3]]++
-            untagged_where[u[1] "\t" u[3]] = where " (" u[4] ")"
+        if (u[1] == "!misplaced") {
+            fail(u[2] ":" u[3] ": place the Accel tag before the unit")
             continue
         }
-        delete backends_of
+        where = u[1] ":" u[2] " " u[3]
+        delete families
+        nfam = split(u[4], fam, ",")
+        for (k = 1; k <= nfam; k++)
+            families[fam[k]] = 1
+        if ("unsupported" in families)
+            fail(where ": SIMD expression has no recognized backend")
+        if (u[5] == "" && nfam) {
+            fail(where " (" u[4] "): acceleration without an Accel tag")
+            continue
+        }
+        delete backends
         ntags = split(u[5], tag, " ")
-        backends = ""
         for (t = 1; t <= ntags; t++) {
             split(tag[t], pair, "/")
-            backends = backends " " pair[2]
+            family = pair[2]
+            fp32 = sub(/-fp32$/, "", family)
+            backends[family] = 1
+            if (family != "scalar" && !(family in families)) {
+                fail(where ": Accel tag names unused backend " pair[2])
+                continue
+            }
             if (!(pair[1] in ledger_row)) {
                 fail(where ": Accel tag " pair[1] " is not in the ledger")
                 continue
             }
-            if (ledger[pair[1], pair[2]] != "done")
+            state = ledger[pair[1], family]
+            if (state != "done" && !(state == "8bit" && !fp32))
                 fail(where ": Accel tag " pair[1] " " pair[2] \
-                     " but the ledger says " ledger[pair[1], pair[2]])
+                     " but the ledger says " state)
             tagged[pair[1], pair[2]] = 1
         }
-        nfam = split(u[4], fam, ",")
         for (k = 1; k <= nfam; k++)
-            if (!covered(fam[k], backends))
-                fail(where ": uses " fam[k] " but its Accel tag names" backends)
+            if (fam[k] != "unsupported" && !covered(fam[k], backends, families))
+                fail(where ": uses " fam[k] " without a matching Accel tag")
     }
+    if (read_status < 0)
+        fail("cannot read acceleration units: " units)
     close(units)
 
-    for (key in untagged) {
-        if (!(key in allowed))
-            fail(untagged_where[key] ": acceleration without an Accel tag")
-        else if (untagged[key] > allowed[key])
-            fail(untagged_where[key] ": more untagged units than the legacy list allows")
-    }
-    for (key in allowed) {
-        if (!(key in untagged) || untagged[key] < allowed[key]) {
-            split(key, f, "\t")
-            fail("legacy: " f[1] " " f[2] " is no longer untagged; lower or remove its row")
+    for (id in ledger_row) {
+        for (k = 2; k <= nbackends; k++) {
+            family = backend[k]
+            state = ledger[id, family]
+            if ((state == "done" || (state == "8bit" && (family in gpu))) &&
+                !((id, family) in tagged))
+                fail("ledger: " id " " family " is " state " but no Accel tag names it")
+            if (state == "done" && (family in gpu) &&
+                !((id, family "-fp32") in tagged))
+                fail("ledger: " id " " family " is done but no FP32 Accel tag names it")
         }
     }
-
-    for (id in ledger_row)
-        for (k = 2; k <= nbackends; k++)
-            if (ledger[id, backend[k]] == "done" && !((id, backend[k]) in tagged))
-                fail("ledger: " id " " backend[k] " is done but no Accel tag names it")
 
     exit failed
 }

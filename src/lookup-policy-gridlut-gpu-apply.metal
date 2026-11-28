@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-GRIDLUT metal */
 kernel void lookup_gridlut_apply(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

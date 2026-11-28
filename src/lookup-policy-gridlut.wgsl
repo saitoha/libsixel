@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-GRIDLUT webgpu
 // The native count and 64 byte indexes fit in 17 storage words on WebGPU.
 // Four consecutive indexes share each word, and zero count means overflow.
 struct GridlutRow {

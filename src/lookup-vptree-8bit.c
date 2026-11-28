@@ -782,6 +782,7 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
  * entries. Strict comparison in palette order preserves the lowest-index
  * tie rule, including duplicate colors. All squared byte distances fit in
  * signed 32 bits. Warm entries never pay for this scan. */
+/* Accel: LOOKUP-VPTREE neon sse2 */
 static void
 sixel_lookup_vptree_8bit_map_cold8(
     sixel_lookup_vptree_8bit_t const *tree,

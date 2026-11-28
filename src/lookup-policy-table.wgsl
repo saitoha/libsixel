@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-5BIT webgpu
+// Accel: LOOKUP-6BIT webgpu
+// Accel: LOOKUP-FHEDT webgpu
 @group(0) @binding(1) var<storage, read> palette: array<u32>;
 @group(0) @binding(8) var<storage, read_write> table: array<u32>;
 

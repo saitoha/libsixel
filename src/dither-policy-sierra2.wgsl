@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-SIERRA2 webgpu
 // Sender offsets and normalized error shares for sierra2.
 const dx = array<i32, 7>(
     1, 2, -2, -1, 0, 1, 2);

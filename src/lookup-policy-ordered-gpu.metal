@@ -15,6 +15,7 @@ static uint ordered_distance(constant uchar *palette, uchar3 query, uint i)
 /* Distance rows, packed RGB rows and 32^3 seeds share a 640 KiB table.
  * Queries use integer arithmetic without geometry tolerances.
  * Rows have stride 256, including short palettes and padded tails. */
+/* Accel: LOOKUP-ORDERED metal */
 kernel void ordered_build_rows(
     constant uchar *palette [[buffer(0)]],
     constant uint& ncolors [[buffer(1)]],
@@ -63,6 +64,7 @@ kernel void ordered_build_rows(
     table[row * 256u + lane] = key;
     table[65536u + row * 256u + lane] = rgb;
 }
+/* Accel: LOOKUP-ORDERED metal */
 kernel void ordered_build_seeds(
     constant uchar *palette [[buffer(0)]],
     constant uint& ncolors [[buffer(1)]],

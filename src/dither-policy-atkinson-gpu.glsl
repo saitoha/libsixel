@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-ATKINSON vulkan */
 /*
  * Atkinson diffusion in four spatial phases and two cycles, the
  * Vulkan port of dither-policy-atkinson-gpu.metal. k is a subpass, never video

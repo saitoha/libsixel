@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-ATKINSON webgpu
+// Accel: DITHER-BURKES webgpu
+// Accel: DITHER-FS webgpu
+// Accel: DITHER-JAJUNI webgpu
+// Accel: DITHER-SIERRA1 webgpu
+// Accel: DITHER-SIERRA2 webgpu
+// Accel: DITHER-SIERRA3 webgpu
+// Accel: DITHER-STUCKI webgpu
 // Preserve the direction of the incoming correction when any component
 // reaches a soft limit. WGSL round uses nearest-even at half integers.
 fn candidate(x: i32, y: i32, source: vec3f) -> vec3f {

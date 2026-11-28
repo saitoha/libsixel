@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-NONE webgpu
 // Squared RGB8 distances fit in i32. A strict comparison gives ties to
 // the lowest register, matching the CPU and Vulkan exhaustive policies.
 @group(0) @binding(1) var<storage, read> palette: array<u32>;

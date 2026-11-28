@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-ATKINSON webgpu
+// Accel: DITHER-BURKES webgpu
+// Accel: DITHER-FS webgpu
+// Accel: DITHER-JAJUNI webgpu
+// Accel: DITHER-LSO2 webgpu
+// Accel: DITHER-SIERRA1 webgpu
+// Accel: DITHER-SIERRA2 webgpu
+// Accel: DITHER-SIERRA3 webgpu
+// Accel: DITHER-STUCKI webgpu
 struct DiffusionParams {
     width: u32, height: u32, pass_id: u32, serpentine: u32,
     deadzone: f32, lower: f32, upper: f32, hard: u32,

@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-DELAUNAY metal */
 kernel void lookup_delaunay_apply(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

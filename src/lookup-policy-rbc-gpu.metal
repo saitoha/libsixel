@@ -19,6 +19,7 @@ static uint rbc_distance(int3 a, int3 b)
     d = a - b;
     return uint(d.x*d.x + d.y*d.y + d.z*d.z);
 }
+/* Accel: LOOKUP-RBC metal */
 kernel void rbc_assign(constant uchar *p [[buffer(0)]],
     constant uint& count [[buffer(1)]], device uint *table [[buffer(3)]],
     uint i [[thread_position_in_grid]])
@@ -37,6 +38,7 @@ kernel void rbc_assign(constant uchar *p [[buffer(0)]],
     }
     table[4096u + i] = owner;
 }
+/* Accel: LOOKUP-RBC metal */
 kernel void rbc_pack_clusters(constant uchar *p [[buffer(0)]],
     constant uint& count [[buffer(1)]], device uint *table [[buffer(3)]],
     uint cluster [[threadgroup_position_in_grid]],
@@ -64,6 +66,7 @@ kernel void rbc_pack_clusters(constant uchar *p [[buffer(0)]],
         table[cluster*256u+i] = value;
 }
 
+/* Accel: LOOKUP-RBC metal */
 kernel void rbc_seed(constant uchar *palette [[buffer(0)]],
     constant uint& ncolors [[buffer(1)]],
     constant uint& fractional [[buffer(2)]],

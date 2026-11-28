@@ -88,6 +88,7 @@ static void dequant_store_zero(device uchar *result, uint gid)
     result[gid * 4u + 2u] = uchar(0);
     result[gid * 4u + 3u] = uchar(0);
 }
+/* Accel: DECODE-DEQUANT-FAST4 metal */
 kernel void sixel_gpu_dequant_fast4_rgba(
     device uchar *result [[buffer(0)]],
     device const uchar *rgba [[buffer(1)]],

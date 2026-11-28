@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-NONE vulkan */
 /*
  * NONE lookup in the "vulkan.lookup-rgb8.v1" program ABI: the exhaustive
  * palette scan, first minimum (lowest index) on ties. It has no builder

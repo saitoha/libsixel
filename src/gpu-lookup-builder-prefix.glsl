@@ -1,5 +1,16 @@
 #version 450
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-5BIT vulkan */
+/* Accel: LOOKUP-6BIT vulkan */
+/* Accel: LOOKUP-CERTLUT vulkan */
+/* Accel: LOOKUP-DELAUNAY vulkan */
+/* Accel: LOOKUP-EYTZINGER vulkan */
+/* Accel: LOOKUP-FHEDT vulkan */
+/* Accel: LOOKUP-GRIDLUT vulkan */
+/* Accel: LOOKUP-MAHALANOBIS vulkan */
+/* Accel: LOOKUP-ORDERED vulkan */
+/* Accel: LOOKUP-RBC vulkan */
+/* Accel: LOOKUP-VPTREE vulkan */
 /*
  * Builder prelude of the "vulkan.lookup-rgb8.v1" program ABI. A builder
  * program is this prelude, then a lookup policy's own GLSL, then a main()

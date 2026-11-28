@@ -8,6 +8,7 @@ static uint eytzinger_key(constant uchar *palette, uint i)
 
 /* A bounded parallel rank sort constructs the same projection ordering.
  * Equal projections use palette order so GPU scheduling cannot change it. */
+/* Accel: LOOKUP-EYTZINGER metal */
 kernel void eytzinger_sort(constant uchar *palette [[buffer(0)]],
     constant uint &count [[buffer(1)]],
     device uint *sorted [[buffer(3)]],

@@ -510,6 +510,7 @@ sixel_similarity_min_diff_scalar(const unsigned char *palette,
 }
 
 #if defined(SIXEL_KUNDITHER_USE_NEON)
+/* Accel: DECODE-SIMILARITY neon */
 static inline unsigned int
 sixel_similarity_min_diff_neon(const unsigned char *palette,
                                int ncolors,

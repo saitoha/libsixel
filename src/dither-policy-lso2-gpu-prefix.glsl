@@ -1,5 +1,6 @@
 #version 450
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-LSO2 vulkan */
 /*
  * LSO2 GPU diffusion as a consumer of the
  * "vulkan.lookup-rgb8.v1" program ABI: the declarations a lookup policy's

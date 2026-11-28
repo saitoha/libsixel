@@ -37,12 +37,14 @@ struct FhedtBuildParams {
 
 /* Only R squared column heads need clearing. Seed lists contain at most
  * 256 entries and are consumed after the tracked seed encoder completes. */
+/* Accel: LOOKUP-FHEDT metal */
 kernel void sixel_gpu_fhedt_clear(device uint *heads [[buffer(0)]],
                        uint i [[thread_position_in_grid]])
 {
     if (i < R * R) heads[i] = UINT_MAX;
 }
 
+/* Accel: LOOKUP-FHEDT metal */
 kernel void sixel_gpu_fhedt_seed(device atomic_uint *heads [[buffer(0)]],
                       constant uchar *palette [[buffer(2)]],
                       constant FhedtBuildParams &p [[buffer(6)]],
@@ -62,6 +64,7 @@ kernel void sixel_gpu_fhedt_seed(device atomic_uint *heads [[buffer(0)]],
 /* A seed's X cost is zero, so scan only that column's palette entries.
  * Threads write consecutive X cells. Explicit tie rules make the result
  * independent of list order: earlier X, then last colliding label. */
+/* Accel: LOOKUP-FHEDT metal */
 kernel void sixel_gpu_fhedt_x(device const uint *heads [[buffer(0)]],
                      device Grid *output [[buffer(1)]],
                      constant uchar *palette [[buffer(2)]],
@@ -92,6 +95,7 @@ kernel void sixel_gpu_fhedt_x(device const uint *heads [[buffer(0)]],
     output[at] = grid_value(minimum, best);
 }
 
+/* Accel: LOOKUP-FHEDT metal */
 kernel void sixel_gpu_fhedt_edt(device const Grid *input [[buffer(0)]],
                      device Grid *output [[buffer(1)]],
                      constant FhedtBuildParams &p [[buffer(6)]],
@@ -159,6 +163,7 @@ kernel void sixel_gpu_fhedt_edt(device const Grid *input [[buffer(0)]],
     }
 }
 
+/* Accel: LOOKUP-FHEDT metal */
 kernel void sixel_gpu_fhedt_pack(device const ushort *grid [[buffer(0)]],
                       device ushort *table [[buffer(3)]],
                       uint at [[thread_position_in_grid]])

@@ -1,5 +1,6 @@
 #include <metal_stdlib>
 using namespace metal;
+/* Accel: LOOKUP-MAHALANOBIS metal */
 kernel void mahalanobis_build(constant uchar *palette [[buffer(0)]],
     constant uint& ncolors [[buffer(1)]], device uint *table [[buffer(3)]],
     uint at [[thread_position_in_grid]])

@@ -259,7 +259,7 @@ Building, testing, and maintaining libsixel and its documentation.
 ### Acceleration backends
 
 - [Acceleration backends](acceleration/README.md) explains how SIMD and GPU implementations are tagged in source and checked against the ledger.
-- [Acceleration ledger](acceleration/ledger.md) lists each accelerated operation and whether NEON, SSE2, AVX2, WASM, Metal and Vulkan implement it.
+- [Acceleration ledger](acceleration/ledger.md) lists each accelerated operation and its status on NEON, SSE2, AVX2, WASM, Metal, Vulkan and WebGPU.
 
 ### Platform compatibility
 

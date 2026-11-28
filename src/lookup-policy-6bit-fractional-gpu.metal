@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #include <metal_stdlib>
 using namespace metal;
+/* Accel: LOOKUP-6BIT metal */
 kernel void lookup_6bit_fractional_build(
     constant uchar *palette [[buffer(0)]],
     constant uint &count [[buffer(1)]],

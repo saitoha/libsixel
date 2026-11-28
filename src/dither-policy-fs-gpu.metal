@@ -113,6 +113,7 @@ static float3 fs_gpu_candidate(device const uchar *source,
     configuration, workspace)
 #endif
 
+/* Accel: DITHER-FS metal */
 kernel void fs_gpu_initialize(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]],
@@ -146,6 +147,7 @@ kernel void fs_gpu_initialize(device const uchar *source [[buffer(0)]],
     a[i] = float4(query - fs_gpu_color(palette, best), float(best));
 }
 
+/* Accel: DITHER-FS metal */
 kernel void fs_gpu_iterate(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]], device float4 *b [[buffer(3)]],
@@ -245,6 +247,7 @@ static uint fs_gpu_threshold(uint i, float3 delta,
     return min(p.threshold, selected);
 }
 
+/* Accel: DITHER-FS metal */
 kernel void fs_gpu_finish(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     constant FsGpuParams &p [[buffer(4)]],
@@ -308,6 +311,7 @@ kernel void fs_gpu_finish(constant uchar *palette [[buffer(1)]],
 /* Preserve both the iterative index and the reconstructed-query choice.
  * The second state plane is dead after eight passes and owns the latter.
  * This kernel finishes the lookup lease before any history is acquired. */
+/* Accel: DITHER-FS metal */
 kernel void fs_gpu_solve_tail(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     device float4 *b [[buffer(3)]],
@@ -342,6 +346,7 @@ kernel void fs_gpu_solve_tail(constant uchar *palette [[buffer(1)]],
     b[i] = float4(query,float(best));
 }
 
+/* Accel: DITHER-FS metal */
 kernel void fs_gpu_resolve(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     device const float4 *b [[buffer(3)]],

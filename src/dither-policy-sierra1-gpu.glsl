@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-SIERRA1 vulkan */
 /*
  * Sierra Lite diffusion in four spatial phases and two cycles, the
  * Vulkan port of dither-policy-sierra1-gpu.metal. k is a subpass, never video

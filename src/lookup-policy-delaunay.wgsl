@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-DELAUNAY webgpu
 // Same layout as Metal/Vulkan. Each row packs the retained neighbors in
 // distance/index order. The degree excludes the padding in its final vector.
 struct DelaunayBounds {

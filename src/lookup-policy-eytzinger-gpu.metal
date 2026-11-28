@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-EYTZINGER metal */
 struct EytzingerEntry {
     float key;
     uint palette_index;

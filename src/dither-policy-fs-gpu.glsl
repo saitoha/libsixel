@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-FS vulkan */
 /*
  * Floyd-Steinberg diffusion in four spatial phases and two cycles, the
  * Vulkan port of dither-policy-fs-gpu.metal. k is a subpass, never video

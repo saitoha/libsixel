@@ -4,40 +4,53 @@
 # a function, a declaration, or a #define with its continuation lines.
 # Comments and preprocessor lines before a construct belong to it, so a tag
 # written directly above a function is part of that function's unit. A
-# GLSL or WGSL file is one unit as a whole.
+# GLSL or WGSL file, or a Metal fragment without kernels, is one unit.
 #
 # A unit is reported when it uses SIMD vector types or intrinsics, declares
-# a Metal kernel, or embeds Metal kernel source in a string, and for every
-# GLSL program (vulkan) and WGSL program (webgpu).
+# a Metal kernel, embeds a compute shader in a string, or is a shader
+# source file.
 # Output, one tab-separated record per unit:
 #   path  line  name  families  tags
-# families is a comma list of neon, sse2, avx2, wasm, metal, vulkan and
-# webgpu;
-# tags is a space list of ID/backend pairs. A malformed tag is reported as
-#   !malformed  path  line
+# families is a comma list of detected backends, with "unsupported" for
+# vector constructs outside the ledger. tags is a space list of ID/backend
+# pairs. Invalid tags are reported as !malformed or !misplaced, path, line.
 
-function strip(s,   out, c, i, n) {
+function strip(s,   out, c, i, n, tail, end) {
     # Most lines hold no comment, string or character literal.
-    if (!incomment && s !~ /[\/"']/)
+    if (!incomment && !instring && s !~ /[\/"']/) {
+        if (s ~ /[^ \t]/)
+            shader_literal = ""
         return s
+    }
     out = ""
     n = length(s)
     for (i = 1; i <= n; i++) {
         c = substr(s, i, 1)
         if (incomment) {
-            if (c == "*" && substr(s, i + 1, 1) == "/") {
-                incomment = 0
-                i++
-            }
+            tail = substr(s, i)
+            end = index(tail, "*/")
+            scan_comment(end ? substr(tail, 1, end - 1) : tail, out)
+            if (!end)
+                break
+            incomment = 0
+            i += end
+            out = out " "
             continue
         }
         if (instring) {
             if (c == "\\") {
+                c = substr(s, i + 1, 1)
+                if (quote == "\"" && c ~ /^[nrt]$/)
+                    shader_literal = shader_literal " "
                 i++
                 continue
             }
-            if (c == quote)
+            if (c == quote) {
                 instring = 0
+                if (quote == "\"" && !is_metal && !is_glsl && !is_wgsl)
+                    scan_literal()
+            } else if (quote == "\"")
+                shader_literal = shader_literal c
             continue
         }
         if (c == "/" && substr(s, i + 1, 1) == "*") {
@@ -45,14 +58,18 @@ function strip(s,   out, c, i, n) {
             i++
             continue
         }
-        if (c == "/" && substr(s, i + 1, 1) == "/")
+        if (c == "/" && substr(s, i + 1, 1) == "/") {
+            scan_comment(substr(s, i + 2), out)
             break
+        }
         if (c == "\"" || c == "'") {
             instring = 1
             quote = c
             out = out " "
             continue
         }
+        if (c !~ /[ \t]/)
+            shader_literal = ""
         out = out c
     }
     return out
@@ -64,46 +81,63 @@ function add_family(f) {
 }
 
 function scan_code(s) {
-    if (s ~ /_mm256_[a-z]|__m256/)
+    # Most code in a vector-capable file is shared with the scalar path.
+    if (s !~ /_mm|__m|wasm_|v128_t|[0-9]x[0-9]|v[a-z0-9_]+_[supfb][0-9]|__builtin_|vector_type|vector_size|kernel/)
+        return
+    if (s ~ /(^|[^a-zA-Z0-9_])(_mm256_[a-zA-Z0-9_]+|__m256[idh]?)([^a-zA-Z0-9_]|$)/)
         add_family("avx2")
-    if (s ~ /_mm_[a-z]|__m128/)
+    if (s ~ /(^|[^a-zA-Z0-9_])(_mm_[a-zA-Z0-9_]+|__m128[idh]?)([^a-zA-Z0-9_]|$)/)
         add_family("sse2")
-    if (s ~ /wasm_[a-z0-9]+_[a-z]|v128_t/)
+    if (s ~ /(^|[^a-zA-Z0-9_])(wasm_(v128|[iuf][0-9]+x[0-9]+)_[a-zA-Z0-9_]+|v128_t)([^a-zA-Z0-9_]|$)/)
         add_family("wasm")
-    if (s ~ /(u?int|float|poly)(8|16|32|64)x[0-9]+(x[0-9])?_t/ ||
-        s ~ /(^|[^A-Za-z0-9_])v[a-z0-9]+_(n_|lane_|laneq_|high_)?[supf](8|16|32|64)[ \t]*\(/)
+    if (s ~ /(^|[^A-Za-z0-9_])(u?int|float|bfloat|mfloat|poly)(8|16|32|64)x[0-9]+(x[0-9]+)?_t([^A-Za-z0-9_]|$)/ ||
+        s ~ /(^|[^A-Za-z0-9_])v[a-z0-9_]+_[supfb](8|16|32|64)[ \t]*\(/ ||
+        ((in_define || s ~ /^[ \t]*#/) &&
+         s ~ /(^|[^A-Za-z0-9_])v[a-z0-9_]+_[supfb](8|16|32|64)([^A-Za-z0-9_]|$)/))
         add_family("neon")
-    if (is_metal && s ~ /(^|[^A-Za-z0-9_])kernel[ \t]+void|\[\[[ \t]*kernel[ \t]*\]\]/)
+    if (s ~ /(^|[^A-Za-z0-9_])(_mm512_[A-Za-z0-9_]+|__m(64|512)[idh]?|(__)?(vector_size|ext_vector_type)(__)?|__builtin_(shufflevector|convertvector))([^A-Za-z0-9_]|$)/ ||
+        s ~ /(^|[^A-Za-z0-9_])__builtin_(ia32|neon|wasm)_[A-Za-z0-9_]/)
+        add_family("unsupported")
+    if (is_metal && s ~ /(^|[^A-Za-z0-9_])kernel([^A-Za-z0-9_]|$)/)
         add_family("metal")
 }
 
-function scan_raw(s) {
-    if (!is_metal && s ~ /"[^"]*kernel[ \t]+void/)
+function scan_literal() {
+    if (shader_literal ~ /(^|[^A-Za-z0-9_])kernel[ \t]+void[ \t]+[A-Za-z_]|\[\[[ \t]*kernel[ \t]*\]\]/)
         add_family("metal")
+    if (shader_literal ~ /@compute([^A-Za-z0-9_]|$)/)
+        add_family("webgpu")
+    if (shader_literal ~ /gl_GlobalInvocationID|layout[ \t]*\([ \t]*local_size_x/)
+        add_family("vulkan")
+    # Preserve enough of the tail to match a keyword crossing literal lines.
+    if (length(shader_literal) > 80)
+        shader_literal = substr(shader_literal, length(shader_literal) - 79)
 }
 
-function scan_tags(s,   rest, token, id, count, i, parts) {
-    rest = s
-    while (match(rest, /Accel:/)) {
-        rest = substr(rest, RSTART + RLENGTH)
-        token = rest
-        sub(/\*\/.*/, "", token)
-        sub(/^[ \t]+/, "", token)
-        sub(/[ \t]+$/, "", token)
-        count = split(token, parts, /[ \t]+/)
-        id = parts[1]
-        if (count < 2 || id !~ /^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*$/) {
+function scan_comment(s, code,   id, count, i, parts, pair) {
+    if (!sub(/^[ \t]*(\*[ \t]*)?Accel:[ \t]*/, "", s))
+        return
+    if (!is_glsl && !is_wgsl &&
+        (depth != 0 || first_code != "" || in_define || code ~ /[^ \t]/)) {
+        print "!misplaced\t" path "\t" FNR
+        return
+    }
+    sub(/[ \t\r]+$/, "", s)
+    count = split(s, parts, /[ \t]+/)
+    id = parts[1]
+    if (count < 2 || id !~ /^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*$/) {
+        print "!malformed\t" path "\t" FNR
+        return
+    }
+    for (i = 2; i <= count; i++) {
+        pair = id "/" parts[i]
+        if ((parts[i] !~ /^(scalar|neon|sse2|avx2|wasm)$/ &&
+             parts[i] !~ /^(metal|vulkan|webgpu)(-fp32)?$/) ||
+            index(" " tags " ", " " pair " ")) {
             print "!malformed\t" path "\t" FNR
-            continue
+            return
         }
-        for (i = 2; i <= count; i++) {
-            if (parts[i] !~ /^(scalar|neon|sse2|avx2|wasm|metal|vulkan|webgpu)$/) {
-                print "!malformed\t" path "\t" FNR
-                break
-            }
-            if (index(" " tags " ", " " id "/" parts[i] " ") == 0)
-                tags = tags (tags == "" ? "" : " ") id "/" parts[i]
-        }
+        tags = tags (tags == "" ? "" : " ") pair
     }
 }
 
@@ -154,16 +188,23 @@ function fallback_name(s,   head) {
     return ""
 }
 
-function flush() {
-    if (families != "") {
+function flush(   record) {
+    if (families != "" || tags != "") {
         if (name == "")
             name = fallback_name(first_code)
-        print path "\t" start "\t" name "\t" families "\t" tags
+        record = path "\t" start "\t" name "\t" families "\t" tags
+        if (is_metal) {
+            metal_records[++metal_count] = record
+            if (index("," families ",", ",metal,"))
+                metal_kernel = 1
+        } else
+            print record
     }
     families = ""
     tags = ""
     name = ""
     first_code = ""
+    shader_literal = ""
     start = FNR + 1
 }
 
@@ -174,71 +215,88 @@ function begin_file() {
     incomment = 0
     instring = 0
     in_define = 0
+    shader_literal = ""
     families = ""
     tags = ""
     name = ""
     first_code = ""
     start = 1
     is_metal = FILENAME ~ /\.metal$/
-    is_glsl = FILENAME ~ /\.glsl$/
+    is_glsl = FILENAME ~ /\.(glsl|comp)$/
     is_wgsl = FILENAME ~ /\.wgsl$/
+    metal_count = 0
+    metal_kernel = 0
+    header_seen = 0
+    header_tags = ""
+}
+
+function end_file(   filename, i, family) {
+    filename = path
+    sub(/.*\//, "", filename)
     if (is_glsl || is_wgsl) {
-        whole_family = is_glsl ? "vulkan" : "webgpu"
-        name = path
-        sub(/.*\//, "", name)
+        family = is_glsl ? "vulkan" : "webgpu"
+        print path "\t1\t" filename "\t" family "\t" tags
+        return
     }
+    flush()
+    if (!is_metal)
+        return
+    if (!metal_kernel) {
+        print path "\t1\t" filename "\tmetal\t" header_tags
+        # The first record, if present, may be the fragment's header tag.
+        if (header_tags != "" && metal_count &&
+            metal_records[1] ~ ("\t\t" header_tags "$"))
+            i = 2
+        else
+            i = 1
+    } else
+        i = 1
+    for (; i <= metal_count; i++)
+        print metal_records[i]
 }
 
 FNR == 1 {
-    if (NR > 1) {
-        if (was_whole)
-            print last_path "\t1\t" whole_name "\t" last_family "\t" whole_tags
-        else
-            flush()
-    }
+    if (NR > 1)
+        end_file()
     begin_file()
-    was_whole = is_glsl || is_wgsl
 }
 
 is_glsl || is_wgsl {
-    scan_tags($0)
-    whole_tags = tags
-    whole_name = name
-    last_family = whole_family
-    last_path = path
+    strip($0)
     next
 }
 
 {
     raw = $0
-    scan_tags(raw)
+    line = strip(raw)
+    if (is_metal && !header_seen && line ~ /[^ \t]/) {
+        header_seen = 1
+        header_tags = tags
+    }
     if (in_define) {
-        scan_code(strip(raw))
-        scan_raw(raw)
+        scan_code(line)
         if (raw !~ /\\[ \t]*$/) {
             in_define = 0
-            flush()
+            if (depth == 0)
+                flush()
         }
         next
     }
-    if (depth == 0 && raw ~ /^[ \t]*#[ \t]*define[ \t]/) {
-        if (name == "") {
-            name = raw
+    if (line ~ /^[ \t]*#[ \t]*define[ \t]/) {
+        if (depth == 0 && name == "") {
+            name = line
             sub(/^[ \t]*#[ \t]*define[ \t]+/, "", name)
             sub(/[^A-Za-z0-9_].*/, "", name)
         }
-        scan_code(strip(raw))
-        scan_raw(raw)
+        scan_code(line)
         if (raw ~ /\\[ \t]*$/)
             in_define = 1
-        else
+        else if (depth == 0)
             flush()
         next
     }
-    if (raw ~ /^[ \t]*#/ && !incomment)
+    if (line ~ /^[ \t]*#/)
         next
-    scan_raw(raw)
-    line = strip(raw)
     if (depth == 0 && line ~ /[^ \t]/) {
         if (first_code == "")
             first_code = line
@@ -255,10 +313,6 @@ is_glsl || is_wgsl {
 }
 
 END {
-    if (NR > 0) {
-        if (was_whole)
-            print last_path "\t1\t" whole_name "\t" last_family "\t" whole_tags
-        else
-            flush()
-    }
+    if (NR > 0)
+        end_file()
 }

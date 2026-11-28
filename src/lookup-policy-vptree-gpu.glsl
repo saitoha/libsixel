@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-VPTREE vulkan */
 /*
  * Vantage-point candidate lookup in the "vulkan.lookup-rgb8.v1" program
  * ABI, a port of lookup-policy-vptree-gpu.metal. This implementation owns

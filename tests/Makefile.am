@@ -10034,7 +10034,6 @@ EXTRA_DIST += _static/awk/c-configured-features.awk \
 
 EXTRA_DIST += _static/awk/accel-units.awk \
     _static/awk/accel-ledger.awk \
-    _static/data/accel-untagged-legacy.tsv \
     _static/sh/staticcheck-accel-ledger.sh \
     _static/sh/staticcheck-accel-ledger-controls.sh \
     _static/sh/staticcheck-avx-vector-params.sh

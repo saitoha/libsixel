@@ -1,3 +1,4 @@
+/* Accel: DITHER-BLUENOISE vulkan */
 /* bluenoise owns this byte-query construction and pixel execution. */
 #version 450
 /* SPDX-License-Identifier: MIT */

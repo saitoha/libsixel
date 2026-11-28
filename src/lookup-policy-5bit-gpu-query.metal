@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-5BIT metal */
 /* Rounded 5bit addressing belongs to this policy, including saturation
  * of the last cell. The consumer only dispatches to the selected lookup. */
 static uint

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-NONE metal */
 /* none owns this byte-query construction and pixel execution. */
 #include <metal_stdlib>
 using namespace metal;

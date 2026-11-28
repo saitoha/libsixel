@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-STUCKI webgpu
 // Sender offsets and normalized error shares for stucki.
 const dx = array<i32, 12>(
     1, 2, -2, -1, 0, 1, 2, -2, -1, 0, 1, 2);

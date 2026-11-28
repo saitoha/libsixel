@@ -135,6 +135,7 @@
 
 /* Use lane intrinsics with both vector and aggregate NEON typedefs. An
  * RGB pixel has only three readable bytes, even at the end of a row. */
+/* Accel: SCALE-RESAMPLE neon */
 static inline uint32x4_t
 sixel_neon_load_rgb_u32(unsigned char const *pixel)
 {
@@ -343,6 +344,7 @@ sixel_clamp_unit_f32(float value)
 
 #if defined(HAVE_IMMINTRIN_H)
 #if defined(SIXEL_USE_AVX)
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_load_rgb_ps(unsigned char const *psrc)
 {
@@ -367,6 +369,7 @@ sixel_avx_load_rgb_ps(unsigned char const *psrc)
     return pixf256;
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX void
 sixel_avx_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
 {
@@ -388,12 +391,14 @@ sixel_avx_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
     dst[2] = (unsigned char)out[2];
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_zero_ps(void)
 {
     return _mm256_setzero_ps();
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_muladd_ps(__m256 acc, __m256 pix, float weight)
 {
@@ -403,18 +408,21 @@ sixel_avx_muladd_ps(__m256 acc, __m256 pix, float weight)
     return _mm256_add_ps(acc, _mm256_mul_ps(pix, wv));
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_abs_ps(__m256 value)
 {
     return _mm256_andnot_ps(_mm256_set1_ps(-0.0f), value);
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_max_ps(__m256 left, __m256 right)
 {
     return _mm256_max_ps(left, right);
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX void
 sixel_avx_read_sum(__m256 sum, __m256 absolute, __m256 peak,
                    float *out, float *abs_out, float *peak_out)
@@ -424,6 +432,7 @@ sixel_avx_read_sum(__m256 sum, __m256 absolute, __m256 peak,
     _mm256_storeu_ps(peak_out, peak);
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_load_rgb_f32(float const *psrc)
 {
@@ -435,6 +444,7 @@ sixel_avx_load_rgb_f32(float const *psrc)
     return pixf;
 }
 
+/* Accel: SCALE-RESAMPLE avx2 */
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX void
 sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst, int bounded)
 {
@@ -527,6 +537,7 @@ typedef double (*resample_fn_t)(double const d);
  * also mark the functions noinline to ensure the stack-realigning prologue
  * from SIXEL_ALIGN_STACK is preserved under optimization.
  */
+/* Accel: SCALE-RESAMPLE avx2 sse2 neon */
 static SIXEL_ALIGN_STACK SIXEL_NO_INLINE void
 scale_horizontal_row(
     unsigned char *tmp,
@@ -731,6 +742,7 @@ scale_horizontal_row(
     }
 }
 
+/* Accel: SCALE-RESAMPLE avx2 sse2 neon */
 static SIXEL_ALIGN_STACK SIXEL_NO_INLINE void
 scale_vertical_row(
     unsigned char *dst,
@@ -1669,6 +1681,7 @@ sixel_scale_sum_unstable(float const *sum, float const *absolute,
  * on i386 so the SIXEL_ALIGN_STACK prologue stays in place when SSE2 locals
  * need to spill to the stack.
  */
+/* Accel: SCALE-RESAMPLE avx2 sse2 neon */
 static SIXEL_ALIGN_STACK SIXEL_NO_INLINE SIXELSTATUS
 scale_with_resampling_float32(
     float *dst,

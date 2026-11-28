@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-BLUENOISE metal */
 /* bluenoise owns this byte-query construction and pixel execution. */
 #include <metal_stdlib>
 using namespace metal;

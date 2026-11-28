@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-X-DITHER metal */
 /* x-dither query for legacy lookup executors. */
 static uchar3 positional_query(uchar3 source,
     device const uchar *blue_noise, device const uchar *gradient,

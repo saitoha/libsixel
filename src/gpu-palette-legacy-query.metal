@@ -1,3 +1,4 @@
+/* Accel: PALETTE-MAP metal */
 static uint palette_distance(
     constant uchar *palette,
     uchar3 q,

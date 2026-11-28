@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-NONE metal */
 #include <metal_stdlib>
 using namespace metal;
 

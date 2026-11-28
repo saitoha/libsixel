@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-BURKES vulkan */
 /*
  * Burkes diffusion in four spatial phases and two cycles, the
  * Vulkan port of dither-policy-burkes-gpu.metal. k is a subpass, never video

@@ -1,5 +1,6 @@
 /* One workgroup owns one 8x8 block. Bounds and overflow rules match the
  * matrix consumer; only the final candidate distances use scalar math. */
+/* Accel: LOOKUP-BLOCKCULL metal */
 kernel void lookup_blockcull_scalar(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

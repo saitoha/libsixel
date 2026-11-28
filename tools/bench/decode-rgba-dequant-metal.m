@@ -79,6 +79,7 @@ typedef struct bench_metal_buffers {
     id<MTLBuffer> params;
 } bench_metal_buffers_t;
 
+/* Accel: DECODE-DEQUANT-FAST4 metal */
 static char const * const g_metal_source =
 "#include <metal_stdlib>\n"
 "using namespace metal;\n"

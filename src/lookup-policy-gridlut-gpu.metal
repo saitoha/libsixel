@@ -2,6 +2,7 @@ struct GridCell {
     uchar count;
     uchar indexes[64];
 };
+/* Accel: LOOKUP-GRIDLUT metal */
 kernel void sixel_gpu_grid_build(
     constant uchar *palette [[buffer(2)]],
     constant Params& params [[buffer(6)]],

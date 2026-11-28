@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-JAJUNI vulkan */
 /*
  * Jarvis, Judice and Ninke diffusion in four spatial phases and two cycles, the
  * Vulkan port of dither-policy-jajuni-gpu.metal. k is a subpass, never video

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: PALETTE-MAP webgpu
 @group(0) @binding(2) var<storage, read_write> indexes: array<u32>;
 
 // Ownership is per word so adjacent output bytes never race. Bound the

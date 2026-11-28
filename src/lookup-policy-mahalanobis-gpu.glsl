@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-MAHALANOBIS vulkan */
 /*
  * Mahalanobis RGB8 lookup in the "vulkan.lookup-rgb8.v1" program ABI,
  * a port of lookup-policy-mahalanobis-gpu.metal. This policy owns its

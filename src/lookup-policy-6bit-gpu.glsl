@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-6BIT vulkan */
 /*
  * 6bit cell-center lookup in the "vulkan.lookup-rgb8.v1" program ABI,
  * a port of lookup-policy-6bit-gpu.metal and its fractional form. The

@@ -102,13 +102,6 @@ SIXEL_PTHREAD_ONCE_DECLARE(sixel_colorspace_parallel_min_pixels_once);
 # endif
 #endif
 
-#if defined(HAVE_IMMINTRIN_H) && \
-    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-     defined(_M_IX86))
-# define SIXEL_HAS_X86_INTRIN 1
-# include <immintrin.h>
-#endif
-
 #if SIXEL_SIMD_SSE2
 # include <emmintrin.h>
 # define SIXEL_USE_SSE2 1
@@ -128,16 +121,6 @@ SIXEL_PTHREAD_ONCE_DECLARE(sixel_colorspace_parallel_min_pixels_once);
 /* A common divisor preserves DIN99d Euclidean distance on all three axes. */
 #define SIXEL_DIN99D_SCALE   100.0
 
-#if defined(__FMA__)
-# define SIXEL_FMADD_PS256(a, b, c) _mm256_fmadd_ps((a), (b), (c))
-# define SIXEL_FMADD_PS512(a, b, c) _mm512_fmadd_ps((a), (b), (c))
-#else
-# define SIXEL_FMADD_PS256(a, b, c) \
-    _mm256_add_ps(_mm256_mul_ps((a), (b)), (c))
-# define SIXEL_FMADD_PS512(a, b, c) \
-    _mm512_add_ps(_mm512_mul_ps((a), (b)), (c))
-#endif
-
 static const double sixel_linear_srgb_to_smptec_matrix[3][3] = {
     { 1.0651944799343782, -0.05539144537002962, -0.009975616485882548 },
     { -0.019633066659433226,  1.0363870284433383, -0.016731961783904975 },
@@ -151,7 +134,9 @@ static const double sixel_linear_smptec_to_srgb_matrix[3][3] = {
 };
 
 #if defined(SIXEL_USE_NEON)
+/* Accel: COLORSPACE-GAMMA-LUT neon */
 static uint8x16x4_t sixel_neon_gamma_to_linear[4];
+/* Accel: COLORSPACE-GAMMA-LUT neon */
 static uint8x16x4_t sixel_neon_linear_to_gamma[4];
 static int sixel_neon_tables_initialized = 0;
 #endif
@@ -271,6 +256,7 @@ sixel_din99d_clamp_ab(double value)
  * SIMD lookup helpers accelerate the gamma/linear LUT path on NEON.
  * A four-way 64-entry table maps the 256 entry LUT without branches.
  */
+/* Accel: COLORSPACE-GAMMA-LUT neon */
 static void
 sixel_colorspace_fill_neon_table(uint8x16x4_t *table,
                                  const unsigned char *source)
@@ -311,6 +297,7 @@ sixel_colorspace_prepare_neon_tables(void)
     sixel_neon_tables_initialized = 1;
 }
 
+/* Accel: COLORSPACE-GAMMA-LUT neon */
 static inline uint8x16_t
 sixel_colorspace_lookup_neon(uint8x16x4_t *table, uint8x16_t index)
 {
@@ -343,6 +330,7 @@ sixel_colorspace_lookup_neon(uint8x16x4_t *table, uint8x16_t index)
     return result;
 }
 
+/* Accel: COLORSPACE-GAMMA-LUT neon */
 static inline uint8x16_t
 sixel_colorspace_alpha_mask_neon(int pixelformat)
 {
@@ -389,6 +377,7 @@ sixel_colorspace_alpha_mask_neon(int pixelformat)
     }
 }
 
+/* Accel: COLORSPACE-GAMMA-LUT neon */
 static void
 sixel_colorspace_apply_neon(unsigned char *pixels,
                             size_t size,
@@ -470,6 +459,7 @@ sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 #endif
 
 #if defined(SIXEL_USE_SSE2)
+/* Accel: COLORSPACE-GAMMA-LUT sse2 */
 static inline __m128i
 sixel_colorspace_alpha_mask_sse2(int pixelformat)
 {
@@ -521,6 +511,7 @@ sixel_colorspace_alpha_mask_sse2(int pixelformat)
  * vectors so alpha bytes are kept intact. The lookup itself expands a
  * 16-byte chunk to a temporary buffer to avoid SSSE3 pshufb usage.
  */
+/* Accel: COLORSPACE-GAMMA-LUT sse2 */
 static void
 sixel_colorspace_apply_sse2(unsigned char *pixels,
                             size_t size,

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-EYTZINGER vulkan */
 /*
  * Eytzinger projection lookup in the "vulkan.lookup-rgb8.v1" program ABI.
  * The builder ports eytzinger_sort of

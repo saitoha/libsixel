@@ -15,6 +15,7 @@ static uint delaunay_distance(int3 a, int3 b)
  * Integer division rounds away from the feasible interval. Every reduction
  * therefore retains the cell, including points on shared closed faces.
  * Coarse boxes add edges; they never remove required adjacency. */
+/* Accel: LOOKUP-DELAUNAY metal */
 kernel void sixel_gpu_delaunay_bounds(constant uchar *palette [[buffer(2)]],
             constant Params &params [[buffer(6)]],
             device uint *table [[buffer(15)]],
@@ -71,6 +72,7 @@ kernel void sixel_gpu_delaunay_bounds(constant uchar *palette [[buffer(2)]],
 /* Each lane classifies one pair. Sorting rejected entries to the end also
  * compacts the retained adjacency and directly emits vector query rows.
  * No separate pair buffer or serial per-color repacking is needed. */
+/* Accel: LOOKUP-DELAUNAY metal */
 kernel void sixel_gpu_delaunay_sort(constant uchar *palette [[buffer(2)]],
            constant Params &params [[buffer(6)]],
            device uint *table [[buffer(15)]],
@@ -140,6 +142,7 @@ kernel void sixel_gpu_delaunay_sort(constant uchar *palette [[buffer(2)]],
     table[row * 256u + lane] = key;
     table[65536u + row * 256u + lane] = rgb;
 }
+/* Accel: LOOKUP-DELAUNAY metal */
 kernel void sixel_gpu_delaunay_seeds(
     constant uchar *palette [[buffer(2)]],
     constant Params& params [[buffer(6)]],

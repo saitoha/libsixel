@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: PALETTE-MAP webgpu
 @group(0) @binding(2) var<storage, read_write> indexes: array<atomic<u32>>;
 
 // A chunk can start or end inside a row. Ignore out-of-chunk pixels while

@@ -5,6 +5,7 @@ using namespace metal;
  * integer box encloses every active fractional query. Its distance bounds
  * are exact integers; final distances use the original fractional values.
  * No residual, source image or retained-history buffer is visible here. */
+/* Accel: LOOKUP-BLOCKCULL metal */
 kernel void blockcull_fractional(
     constant uchar *palette [[buffer(0)]],
     constant uint &count [[buffer(1)]],

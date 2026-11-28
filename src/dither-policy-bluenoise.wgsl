@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-BLUENOISE webgpu
 // The tile and optional gradient slice follow the same byte layout as Wasm.
 @group(0) @binding(6) var<storage, read> noise: array<u32>;
 

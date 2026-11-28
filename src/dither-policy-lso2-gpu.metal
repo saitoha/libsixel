@@ -62,6 +62,7 @@ static float3 lso2_gpu_send(device const float4 *a, device const float4 *b,
     configuration, workspace)
 #endif
 
+/* Accel: DITHER-LSO2 metal */
 kernel void lso2_gpu_initialize(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]],
@@ -95,6 +96,7 @@ kernel void lso2_gpu_initialize(device const uchar *source [[buffer(0)]],
     a[i] = float4(query - lso2_gpu_color(palette, best), float(best));
 }
 
+/* Accel: DITHER-LSO2 metal */
 kernel void lso2_gpu_iterate(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]], device float4 *b [[buffer(3)]],
@@ -206,6 +208,7 @@ static uint lso2_gpu_threshold(uint i, float3 delta,
     return min(p.threshold, selected);
 }
 
+/* Accel: DITHER-LSO2 metal */
 kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     constant Lso2GpuParams &p [[buffer(4)]],
@@ -269,6 +272,7 @@ kernel void lso2_gpu_finish(constant uchar *palette [[buffer(1)]],
 /* Preserve both the iterative index and the reconstructed-query choice.
  * The second state plane is dead after eight passes and owns the latter.
  * This kernel finishes the lookup lease before any history is acquired. */
+/* Accel: DITHER-LSO2 metal */
 kernel void lso2_gpu_solve_tail(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     device float4 *b [[buffer(3)]],
@@ -301,6 +305,7 @@ kernel void lso2_gpu_solve_tail(constant uchar *palette [[buffer(1)]],
     b[i] = float4(query,float(best));
 }
 
+/* Accel: DITHER-LSO2 metal */
 kernel void lso2_gpu_resolve(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     device const float4 *b [[buffer(3)]],

@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-5BIT webgpu
+// Accel: LOOKUP-6BIT webgpu
 const cell_shift = 8u - cell_bits;
 const cell_step = 1i << cell_shift;
 const cell_last = (1u << cell_bits) - 1u;

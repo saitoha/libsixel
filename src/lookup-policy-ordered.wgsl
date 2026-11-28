@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-ORDERED webgpu
 // Same 640 KiB layout as Metal/Vulkan: distance rows, packed RGB rows,
 // then the nearest register to each of 32^3 RGB cell centers.
 struct OrderedTable {

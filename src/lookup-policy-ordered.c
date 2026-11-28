@@ -299,6 +299,7 @@ sixel_lookup_policy_ordered_prepare_8bit(
     return SIXEL_OK;
 }
 
+/* Accel: LOOKUP-ORDERED neon */
 static int
 sixel_lookup_policy_ordered_map_pixel_hint_8bit(
     sixel_lookup_policy_interface_t const *policy,

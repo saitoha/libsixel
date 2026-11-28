@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-FS webgpu
 // Sender offsets and normalized error shares for fs.
 const dx = array<i32, 4>(
     1, -1, 0, 1);

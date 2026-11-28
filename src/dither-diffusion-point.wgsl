@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-ATKINSON webgpu
+// Accel: DITHER-BURKES webgpu
+// Accel: DITHER-FS webgpu
+// Accel: DITHER-JAJUNI webgpu
+// Accel: DITHER-LSO2 webgpu
+// Accel: DITHER-SIERRA1 webgpu
+// Accel: DITHER-SIERRA2 webgpu
+// Accel: DITHER-SIERRA3 webgpu
+// Accel: DITHER-STUCKI webgpu
 @compute @workgroup_size(8, 8)
 fn main(@builtin(global_invocation_id) id: vec3u, @builtin(workgroup_id) group: vec3u,
         @builtin(num_workgroups) grid: vec3u, @builtin(local_invocation_index) lane: u32) {

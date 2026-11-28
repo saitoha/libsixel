@@ -17,6 +17,7 @@ static uint certlut_distance2(int3 a, int3 b)
     d = a-b;
     return uint(d.x*d.x+d.y*d.y+d.z*d.z);
 }
+/* Accel: LOOKUP-CERTLUT metal */
 kernel void certlut_pack(constant uchar *palette [[buffer(0)]],
     constant uint& count [[buffer(1)]],
     device uint *table [[buffer(3)]],
@@ -51,6 +52,7 @@ static uint certlut_nearest(int3 query, uint count,
 // Retain every color that can beat or tie the center winner in the cell.
 // Squared-distance differences are affine, so their exact box minimum
 // is attained at a corner chosen independently on each axis.
+/* Accel: LOOKUP-CERTLUT metal */
 kernel void certlut_build(constant uchar *palette [[buffer(0)]],
     constant uint& count [[buffer(1)]],
     constant uint& fractional [[buffer(2)]],

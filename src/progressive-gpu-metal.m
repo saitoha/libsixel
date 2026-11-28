@@ -64,6 +64,8 @@ typedef struct sixel_repair_metal_params {
 /* The shared structs contain only explicitly sized scalars. packed_float3
  * reads the CPU's contiguous three-float representation without a 16-byte
  * float3 stride. Disable fast math when compiling these proposal kernels. */
+/* Accel: PROGRESSIVE-REPAIR-LOOKUP metal */
+/* Accel: PROGRESSIVE-REPAIR-SCAN metal */
 static char const * const sixel_repair_metal_source[] = {
 "#include <metal_stdlib>\n"
 "using namespace metal;\n"

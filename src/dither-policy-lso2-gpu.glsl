@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-LSO2 vulkan */
 /*
  * LSO2 diffusion in four spatial phases and two cycles, the Vulkan port
  * of dither-policy-lso2-gpu.metal. k is a subpass, never video time. This

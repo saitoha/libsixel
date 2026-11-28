@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-BLOCKCULL webgpu
 @group(0) @binding(1) var<storage, read> palette: array<u32>;
 var<workgroup> lows: array<vec3i, 32>;
 var<workgroup> highs: array<vec3i, 32>;

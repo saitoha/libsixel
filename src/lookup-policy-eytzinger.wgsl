@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-EYTZINGER webgpu
 @group(0) @binding(1) var<storage, read> palette: array<u32>;
 @group(0) @binding(7) var<storage, read> sorted: array<u32>;
 

@@ -81,6 +81,7 @@ typedef struct sixel_km_metal_state {
  * ties, including when every residual is zero.
  * All iterations are submitted together: no CPU readback occurs between
  * assignment, reduction, empty-cluster repair and convergence decisions. */
+/* Accel: KMEANS-LLOYD metal */
 static char const *const sixel_km_metal_source[] = {
     "#include <metal_stdlib>\n"
     "using namespace metal;\n"

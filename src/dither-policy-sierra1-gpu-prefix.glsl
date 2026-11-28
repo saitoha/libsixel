@@ -1,5 +1,6 @@
 #version 450
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-SIERRA1 vulkan */
 /*
  * Sierra Lite GPU diffusion as a consumer of the
  * "vulkan.lookup-rgb8.v1" program ABI: the declarations a lookup policy's

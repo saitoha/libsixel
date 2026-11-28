@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-FHEDT vulkan */
 /*
  * FHEDT lookup in the "vulkan.lookup-rgb8.v1" program ABI. The builders
  * port the table build of lookup-policy-fhedt-gpu.metal; the queries keep

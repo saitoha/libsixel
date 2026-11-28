@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-RBC webgpu
 // Same layout as Metal/Vulkan: packed member rows, assignments, counts,
 // packed RGB box bounds, then 32^3 packed seeds and 32^3 cluster masks.
 struct RbcTable {

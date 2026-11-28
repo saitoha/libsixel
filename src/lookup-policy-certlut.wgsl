@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-CERTLUT webgpu
 // Same layout as Metal/Vulkan: a packed palette, 4096 rows of 64 packed
 // candidates, and one count per cell. Each vector holds four RGB/index words.
 struct CertlutTable {

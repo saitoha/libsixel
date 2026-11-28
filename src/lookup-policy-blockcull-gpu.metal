@@ -28,6 +28,7 @@ static uint blockcull_gid(constant Params& params, uint block, uint pos)
     }
     return params.pixel_count;
 }
+/* Accel: LOOKUP-BLOCKCULL metal */
 kernel void sixel_gpu_palette_apply_blockcull(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

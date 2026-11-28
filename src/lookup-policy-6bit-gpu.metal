@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 #include <metal_stdlib>
 using namespace metal;
+/* Accel: LOOKUP-6BIT metal */
 kernel void lookup_6bit_build(device uchar *table [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     constant uint &count [[buffer(2)]],

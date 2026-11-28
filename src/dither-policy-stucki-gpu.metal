@@ -121,6 +121,7 @@ static float3 stucki_gpu_candidate(device const uchar *source,
     configuration, workspace)
 #endif
 
+/* Accel: DITHER-STUCKI metal */
 kernel void stucki_gpu_initialize(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]],
@@ -154,6 +155,7 @@ kernel void stucki_gpu_initialize(device const uchar *source [[buffer(0)]],
     a[i] = float4(query - stucki_gpu_color(palette, best), float(best));
 }
 
+/* Accel: DITHER-STUCKI metal */
 kernel void stucki_gpu_iterate(device const uchar *source [[buffer(0)]],
     constant uchar *palette [[buffer(1)]],
     device float4 *a [[buffer(2)]], device float4 *b [[buffer(3)]],
@@ -253,6 +255,7 @@ static uint stucki_gpu_threshold(uint i, float3 delta,
     return min(p.threshold, selected);
 }
 
+/* Accel: DITHER-STUCKI metal */
 kernel void stucki_gpu_finish(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     constant StuckiGpuParams &p [[buffer(4)]],
@@ -316,6 +319,7 @@ kernel void stucki_gpu_finish(constant uchar *palette [[buffer(1)]],
 /* Preserve both the iterative index and the reconstructed-query choice.
  * The second state plane is dead after eight passes and owns the latter.
  * This kernel finishes the lookup lease before any history is acquired. */
+/* Accel: DITHER-STUCKI metal */
 kernel void stucki_gpu_solve_tail(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     device float4 *b [[buffer(3)]],
@@ -350,6 +354,7 @@ kernel void stucki_gpu_solve_tail(constant uchar *palette [[buffer(1)]],
     b[i] = float4(query,float(best));
 }
 
+/* Accel: DITHER-STUCKI metal */
 kernel void stucki_gpu_resolve(constant uchar *palette [[buffer(1)]],
     device const float4 *a [[buffer(2)]],
     device const float4 *b [[buffer(3)]],

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-CERTLUT vulkan */
 /*
  * Certified cell lookup in the "vulkan.lookup-rgb8.v1" program ABI,
  * a port of lookup-policy-certlut-gpu.metal. This policy owns both build

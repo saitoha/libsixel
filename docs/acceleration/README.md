@@ -6,7 +6,7 @@ This page is for contributors who add or port a SIMD or GPU implementation. It e
 
 - An accelerated operation usually needs more than one backend: NEON, SSE2, AVX2, WASM SIMD, Metal, Vulkan and WebGPU.
 - The ledger has a SIMD table and a GPU table, each with one row per operation and one column per backend, so a missing port stays visible.
-- Every SIMD function and GPU kernel carries an `Accel:` tag that names its ledger row.
+- Every SIMD unit, GPU kernel and shader fragment carries an `Accel:` tag that names its ledger row.
 - `make staticcheck` rejects untagged acceleration and any disagreement between tags and the ledger.
 
 ## Why a ledger
@@ -24,7 +24,7 @@ The ledger is split into two tables so that neither grows too wide to read. Both
 | Both | Scalar | The portable C path that defines the result |
 | SIMD | NEON | Arm NEON intrinsics and vector types |
 | SIMD | SSE2 | x86 128-bit intrinsics, including later 128-bit extensions |
-| SIMD | AVX2 | x86 256-bit intrinsics; a 128-bit helper inside an AVX2 function counts as AVX2 |
+| SIMD | AVX2 | x86 256-bit AVX and AVX2 intrinsics. A 128-bit helper inside a 256-bit function counts toward that function’s backend. |
 | SIMD | WASM | WebAssembly SIMD128 on the CPU |
 | GPU | Metal | Metal kernels |
 | GPU | Vulkan | GLSL programs compiled for Vulkan |
@@ -32,18 +32,21 @@ The ledger is split into two tables so that neither grows too wide to read. Both
 
 An operation has a row in each table that has a backend for it, under the same ID. An operation with both SIMD and GPU ports, such as `SAMPLE-VARY-POINTS`, therefore has two rows, and their Scalar cells must agree. A row whose backend cells are all `n/a` is rejected when the operation also has a row in the other table; an operation with no accelerated backend at all keeps a single SIMD row. Backends of the table an operation is missing from count as `n/a`.
 
-The WebGPU column is planned for command-line use, not for running in a browser. Operations that Metal and Vulkan implement are therefore `planned` on WebGPU too, the resident palette and body paths included. The WebGPU host code that exists today runs in thread-disabled Emscripten builds; the ledger records the state of the WGSL programs, not that host.
+The WebGPU column tracks ports for command-line use. An operation with Metal and Vulkan implementations records a missing WebGPU port as `planned`, including resident palette and body stages. The ledger records the WGSL programs. The WebGPU host code runs in thread-disabled Emscripten builds.
 
-Each cell holds one of four states:
+Each cell uses a state from the following table. The `8bit` state applies to GPU backend columns.
 
 | State | Meaning | Tag in source |
 | --- | --- | --- |
-| `done` | The backend implements the operation | Required for every column except Scalar |
+| `done` | Scalar or SIMD implements the operation. A GPU backend implements both the 8bit and FP32 data paths. | SIMD requires a backend tag. GPU requires both the backend tag and its `-fp32` form. |
+| `8bit` | The GPU backend implements the 8bit data path. FP32 support is pending. | The backend tag without a suffix is required. |
 | `planned` | A port is expected but not written | Not allowed |
 | `n/a` | The backend does not apply; the Notes column gives the reason when it is not obvious | Not allowed |
 | `rejected` | A port was written and measured and did not pay off; the Notes column records the result | Not allowed |
 
 The Scalar column is `done` for every operation whose accelerated paths reproduce a scalar result. Scalar code has no detectable pattern, so the check does not require a tag for it; a tag with the `scalar` backend is accepted for a branch-free or otherwise optimized scalar path that should be listed.
+
+An FP32 data path accepts the operation's FP32 data representation. FP32 arithmetic inside an 8bit data path still counts as `8bit`.
 
 ## Accel tags
 
@@ -53,32 +56,34 @@ A tag is a comment of the form:
 /* Accel: SAMPLE-VARY-POINTS neon sse2 */
 ```
 
-The first word is the ledger ID: capital letters, digits and hyphens, starting with a letter. The remaining words are backends from `scalar`, `neon`, `sse2`, `avx2`, `wasm`, `metal`, `vulkan` and `webgpu`. Write the tag directly above the function, kernel or macro it describes, after the explanatory comment and before the signature. A function that holds both a NEON and an SSE2 branch names both backends. A GLSL program carries its tag after the license line, before `#version`. A WGSL program carries its tag as a `//` comment after the license line. A Metal source embedded in an Objective-C string carries its tag above the string's declaration.
+The first word is the ledger ID: capital letters, digits and hyphens, starting with a letter. The remaining words are backends from `scalar`, `neon`, `sse2`, `avx2`, `wasm`, `metal`, `vulkan` and `webgpu`. Write the tag directly above the function, kernel or macro it describes, after the explanatory comment and before the signature. A function that holds both a NEON and an SSE2 branch names both backends. GLSL and WGSL files carry their tags near the start of the file. Standalone Metal fragments carry their tags before the first declaration or directive. Keep a GLSL prefix’s `#version` in its required leading position and use `//` comments for WGSL tags. An embedded shader carries its tag above the declaration of the host string.
+
+Use `metal-fp32`, `vulkan-fp32` or `webgpu-fp32` on the GPU source that implements the FP32 data path. A GPU unit shared by both paths can carry both forms.
 
 ## What counts as an acceleration unit
 
-The check scans the C, Objective-C, Metal, GLSL and WGSL sources directly under `src/`. It divides C, Objective-C and Metal sources into top-level constructs: a function, a declaration, or a `#define` with its continuation lines. The comments and preprocessor lines before a construct belong to it, which is why a tag directly above a function counts as part of that function. A unit must carry a tag when it matches one of the following:
+The check scans maintained implementation sources under `src/`, `include/`, `converters/` and `assessment/`, including subdirectories. Top-level C, Objective-C, Objective-C++ and Metal constructs include functions, declarations and macros with their continuation lines. The comments and preprocessor lines before a construct belong to it. Place the tag before the declaration or signature so it covers the whole unit. A unit must carry a tag when it matches one of the following:
 
 | Backend | What marks a unit |
 | --- | --- |
-| NEON | A NEON vector type such as `uint8x16_t`, or a NEON intrinsic call such as `vld1q_u8()` |
+| NEON | A NEON vector type such as `uint8x16_t`, or a NEON intrinsic name such as `vld1q_u8` |
 | SSE2 | `__m128` types or `_mm_` intrinsics |
 | AVX2 | `__m256` types or `_mm256_` intrinsics |
 | WASM | `v128_t` or `wasm_` intrinsics |
-| Metal | A `kernel` function in a `.metal` file, or `kernel void` inside a string in an Objective-C or C file |
-| Vulkan | Every `.glsl` file, as one unit |
-| WebGPU | Every `.wgsl` file, as one unit |
+| Metal | A `kernel` function, a `.metal` fragment without kernels, or an embedded Metal kernel declaration |
+| Vulkan | A `.glsl` or `.comp` file as one unit, or embedded GLSL compute source |
+| WebGPU | A `.wgsl` file as one unit, or embedded WGSL compute source |
 
-The bundled stb image decoder and writer keep their upstream SIMD paths and are not scanned. Host code that drives a GPU, such as pipeline setup in `*-metal.m`, `*-vulkan.c` or the JavaScript embedded in `*-webgpu.c`, is not a unit by itself; the kernel or program it runs is.
+The bundled stb image decoder and writer keep their upstream SIMD paths. The checker audits maintained shader sources before they are embedded into generated headers. A GPU pipeline is registered by tagging the kernel or program it runs.
 
 ## Untagged legacy code
 
-Code written before the ledger existed is listed in [`tests/_static/data/accel-untagged-legacy.tsv`](../../tests/_static/data/accel-untagged-legacy.tsv). Each row names a source file, the number of untagged units it may still contain, and the unit's name. The list can only shrink. Tagging a listed unit without removing its row fails the check, so the list always shows exactly what remains. A new untagged unit is never added to it; it is tagged and given a ledger row instead. The WGSL programs in it were frozen when the check began to scan WGSL; like the GLSL and Metal programs of the same dither and lookup policies, they predate the ledger.
+The migration of legacy code is complete. The same tag and ledger checks apply to all maintained acceleration units.
 
 ## Adding or porting an optimization
 
 1. Find the operation in the [ledger](ledger.md), or add a row with a new ID when the operation is new. Use the SIMD table for a CPU vector backend and the GPU table for a GPU backend, and add a row to the other table under the same ID when the operation gains a backend of that kind. Mark every backend whose port is expected as `planned`.
-2. Tag the new function or kernel and change its cell to `done` in the same change.
+2. Tag the new function or kernel and update its cell in the same change. Use `8bit` for a GPU backend with only the 8bit path. Use `done` once both GPU paths are implemented and tagged.
 3. When a port is measured and dropped, change the cell to `rejected` and record the result in Notes.
 4. Run `make staticcheck`.
 
@@ -88,10 +93,10 @@ Code written before the ledger existed is listed in [`tests/_static/data/accel-u
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| AC-01 | Every SIMD and GPU unit under `src/` carries an `Accel:` tag, except the units frozen in the legacy list; the legacy list matches the untagged units exactly; every tag names a ledger row whose cell for that backend is `done`; and every `done` cell outside Scalar has a tag. | [tests/_static/sh/staticcheck-accel-ledger.sh](../../tests/_static/sh/staticcheck-accel-ledger.sh) |
-| AC-02 | The check rejects an untagged unit, including an untagged WGSL program, a tag whose backend the unit does not use, a tag on a cell that is not `done`, an unknown ID or state, a malformed tag, a `done` cell without a tag, a legacy row that no longer matches, Scalar cells that differ between the SIMD and GPU rows of one ID, and an all-`n/a` row of an ID listed in both tables; it accepts AVX2 functions with 128-bit helpers, tagged GLSL and WGSL programs, prose that names a vector type, and the vendored stb decoder. | [tests/_static/sh/staticcheck-accel-ledger-controls.sh](../../tests/_static/sh/staticcheck-accel-ledger-controls.sh) |
+| AC-01 | Every detected SIMD or GPU unit carries a tag consistent with its ledger cell. SIMD `done` and GPU `8bit` require a matching backend tag. GPU `done` requires tags for both paths. | [tests/_static/sh/staticcheck-accel-ledger.sh](../../tests/_static/sh/staticcheck-accel-ledger.sh) |
+| AC-02 | The checker rejects missing, misplaced, malformed and mismatched tags, unsupported vector constructs, and inconsistent ledger rows and cells. Controls cover GPU precision states, nested sources, shader fragments, embedded shaders, and scalar and AVX helper tags. | [tests/_static/sh/staticcheck-accel-ledger-controls.sh](../../tests/_static/sh/staticcheck-accel-ledger-controls.sh) |
 | AC-03 | No function compiled with an AVX2 target attribute under `src/` takes a 256-bit or 512-bit vector parameter by value, since 32-bit x86 GCC and Cygwin/MSYS x86-64 GCC load such an argument from a stack slot without 32-byte alignment; the check rejects a by-value control and accepts the pointer form. | [tests/_static/sh/staticcheck-avx-vector-params.sh](../../tests/_static/sh/staticcheck-avx-vector-params.sh) |
 
 ### Coverage boundary
 
-The check recognizes acceleration by vector types, intrinsic names and kernel declarations. It does not detect a scalar optimization, a SIMD path reached only through a macro defined in another file, or GPU work written in a language it does not scan, such as compute dispatched from JavaScript without a WGSL source file under `src/`. It does not decide whether a `planned`, `n/a` or `rejected` state is correct, and it does not verify that a tagged implementation produces the scalar result; the behavioral tests of each operation own that.
+The check recognizes explicit vector types, intrinsic names, shader files and common entry-point syntax in embedded shaders. Compiler auto-vectorization, inline assembly, macro expansion across files and shaders assembled dynamically by host code require review. Review determines whether a missing port is planned, inapplicable or rejected. GPU precision tags declare which paths the source implements. Review and behavioral tests establish actual FP32 coverage and agreement with the scalar result.

@@ -55,7 +55,6 @@ __COSMOPOLITAN__	platform	docs/misc/platforms/cosmopolitan.md
 __CYGWIN__	platform	docs/misc/platforms/cygwin-msys.md
 __DragonFly__	platform	docs/misc/platforms/posix-runtimes.md
 __EMSCRIPTEN__	platform	docs/misc/platforms/emscripten.md
-__FMA__	architecture	-
 __FreeBSD__	platform	docs/misc/platforms/posix-runtimes.md
 __GLIBC__	platform	docs/misc/platforms/posix-runtimes.md
 __GCC_ATOMIC_INT_LOCK_FREE	compiler	-

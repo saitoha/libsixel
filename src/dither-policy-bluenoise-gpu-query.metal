@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: DITHER-BLUENOISE metal */
 /* bluenoise query for legacy lookup executors. */
 static float bn_sample(device const uchar *blue_noise, int x, int y)
 {

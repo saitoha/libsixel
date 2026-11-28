@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-ATKINSON webgpu
+// Accel: DITHER-BURKES webgpu
+// Accel: DITHER-FS webgpu
+// Accel: DITHER-JAJUNI webgpu
+// Accel: DITHER-LSO2 webgpu
+// Accel: DITHER-SIERRA1 webgpu
+// Accel: DITHER-SIERRA2 webgpu
+// Accel: DITHER-SIERRA3 webgpu
+// Accel: DITHER-STUCKI webgpu
 // One lane owns four consecutive pixels, so byte packing needs no atomics.
 // The iterative plane supplies raw indexes. The solved plane additionally
 // carries the reconstructed query and its lookup for a valid retained pixel.

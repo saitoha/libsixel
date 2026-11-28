@@ -376,15 +376,19 @@ sixel_lookup_delaunay_float32_walk_scalar(
 
 #if SIXEL_DLF_SIMD
 #if SIXEL_SIMD_NEON_A64
+/* Accel: LOOKUP-DELAUNAY neon */
 typedef float64x2_t sixel_delaunay_distance2_t;
 #elif defined(SIXEL_DLF_SSE2)
+/* Accel: LOOKUP-DELAUNAY sse2 */
 typedef __m128d sixel_delaunay_distance2_t;
 #else
+/* Accel: LOOKUP-DELAUNAY wasm */
 typedef v128_t sixel_delaunay_distance2_t;
 #endif
 
 /* Each lane evaluates a neighbor. Separate double products and sums follow
  * the scalar order exactly; the build gate forbids contraction. */
+/* Accel: LOOKUP-DELAUNAY neon sse2 wasm */
 static sixel_delaunay_distance2_t
 sixel_delaunay_float_distance2(sixel_lookup_delaunay_float32_t const *graph,
     float const *pixel, sixel_delaunay_float_block_t const *block, int half)
@@ -430,6 +434,7 @@ sixel_delaunay_float_distance2(sixel_lookup_delaunay_float32_t const *graph,
     return sum;
 }
 
+/* Accel: LOOKUP-DELAUNAY neon sse2 wasm */
 static int
 sixel_lookup_delaunay_float32_walk_simd(
     sixel_lookup_delaunay_float32_t const *graph,
@@ -605,6 +610,7 @@ sixel_lookup_delaunay_float32_workspace_size(
 /* Each lane is an independent query. The build gate guarantees separate
  * multiply/add in both scalar and SIMD code. Keep channel order, double
  * intermediates and lowest-index ties; never fuse or reassociate terms. */
+/* Accel: LOOKUP-DELAUNAY neon sse2 wasm */
 static sixel_delaunay_distance2_t
 sixel_delaunay_float_query_distance2(
     sixel_lookup_delaunay_float32_t const *graph,
@@ -654,6 +660,7 @@ sixel_delaunay_float_query_distance2(
 
 /* C99 cannot add const through a pointer to an array. The caller owns
  * this mutable batch, but the SIMD search only reads its samples. */
+/* Accel: LOOKUP-DELAUNAY neon sse2 wasm */
 static void
 sixel_lookup_delaunay_float32_map_cold8(
     sixel_lookup_delaunay_float32_t const *graph,

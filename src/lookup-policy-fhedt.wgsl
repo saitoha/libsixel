@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-FHEDT webgpu
 @group(0) @binding(7) var<storage, read> config: array<u32>;
 
 // One invocation owns a whole line. X begins with quantized palette sites.

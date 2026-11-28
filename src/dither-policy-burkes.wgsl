@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-BURKES webgpu
 // Sender offsets and normalized error shares for burkes.
 const dx = array<i32, 7>(
     1, 2, -2, -1, 0, 1, 2);

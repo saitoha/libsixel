@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-FHEDT metal */
 kernel void lookup_fhedt_apply(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

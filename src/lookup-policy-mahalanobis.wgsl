@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: LOOKUP-MAHALANOBIS webgpu
 @group(0) @binding(1) var<storage, read> palette: array<u32>;
 
 // The native RGB8 policy scores four packed entries per step. The register

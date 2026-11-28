@@ -8,6 +8,7 @@ struct GridlutCell {
 
 /* A cell includes fractional coordinates above its last integer. Using the
  * closed upper face is conservative; a candidate overflow requests a scan. */
+/* Accel: LOOKUP-GRIDLUT metal */
 kernel void gridlut_build(constant uchar *palette [[buffer(0)]],
     constant uint &ncolors [[buffer(1)]],
     device GridlutCell *grid [[buffer(3)]],

@@ -1,3 +1,4 @@
+/* Accel: PALETTE-MAP metal */
 /*
  * Shared per-pixel stages.  prepare_query returns true when the pixel is
  * finished without a palette search (out of range, transparent, or kept by

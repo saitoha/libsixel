@@ -13915,7 +13915,6 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/data/c-configured-features-legacy.tsv \
 	_static/sh/staticcheck-c-configured-features.sh \
 	_static/awk/accel-units.awk _static/awk/accel-ledger.awk \
-	_static/data/accel-untagged-legacy.tsv \
 	_static/sh/staticcheck-accel-ledger.sh \
 	_static/sh/staticcheck-accel-ledger-controls.sh \
 	_static/sh/staticcheck-avx-vector-params.sh \

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-GRIDLUT vulkan */
 /*
  * Grid candidate lookup in the "vulkan.lookup-rgb8.v1" program ABI.
  * Byte construction and lookup port lookup-policy-gridlut-gpu.metal;

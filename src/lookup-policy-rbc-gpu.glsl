@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-RBC vulkan */
 /*
  * Random Ball Cover candidate lookup in the "vulkan.lookup-rgb8.v1"
  * program ABI, a port of lookup-policy-rbc-gpu.metal. This implementation

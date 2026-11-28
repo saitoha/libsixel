@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-5BIT metal */
 kernel void lookup_5bit_apply(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

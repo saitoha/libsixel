@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-BLOCKCULL vulkan */
 /* The blockcull batch ABI: one 32-thread group owns an 8x8 tile,
  * two queries per lane. Consumers supply corrected queries with w=1;
  * inactive queries have w=0. No source, residual or history is visible.

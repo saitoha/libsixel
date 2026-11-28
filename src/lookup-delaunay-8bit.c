@@ -327,6 +327,7 @@ sixel_lookup_delaunay_8bit_walk_scalar(
 #if SIXEL_DL8_SIMD
 /* Signed packed keys fit: 195075 * 256 + 255 < INT_MAX. Larger
  * representative sets retain separate distance/ID lanes and tie masks. */
+/* Accel: LOOKUP-DELAUNAY neon sse2 wasm */
 static int
 sixel_lookup_delaunay_8bit_walk_simd(
     sixel_lookup_delaunay_8bit_t const *graph,
@@ -552,6 +553,7 @@ sixel_lookup_delaunay_8bit_map(sixel_lookup_delaunay_8bit_t const *graph,
  * comparison preserves the lowest-index
  * tie rule, including duplicate colors. All squared byte distances fit in
  * signed 32 bits. Warm entries never pay for this scan. */
+/* Accel: LOOKUP-DELAUNAY neon sse2 wasm */
 static void
 sixel_lookup_delaunay_8bit_map_cold8(
     sixel_lookup_delaunay_8bit_t const *graph,

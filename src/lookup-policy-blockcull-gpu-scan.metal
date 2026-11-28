@@ -16,6 +16,7 @@
  * fm = (qid & 4) + (lane / 2) % 4 and fn = (qid & 2) * 2 + (lane % 2) * 2.
  * The four lanes of a row differ in lane bits 0 and 3.
  */
+/* Accel: LOOKUP-BLOCKCULL metal */
 kernel void lookup_blockcull_scan(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-ATKINSON webgpu
+// Accel: DITHER-BURKES webgpu
+// Accel: DITHER-FS webgpu
+// Accel: DITHER-JAJUNI webgpu
+// Accel: DITHER-LSO2 webgpu
+// Accel: DITHER-SIERRA1 webgpu
+// Accel: DITHER-SIERRA2 webgpu
+// Accel: DITHER-SIERRA3 webgpu
+// Accel: DITHER-STUCKI webgpu
 // A collective shares bounds over its spatial 8x8 tile. All lanes must
 // reach its barriers, including lanes without a query in this phase.
 fn batch_sample(x: u32, y: u32) -> vec4f {

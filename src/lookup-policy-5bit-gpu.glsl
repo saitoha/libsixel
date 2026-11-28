@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-5BIT vulkan */
 /*
  * 5bit cell-center lookup in the "vulkan.lookup-rgb8.v1" program ABI,
  * a port of lookup-policy-5bit-gpu.metal and its fractional form. The

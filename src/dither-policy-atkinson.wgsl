@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-ATKINSON webgpu
 // Sender offsets and normalized error shares for atkinson.
 const dx = array<i32, 6>(
     1, 2, -1, 0, 1, 0);

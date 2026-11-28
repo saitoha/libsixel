@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: PALETTE-MAP webgpu
 @group(0) @binding(0) var<storage, read> pixels: array<u32>;
 struct Params {
     count: u32, first: u32, width: u32, strength: f32, save_query: u32,

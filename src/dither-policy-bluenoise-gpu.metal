@@ -1,3 +1,4 @@
+/* Accel: DITHER-BLUENOISE metal */
 kernel void sixel_gpu_fused_lookup(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],

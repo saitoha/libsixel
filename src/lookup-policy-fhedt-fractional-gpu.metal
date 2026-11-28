@@ -40,12 +40,14 @@ struct FhedtFractionalParams {
 
 /* Only R squared column heads need clearing. Seed lists contain at most
  * 256 entries and are consumed after the tracked seed encoder completes. */
+/* Accel: LOOKUP-FHEDT metal */
 kernel void fhedt_clear(device uint *heads [[buffer(3)]],
                        uint i [[thread_position_in_grid]])
 {
     if (i < R * R) heads[i] = UINT_MAX;
 }
 
+/* Accel: LOOKUP-FHEDT metal */
 kernel void fhedt_seed(device atomic_uint *heads [[buffer(3)]],
                       constant uchar *palette [[buffer(0)]],
                       constant uint &count [[buffer(1)]],
@@ -66,6 +68,7 @@ kernel void fhedt_seed(device atomic_uint *heads [[buffer(3)]],
 /* A seed's X cost is zero, so scan only that column's palette entries.
  * Threads write consecutive X cells. Explicit tie rules make the result
  * independent of list order: earlier X, then last colliding label. */
+/* Accel: LOOKUP-FHEDT metal */
 kernel void fhedt_x(device uint *heads [[buffer(3)]],
                      constant uchar *palette [[buffer(0)]],
                      constant FhedtFractionalParams &p [[buffer(2)]],
@@ -161,6 +164,7 @@ static void fhedt_edt(device const Grid *input, device Grid *output,
     }
 }
 
+/* Accel: LOOKUP-FHEDT metal */
 kernel void fhedt_pack(device uint *workspace [[buffer(3)]],
                       uint at [[thread_position_in_grid]])
 {
@@ -190,12 +194,14 @@ kernel void fhedt_pack(device uint *workspace [[buffer(3)]],
 
 /* The axis passes read and write disjoint regions in one leased allocation.
  * Encoder boundaries provide visibility between construction passes. */
+/* Accel: LOOKUP-FHEDT metal */
 kernel void fhedt_y(device uint *w [[buffer(3)]],
     uint line [[thread_position_in_grid]])
 {
     fhedt_edt(w+FH_HEAD_WORDS, w+FH_HEAD_WORDS+FH_CELLS,
         (device Table *)(w+FH_TABLE_WORD), 1, line);
 }
+/* Accel: LOOKUP-FHEDT metal */
 kernel void fhedt_z(device uint *w [[buffer(3)]],
     uint line [[thread_position_in_grid]])
 {

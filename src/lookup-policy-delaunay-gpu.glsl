@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-DELAUNAY vulkan */
 /* Delaunay's private conservative adjacency, ported from its Metal byte
  * and fractional programs. No other lookup supplies construction or search.
  * Workspace in uint words: distance rows at 0, packed RGB rows at 65536,

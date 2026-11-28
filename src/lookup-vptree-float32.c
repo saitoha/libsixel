@@ -800,14 +800,17 @@ sixel_lookup_vptree_float32_workspace_size(
 
 #if SIXEL_FLOAT_LOOKUP_SIMD
 #if SIXEL_SIMD_NEON_A64
+/* Accel: LOOKUP-VPTREE neon */
 typedef float64x2_t sixel_float_distance2_t;
 #else
+/* Accel: LOOKUP-VPTREE sse2 */
 typedef __m128d sixel_float_distance2_t;
 #endif
 
 /* Each lane is an independent query. The build gate guarantees separate
  * multiply/add in both scalar and SIMD code. Keep channel order, double
  * intermediates and lowest-index ties; never fuse or reassociate terms. */
+/* Accel: LOOKUP-VPTREE neon sse2 */
 static sixel_float_distance2_t
 sixel_float_distance2(sixel_lookup_vptree_float32_t const *tree,
                      sixel_float_distance2_t r,
@@ -845,6 +848,7 @@ sixel_float_distance2(sixel_lookup_vptree_float32_t const *tree,
 
 /* C99 cannot add const through a pointer to an array. The caller owns
  * this mutable batch, but the SIMD search only reads its samples. */
+/* Accel: LOOKUP-VPTREE neon sse2 */
 static void
 sixel_lookup_vptree_float32_map_cold8(
     sixel_lookup_vptree_float32_t const *tree,

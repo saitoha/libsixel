@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-FHEDT metal */
 /* Byte FHEDT preserves the CPU quantized-coordinate and corner tie order.
  * F0 uses a byte table; F1 carries boundary and zero-distance flags. */
 static uint fhedt_palette_lookup(constant uchar *palette,

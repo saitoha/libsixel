@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Accel: DITHER-LSO2 webgpu
 // Each channel's error magnitude selects its own calibrated coefficient.
 fn weighted(x: i32, y: i32, tap: u32) -> vec3f {
     let e = sender(x, y).xyz;

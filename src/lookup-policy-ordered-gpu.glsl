@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+/* Accel: LOOKUP-ORDERED vulkan */
 /*
  * Ordered candidate lookup in the "vulkan.lookup-rgb8.v1" program ABI, a
  * port of lookup-policy-ordered-gpu.metal. This implementation owns its

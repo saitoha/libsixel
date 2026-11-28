@@ -1,3 +1,4 @@
+/* Accel: LOOKUP-NONE metal */
 kernel void lookup_none_apply(
     device uchar *result [[buffer(0)]],
     device const uchar *pixels [[buffer(1)]],
