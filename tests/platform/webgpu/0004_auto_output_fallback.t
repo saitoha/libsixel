@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/gpu-policy.md
 set -eux
 echo '1..1'
 set -v

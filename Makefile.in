@@ -741,6 +741,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk \
 	docs/encoder/output/drcs.md \
 	docs/encoder/palette-construction/fixed-palettes.md \
 	docs/cli/clipboard.md docs/cli/diagnostics.md \
+	docs/cli/gpu-policy.md \
 	docs/cli/runtime-policy.md docs/cli/threading-policy.md \
 	docs/loader/patents.md docs/loader/libjpeg.md \
 	docs/loader/libwebp.md docs/loader/libtiff.md \

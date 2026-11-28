@@ -1,5 +1,6 @@
 #!/bin/sh
 # GPU stages need sustained headroom and respects the CPU policy.
+# Policy: docs/cli/gpu-policy.md
 set -eux
 echo '1..1'
 set -v

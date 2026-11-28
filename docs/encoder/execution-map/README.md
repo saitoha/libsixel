@@ -141,7 +141,7 @@ Some Vulkan stages run on the device only while the device has spare time. Each 
 | Heckbert median cut | Solve on the device or on the CPU; `force` skips the choice |
 | SIXEL body | Spell the body on the device or only compose it there |
 
-The first observation starts a window and selects the CPU. After every eight observations spanning at least 20 ms, the stage averages the device load of that window with the previous average. From the second window on, an average below 0.50 selects the device, and the choice stays there until the average exceeds 0.70. Policy `off` clears the state. The two thresholds keep a stage from alternating when the load sits near one of them. The test-only `_SIXEL_TEST_GPU_HEADROOM=gpu|cpu` pins the automatic choice, because profilers distort the wall-time window.
+The first observation starts a window and selects the CPU. After every eight observations spanning at least 20 ms, the stage averages the device load of that window with the previous average. From the second window on, an average below 0.50 selects the device, and the choice stays there until the average exceeds 0.70. Policy `off` clears the state, and policy `offload` selects the device at once and keeps it there whatever the load; the [GPU policy](../../cli/gpu-policy.md#speed-checks) lists the other checks that `offload` skips. The two thresholds keep a stage from alternating when the load sits near one of them. The test-only `_SIXEL_TEST_GPU_HEADROOM=gpu|cpu` pins the automatic choice, because profilers distort the wall-time window.
 
 ### Forced resident palette path
 

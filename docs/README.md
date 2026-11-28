@@ -209,6 +209,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 - [Threading policy modes](threading/policy-modes.md) explains lazy, balanced and greedy scheduling, topology limits, and output effects.
 - [GPU host memory and frame sharing](gpu/host-memory.md) explains which GPU memory the CPU reads or writes, why results are read from cached memory, and when indexed frames are shared without copies.
 - [Runtime execution policy](cli/runtime-policy.md) explains `-j`, SIMD ceilings, scheduling thresholds, and encoder and decoder differences.
+- [GPU policy](cli/gpu-policy.md) defines `-G`, the `off`, `auto`, `offload`, and `force` values, size thresholds, and the speed checks of each GPU stage.
 - [Threading policy](cli/threading-policy.md) defines `-=`, every stage key, budget defaults, precedence, and converter scopes.
 
 ### Diagnostics

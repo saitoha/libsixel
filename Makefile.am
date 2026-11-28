@@ -237,6 +237,7 @@ EXTRA_DIST = tools/gen-lso2-gpu.sh tools/gen_varcoefs.awk tools/embed-metal.sh t
 	docs/encoder/palette-construction/fixed-palettes.md \
 	docs/cli/clipboard.md \
 	docs/cli/diagnostics.md \
+	docs/cli/gpu-policy.md \
 	docs/cli/runtime-policy.md \
 	docs/cli/threading-policy.md \
 	docs/loader/patents.md \

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify the GPU body threshold through short and environment paths.
+# Policy: docs/cli/gpu-policy.md
 # Registry row: SIXEL_OPTION_SCHEMA_GPU_POLICY|NULL|body_threshold
 # Registry binding: gpu_body_threshold|gpu_body_threshold_override
 # GPU contract: consumer=body|policy=1|threshold=300
