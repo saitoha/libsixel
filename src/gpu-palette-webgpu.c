@@ -188,7 +188,9 @@ EM_JS(void, webgpu_install_tables, (void), {
 })
 
 /* Pass the caller's list by reference so partially allocated buffers are
- * destroyed even if allocation throws before the full set is ready. */
+ * destroyed even if allocation throws before the full set is ready.
+ * Record commands here to keep the async wrapper's stringified body within
+ * the portable C99 literal length. */
 EM_JS(void, webgpu_install_buffers, (void), {
     const state = Module['sixelWebGPU'], device = state.device;
     state.paletteBuffers = (buffers, count, colors, corrected,
@@ -223,6 +225,43 @@ EM_JS(void, webgpu_install_buffers, (void), {
             if (noiseBytes) buffer(noiseBytes, U.STORAGE | U.COPY_DST);
             if (nbytes) buffer(nbytes, U.STORAGE | U.COPY_DST);
         }
+    };
+    state.recordPaletteDispatch = (pipeline, entries, buffers, uniforms,
+                                   count, length, batch, target, corrected) => {
+        const [, , output, , invalidIndex, queries, staging] = buffers;
+        const group = device.createBindGroup({
+            layout: pipeline.getBindGroupLayout(0), entries
+        });
+        const enc = device.createCommandEncoder();
+        enc.clearBuffer(invalidIndex);
+        if (batch) enc.clearBuffer(output);
+        const pass = enc.beginComputePass();
+        pass.setPipeline(pipeline);
+        pass.setBindGroup(0, group);
+        if (batch) {
+            const first = HEAPU32[(uniforms >>> 2) + 1];
+            const width = HEAPU32[(uniforms >>> 2) + 2];
+            const rows = Math.ceil(((first % width) + count) / width);
+            const tiles = Math.ceil(width / 8) * Math.ceil(rows / 8);
+            const limit = device.limits.maxComputeWorkgroupsPerDimension;
+            const pitch = Math.min(tiles, limit);
+            pass.dispatchWorkgroups(pitch, Math.ceil(tiles / pitch));
+        } else pass.dispatchWorkgroups(Math.ceil(count / 256));
+        pass.end();
+        if (target) {
+            // Chunks start on multiples of 1048576 pixels (see the caller).
+            const first = HEAPU32[(uniforms >>> 2) + 1];
+            enc.copyBufferToBuffer(output, 0, target.indexes, first, length);
+            enc.copyBufferToBuffer(invalidIndex, 0, target.status,
+                4 * Math.floor(first / 1048576), 4);
+        } else {
+            enc.copyBufferToBuffer(output, 0, staging, 0, length);
+            enc.copyBufferToBuffer(invalidIndex, 0, staging, length, 4);
+            if (corrected)
+                enc.copyBufferToBuffer(queries, 0, staging, length + 4,
+                    count * 4);
+        }
+        return enc.finish();
     };
 })
 
@@ -477,39 +516,9 @@ EM_ASYNC_JS(int, webgpu_dispatch, (char const *const *lookup, int nlookup,
             state.writeBytes(b, 0, constants, nbytes);
             entries.push({binding: 7, resource: {buffer: b}});
         }
-        const group = device.createBindGroup({
-            layout: pipeline.getBindGroupLayout(0), entries
-        });
-        const enc = device.createCommandEncoder();
-        enc.clearBuffer(invalidIndex);
-        if (batch) enc.clearBuffer(output);
-        const pass = enc.beginComputePass();
-        pass.setPipeline(pipeline);
-        pass.setBindGroup(0, group);
-        if (batch) {
-            const first = HEAPU32[(uniforms >>> 2) + 1];
-            const width = HEAPU32[(uniforms >>> 2) + 2];
-            const rows = Math.ceil(((first % width) + count) / width);
-            const tiles = Math.ceil(width / 8) * Math.ceil(rows / 8);
-            const limit = device.limits.maxComputeWorkgroupsPerDimension;
-            const pitch = Math.min(tiles, limit);
-            pass.dispatchWorkgroups(pitch,Math.ceil(tiles / pitch));
-        } else pass.dispatchWorkgroups(Math.ceil(count / 256));
-        pass.end();
-        if (target) {
-            // Chunks start on multiples of 1048576 pixels (see the caller).
-            const first = HEAPU32[(uniforms >>> 2) + 1];
-            enc.copyBufferToBuffer(output, 0, target.indexes, first, length);
-            enc.copyBufferToBuffer(invalidIndex, 0, target.status,
-                4 * Math.floor(first / 1048576), 4);
-        } else {
-            enc.copyBufferToBuffer(output, 0, staging, 0, length);
-            enc.copyBufferToBuffer(invalidIndex, 0, staging, length, 4);
-            if (corrected)
-                enc.copyBufferToBuffer(queries, 0, staging, length + 4,
-                    count * 4);
-        }
-        device.queue.submit([enc.finish()]);
+        const command = state.recordPaletteDispatch(pipeline, entries,
+            buffers, uniforms, count, length, batch, target, corrected);
+        device.queue.submit([command]);
         const validation = device.popErrorScope();
         const allocation = device.popErrorScope();
         scoped = false;
