@@ -258,6 +258,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_UYVY (SIXEL_FORMATTYPE_COLOR | 0x31)
 #define SIXEL_PIXELFORMAT_YUV420P (SIXEL_FORMATTYPE_COLOR | 0x32)
 #define SIXEL_PIXELFORMAT_NV12 (SIXEL_FORMATTYPE_COLOR | 0x33)
+#define SIXEL_PIXELFORMAT_YUV411P (SIXEL_FORMATTYPE_COLOR | 0x34)
 #define SIXEL_FRAME_COLORSPACE_YCBCR 0x101
 
 /* palette type */
@@ -1831,10 +1832,10 @@ sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
 typedef struct sixel_ycbcr_def sixel_ycbcr_def_t;
 
 /* Chroma offsets use half-luma-sample units relative to the first luma
- * sample of each group. Each subsampled axis accepts 0 (cosited) or 1
- * (centered). For YUYV and UYVY, y must be 0. RGB describes the decoded
- * samples. Chroma reconstruction extends the first and last sample on
- * each axis. Nearest uses the preceding sample at a tie. */
+ * sample of each group. Each subsampled axis accepts 0 (cosited) or
+ * the centered offset (1 at a 2:1 ratio, 3 at a 4:1 ratio). Other axes
+ * require 0. RGB describes the decoded samples. Chroma reconstruction
+ * extends edge samples. Nearest uses the preceding sample at a tie. */
 typedef struct sixel_ycbcr_def_config {
     size_t struct_size;
     int encoding;
@@ -1878,7 +1879,9 @@ typedef struct sixel_ycbcr_frame_view {
 /* Set struct_size to sizeof the view. YUYV and UYVY require one plane and
  * positive even width. YUV420P (I420) takes Y, Cb, Cr. NV12 takes Y and
  * interleaved CbCr. Both 4:2:0 layouts allow odd sizes and use ceil(width/2)
- * by ceil(height/2) chroma samples. Planes may share an allocation.
+ * by ceil(height/2) chroma samples. YUV411P takes Y, Cb, Cr, with
+ * ceil(width/4) chroma samples on every luma row. Planes may share an
+ * allocation.
  * Each plane has an accessible span starting at base, a logical row-zero
  * offset and a signed byte stride. Only active bytes are required at the
  * final row. Storage accounting includes the union of declared spans.

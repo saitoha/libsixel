@@ -2921,6 +2921,114 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static int
+test_ycbcr411(int phase, int nearest)
+{
+    static int const cb[3][2] = {{80, 200}, {176, 88}, {112, 184}};
+    static int const cr[3][2] = {{192, 88}, {104, 168}, {156, 112}};
+    /* Independent right-sample weights for centers at 0,4 and 1.5,5.5. */
+    static double const linear[2][7] = {
+        {0, 0.25, 0.5, 0.75, 1, 1, 1}, {0, 0, 0.125, 0.375, 0.625, 0.875, 1}
+    };
+    static double const closest[2][7] = {
+        {0, 0, 0, 1, 1, 1, 1}, {0, 0, 0, 0, 1, 1, 1}
+    };
+    unsigned char y_plane[28], u_plane[11], v_plane[16];
+    sixel_ycbcr_frame_view_t view = {sizeof(view), SIXEL_PIXELFORMAT_YUV411P,
+        7, 3, 3, {{y_plane, sizeof(y_plane), 1, 10},
+                  {u_plane, sizeof(u_plane), 9, -4},
+                  {v_plane, sizeof(v_plane), 2, 6}}, NULL};
+    sixel_ycbcr_frame_view_t cloned = {0};
+    sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, phase ? 3 : 0, 0, NULL};
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *definition = NULL, *vertical = NULL;
+    sixel_frame_t *frame = NULL, *grid = NULL, *full = NULL;
+    sixel_frame_interface_t *iface, *copy = NULL;
+    sixel_ycbcr422_counts_t counts = {0};
+    float const *pixels;
+    double w, luma, u, v;
+    int x, y, i, pass = 0;
+
+    memset(y_plane, 239, sizeof(y_plane));
+    memset(u_plane, 239, sizeof(u_plane));
+    memset(v_plane, 239, sizeof(v_plane));
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 7; ++x) {
+            y_plane[1 + y * 10 + x] = 70 + 17 * y + 9 * x;
+        }
+        for (x = 0; x < 2; ++x) {
+            u_plane[9 - 4 * y + x] = cb[y][x];
+            v_plane[2 + 6 * y + x] = cr[y][x];
+        }
+    }
+    rgb = sixel_color_def_new_named("srgb");
+    color.rgb = rgb;
+    definition = sixel_ycbcr_def_new(&color);
+    view.definition = definition;
+    if (definition == NULL || sixel_frame_new(&frame, NULL) ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view)) {
+        goto end;
+    }
+    color.chroma_y_half = 1;
+    vertical = sixel_ycbcr_def_new(&color);
+    view.definition = vertical;
+    if (vertical == NULL ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view) != SIXEL_BAD_ARGUMENT) {
+        goto end;
+    }
+
+    sixel_frame_observe_ycbcr422(frame, &counts);
+    iface = sixel_frame_as_interface(frame);
+    cloned.struct_size = sizeof(cloned);
+    if (iface->vtbl->clone(iface, NULL, &copy) || copy == NULL ||
+        sixel_frame_get_ycbcr((sixel_frame_t *)copy, &cloned) ||
+        cloned.plane_count != 3 ||
+        cloned.planes[0].stride_bytes != 7 ||
+        cloned.planes[1].stride_bytes != 2 ||
+        cloned.planes[2].stride_bytes != 2 ||
+        cloned.planes[1].buffer_bytes != 6 ||
+        cloned.planes[2].buffer_bytes != 6 ||
+        sixel_frame_sample_ycbcr(frame, NULL, 2, NULL, 0, &grid) ||
+        sixel_frame_sample_ycbcr(frame, NULL, 1, grid, 2, &full) ||
+        counts.rgb_conversions != 2 || counts.rgb_pixels != 21 ||
+        sixel_frame_set_pixelformat((sixel_frame_t *)copy,
+                                    SIXEL_PIXELFORMAT_RGBFLOAT32)) {
+        goto end;
+    }
+    pixels = (float const *)(void *)sixel_frame_get_pixels(full);
+    if (memcmp(pixels, sixel_frame_get_pixels((sixel_frame_t *)copy),
+               63u * sizeof(float)) != 0) {
+        goto end;
+    }
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 7; ++x) {
+            i = 3 * (7 * y + x);
+            w = nearest ? closest[phase][x] : linear[phase][x];
+            luma = (70 + 17 * y + 9 * x) / 255.0;
+            u = ((1 - w) * cb[y][0] + w * cb[y][1] - 128) / 255;
+            v = ((1 - w) * cr[y][0] + w * cr[y][1] - 128) / 255;
+            if (fabs(pixels[i] - (luma + 1.5748 * v)) > 2e-7 ||
+                fabs(pixels[i + 1] - (luma - 0.18732427293 * u -
+                                      0.46812427293 * v)) > 2e-7 ||
+                fabs(pixels[i + 2] - (luma + 1.8556 * u)) > 2e-7) {
+                fprintf(stderr, "4:1:1 sample mismatch at %d,%d\n", x, y);
+                goto end;
+            }
+        }
+    }
+    pass = 1;
+end:
+    sixel_frame_unref((sixel_frame_t *)copy);
+    sixel_frame_unref(full);
+    sixel_frame_unref(grid);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(vertical);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 /* Both layouts use unaligned borrowed bytes. The sentinel sits between
  * rows. Nine bytes expose exactly the last active byte. */
 static int
@@ -4390,6 +4498,10 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr411") == 0) {
+        c = strcmp(argv[2], "nearest") == 0;
+        return test_ycbcr411(0, c) || test_ycbcr411(1, c);
+    }
     if (argc == 4 && strcmp(argv[1], "ycbcr420") == 0) {
         c = strcmp(argv[2], "nv12") == 0 ? SIXEL_PIXELFORMAT_NV12 :
             SIXEL_PIXELFORMAT_YUV420P;
