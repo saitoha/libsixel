@@ -2155,6 +2155,7 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
 {
     sixel_frame_plane_view_t const *plane;
     sixel_ycbcr_def_t *definition;
+    sixel_ycbcr_frame_view_t saved;
     sixel_ycbcr_range_t active[SIXEL_YCBCR_MAX_PLANES];
     sixel_ycbcr_range_t declared[SIXEL_YCBCR_MAX_PLANES];
     size_t row, span, active_span;
@@ -2227,17 +2228,19 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    definition = (sixel_ycbcr_def_t *)view->definition;
+    /* The descriptor can reside in storage released by installation. */
+    saved = *view;
+    definition = (sixel_ycbcr_def_t *)saved.definition;
     (void)sixel_atomic_fetch_add_u32(&definition->ref, 1U);
     sixel_frame_install_pixels(frame,
-        (void *)sixel_frame_ycbcr_row(&view->planes[0], 0),
-        view->width, view->height, view->pixelformat, NULL, -1, 0, 0, 0, bytes);
+        (void *)sixel_frame_ycbcr_row(&saved.planes[0], 0),
+        saved.width, saved.height, saved.pixelformat, NULL, -1, 0, 0, 0, bytes);
     frame->format.coordinates = SIXEL_FRAME_COLORSPACE_YCBCR;
     frame->ycbcr = definition;
-    memcpy(frame->ycbcr_planes, view->planes,
-           (size_t)planes * sizeof(view->planes[0]));
-    frame->ycbcr_width = view->width;
-    frame->ycbcr_height = view->height;
+    memcpy(frame->ycbcr_planes, saved.planes,
+           (size_t)planes * sizeof(saved.planes[0]));
+    frame->ycbcr_width = saved.width;
+    frame->ycbcr_height = saved.height;
     frame->transparent = -1;
     return SIXEL_OK;
 }
