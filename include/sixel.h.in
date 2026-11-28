@@ -1808,7 +1808,7 @@ SIXELAPI void
 sixel_color_def_free(sixel_color_def_t *definition);
 
 /* Borrow mutable, tightly packed RGB float triplets in the supplied
- * definition. The frame copies the definition and does not convert the
+ * definition. The frame retains the definition and does not convert the
  * samples. Follow sixel_frame_init_borrowed() for the pixel lifetime.
  * The definition must support RGB input. A failed initialization leaves
  * the existing frame unchanged. */
@@ -1832,7 +1832,7 @@ typedef struct sixel_ycbcr_def sixel_ycbcr_def_t;
 /* Immutable stream definition. RGB describes the primaries and transfer
  * after YCbCr decoding. LIMITED means 16..235 luma and 16..240 chroma;
  * LEFT and CENTER locate chroma at luma indices 2*k and 2*k+0.5.
- * The constructor copies RGB once and returns NULL on invalid input or
+ * The constructor retains RGB and returns NULL on invalid input or
  * allocation failure. Each initialized frame retains its own reference.
  * SIXEL_FRAME_YCBCR422_CHROMA selects linear (default) or nearest when
  * the definition is created. Unrecognized values reject the definition. */
@@ -1858,8 +1858,9 @@ sixel_frame_init_ycbcr422_borrowed(sixel_frame_t *frame,
     unsigned char *pixels, size_t buffer_bytes, int width, int height,
     size_t stride_bytes, int pixelformat, sixel_ycbcr_def_t *definition);
 
-/* Query a packed frame. All outputs are required. RGB remains valid until
- * frame release or reinitialization. get_pixels() returns the packed bytes.
+/* Query a packed frame. All outputs are required. The borrowed RGB
+ * definition is valid until frame release, reinitialization, or successful
+ * in-place conversion. get_pixels() returns the packed bytes.
  * A clone stores the active bytes of each row at a tight stride. */
 SIXELAPI SIXELSTATUS
 sixel_frame_get_ycbcr422(sixel_frame_t const *frame, size_t *stride_bytes,

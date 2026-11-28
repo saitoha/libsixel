@@ -240,6 +240,12 @@ set -- \
     frame/storage/0098_ycbcr422_delta.t \
     frame/storage/0099_ycbcr422_operation_observer.t \
     frame/storage/0100_ycbcr422_fixed_palette_source.t \
+    frame/storage/0101_ycbcr422_adaptive_source.t \
+    frame/storage/0102_ycbcr422_grid_icc.t \
+    frame/storage/0103_ycbcr422_cancel_queued.t \
+    frame/storage/0104_ycbcr422_cancel_prepared.t \
+    frame/storage/0105_ycbcr422_source_alloc_failure.t \
+    frame/storage/0106_ycbcr422_delta_reprepare.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

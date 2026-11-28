@@ -48,6 +48,7 @@ sixel_frame_convert_workformat(sixel_frame_t *frame, int format);
 typedef struct sixel_ycbcr422_counts {
     sixel_atomic_u32_t packed_copies;
     sixel_atomic_u32_t rgb_conversions;
+    sixel_atomic_u32_t rgb_pixels;
 } sixel_ycbcr422_counts_t;
 
 SIXEL_INTERNAL_API void
@@ -59,6 +60,11 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
                                 sixel_allocator_t *allocator,
                                 sixel_frame_t **frame_out);
+
+/* Decode only the original raster coordinates selected by a sampling grid. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_sample_ycbcr422(sixel_frame_t const *frame,
+    sixel_allocator_t *allocator, int step, sixel_frame_t **frame_out);
 
 /* Match storage layout, decoding policy and RGB definition. */
 SIXEL_INTERNAL_API int

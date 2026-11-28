@@ -1148,9 +1148,7 @@ typedef struct sixel_encoder_frame_handoff_meta {
     uint64_t sequence;
     uint64_t palette_sequence;
     uint64_t user_tag;
-    sixel_frame_t *palette_source;
-    /* Reused if speculation has to prepare this submission again. */
-    sixel_frame_t *decoded_palette_source;
+    sixel_palette_source_t palette_source;
     int option_flags;
     int origin_x;
     int origin_y;
@@ -2170,7 +2168,7 @@ static SIXELSTATUS sixel_encoder_sample_frame(
     sixel_allocator_t *allocator,
     sixel_palette_sampling_policy_t policy,
     sixel_palette_sampling_source_t source,
-    sixel_sample_stream_t *samples, sixel_frame_t *palette_source);
+    sixel_sample_stream_t *samples, sixel_palette_source_t *palette_source);
 static SIXELSTATUS sixel_encoder_apply_palette_filter(
     sixel_encoder_t *encoder,
     sixel_sample_stream_t *samples,
@@ -2186,7 +2184,7 @@ static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_palette_frame_state_t *palette_state,
     sixel_palette_sampling_policy_t policy,
     sixel_palette_sampling_source_t source,
-    sixel_frame_t *palette_source);
+    sixel_palette_source_t *palette_source);
 static SIXELSTATUS sixel_encoder_palette_job_wait(
     sixel_palette_async_job_t *job,
     sixel_dither_t **dither_out);
@@ -5455,7 +5453,7 @@ sixel_encoder_animation_hide_cursor_enabled(sixel_encoder_t const *encoder)
 typedef struct sixel_encode_dag_context {
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
-    sixel_frame_t *palette_source;
+    sixel_palette_source_t *palette_source;
     sixel_output_t *output;
     SIXELSTATUS status;
     sixel_dither_t *dither;
@@ -7135,10 +7133,13 @@ sixel_encoder_sample_frame(
     sixel_allocator_t *allocator,
     sixel_palette_sampling_policy_t policy,
     sixel_palette_sampling_source_t source,
-    sixel_sample_stream_t *samples, sixel_frame_t *palette_source)
+    sixel_sample_stream_t *samples, sixel_palette_source_t *palette_source)
 {
     SIXELSTATUS status;
     sixel_frame_t *owned;
+    sixel_frame_t **cache;
+    sixel_filter_sample_grid_t grid;
+    int step;
     sixel_filter_sample_config_t config;
     sixel_filter_t *filter;
     int pixelformat;
@@ -7161,7 +7162,7 @@ sixel_encoder_sample_frame(
     config.clip_width = palette_source != NULL ? 0 : encoder->clipwidth;
     config.clip_height = palette_source != NULL ? 0 : encoder->clipheight;
     if (palette_source != NULL) {
-        frame = palette_source;
+        frame = palette_source->frame;
     }
     config.reqcolors = encoder->reqcolors;
     config.quality_mode = encoder->quality_mode;
@@ -7174,6 +7175,34 @@ sixel_encoder_sample_frame(
         encoder->method_for_diffuse == SIXEL_DIFFUSE_LSO2 &&
         sixel_encoder_gpu_diffusion_eligible(encoder,
             encoder->method_for_diffuse);
+
+    if (palette_source != NULL &&
+        sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
+        cache = &palette_source->packed_full;
+        step = 1;
+        if (policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID) {
+            sixel_filter_sample_plan_grid(&config, sixel_frame_get_width(frame),
+                sixel_frame_get_height(frame), &grid);
+            step = (int)grid.stride;
+            if (step > 1) {
+                cache = &palette_source->packed_grid;
+            }
+        }
+        if (*cache == NULL) {
+            status = sixel_frame_sample_ycbcr422(frame, allocator, step, cache);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+        /* Palette construction reads the cached raster. Its colorspace
+         * filter owns any transformed or edited derivative. */
+        owned = *cache;
+        sixel_frame_ref(owned);
+        status = sixel_sample_stream_take_owned(samples, &owned,
+                                                 policy, source);
+        sixel_frame_unref(owned);
+        return status;
+    }
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_SAMPLE,
                                                  &config,
@@ -7213,7 +7242,8 @@ SIXELSTATUS
 sixel_palette_build_input_new(sixel_palette_build_request_t **request,
     sixel_frame_t **sample, sixel_encoder_t *encoder, sixel_frame_t *frame,
     sixel_palette_frame_state_t const *state, int consumer_pixelformat,
-    sixel_palette_scheduler_t *scheduler, sixel_frame_t *palette_source)
+    sixel_palette_scheduler_t *scheduler,
+    sixel_palette_source_t *palette_source)
 {
     sixel_sample_stream_t stream;
     sixel_frame_t *owned;
@@ -7578,7 +7608,7 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
     sixel_palette_frame_state_t *palette_state,
     sixel_palette_sampling_policy_t policy,
                                  sixel_palette_sampling_source_t source,
-                                 sixel_frame_t *palette_source)
+                                 sixel_palette_source_t *palette_source)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int result;
@@ -12095,7 +12125,7 @@ sixel_encoder_frame_job_prepare(
     sixel_encoder_t *encoder,
     sixel_frame_t   *frame,
     sixel_output_t  *output,
-    sixel_encoder_frame_handoff_meta_t const *metadata,
+    sixel_encoder_frame_handoff_meta_t *metadata,
     sixel_encoder_frame_pipeline_t *pipeline, int auto_latest)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -12159,17 +12189,13 @@ sixel_encoder_frame_job_prepare(
     job->context.independent = pipeline != NULL && pipeline->independent;
     job->context.sequence = metadata != NULL ? metadata->sequence : 0;
     job->context.frame = frame;
-    /* Packed sources reach the palette pipeline only as decoded RGB.
-     * Fixed palettes bypass that decoding, so keep their source out of
-     * the fallback sample stream as well. */
-    if (metadata != NULL) {
-        if (metadata->decoded_palette_source != NULL) {
-            job->context.palette_source = metadata->decoded_palette_source;
-        } else if (metadata->palette_source != NULL &&
-            !sixel_pixelformat_is_ycbcr422(
-                sixel_frame_get_pixelformat(metadata->palette_source))) {
-            job->context.palette_source = metadata->palette_source;
-        }
+    /* Fixed palettes must not receive a packed source through the
+     * fallback sample stream. Keep the established RGB source path. */
+    if (metadata != NULL && metadata->palette_source.frame != NULL &&
+        (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT ||
+         !sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(
+             metadata->palette_source.frame)))) {
+        job->context.palette_source = &metadata->palette_source;
     }
     job->context.output = output;
     job->context.status = SIXEL_FALSE;
@@ -13059,7 +13085,7 @@ sixel_encoder_encode_frame_internal(
     sixel_encoder_t *encoder,
     sixel_frame_t   *frame,
     sixel_output_t  *output,
-    sixel_encoder_frame_handoff_meta_t const *metadata)
+    sixel_encoder_frame_handoff_meta_t *metadata)
 {
     sixel_encoder_frame_job_t job;
     SIXELSTATUS status;
@@ -17323,7 +17349,7 @@ sixel_encoder_frame_pipeline_request_stop(
  * The repair loop owns separate bounded operations, never the frame gate. */
 static SIXELSTATUS
 sixel_encoder_present_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
-    sixel_encoder_frame_handoff_meta_t const *metadata,
+    sixel_encoder_frame_handoff_meta_t *metadata,
     sixel_presentation_t *presentation)
 {
     sixel_frame_t *work_frame;
@@ -17541,8 +17567,9 @@ sixel_encoder_playback_frame_done(
     if (playback->threaded) sixel_mutex_unlock(&pipeline->mutex);
     /* Sample construction has joined, including cancellation/failure.
      * Release the wrapper before the caller recycles its borrowed pixels. */
-    sixel_frame_unref(meta->decoded_palette_source);
-    sixel_frame_unref(meta->palette_source);
+    sixel_frame_unref(meta->palette_source.packed_full);
+    sixel_frame_unref(meta->palette_source.packed_grid);
+    sixel_frame_unref(meta->palette_source.frame);
     if (playback->done != NULL) {
         playback->done(&result, playback->done_context);
     }
@@ -17733,30 +17760,16 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
  * The original packed storage stays with the caller. A speculative retry
  * works from the pristine RGB copy and reuses the same palette source. */
 static SIXELSTATUS
-sixel_encoder_pipeline_decode_packed(
-    sixel_encoder_frame_pipeline_t *pipeline, sixel_frame_t *frame,
-    sixel_encoder_frame_handoff_meta_t *meta, sixel_frame_t **decoded)
+sixel_encoder_pipeline_decode_packed(sixel_encoder_frame_pipeline_t *pipeline,
+                                    sixel_frame_t *frame,
+                                    sixel_frame_t **decoded)
 {
-    SIXELSTATUS status;
-
     *decoded = NULL;
     if (!sixel_pixelformat_is_ycbcr422(sixel_frame_get_pixelformat(frame))) {
         return SIXEL_OK;
     }
-    status = sixel_frame_decode_ycbcr422_copy(frame,
+    return sixel_frame_decode_ycbcr422_copy(frame,
         pipeline->encoder->allocator, decoded);
-    /* Only generated palettes sample a source for packed RGB work frames.
-     * Bypass source conversion under the same color option as job prep. */
-    if (status == SIXEL_OK && meta->palette_source != NULL &&
-        pipeline->encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
-        status = sixel_frame_decode_ycbcr422_copy(meta->palette_source,
-            pipeline->encoder->allocator, &meta->decoded_palette_source);
-        if (status != SIXEL_OK) {
-            sixel_frame_unref(*decoded);
-            *decoded = NULL;
-        }
-    }
-    return status;
 }
 
 /* Serial counterpart of the prepare-ahead worker for one frame. */
@@ -17769,8 +17782,7 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status;
     sixel_frame_t *decoded;
 
-    status = sixel_encoder_pipeline_decode_packed(pipeline, frame, meta,
-                                                  &decoded);
+    status = sixel_encoder_pipeline_decode_packed(pipeline, frame, &decoded);
     if (status != SIXEL_OK) {
         pipeline->encoder->sixdelta_refinement_needed = 0;
         pipeline->encoder->sixdelta_painted_pixels = 0u;
@@ -18003,7 +18015,7 @@ sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
         return;
     }
     slot->bind_status = sixel_encoder_pipeline_decode_packed(
-        pipeline, slot->frame, &slot->metadata, &decoded);
+        pipeline, slot->frame, &decoded);
     if (SIXEL_FAILED(slot->bind_status)) {
         slot->work_frame = NULL;
         return;
@@ -18102,6 +18114,13 @@ sixel_encoder_prepare_ahead_main(void *arg)
                     slot->metadata.sequence);
             }
             slot->job->delta_alpha_key = ahead->alpha_key;
+            if (ahead->encoder->prepare_test_hooks != NULL &&
+                    ahead->encoder->prepare_test_hooks->predict_key != NULL) {
+                slot->job->delta_alpha_key =
+                    ahead->encoder->prepare_test_hooks->predict_key(
+                        ahead->encoder->prepare_test_hooks->context,
+                        slot->metadata.sequence, ahead->alpha_key);
+            }
             slot->status = sixel_encoder_pipeline_prepare_job(
                 ahead->pipeline, slot->job, slot->work_frame,
                 &slot->metadata, &slot->prepare_lease, ahead->auto_latest);
@@ -18295,6 +18314,12 @@ sixel_encoder_frame_pipeline_run_ahead(
                     !sixel_palette_store_job_current(
                         current->job->context.own_palette)))))) {
             redo = 1;
+            if (encoder->prepare_test_hooks != NULL &&
+                    encoder->prepare_test_hooks->retry != NULL) {
+                encoder->prepare_test_hooks->retry(
+                    encoder->prepare_test_hooks->context,
+                    current->metadata.sequence);
+            }
             if (current->job->active != 0) {
                 (void)sixel_encoder_frame_job_release(current->job,
                                                       SIXEL_OK, 0);
@@ -22158,9 +22183,9 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     metadata.delay = sixel_frame_get_delay(frame);
     metadata.multiframe = sixel_frame_get_multiframe(frame);
     metadata.user_tag = defaults.user_tag;
-    metadata.palette_source = defaults.palette_source;
-    if (metadata.palette_source != NULL) {
-        sixel_frame_ref(metadata.palette_source);
+    metadata.palette_source.frame = defaults.palette_source;
+    if (metadata.palette_source.frame != NULL) {
+        sixel_frame_ref(metadata.palette_source.frame);
     }
     metadata.option_flags = defaults.flags;
     metadata.origin_x = defaults.origin_x;
@@ -22209,7 +22234,7 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
         sixel_cond_broadcast(&playback->pipeline.cond);
         sixel_mutex_unlock(&playback->pipeline.mutex);
         sixel_frame_unref(frame);
-        sixel_frame_unref(metadata.palette_source);
+        sixel_frame_unref(metadata.palette_source.frame);
         return status != SIXEL_OK ? status : SIXEL_RUNTIME_ERROR;
     }
     metadata.sequence = ++playback->next_sequence;

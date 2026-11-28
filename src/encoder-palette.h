@@ -37,6 +37,14 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
     sixel_encoder_t const *encoder, sixel_frame_t *frame,
     sixel_palette_frame_state_t const *state, int from_map_image,
     int consumer_pixelformat);
+/* Each submission owns its cached RGB samples through every speculative
+ * retry. A grid and a full-frame fallback have distinct sample domains. */
+typedef struct sixel_palette_source {
+    sixel_frame_t *frame;
+    sixel_frame_t *packed_full;
+    sixel_frame_t *packed_grid;
+} sixel_palette_source_t;
+
 /* Prepare at the sampling policy's original boundary: adaptive-grid before
  * preplan, full-frame after preplan. Both return an owned input; full-frame
  * clones the preprocessed pixels, alpha and metadata before launching.
@@ -47,7 +55,7 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_build_input_new(sixel_palette_build_request_t **request,
     sixel_frame_t **sample, sixel_encoder_t *encoder, sixel_frame_t *frame,
     sixel_palette_frame_state_t const *state, int consumer_pixelformat,
-    struct sixel_palette_scheduler *scheduler, sixel_frame_t *palette_source);
+    struct sixel_palette_scheduler *scheduler, sixel_palette_source_t *source);
 SIXEL_INTERNAL_API void
 sixel_palette_build_request_free(sixel_palette_build_request_t *request);
 

@@ -8,6 +8,8 @@
 #include <time.h>
 #include <sixel.h>
 #include "src/frame.h"
+#include "src/encoder.h"
+#include "tests/_support/planner/pipeline/gpu_ahead_common.h"
 #include "src/frame-normalize.h"
 #include "src/pixelformat.h"
 #include <6cells.h>
@@ -3335,7 +3337,7 @@ end:
 
 static SIXELSTATUS
 y422_fixed_playback(y422_capture_t *capture, sixel_frame_t *image,
-                    sixel_frame_t *source)
+                    sixel_frame_t *source, int adaptive)
 {
     sixel_encoder_t *encoder = NULL;
     sixel_output_t *output = NULL;
@@ -3345,8 +3347,11 @@ y422_fixed_playback(y422_capture_t *capture, sixel_frame_t *image,
     SIXELSTATUS status = SIXEL_FALSE;
 
     if (sixel_encoder_new(&encoder, NULL) ||
-        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_BUILTIN_PALETTE,
-                             "vt340color") ||
+        (adaptive ?
+            sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SAMPLING_POLICY,
+                                 "adaptive-grid") :
+            sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_BUILTIN_PALETTE,
+                                 "vt340color")) ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
         sixel_output_new(&output, playback_test_write, &capture->stream,
@@ -3374,7 +3379,7 @@ end:
 }
 
 static int
-test_y422_fixed_palette_source(void)
+test_y422_large_palette_source(int adaptive)
 {
     enum { width = 4096, height = 3072, stride = width * 2 };
     y422_capture_t with = {0}, without = {0};
@@ -3404,13 +3409,22 @@ test_y422_fixed_palette_source(void)
     sixel_frame_observe_ycbcr422(source, &source_operations);
     if (sixel_frame_init_ycbcr422_borrowed(source, source_bytes, source_size,
             width, height, stride, SIXEL_PIXELFORMAT_YUYV, definition) ||
-        y422_fixed_playback(&without, image, NULL)) {
+        (!adaptive && y422_fixed_playback(&without, image, NULL, 0))) {
         goto end;
     }
-    status = y422_fixed_playback(&with, image, source);
+    status = y422_fixed_playback(&with, image, source, adaptive);
     if (status != SIXEL_OK) {
-        fprintf(stderr, "Fixed palette playback with source failed: 0x%x\n",
+        fprintf(stderr, "Palette playback with source failed: 0x%x\n",
                 (unsigned)status);
+        goto end;
+    }
+    if (adaptive) {
+        pass = !with.failed && with.completed == 1 && with.stream.size != 0 &&
+            source_operations.packed_copies == 0 &&
+            source_operations.rgb_conversions == 1 &&
+            source_operations.rgb_pixels > 0 &&
+            source_operations.rgb_pixels < 16384 &&
+            image_operations.rgb_conversions == 1;
         goto end;
     }
     pass = !with.failed && !without.failed &&
@@ -3442,6 +3456,339 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static int
+test_y422_grid_icc(void)
+{
+    sixel_frame_t *packed = NULL, *sample = NULL, *reference = NULL;
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition;
+    sixel_frame_interface_t *iface;
+    sixel_frame_pixels_view_t view;
+    sixel_ycbcr422_counts_t operations = {0};
+    unsigned char bytes[18], reference_bytes[18];
+    float scratch[24], expected[24];
+    int pass = 0;
+
+    rgb = sixel_color_def_new_icc(color_icc, sizeof(color_icc));
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    if (definition == NULL ||
+        y422_fixture(&packed, SIXEL_PIXELFORMAT_YUYV, 0, 0, definition,
+                     rgb, bytes, scratch, &operations) ||
+        y422_fixture(&reference, SIXEL_PIXELFORMAT_RGBFLOAT32, 0, 0,
+                     definition, rgb, reference_bytes, expected, NULL) ||
+        sixel_frame_sample_ycbcr422(packed, NULL, 3, &sample)) {
+        goto end;
+    }
+    sixel_ycbcr_def_free(definition);
+    definition = NULL;
+    sixel_frame_unref(packed);
+    packed = NULL;
+    iface = sixel_frame_as_interface(sample);
+    if (iface->vtbl->get_pixels(iface, &view) ||
+        view.width != 2 || view.height != 1 || view.rgb_definition != rgb ||
+        view.pixels_float32 == NULL || operations.rgb_pixels != 2 ||
+        operations.rgb_conversions != 1 || operations.packed_copies != 0) {
+        goto end;
+    }
+    /* Coordinates are x=0 and x=3 in the original raster. */
+    pass = fabsf(view.pixels_float32[0] - expected[0]) < 2e-7f &&
+        fabsf(view.pixels_float32[1] - expected[1]) < 2e-7f &&
+        fabsf(view.pixels_float32[2] - expected[2]) < 2e-7f &&
+        fabsf(view.pixels_float32[3] - expected[9]) < 2e-7f &&
+        fabsf(view.pixels_float32[4] - expected[10]) < 2e-7f &&
+        fabsf(view.pixels_float32[5] - expected[11]) < 2e-7f;
+end:
+    sixel_frame_unref(sample);
+    sixel_frame_unref(reference);
+    sixel_frame_unref(packed);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+#if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
+enum {
+    Y422_QUEUED_CANCEL,
+    Y422_PREPARED_CANCEL,
+    Y422_RETRY_DELTA,
+    Y422_RETRY_REFERENCE,
+    Y422_SAMPLE_ALLOC_FAIL
+};
+
+struct y422_lifecycle {
+    struct gpu_ahead_fixture gate;
+    y422_capture_t *capture;
+    unsigned char *image[2], *palette[2];
+    sixel_ycbcr422_counts_t image_ops[2], palette_ops[2];
+    SIXELSTATUS result[2];
+    int callbacks, retried;
+};
+
+static int y422_alloc_failures;
+
+static void *
+y422_fail_grid_malloc(size_t bytes)
+{
+    /* The source is 14x11 with step one. The displayed frame is 4x2. */
+    if (bytes == 14u * 11u * 3u * sizeof(float)) {
+        ++y422_alloc_failures;
+        return NULL;
+    }
+    return malloc(bytes);
+}
+
+static int
+y422_lifecycle_write(char *data, int size, void *context)
+{
+    struct y422_lifecycle *state = context;
+
+    gpu_ahead_release(&state->gate, &state->gate.writer_entered);
+    if (!gpu_ahead_wait(&state->gate, &state->gate.writer_open)) {
+        return -1;
+    }
+    return playback_test_write(data, size, &state->capture->stream);
+}
+
+static void
+y422_lifecycle_prepared(void *context, uint64_t sequence, SIXELSTATUS status)
+{
+    struct y422_lifecycle *state = context;
+
+    if (sequence == 2) {
+        state->gate.prepared_status = status;
+        gpu_ahead_release(&state->gate, &state->gate.helper_complete);
+    }
+}
+
+static int
+y422_predict_key(void *context, uint64_t sequence, int predicted)
+{
+    (void)context;
+    return sequence == 2 ? 0 : predicted;
+}
+
+static void
+y422_retried(void *context, uint64_t sequence)
+{
+    struct y422_lifecycle *state = context;
+
+    state->retried += sequence == 2;
+}
+
+static void
+y422_release_capture(sixel_playback_result_t const *result, void *context)
+{
+    struct y422_lifecycle *state = context;
+    size_t slot = state->callbacks++;
+
+    if (slot < 2) {
+        state->result[slot] = result->status;
+        /* Recycle both caller-owned allocations at the public boundary. */
+        free(state->image[slot]);
+        free(state->palette[slot]);
+        state->image[slot] = NULL;
+        state->palette[slot] = NULL;
+    }
+}
+
+static int
+y422_lifecycle_submit(struct y422_lifecycle *state,
+    sixel_playback_t *playback, int index, int fail_source)
+{
+    sixel_frame_t *image = NULL, *palette = NULL;
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *definition = NULL;
+    sixel_playback_options_t options;
+    float scratch[24];
+    size_t bytes = fail_source ? 14u * 11u * 2u : 18u;
+    int ok = 0;
+
+    rgb = sixel_color_def_new_named("srgb");
+    definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    state->image[index] = malloc(18u);
+    state->palette[index] = calloc(1u, bytes);
+    if (definition == NULL || state->image[index] == NULL ||
+        state->palette[index] == NULL ||
+        y422_fixture(&image, SIXEL_PIXELFORMAT_YUYV, 0, index, definition,
+            rgb, state->image[index], scratch, &state->image_ops[index]) ||
+        sixel_playback_options_init(&options, sizeof(options))) {
+        goto end;
+    }
+    if (fail_source) {
+        if (sixel_frame_new(&palette, NULL)) {
+            goto end;
+        }
+        sixel_frame_observe_ycbcr422(palette, &state->palette_ops[index]);
+        if (sixel_frame_init_ycbcr422_borrowed(palette, state->palette[index],
+                bytes, 14, 11, 28, SIXEL_PIXELFORMAT_YUYV, definition)) {
+            goto end;
+        }
+    } else if (y422_fixture(&palette, SIXEL_PIXELFORMAT_YUYV, 0, 2,
+                   definition, rgb, state->palette[index], scratch,
+                   &state->palette_ops[index])) {
+        goto end;
+    }
+    sixel_frame_set_frame_no(image, index);
+    sixel_frame_set_multiframe(image, 1);
+    options.palette_source = palette;
+    ok = sixel_playback_submit(playback, image, SIXEL_PLAYBACK_WAIT, 5000,
+                                &options) == SIXEL_OK;
+end:
+    sixel_frame_unref(image);
+    sixel_frame_unref(palette);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return ok;
+}
+
+static int
+y422_lifecycle_run(int mode, y422_capture_t *capture)
+{
+    struct y422_lifecycle state = {0};
+    struct sixel_encoder_prepare_test_hooks hooks = {0};
+    sixel_playback_config_t config;
+    sixel_allocator_t *allocator = NULL;
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    sixel_playback_t *playback = NULL;
+    SIXELSTATUS status;
+    int i, count, conversions, ahead, cancel, fail_source, initialized = 0;
+    int pass = 0;
+
+    state.capture = capture;
+    ahead = mode == Y422_PREPARED_CANCEL || mode == Y422_RETRY_DELTA;
+    cancel = mode == Y422_QUEUED_CANCEL || mode == Y422_PREPARED_CANCEL;
+    fail_source = mode == Y422_SAMPLE_ALLOC_FAIL;
+    count = fail_source ? 1 : 2;
+    if (sixel_mutex_init(&state.gate.mutex)) {
+        return 0;
+    }
+    if (sixel_cond_init(&state.gate.cond)) {
+        sixel_mutex_destroy(&state.gate.mutex);
+        return 0;
+    }
+    initialized = 1;
+    state.gate.writer_open = fail_source || mode == Y422_RETRY_REFERENCE;
+    y422_alloc_failures = 0;
+    if ((fail_source && sixel_allocator_new(&allocator, y422_fail_grid_malloc,
+                                             NULL, NULL, NULL)) ||
+        sixel_encoder_new(&encoder, allocator) ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+            ahead ? "greedy:B2:prepare=ahead" : "greedy:B2:prepare=serial") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SAMPLING_POLICY,
+                             "adaptive-grid") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "16") ||
+        sixel_encoder_setopt(encoder,
+                             SIXEL_OPTFLAG_UPDATE_POLICY, "delta:T0") ||
+        sixel_output_new(&output, y422_lifecycle_write, &state, NULL) ||
+        sixel_playback_config_init(&config, sizeof(config))) {
+        goto end;
+    }
+    hooks.context = &state;
+    hooks.complete = y422_lifecycle_prepared;
+    if (mode == Y422_RETRY_DELTA) {
+        hooks.predict_key = y422_predict_key;
+        hooks.retry = y422_retried;
+    }
+    encoder->prepare_test_hooks = &hooks;
+    config.done = y422_release_capture;
+    config.done_context = &state;
+    if (sixel_playback_new(&playback, encoder, output, &config, NULL) ||
+        !y422_lifecycle_submit(&state, playback, 0, fail_source)) {
+        goto end;
+    }
+    if (!fail_source) {
+        if (!gpu_ahead_wait(&state.gate, &state.gate.writer_entered) ||
+            !y422_lifecycle_submit(&state, playback, 1, 0) ||
+            (ahead && (!gpu_ahead_wait(&state.gate,
+                                      &state.gate.helper_complete) ||
+                       state.gate.prepared_status != SIXEL_OK)) ||
+            (cancel && sixel_playback_cancel(playback))) {
+            goto end;
+        }
+        gpu_ahead_release(&state.gate, &state.gate.writer_open);
+    }
+    status = sixel_playback_drain(playback, 5000);
+    if (status != (fail_source ? SIXEL_BAD_ALLOCATION : SIXEL_OK) ||
+        state.callbacks != count ||
+        state.result[0] != status ||
+        (!fail_source && state.result[1] !=
+            (cancel ? SIXEL_INTERRUPTED : SIXEL_OK)) ||
+        (fail_source && y422_alloc_failures != 1) ||
+        (mode == Y422_RETRY_DELTA && state.retried != 1)) {
+        goto end;
+    }
+    for (i = 0; i < count; ++i) {
+        conversions = i == 1 && mode == Y422_QUEUED_CANCEL ? 0 : 1;
+        if (state.image[i] != NULL || state.palette[i] != NULL ||
+            state.image_ops[i].rgb_conversions != (unsigned int)conversions ||
+            state.palette_ops[i].rgb_conversions !=
+                (unsigned int)(fail_source ? 0 : conversions) ||
+            state.image_ops[i].packed_copies != 0 ||
+            state.palette_ops[i].packed_copies != 0) {
+            goto end;
+        }
+    }
+    pass = 1;
+end:
+    if (initialized) {
+        gpu_ahead_release(&state.gate, &state.gate.writer_open);
+    }
+    sixel_playback_unref(playback);
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_allocator_unref(allocator);
+    for (i = 0; i < count; ++i) {
+        free(state.image[i]);
+        free(state.palette[i]);
+    }
+    sixel_cond_destroy(&state.gate.cond);
+    sixel_mutex_destroy(&state.gate.mutex);
+    return pass;
+}
+#endif
+
+static int
+test_y422_lifecycle(char const *name)
+{
+#if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
+    y422_capture_t actual = {0}, reference = {0};
+    unsigned char actual_pixels[2][32], reference_pixels[2][32];
+    int mode, pass;
+
+    if (strcmp(name, "queued") == 0) {
+        mode = Y422_QUEUED_CANCEL;
+    } else if (strcmp(name, "prepared") == 0) {
+        mode = Y422_PREPARED_CANCEL;
+    } else if (strcmp(name, "allocation") == 0) {
+        mode = Y422_SAMPLE_ALLOC_FAIL;
+    } else {
+        mode = Y422_RETRY_DELTA;
+    }
+    pass = y422_lifecycle_run(mode, &actual);
+    if (pass && mode == Y422_RETRY_DELTA) {
+        pass = y422_lifecycle_run(Y422_RETRY_REFERENCE, &reference) &&
+            y422_capture_pixels(&actual, actual_pixels, 4, 2) &&
+            y422_capture_pixels(&reference, reference_pixels, 4, 2) &&
+            memcmp(actual_pixels, reference_pixels, sizeof(actual_pixels)) == 0;
+    }
+    if (!pass) {
+        fprintf(stderr, "Packed playback %s failed: %s\n", name,
+                sixel_helper_get_additional_message());
+    }
+    free(actual.stream.bytes);
+    free(reference.stream.bytes);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+#else
+    (void)name;
+    return 77;
+#endif
+}
+
 int
 test_frame_0014_clone_float(int argc, char **argv)
 {
@@ -3462,8 +3809,17 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr422-lifecycle") == 0) {
+        return test_y422_lifecycle(argv[2]);
+    }
     if (argc == 2 && strcmp(argv[1], "ycbcr422-fixed-palette-source") == 0) {
-        return test_y422_fixed_palette_source();
+        return test_y422_large_palette_source(0);
+    }
+    if (argc == 2 && strcmp(argv[1], "ycbcr422-adaptive-source") == 0) {
+        return test_y422_large_palette_source(1);
+    }
+    if (argc == 2 && strcmp(argv[1], "ycbcr422-grid-icc") == 0) {
+        return test_y422_grid_icc();
     }
     if (argc == 2 && strcmp(argv[1], "ycbcr422-operation-observer") == 0) {
         return test_y422_operation_observer();

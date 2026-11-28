@@ -27,6 +27,7 @@
 #endif
 
 #include "cms.h"
+#include "sixel_atomic.h"
 #include "colorspace.h"
 
 #include <ctype.h>
@@ -6748,10 +6749,11 @@ sixel_cms_convert_to_cielab_with_profile_bytes(
  * Color definitions connect RGB endpoints through XYZ D50, without the
  * legacy CMS convenience route through bounded sRGB. Definitions contain
  * either an analytic matrix/TRC or an owned, parsed ICC profile. The job
- * transform owns independent endpoint copies, so queue/clone lifetimes
+ * transform retains its endpoints, so queue/clone lifetimes
  * never depend on the loader's temporary metadata buffers.
  */
 struct sixel_color_def {
+    sixel_atomic_u32_t ref;
     double adaptation[9];
     double to_xyz[9];
     double from_xyz[9];
@@ -6867,6 +6869,7 @@ sixel_cdef_rgb(double const xy[8], sixel_color_trc_t trc,
     if (definition == NULL) {
         return NULL;
     }
+    definition->ref = 1U;
     for (i = 0; i < 3; ++i) {
         if (matrix[3 + i] <= 0.0) {
             sixel_cdef_free(definition);
@@ -7142,6 +7145,7 @@ sixel_cdef_icc(void const *bytes, size_t length)
     if (definition == NULL) {
         return NULL;
     }
+    definition->ref = 1U;
     definition->bytes = malloc(length);
     if (definition->bytes == NULL) {
         sixel_cdef_free(definition);
@@ -7245,25 +7249,20 @@ sixel_cdef_storage(sixel_color_def_t const *definition)
 sixel_color_def_t *
 sixel_cdef_clone(sixel_color_def_t const *definition)
 {
-    sixel_color_def_t *clone;
+    sixel_color_def_t *retained = (sixel_color_def_t *)definition;
 
-    if (definition == NULL) {
-        return NULL;
+    /* Definitions and parsed ICC tables are immutable after publication. */
+    if (retained != NULL) {
+        (void)sixel_atomic_fetch_add_u32(&retained->ref, 1U);
     }
-    if (definition->bytes != NULL) {
-        return sixel_cdef_icc(definition->bytes, definition->length);
-    }
-    clone = malloc(sizeof(*clone));
-    if (clone != NULL) {
-        memcpy(clone, definition, sizeof(*clone));
-    }
-    return clone;
+    return retained;
 }
 
 void
 sixel_cdef_free(sixel_color_def_t *definition)
 {
-    if (definition != NULL) {
+    if (definition != NULL &&
+        sixel_atomic_fetch_sub_u32(&definition->ref, 1U) == 1U) {
         sixel_icc_profile_destroy(&definition->icc);
         free(definition->bytes);
         free(definition);
@@ -7315,6 +7314,7 @@ sixel_cdef_linearized(sixel_color_def_t const *definition)
      * kinds already store their matrices in the same D50 PCS basis. */
     linear = calloc(1, sizeof(*linear));
     if (linear != NULL) {
+        linear->ref = 1U;
         if (definition->bytes == NULL) {
             memcpy(linear->adaptation, definition->adaptation,
                 sizeof(linear->adaptation));

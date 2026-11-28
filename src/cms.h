@@ -313,8 +313,8 @@ SIXEL_INTERNAL_API void
 sixel_cms_delete_transform(sixel_cms_transform_t *transform);
 
 /*
- * Frames and transforms can own independent copies of a color definition.
- * A transform owns clones of both definitions. No profile byte buffer
+ * Frames and transforms retain immutable color definitions.
+ * A transform retains both endpoints. No profile byte buffer
  * or definition supplied by its caller must outlive transform creation.
  *
  * This internal foundation currently uses the builtin ICC PCS evaluator.

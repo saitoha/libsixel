@@ -136,10 +136,10 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
 static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
-                  sixel_frame_t **frame_out, int decode_ycbcr);
+                  sixel_frame_t **frame_out, int decode_step);
 static SIXELSTATUS
 sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
-                                sixel_frame_t *destination);
+                                sixel_frame_t *destination, int step);
 static void
 sixel_frame_vtbl_ref(sixel_frame_interface_t *frame);
 static void
@@ -1202,7 +1202,7 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
 static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
-                  sixel_frame_t **frame_out, int decode_ycbcr)
+                  sixel_frame_t **frame_out, int decode_step)
 {
     SIXELSTATUS status;
     sixel_frame_t *clone;
@@ -1217,7 +1217,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
     size_t pixel_bytes;
     size_t palette_bytes;
     size_t mask_bytes;
-    int row;
+    int row, column;
 
     status = SIXEL_BAD_ARGUMENT;
     clone = NULL;
@@ -1233,7 +1233,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
     memset(&transparency, 0, sizeof(transparency));
 
     if (frame == NULL || frame_out == NULL ||
-        (decode_ycbcr && frame->ycbcr == NULL)) {
+        (decode_step && frame->ycbcr == NULL)) {
         return status;
     }
     *frame_out = NULL;
@@ -1315,8 +1315,10 @@ sixel_frame_clone(sixel_frame_t const *frame,
         goto error;
     }
 
-    if (decode_ycbcr) {
-        status = sixel_frame_decode_ycbcr422_into(frame, clone);
+    if (decode_step) {
+        clone->width = (view.width - 1) / decode_step + 1;
+        clone->height = (view.height - 1) / decode_step + 1;
+        status = sixel_frame_decode_ycbcr422_into(frame, clone, decode_step);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
@@ -1380,14 +1382,32 @@ sixel_frame_clone(sixel_frame_t const *frame,
 
     if (transparency.transparent_mask != NULL &&
         transparency.transparent_mask_size > 0u) {
-        mask_bytes = transparency.transparent_mask_size;
+        if (decode_step > 1 && transparency.transparent_mask_size !=
+                (size_t)view.width * (size_t)view.height) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto error;
+        }
+        mask_bytes = decode_step > 1
+            ? (size_t)clone->width * (size_t)clone->height
+            : transparency.transparent_mask_size;
         mask = (unsigned char *)sixel_allocator_malloc(clone->allocator,
                                                        mask_bytes);
         if (mask == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto error;
         }
-        memcpy(mask, transparency.transparent_mask, mask_bytes);
+        if (decode_step > 1) {
+            for (row = 0; row < clone->height; ++row) {
+                for (column = 0; column < clone->width; ++column) {
+                    mask[(size_t)row * clone->width + column] =
+                        transparency.transparent_mask[
+                            (size_t)row * decode_step * view.width +
+                            (size_t)column * decode_step];
+                }
+            }
+        } else {
+            memcpy(mask, transparency.transparent_mask, mask_bytes);
+        }
         clone->transparent_mask = mask;
         clone->transparent_mask_size = mask_bytes;
         mask = NULL;
@@ -1429,6 +1449,16 @@ sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
                                 sixel_frame_t **frame_out)
 {
     return sixel_frame_clone(frame, allocator, frame_out, 1);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_sample_ycbcr422(sixel_frame_t const *frame,
+    sixel_allocator_t *allocator, int step, sixel_frame_t **frame_out)
+{
+    if (step < 1) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_frame_clone(frame, allocator, frame_out, step);
 }
 
 /* constructor of frame object */
@@ -2692,7 +2722,7 @@ sixel_frame_decode_ycbcr_sample(float *out, float y, float cb, float cr,
  * destination may be the same frame for explicit layout conversion. */
 static SIXELSTATUS
 sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
-                                sixel_frame_t *destination)
+                                sixel_frame_t *destination, int step)
 {
     /* Luma weights from the 601, 709 and 2020 NCL encodings. */
     static double const weights[][2] = {
@@ -2708,10 +2738,11 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
     float cb, cr, odd_cb, odd_cr;
     size_t bytes;
     int y, x, uyvy, cb_offset, cr_offset, limited, centered;
+    int pair_x, odd;
     SIXELSTATUS status;
 
     status = sixel_frame_validate_size("packed YCbCr conversion",
-        frame->width, frame->height, SIXEL_PIXELFORMAT_RGBFLOAT32,
+        destination->width, destination->height, SIXEL_PIXELFORMAT_RGBFLOAT32,
         NULL, &bytes, NULL);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -2747,33 +2778,71 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
     if (frame->ycbcr_counts != NULL) {
         (void)sixel_atomic_fetch_add_u32(
             &frame->ycbcr_counts->rgb_conversions, 1U);
+        (void)sixel_atomic_fetch_add_u32(&frame->ycbcr_counts->rgb_pixels,
+            (unsigned int)(bytes / (3u * sizeof(float))));
     }
     out = pixels;
-    for (y = 0; y < frame->height; ++y) {
-        row = frame->pixels.u8ptr + (size_t)y * frame->stride_bytes;
-        pair = row;
-        for (x = 0; x < frame->width; x += 2, pair += 4, out += 6) {
-            /* Even/odd luma samples fall on different sides of a centered
-             * chroma sample. Extend the edge sample within each row. */
-            cb = pair[cb_offset] - 128.0f;
-            cr = pair[cr_offset] - 128.0f;
-            odd_cb = cb;
-            odd_cr = cr;
-            if (!definition->nearest_chroma) {
-                previous = centered && x > 0 ? pair - 4 : pair;
-                next = x + 2 < frame->width ? pair + 4 : pair;
-                cb += left_weight * (previous[cb_offset] - pair[cb_offset]);
-                cr += left_weight * (previous[cr_offset] - pair[cr_offset]);
-                odd_cb += right_weight * (next[cb_offset] - pair[cb_offset]);
-                odd_cr += right_weight * (next[cr_offset] - pair[cr_offset]);
+    if (step > 1) {
+        /* Select in the source raster before reconstructing chroma. The
+         * adjacent sample is still the original adjacent pair, not the
+         * next grid point. Only the selected luma is converted. */
+        for (y = 0; y < frame->height; y += step) {
+            row = frame->pixels.u8ptr + (size_t)y * frame->stride_bytes;
+            for (x = 0; x < frame->width; x += step, out += 3) {
+                odd = x & 1;
+                pair_x = x - odd;
+                pair = row + (size_t)pair_x * 2u;
+                next = pair;
+                if (!definition->nearest_chroma) {
+                    if (odd && pair_x + 2 < frame->width) {
+                        next = pair + 4;
+                    } else if (!odd && centered && pair_x > 0) {
+                        next = pair - 4;
+                    }
+                }
+                cb = pair[cb_offset] - 128.0f;
+                cr = pair[cr_offset] - 128.0f;
+                cb += (odd ? right_weight : left_weight) *
+                    (next[cb_offset] - pair[cb_offset]);
+                cr += (odd ? right_weight : left_weight) *
+                    (next[cr_offset] - pair[cr_offset]);
+                sixel_frame_decode_ycbcr_sample(out,
+                    (pair[uyvy + odd * 2] - luma_offset) * luma_scale,
+                    cb, cr, coefficients);
             }
-            /* For left-sited chroma, a nearest-neighbor tie uses the
-             * preceding sample, so both lumas share this pair's chroma. */
-            sixel_frame_decode_ycbcr_sample(out,
-                (pair[uyvy] - luma_offset) * luma_scale, cb, cr, coefficients);
-            sixel_frame_decode_ycbcr_sample(out + 3,
-                (pair[uyvy + 2] - luma_offset) * luma_scale,
-                odd_cb, odd_cr, coefficients);
+        }
+    } else {
+        for (y = 0; y < frame->height; ++y) {
+            row = frame->pixels.u8ptr + (size_t)y * frame->stride_bytes;
+            pair = row;
+            for (x = 0; x < frame->width; x += 2, pair += 4, out += 6) {
+                /* Even/odd luma samples fall on different sides of a centered
+                 * chroma sample. Extend the edge sample within each row. */
+                cb = pair[cb_offset] - 128.0f;
+                cr = pair[cr_offset] - 128.0f;
+                odd_cb = cb;
+                odd_cr = cr;
+                if (!definition->nearest_chroma) {
+                    previous = centered && x > 0 ? pair - 4 : pair;
+                    next = x + 2 < frame->width ? pair + 4 : pair;
+                    cb += left_weight *
+                        (previous[cb_offset] - pair[cb_offset]);
+                    cr += left_weight *
+                        (previous[cr_offset] - pair[cr_offset]);
+                    odd_cb += right_weight *
+                        (next[cb_offset] - pair[cb_offset]);
+                    odd_cr += right_weight *
+                        (next[cr_offset] - pair[cr_offset]);
+                }
+                /* For left-sited chroma, a nearest-neighbor tie uses the
+                 * preceding sample, so both lumas share this pair's chroma. */
+                sixel_frame_decode_ycbcr_sample(out,
+                    (pair[uyvy] - luma_offset) * luma_scale,
+                    cb, cr, coefficients);
+                sixel_frame_decode_ycbcr_sample(out + 3,
+                    (pair[uyvy + 2] - luma_offset) * luma_scale,
+                    odd_cb, odd_cr, coefficients);
+            }
         }
     }
 
@@ -2791,7 +2860,7 @@ sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
     if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         if (frame->ycbcr != NULL) {
-            return sixel_frame_decode_ycbcr422_into(frame, frame);
+            return sixel_frame_decode_ycbcr422_into(frame, frame, 1);
         }
         if (frame->format.layout == pixelformat) {
             return SIXEL_OK;
