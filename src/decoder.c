@@ -3336,8 +3336,13 @@ sixel_decoder_decode_pixels(
 /* load source data from stdin or the file specified with
    SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
-sixel_decoder_decode(
-    sixel_decoder_t /* in */ *decoder)
+sixel_decoder_decode(sixel_decoder_t *decoder)
+{
+    return sixel_decoder_decode_to_stream(decoder, NULL);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_decode_to_stream(sixel_decoder_t *decoder, FILE *output_stream)
 {
     sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status = SIXEL_FALSE;
@@ -3969,7 +3974,8 @@ sixel_decoder_decode(
         output_palette,
         output_pixelformat,
         decoder->clipboard_output_active ? NULL : decoder->output,
-        clipboard_output_stream,
+        decoder->clipboard_output_active ? clipboard_output_stream
+                                         : output_stream,
         SIXEL_FORMAT_PNG,
         &color,
         decoder->allocator);

@@ -25,12 +25,17 @@
 #ifndef LIBSIXEL_DECODER_H
 #define LIBSIXEL_DECODER_H
 
+#include <stdio.h>
 #include <sixel.h>
 
 #include "sixel_atomic.h"
 #include "options.h"
 
 struct sixel_decoder_resident;
+
+/* Borrow an output stream for one decode; NULL uses the configured output. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_decode_to_stream(sixel_decoder_t *decoder, FILE *output_stream);
 
 /* Decode settings object. */
 struct sixel_decoder {

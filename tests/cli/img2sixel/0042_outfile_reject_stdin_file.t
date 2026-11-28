@@ -29,6 +29,7 @@ test "$status" -eq 2 && test ! -s "${ARTIFACT_LOCAL_DIR}/stdout" || {
 }
 case "$trace" in
     *"Input and output refer to the same file."*) true ;;
+    *"Cannot overwrite an existing output file when standard input cannot be identified."*) true ;;
     *) false ;;
 esac || {
     printf '\n%s\n' 'not ok 1 - redirected standard input diagnostic missing'

@@ -15970,6 +15970,50 @@ sixel_encoder_check_outfile_inputs(sixel_encoder_t const *encoder,
     return SIXEL_OK;
 }
 
+static int
+sixel_encoder_require_new_outfile(sixel_encoder_t const *encoder)
+{
+#if HAVE_WASI_API_H
+    int i;
+# if HAVE_FSTAT
+    struct stat input;
+# endif
+
+    if (!encoder->defer_sixel_outfile) {
+        return 0;
+    }
+    for (i = 0; i < encoder->cli_input_count; ++i) {
+        if (strcmp(encoder->cli_inputs[i], "-") == 0) {
+            break;
+        }
+    }
+    if (encoder->cli_input_count != 0 && i == encoder->cli_input_count) {
+        return 0;
+    }
+    /* WASI can expose redirected stdin as an opaque stream, even when
+     * fstat succeeds. Only a regular file with an inode can be compared. */
+# if HAVE_FSTAT
+    if (fstat(STDIN_FILENO, &input) == 0 && S_ISREG(input.st_mode) &&
+            input.st_ino != 0) {
+        return 0;
+    }
+# endif
+    return 1;
+#else
+    (void)encoder;
+    return 0;
+#endif
+}
+
+static SIXELSTATUS
+sixel_encoder_reject_unverified_outfile(void)
+{
+    sixel_helper_set_additional_message(
+        "Cannot overwrite an existing output file when standard input "
+        "cannot be identified.");
+    return SIXEL_BAD_ARGUMENT;
+}
+
 static SIXELSTATUS
 sixel_encoder_open_sixel_outfile(sixel_encoder_t *encoder)
 {
@@ -15977,10 +16021,14 @@ sixel_encoder_open_sixel_outfile(sixel_encoder_t *encoder)
     char const *path;
     int flags;
     int fd;
+    int require_new;
 
     path = encoder->sixel_output_path;
+    require_new = sixel_encoder_require_new_outfile(encoder);
     flags = O_RDWR | O_CREAT;
-    if (!encoder->defer_sixel_outfile || !SIXEL_HAVE_FD_TRUNCATE) {
+    if (require_new) {
+        flags |= O_EXCL;
+    } else if (!encoder->defer_sixel_outfile || !SIXEL_HAVE_FD_TRUNCATE) {
         if (encoder->defer_sixel_outfile) {
             status = sixel_encoder_check_outfile_inputs(encoder, -1, path);
             if (SIXEL_FAILED(status)) {
@@ -15994,12 +16042,16 @@ sixel_encoder_open_sixel_outfile(sixel_encoder_t *encoder)
 #endif
     fd = sixel_compat_open(path, flags, S_IRUSR | S_IWUSR);
     if (fd < 0) {
+        if (require_new && errno == EEXIST) {
+            return sixel_encoder_reject_unverified_outfile();
+        }
         sixel_helper_set_additional_message(
             "sixel_encoder_setopt: failed to open output path.");
         return SIXEL_LIBC_ERROR | (errno & 0xff);
     }
 
-    if (encoder->defer_sixel_outfile && SIXEL_HAVE_FD_TRUNCATE) {
+    if (!require_new && encoder->defer_sixel_outfile &&
+            SIXEL_HAVE_FD_TRUNCATE) {
         /* Validate the descriptor that will be truncated, even if the
          * output pathname was redirected between opening and writing. */
         status = sixel_encoder_check_outfile_inputs(encoder, fd, path);
@@ -19959,9 +20011,11 @@ write_png_from_sixel(char const *sixel_path,
 {
     SIXELSTATUS status;
     sixel_decoder_t *decoder;
+    FILE *output_stream;
 
     status = SIXEL_FALSE;
     decoder = NULL;
+    output_stream = NULL;
     sixel_encoder_log_stage(encoder,
                             NULL,
                             "main",
@@ -20034,7 +20088,22 @@ write_png_from_sixel(char const *sixel_path,
         goto end;
     }
 
-    status = sixel_decoder_decode(decoder);
+    if (strcmp(output_path, "-") != 0 &&
+            sixel_encoder_require_new_outfile(encoder)) {
+        /* Keep the exclusively created stream open through PNG writing. */
+        output_stream = sixel_compat_fopen(output_path, "wbx");
+        if (output_stream == NULL) {
+            status = errno == EEXIST
+                ? sixel_encoder_reject_unverified_outfile()
+                : SIXEL_LIBC_ERROR | (errno & 0xff);
+            goto end;
+        }
+    }
+    status = sixel_decoder_decode_to_stream(decoder, output_stream);
+    if (output_stream != NULL && fclose(output_stream) != 0 &&
+            SIXEL_SUCCEEDED(status)) {
+        status = SIXEL_LIBC_ERROR | (errno & 0xff);
+    }
     sixel_encoder_log_stage(encoder,
                             NULL,
                             "main",
