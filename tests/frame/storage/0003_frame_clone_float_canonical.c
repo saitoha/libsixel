@@ -3703,13 +3703,21 @@ static int
 test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
                int resize)
 {
-    static int const full_cb[2][3] = {{92, 128, 208}, {172, 116, 164}};
-    static int const full_cr[2][3] = {{188, 120, 84}, {100, 180, 148}};
-    static int const limited_cb[2][3] = {{8, 21, 44}, {12, 53, 27}};
-    static int const limited_cr[2][3] = {{224, 242, 220}, {212, 221, 244}};
+    static unsigned char const full_cb[2][3] = {
+        {92, 128, 208}, {172, 116, 164}
+    };
+    static unsigned char const full_cr[2][3] = {
+        {188, 120, 84}, {100, 180, 148}
+    };
+    static unsigned char const limited_cb[2][3] = {
+        {8, 21, 44}, {12, 53, 27}
+    };
+    static unsigned char const limited_cr[2][3] = {
+        {224, 242, 220}, {212, 221, 244}
+    };
     int limited = resize == 2;
-    int const (*cb)[3] = limited ? limited_cb : full_cb;
-    int const (*cr)[3] = limited ? limited_cr : full_cr;
+    unsigned char const (*cb)[3] = limited ? limited_cb : full_cb;
+    unsigned char const (*cr)[3] = limited ? limited_cr : full_cr;
     static double const left[2][6] = {
         {0, 0.5, 0, 0.5, 0, 0}, {0, 0.25, 0.75, 0.25, 0.75, 0}
     };
@@ -3724,9 +3732,9 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
          {u_plane, sizeof(u_plane), 6, -5},
          {v_plane, sizeof(v_plane), 2, 6}}, NULL};
     sixel_ycbcr_frame_view_t cloned = {0};
+    int range = limited ? SIXEL_YCBCR_RANGE_LIMITED : SIXEL_YCBCR_RANGE_FULL;
     sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
-        limited ? SIXEL_YCBCR_RANGE_LIMITED : SIXEL_YCBCR_RANGE_FULL,
-        xphase, yphase, NULL};
+        range, xphase, yphase, NULL};
     sixel_color_def_t *rgb = NULL;
     sixel_ycbcr_def_t *definition = NULL;
     sixel_frame_t *frame = NULL, *grid = NULL, *full = NULL;
@@ -3744,8 +3752,8 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
     memset(uv_plane, 239, sizeof(uv_plane));
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
-            y_plane[1 + y * 8 + x] = limited
-                ? (x < 2 ? y * 4 : 250 - y * 3) : (55 + 31 * y + 11 * x);
+            y_plane[1 + y * 8 + x] = (unsigned char)(limited
+                ? (x < 2 ? y * 4 : 250 - y * 3) : (55 + 31 * y + 11 * x));
         }
     }
     for (y = 0; y < 2; ++y) {
@@ -3937,8 +3945,8 @@ end:
 static int
 test_ycbcr411(int phase, int nearest)
 {
-    static int const cb[3][2] = {{80, 200}, {176, 88}, {112, 184}};
-    static int const cr[3][2] = {{192, 88}, {104, 168}, {156, 112}};
+    static unsigned char const cb[3][2] = {{80, 200}, {176, 88}, {112, 184}};
+    static unsigned char const cr[3][2] = {{192, 88}, {104, 168}, {156, 112}};
     /* Independent right-sample weights for centers at 0,4 and 1.5,5.5. */
     static double const linear[2][7] = {
         {0, 0.25, 0.5, 0.75, 1, 1, 1}, {0, 0, 0.125, 0.375, 0.625, 0.875, 1}
@@ -3952,8 +3960,9 @@ test_ycbcr411(int phase, int nearest)
                   {u_plane, sizeof(u_plane), 9, -4},
                   {v_plane, sizeof(v_plane), 2, 6}}, NULL};
     sixel_ycbcr_frame_view_t cloned = {0};
+    int xphase = phase ? 3 : 0;
     sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, phase ? 3 : 0, 0, NULL};
+        SIXEL_YCBCR_RANGE_FULL, xphase, 0, NULL};
     sixel_color_def_t *rgb = NULL;
     sixel_ycbcr_def_t *definition = NULL, *vertical = NULL;
     sixel_frame_t *frame = NULL, *grid = NULL, *full = NULL;
@@ -3969,7 +3978,7 @@ test_ycbcr411(int phase, int nearest)
     memset(v_plane, 239, sizeof(v_plane));
     for (y = 0; y < 3; ++y) {
         for (x = 0; x < 7; ++x) {
-            y_plane[1 + y * 10 + x] = 70 + 17 * y + 9 * x;
+            y_plane[1 + y * 10 + x] = (unsigned char)(70 + 17 * y + 9 * x);
         }
         for (x = 0; x < 2; ++x) {
             u_plane[9 - 4 * y + x] = cb[y][x];
@@ -4554,7 +4563,7 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
                 samples[i][j] = luma / 255.0f;
             }
             for (j = 0; j < 18; ++j) {
-                bytes[i][j] = j % 2 == 0 ? luma : 128;
+                bytes[i][j] = (unsigned char)(j % 2 == 0 ? luma : 128);
             }
         }
         sixel_frame_set_frame_no(image[i], i);
@@ -4634,7 +4643,7 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
         if (source != NULL &&
             (operations[2].packed_copies != 0 ||
              operations[2].rgb_conversions !=
-                 (mode == Y422_PALETTE || automatic ? 2 : color ? 1 : 0) ||
+                 (mode == Y422_PALETTE || automatic ? 2u : color ? 1u : 0u) ||
              (color && (operations[2].rgb_copies != 0 ||
                         operations[2].rgb_pixels != 8)) ||
              sixel_frame_get_pixels(source) != bytes[2] ||
@@ -5013,9 +5022,9 @@ test_y422_grid_icc(void)
     for (row = 0; row < 4; ++row) {
         for (x = 0; x < 4; ++x) {
             offset = row * 20 + x * 4;
-            bytes[offset] = cb[x] + row;
-            bytes[offset + 1] = 100 + row * 10 + 2 * x;
-            bytes[offset + 2] = cr[x] - row;
+            bytes[offset] = (unsigned char)(cb[x] + row);
+            bytes[offset + 1] = (unsigned char)(100 + row * 10 + 2 * x);
+            bytes[offset + 2] = (unsigned char)(cr[x] - row);
             bytes[offset + 3] = bytes[offset + 1] + 1;
         }
     }
@@ -5222,8 +5231,9 @@ ycbcr420_lifecycle_frame(sixel_frame_t **frame, unsigned char **luma,
     int chroma_pitch = ((width + 1) / 2) * spacing + 2;
     size_t luma_bytes = (size_t)luma_pitch * height;
     size_t chroma_bytes = (size_t)chroma_pitch * chroma_rows;
+    unsigned int plane_count = planar ? 3u : 2u;
     sixel_ycbcr_frame_view_t view = {sizeof(view), layout,
-        width, height, planar ? 3u : 2u, {{0}}, definition};
+        width, height, plane_count, {{0}}, definition};
     float *pixels;
     double ycode, cr, cb;
     int x, y, index;
@@ -5246,7 +5256,7 @@ ycbcr420_lifecycle_frame(sixel_frame_t **frame, unsigned char **luma,
         for (y = 0; y < chroma_rows; ++y) {
             for (x = 0; x < (width + 1) / 2; ++x) {
                 index = (chroma_rows - 1 - y) * chroma_pitch + spacing * x;
-                (*chroma)[index + nv12] = 152 + 16 * y;
+                (*chroma)[index + nv12] = (unsigned char)(152 + 16 * y);
                 if (planar) {
                     (*cb_plane)[index] = 100;
                 } else {

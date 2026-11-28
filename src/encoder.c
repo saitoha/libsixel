@@ -20216,6 +20216,10 @@ write_png_from_sixel(char const *sixel_path,
                             sixel_path != NULL ? sixel_path : "(null)",
                             output_path != NULL ? output_path : "(null)");
 
+    if (sixel_path == NULL || output_path == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {
         sixel_encoder_log_stage(encoder,
