@@ -2803,6 +2803,7 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest)
     float const *pixels;
     double wx, wy, luma, u, v;
     int x, y, x0, x1, y0, i, pass = 0;
+    int v_first = format == SIXEL_PIXELFORMAT_NV21;
 
     memset(y_plane, 239, sizeof(y_plane));
     memset(u_plane, 239, sizeof(u_plane));
@@ -2817,14 +2818,19 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest)
         for (x = 0; x < 3; ++x) {
             u_plane[6 - 5 * y + x] = cb[y][x];
             v_plane[2 + 6 * y + x] = cr[y][x];
-            uv_plane[9 - 8 * y + 2 * x] = cb[y][x];
-            uv_plane[10 - 8 * y + 2 * x] = cr[y][x];
+            uv_plane[9 - 8 * y + 2 * x + v_first] = cb[y][x];
+            uv_plane[10 - 8 * y + 2 * x - v_first] = cr[y][x];
         }
     }
-    if (format == SIXEL_PIXELFORMAT_NV12) {
+    if (format == SIXEL_PIXELFORMAT_NV12 || v_first) {
         view.plane_count = 2;
         view.planes[1] = (sixel_frame_plane_view_t){
             uv_plane, sizeof(uv_plane), 9, -8
+        };
+    } else if (format == SIXEL_PIXELFORMAT_YV12) {
+        view.planes[2] = view.planes[1];
+        view.planes[1] = (sixel_frame_plane_view_t){
+            v_plane, sizeof(v_plane), 2, 6
         };
     }
     rgb = sixel_color_def_new_named("srgb");
@@ -2912,6 +2918,87 @@ end:
     free(encoded[0].bytes);
     free(encoded[1].bytes);
     sixel_frame_unref(reference);
+    sixel_frame_unref((sixel_frame_t *)copy);
+    sixel_frame_unref(full);
+    sixel_frame_unref(grid);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(definition);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+test_ycbcr_iyu2(void)
+{
+    /* Physical rows are bottom then top. Each triplet is Cb, Y, Cr. */
+    static unsigned char const bytes[21] = {
+        239, 181, 50, 150, 100, 122, 199, 149, 85, 74, 239, 239,
+        60, 110, 205, 170, 70, 105, 211, 240, 90
+    };
+    /* BT.709 full range in logical top-down order. Compute G from the
+     * luma equation after solving R and B from the two color differences. */
+    static float const expected[] = {
+        0.9069003922f, 0.3399705159f, -0.0634541176f,
+        0.1324690196f, 0.2858793679f, 0.5801380392f,
+        0.7065003922f, 0.9499639518f, 1.5451560784f,
+        0.3319435294f, 0.1167571746f, 0.5817521569f,
+        0.9169050980f, 0.3686598285f, 0.2746792157f,
+        -0.0001537255f, 0.4170388275f, 0.4861474510f,
+    };
+    sixel_ycbcr_frame_view_t view = {sizeof(view), SIXEL_PIXELFORMAT_IYU2,
+        3, 2, 1, {{bytes, sizeof(bytes), 12, -11}}, NULL};
+    sixel_ycbcr_frame_view_t cloned = {0};
+    sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_FULL, 0, 0, NULL};
+    sixel_color_def_t *rgb;
+    sixel_ycbcr_def_t *definition;
+    sixel_frame_t *frame = NULL, *grid = NULL, *full = NULL;
+    sixel_frame_interface_t *iface, *copy = NULL;
+    sixel_ycbcr422_counts_t counts = {0};
+    float const *pixels;
+    size_t i;
+    int pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb");
+    color.rgb = rgb;
+    definition = sixel_ycbcr_def_new(&color);
+    view.definition = definition;
+    if (definition == NULL || sixel_frame_new(&frame, NULL) ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view)) {
+        goto end;
+    }
+    --view.planes[0].buffer_bytes;
+    if (sixel_frame_init_ycbcr_borrowed(frame, &view) != SIXEL_BAD_ARGUMENT) {
+        goto end;
+    }
+    sixel_frame_observe_ycbcr422(frame, &counts);
+    iface = sixel_frame_as_interface(frame);
+    cloned.struct_size = sizeof(cloned);
+    if (iface->vtbl->clone(iface, NULL, &copy) || copy == NULL ||
+        sixel_frame_get_ycbcr((sixel_frame_t *)copy, &cloned) ||
+        cloned.plane_count != 1 || cloned.planes[0].stride_bytes != 9 ||
+        cloned.planes[0].buffer_bytes != 18 || counts.packed_copies != 1 ||
+        sixel_frame_sample_ycbcr(frame, NULL, 2, NULL, 0, &grid) ||
+        sixel_frame_sample_ycbcr(frame, NULL, 1, grid, 2, &full) ||
+        counts.rgb_conversions != 2 || counts.rgb_pixels != 6 ||
+        sixel_frame_set_pixelformat((sixel_frame_t *)copy,
+                                    SIXEL_PIXELFORMAT_RGBFLOAT32)) {
+        goto end;
+    }
+    pixels = (float const *)(void *)sixel_frame_get_pixels(full);
+    if (memcmp(pixels, sixel_frame_get_pixels((sixel_frame_t *)copy),
+               sizeof(expected)) != 0) {
+        goto end;
+    }
+    for (i = 0; i < sizeof(expected) / sizeof(expected[0]); ++i) {
+        if (!(fabsf(expected[i] - pixels[i]) <= 2e-7f)) {
+            fprintf(stderr, "IYU2 sample %u: %.8g, expected %.8g\n",
+                    (unsigned int)i, pixels[i], expected[i]);
+            goto end;
+        }
+    }
+    pass = 1;
+end:
     sixel_frame_unref((sixel_frame_t *)copy);
     sixel_frame_unref(full);
     sixel_frame_unref(grid);
@@ -4502,9 +4589,18 @@ test_frame_0014_clone_float(int argc, char **argv)
         c = strcmp(argv[2], "nearest") == 0;
         return test_ycbcr411(0, c) || test_ycbcr411(1, c);
     }
+    if (argc == 2 && strcmp(argv[1], "ycbcr-iyu2") == 0) {
+        return test_ycbcr_iyu2();
+    }
     if (argc == 4 && strcmp(argv[1], "ycbcr420") == 0) {
-        c = strcmp(argv[2], "nv12") == 0 ? SIXEL_PIXELFORMAT_NV12 :
-            SIXEL_PIXELFORMAT_YUV420P;
+        c = SIXEL_PIXELFORMAT_YUV420P;
+        if (strcmp(argv[2], "nv12") == 0) {
+            c = SIXEL_PIXELFORMAT_NV12;
+        } else if (strcmp(argv[2], "nv21") == 0) {
+            c = SIXEL_PIXELFORMAT_NV21;
+        } else if (strcmp(argv[2], "yv12") == 0) {
+            c = SIXEL_PIXELFORMAT_YV12;
+        }
         if (strcmp(argv[3], "nearest") == 0) {
             return test_ycbcr420(c, 1, 0, 1);
         }

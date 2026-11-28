@@ -253,12 +253,15 @@ typedef int SIXELSTATUS;
 /* SIXEL band columns, a decode-only output; see sixel_decode_result_t. */
 #define SIXEL_PIXELFORMAT_BANDCOLUMNS (SIXEL_FORMATTYPE_PALETTE | 0x30)
 
-/* Two 8-bit luma samples share one pair of chroma samples. */
+/* 8-bit YCbCr layouts for sixel_frame_init_ycbcr_borrowed(). */
 #define SIXEL_PIXELFORMAT_YUYV (SIXEL_FORMATTYPE_COLOR | 0x30)
 #define SIXEL_PIXELFORMAT_UYVY (SIXEL_FORMATTYPE_COLOR | 0x31)
 #define SIXEL_PIXELFORMAT_YUV420P (SIXEL_FORMATTYPE_COLOR | 0x32)
 #define SIXEL_PIXELFORMAT_NV12 (SIXEL_FORMATTYPE_COLOR | 0x33)
 #define SIXEL_PIXELFORMAT_YUV411P (SIXEL_FORMATTYPE_COLOR | 0x34)
+#define SIXEL_PIXELFORMAT_NV21 (SIXEL_FORMATTYPE_COLOR | 0x35)
+#define SIXEL_PIXELFORMAT_YV12 (SIXEL_FORMATTYPE_COLOR | 0x36)
+#define SIXEL_PIXELFORMAT_IYU2 (SIXEL_FORMATTYPE_COLOR | 0x37)
 #define SIXEL_FRAME_COLORSPACE_YCBCR 0x101
 
 /* palette type */
@@ -1877,11 +1880,13 @@ typedef struct sixel_ycbcr_frame_view {
 } sixel_ycbcr_frame_view_t;
 
 /* Set struct_size to sizeof the view. YUYV and UYVY require one plane and
- * positive even width. YUV420P (I420) takes Y, Cb, Cr. NV12 takes Y and
- * interleaved CbCr. Both 4:2:0 layouts allow odd sizes and use ceil(width/2)
+ * positive even width. YUV420P (I420) takes Y, Cb, Cr and YV12 takes
+ * Y, Cr, Cb. NV12 and NV21 take Y and interleaved CbCr or CrCb,
+ * respectively. These 4:2:0 layouts allow odd sizes and use ceil(width/2)
  * by ceil(height/2) chroma samples. YUV411P takes Y, Cb, Cr, with
- * ceil(width/4) chroma samples on every luma row. Planes may share an
- * allocation.
+ * ceil(width/4) chroma samples on every luma row. IYU2 takes one plane of
+ * Cb, Y, Cr triplets at full resolution, with both chroma offsets set
+ * to zero. Planes may share an allocation.
  * Each plane has an accessible span starting at base, a logical row-zero
  * offset and a signed byte stride. Only active bytes are required at the
  * final row. Storage accounting includes the union of declared spans.

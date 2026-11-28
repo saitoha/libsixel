@@ -1206,9 +1206,11 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
 static void
 sixel_frame_ycbcr_shifts(int layout, int *x, int *y)
 {
-    *x = layout == SIXEL_PIXELFORMAT_YUV411P ? 2 : 1;
+    *x = layout == SIXEL_PIXELFORMAT_IYU2 ? 0 :
+         (layout == SIXEL_PIXELFORMAT_YUV411P ? 2 : 1);
     *y = layout == SIXEL_PIXELFORMAT_YUV420P ||
-         layout == SIXEL_PIXELFORMAT_NV12;
+         layout == SIXEL_PIXELFORMAT_NV12 || layout == SIXEL_PIXELFORMAT_NV21 ||
+         layout == SIXEL_PIXELFORMAT_YV12;
 }
 
 static void
@@ -1220,7 +1222,9 @@ sixel_frame_ycbcr_plane_shape(int layout, int planes, int plane,
     sixel_frame_ycbcr_shifts(layout, &x, &y);
     *row_bytes = plane == 0 ? (size_t)width :
         (size_t)((width + (1 << x) - 1) >> x);
-    if (planes == 1 || (planes == 2 && plane == 1)) {
+    if (layout == SIXEL_PIXELFORMAT_IYU2) {
+        *row_bytes *= 3u;
+    } else if (planes == 1 || (planes == 2 && plane == 1)) {
         *row_bytes *= 2u;
     }
     *rows = plane == 0 ? height : (height + (1 << y) - 1) >> y;
@@ -2162,7 +2166,7 @@ sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
     planes = sixel_pixelformat_ycbcr_planes(view->pixelformat);
     sixel_frame_ycbcr_shifts(view->pixelformat, &x, &y);
     if (planes == 0 || view->plane_count != (unsigned int)planes ||
-        (planes == 1 && (view->width & 1) != 0) ||
+        (planes == 1 && x != 0 && (view->width & 1) != 0) ||
         (view->definition->chroma_x_half != 0 &&
          view->definition->chroma_x_half != (1 << x) - 1) ||
         (view->definition->chroma_y_half != 0 &&
@@ -2308,6 +2312,7 @@ sixel_frame_set_width(sixel_frame_t /* in */ *frame, int /* in */ width)
 {
     if (frame->ycbcr == NULL || (width > 0 && width <= frame->ycbcr_width &&
             ((width & 1) == 0 ||
+             frame->format.layout == SIXEL_PIXELFORMAT_IYU2 ||
              sixel_pixelformat_ycbcr_planes(frame->format.layout) > 1))) {
         frame->width = width;
     }
@@ -2959,15 +2964,23 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
     float luma_scale, float const coefficients[4])
 {
     unsigned char const *luma, *cb_top, *cb_bottom, *cr_top, *cr_bottom;
+    unsigned char const *triplet;
     float const *cached;
     float wx, wy, cb, cr, top, bottom;
     int x, y, x0, x1, y0, y1, grid_x, grid_y = 0;
     int x_shift, y_shift, cw, ch;
-    int interleaved = frame->format.layout == SIXEL_PIXELFORMAT_NV12;
+    int layout = frame->format.layout;
+    int packed = layout == SIXEL_PIXELFORMAT_IYU2;
+    int interleaved = layout == SIXEL_PIXELFORMAT_NV12 ||
+                      layout == SIXEL_PIXELFORMAT_NV21;
     int spacing = interleaved ? 2 : 1;
+    int cb_plane = layout == SIXEL_PIXELFORMAT_YV12 ? 2 : 1;
+    int cr_plane = interleaved || layout == SIXEL_PIXELFORMAT_YV12 ? 1 : 2;
+    int cb_offset = layout == SIXEL_PIXELFORMAT_NV21;
+    int cr_offset = layout == SIXEL_PIXELFORMAT_NV12;
     int nearest = frame->ycbcr->nearest_chroma;
 
-    sixel_frame_ycbcr_shifts(frame->format.layout, &x_shift, &y_shift);
+    sixel_frame_ycbcr_shifts(layout, &x_shift, &y_shift);
     cw = (frame->width + (1 << x_shift) - 1) >> x_shift;
     ch = (frame->height + (1 << y_shift) - 1) >> y_shift;
     for (y = 0; y < frame->height; y += step) {
@@ -2980,12 +2993,22 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
             sixel_frame_ycbcr_axis(y, frame->ycbcr->chroma_y_half,
                                    y_shift, ch, nearest, &y0, &y1, &wy);
         }
-        cb_top = sixel_frame_ycbcr_row(&frame->ycbcr_planes[1], y0);
-        cb_bottom = sixel_frame_ycbcr_row(&frame->ycbcr_planes[1], y1);
-        cr_top = interleaved ? cb_top + 1 :
-            sixel_frame_ycbcr_row(&frame->ycbcr_planes[2], y0);
-        cr_bottom = interleaved ? cb_bottom + 1 :
-            sixel_frame_ycbcr_row(&frame->ycbcr_planes[2], y1);
+        /* Normalize the plane and byte order before interpolating chroma.
+         * Packed 4:4:4 reads its triplets directly from the luma row. */
+        cb_top = cb_bottom = cr_top = cr_bottom = luma;
+        if (!packed) {
+            cb_top = sixel_frame_ycbcr_row(&frame->ycbcr_planes[cb_plane], y0);
+            cb_bottom =
+                sixel_frame_ycbcr_row(&frame->ycbcr_planes[cb_plane], y1);
+            cr_top = interleaved ? cb_top :
+                sixel_frame_ycbcr_row(&frame->ycbcr_planes[cr_plane], y0);
+            cr_bottom = interleaved ? cb_bottom :
+                sixel_frame_ycbcr_row(&frame->ycbcr_planes[cr_plane], y1);
+            cb_top += cb_offset;
+            cb_bottom += cb_offset;
+            cr_top += cr_offset;
+            cr_bottom += cr_offset;
+        }
         cached = NULL;
         if (grid != NULL && y == grid_y) {
             cached = grid->pixels.f32ptr +
@@ -2998,6 +3021,13 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
                 memcpy(out, cached, 3u * sizeof(float));
                 cached += 3;
                 grid_x += grid_step;
+                continue;
+            }
+            if (packed) {
+                triplet = luma + (size_t)x * 3u;
+                sixel_frame_decode_ycbcr_sample(out,
+                    (triplet[1] - luma_offset) * luma_scale,
+                    triplet[0] - 128.0f, triplet[2] - 128.0f, coefficients);
                 continue;
             }
             sixel_frame_ycbcr_axis(x, frame->ycbcr->chroma_x_half,
@@ -3087,7 +3117,8 @@ sixel_frame_decode_ycbcr_into(sixel_frame_t const *frame,
             (unsigned int)converted);
     }
     out = pixels;
-    if (sixel_pixelformat_ycbcr_planes(frame->format.layout) > 1) {
+    if (frame->format.layout == SIXEL_PIXELFORMAT_IYU2 ||
+        sixel_pixelformat_ycbcr_planes(frame->format.layout) > 1) {
         sixel_frame_decode_ycbcr_planes(frame, out, step, grid, grid_step,
                                        luma_offset, luma_scale, coefficients);
     } else if (step > 1 || grid != NULL) {

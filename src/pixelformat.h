@@ -34,11 +34,14 @@ sixel_pixelformat_ycbcr_planes(int layout)
     switch (layout) {
     case SIXEL_PIXELFORMAT_YUYV:
     case SIXEL_PIXELFORMAT_UYVY:
+    case SIXEL_PIXELFORMAT_IYU2:
         return 1;
     case SIXEL_PIXELFORMAT_NV12:
+    case SIXEL_PIXELFORMAT_NV21:
         return 2;
     case SIXEL_PIXELFORMAT_YUV420P:
     case SIXEL_PIXELFORMAT_YUV411P:
+    case SIXEL_PIXELFORMAT_YV12:
         return 3;
     default:
         return 0;
