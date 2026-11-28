@@ -4279,6 +4279,7 @@ struct y422_lifecycle {
     sixel_ycbcr422_counts_t image_ops[2], palette_ops[2];
     SIXELSTATUS result[2];
     int callbacks, retried, second_builds, bad_sequence;
+    uint64_t sequence_base;
 };
 
 static int y422_alloc_failures;
@@ -4357,7 +4358,7 @@ y422_release_capture(sixel_playback_result_t const *result, void *context)
     struct y422_lifecycle *state = context;
     size_t slot = state->callbacks++;
 
-    state->bad_sequence |= result->sequence != slot + 1;
+    state->bad_sequence |= result->sequence != state->sequence_base + slot + 1;
     if (slot < 2) {
         state->result[slot] = result->status;
         state->capture->painted[slot] = result->painted_pixels;
@@ -4515,7 +4516,7 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
         sixel_frame_observe_ycbcr422(palette, &state->palette_ops[index]);
         if (y422_test_borrow(palette, state->palette[index],
                 bytes, width, height, (size_t)width * 2u,
-                SIXEL_PIXELFORMAT_YUYV, definition)) {
+                layout, definition)) {
             goto end;
         }
     } else if (y422_fixture(&palette, layout, 0, 2,
@@ -4786,6 +4787,116 @@ test_y422_lifecycle(char const *name)
 }
 
 static int
+test_ycbcr_deferred_cancel_alloc(int layout)
+{
+#if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
+    struct y422_lifecycle state = {0};
+    struct sixel_encoder_prepare_test_hooks hooks = {0};
+    y422_capture_t capture = {0};
+    sixel_playback_config_t config;
+    sixel_allocator_t *allocator = NULL;
+    sixel_encoder_t *encoder = NULL;
+    sixel_output_t *output = NULL;
+    sixel_playback_t *playback = NULL;
+    int i, pass = 0;
+
+    if (sixel_mutex_init(&state.gate.mutex)) {
+        return EXIT_FAILURE;
+    }
+    if (sixel_cond_init(&state.gate.cond)) {
+        sixel_mutex_destroy(&state.gate.mutex);
+        return EXIT_FAILURE;
+    }
+    state.capture = &capture;
+    y422_alloc_failures = 0;
+    y422_alloc_gate = &state.gate;
+    if (sixel_allocator_new(&allocator, y422_fail_grid_malloc,
+                            NULL, NULL, NULL) ||
+        sixel_encoder_new(&encoder, allocator) ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+                             "greedy:B2:prepare=ahead") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "auto") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_PRECISION_POLICY,
+                             "float32") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SAMPLING_POLICY,
+                             "full-frame") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
+        sixel_output_new(&output, y422_lifecycle_write, &state, NULL) ||
+        sixel_playback_config_init(&config, sizeof(config))) {
+        goto end;
+    }
+    hooks.context = &state;
+    hooks.complete = y422_lifecycle_prepared;
+    encoder->prepare_test_hooks = &hooks;
+    config.done = y422_release_capture;
+    config.done_context = &state;
+
+    /* Hold frame one in the writer and cancel while frame two's allocation
+     * is blocked. The producer must report a failed preparation. */
+    if (sixel_playback_new(&playback, encoder, output, &config, NULL) ||
+        !y422_lifecycle_submit(&state, playback, 0, 0, 0, layout, 0,
+                               SIXEL_OK) ||
+        !gpu_ahead_wait(&state.gate, &state.gate.writer_entered) ||
+        !y422_lifecycle_submit(&state, playback, 1, 1, 0, layout, 0,
+                               SIXEL_OK) ||
+        !gpu_ahead_wait(&state.gate, &state.gate.helper_entered) ||
+        sixel_playback_cancel(playback)) {
+        goto end;
+    }
+    gpu_ahead_release(&state.gate, &state.gate.helper_open);
+    if (!gpu_ahead_wait(&state.gate, &state.gate.helper_complete) ||
+        state.gate.prepared_status != SIXEL_BAD_ALLOCATION) {
+        goto end;
+    }
+    gpu_ahead_release(&state.gate, &state.gate.writer_open);
+    if (sixel_playback_drain(playback, 5000) ||
+        state.callbacks != 2 || state.bad_sequence ||
+        state.result[0] != SIXEL_OK || state.result[1] != SIXEL_INTERRUPTED ||
+        y422_alloc_failures != 1) {
+        goto end;
+    }
+
+    /* A cancelled preparation can fail internally without stopping later
+     * admissions. Reuse the first callback slot after both callbacks. */
+    state.callbacks = 0;
+    state.sequence_base = 2;
+    if (!y422_lifecycle_submit(&state, playback, 0, 0, 0, layout, 0,
+                               SIXEL_OK) ||
+        sixel_playback_drain(playback, 5000) ||
+        state.callbacks != 1 || state.bad_sequence ||
+        state.result[0] != SIXEL_OK) {
+        goto end;
+    }
+    pass = 1;
+end:
+    gpu_ahead_release(&state.gate, &state.gate.helper_open);
+    gpu_ahead_release(&state.gate, &state.gate.writer_open);
+    sixel_playback_unref(playback);
+    y422_alloc_gate = NULL;
+    sixel_output_unref(output);
+    sixel_encoder_unref(encoder);
+    sixel_allocator_unref(allocator);
+    for (i = 0; i < 2; ++i) {
+        free(state.image[i]);
+        free(state.palette[i]);
+        free(state.image_chroma[i]);
+        free(state.palette_chroma[i]);
+    }
+    free(capture.stream.bytes);
+    sixel_cond_destroy(&state.gate.cond);
+    sixel_mutex_destroy(&state.gate.mutex);
+    if (!pass) {
+        fprintf(stderr, "Deferred playback allocation and cancel: %s\n",
+                sixel_helper_get_additional_message());
+    }
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+#else
+    (void)layout;
+    return 77;
+#endif
+}
+
+static int
 test_nv21_lifecycle(char const *name)
 {
 #if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
@@ -4881,6 +4992,15 @@ test_frame_0014_clone_float(int argc, char **argv)
     if (argc == 3 && strcmp(argv[1], "ycbcr422-deferred-delta") == 0) {
         return test_y422_deferred_delta(strcmp(argv[2], "yuyv") == 0
             ? SIXEL_PIXELFORMAT_YUYV : SIXEL_PIXELFORMAT_RGBFLOAT32);
+    }
+    if (argc == 3 && strcmp(argv[1], "ycbcr-deferred-cancel-alloc") == 0) {
+        c = SIXEL_PIXELFORMAT_YUYV;
+        if (strcmp(argv[2], "uyvy") == 0) {
+            c = SIXEL_PIXELFORMAT_UYVY;
+        } else if (strcmp(argv[2], "nv21") == 0) {
+            c = SIXEL_PIXELFORMAT_NV21;
+        }
+        return test_ycbcr_deferred_cancel_alloc(c);
     }
     if (argc == 3 && strcmp(argv[1], "nv21-lifecycle") == 0) {
         return test_nv21_lifecycle(argv[2]);
