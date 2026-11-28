@@ -83,6 +83,19 @@ typedef struct sixel_ward_pair {
 } sixel_ward_pair_t;
 
 #if defined(HAVE_METAL)
+/* The shader reserves one partial minimum per group at width 16 or wider. */
+static inline unsigned int
+sixel_ward_metal_merge_lanes(unsigned int count, unsigned int width,
+                            unsigned int limit)
+{
+    unsigned int lanes;
+
+    if (width < 16u || width > limit)
+        return 0;
+    lanes = ((count + width - 1u) / width) * width;
+    return lanes <= limit ? lanes : 0u;
+}
+
 SIXEL_INTERNAL_API int
 sixel_ward_metal_is_ready(void);
 

@@ -3,6 +3,8 @@
 using namespace metal;
 
 #define WARD_CAPACITY 768
+// The host admits merge pipelines with SIMD width 16 or greater.
+#define WARD_GROUP_CAPACITY ((WARD_CAPACITY + 15u) / 16u)
 
 struct WardParameters {
     uint count;
@@ -72,11 +74,12 @@ ward_merge(device const float4 *centers [[buffer(0)]],
            uint row [[thread_index_in_threadgroup]],
            uint lane [[thread_index_in_simdgroup]],
            uint group [[simdgroup_index_in_threadgroup]],
-           uint groups [[simdgroups_per_threadgroup]])
+           uint groups [[simdgroups_per_threadgroup]],
+           uint width [[threads_per_simdgroup]])
 {
     threadgroup float4 current[WARD_CAPACITY];
-    threadgroup RowMinimum minima[32];
-    threadgroup uint peers[32];
+    threadgroup RowMinimum minima[WARD_GROUP_CAPACITY];
+    threadgroup uint peers[WARD_GROUP_CAPACITY];
     threadgroup uint kept;
     threadgroup uint removed;
     threadgroup atomic_uint dirty_count;
@@ -93,16 +96,18 @@ ward_merge(device const float4 *centers [[buffer(0)]],
         // Global ties use the smallest row index, then that row's cached peer.
         const RowMinimum group_best =
             reduce_simd({best.cost, best.peer == UINT_MAX ? UINT_MAX : row});
-        const uint peer = simd_shuffle(best.peer, group_best.peer % 32u);
+        const uint peer = simd_shuffle(best.peer, group_best.peer % width);
         if (lane == 0) {
             minima[group] = group_best;
             peers[group] = peer;
         }
         threadgroup_barrier(mem_flags::mem_threadgroup);
         if (group == 0) {
-            const RowMinimum group_candidate = lane < groups ?
-                RowMinimum{minima[lane].cost, lane} :
-                RowMinimum{INFINITY, UINT_MAX};
+            // A width-16 pipeline can have up to 48 group minima.
+            RowMinimum group_candidate = {INFINITY, UINT_MAX};
+            for (uint index = lane; index < groups; index += width)
+                group_candidate = choose(group_candidate,
+                    {minima[index].cost, index});
             const RowMinimum winner = reduce_simd(group_candidate);
             if (lane == 0) {
                 const uint selected = minima[winner.peer].peer;
@@ -150,7 +155,7 @@ ward_merge(device const float4 *centers [[buffer(0)]],
             const float4 target_center = current[target];
             RowMinimum fresh = {INFINITY, UINT_MAX};
             for (uint candidate = lane; candidate < params.count;
-                 candidate += 32u) {
+                 candidate += width) {
                 const float4 other = current[candidate];
                 if (other.w > 0.0f && candidate != target)
                     fresh = choose(fresh,

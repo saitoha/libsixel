@@ -1092,6 +1092,7 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     uint32_t policy[4];
     uint32_t const *result;
     unsigned int samples, pixels, i, run, tiles, split_stage;
+    unsigned int ward_rows_width, ward_merge_lanes;
     int reverse, heckbert, ward;
     SIXELSTATUS status;
     id<MTLBuffer> *buffers;
@@ -1108,6 +1109,8 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
     }
     heckbert = request->quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT;
     ward = request->ward_colors != 0;
+    ward_rows_width = 0;
+    ward_merge_lanes = 0;
     if (ward && (request->ward_colors <= request->colors ||
             request->ward_colors > SIXEL_WARD_MAX_CLUSTERS ||
             request->ward_iterations > 30u))
@@ -1144,15 +1147,18 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
             status = SIXEL_FALSE;
         if (status != SIXEL_OK)
             goto end;
-        if (ward && (sixel_km_resident_stages[WD_ROWS].threadExecutionWidth
-                != 32u ||
-                sixel_km_resident_stages[WD_MERGE].threadExecutionWidth
-                != 32u ||
-                ((geometry.colors + 31u) & ~31u) >
-                sixel_km_resident_stages[WD_MERGE]
-                    .maxTotalThreadsPerThreadgroup)) {
-            status = SIXEL_FALSE;
-            goto end;
+        if (ward) {
+            ward_rows_width = (unsigned int)
+                sixel_km_resident_stages[WD_ROWS].threadExecutionWidth;
+            ward_merge_lanes = sixel_ward_metal_merge_lanes(geometry.colors,
+                (unsigned int)
+                    sixel_km_resident_stages[WD_MERGE].threadExecutionWidth,
+                (unsigned int)sixel_km_resident_stages[WD_MERGE]
+                    .maxTotalThreadsPerThreadgroup);
+            if (!ward_rows_width || !ward_merge_lanes) {
+                status = SIXEL_FALSE;
+                goto end;
+            }
         }
         status = SIXEL_BAD_ALLOCATION;
         if (!sixel_km_resident_storage(samples, pixels, geometry.colors,
@@ -1272,10 +1278,10 @@ sixel_palette_metal_resident(sixel_palette_resident_request_t const *request,
             }
         }
         if (ward) {
-            lanes = (geometry.colors + 31u) & ~31u;
             RUN(WD_SEED, geometry.colors, 128, -1, 0, 0);
-            RUN(WD_ROWS, geometry.colors * 32u, 32, -1, 0, 0);
-            RUN(WD_MERGE, (unsigned int)lanes, (unsigned int)lanes, -1, 0, 0);
+            RUN(WD_ROWS, geometry.colors * ward_rows_width, ward_rows_width,
+                -1, 0, 0);
+            RUN(WD_MERGE, ward_merge_lanes, ward_merge_lanes, -1, 0, 0);
             RUN(WD_REPLAY, 1, 1, -1, 0, 0);
             for (i = 0; i < request->ward_iterations; ++i) {
                 RUN(WD_LLOYD_CLEAR, request->colors, 128, -1, 0, 0);

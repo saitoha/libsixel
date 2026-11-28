@@ -72,7 +72,7 @@ sixel_ward_metal_prepare(void)
     output = [device newBufferWithLength:SIXEL_WARD_MAX_CLUSTERS *
         sizeof(sixel_ward_pair_t) options:MTLResourceStorageModeShared];
     [device release];
-    if (rows.threadExecutionWidth != 32 || merge.threadExecutionWidth != 32 ||
+    if (rows == nil || merge == nil ||
             queue == nil || inputs == nil || cache == nil || output == nil) {
         [rows release];
         [merge release];
@@ -109,7 +109,6 @@ sixel_ward_metal_pairs(float const *input, unsigned int count,
     unsigned int lanes;
     int ok;
 
-    lanes = (count + 31u) & ~31u;
     if (!count || count > SIXEL_WARD_MAX_CLUSTERS || merges >= count)
         return 0;
     params[0] = count;
@@ -118,8 +117,12 @@ sixel_ward_metal_pairs(float const *input, unsigned int count,
     /* The gate covers both reusable buffers and the final pair readback. */
     (void)pthread_mutex_lock(&sixel_ward_metal_lock);
     @autoreleasepool {
-        if (!sixel_ward_metal_prepare() ||
-                lanes > sixel_ward_metal_merge.maxTotalThreadsPerThreadgroup)
+        if (!sixel_ward_metal_prepare())
+            goto end;
+        lanes = sixel_ward_metal_merge_lanes(count,
+            (unsigned int)sixel_ward_metal_merge.threadExecutionWidth,
+            (unsigned int)sixel_ward_metal_merge.maxTotalThreadsPerThreadgroup);
+        if (!lanes)
             goto end;
         memcpy(sixel_ward_metal_inputs.contents, input,
             (size_t)count * 4u * sizeof(*input));
@@ -135,7 +138,8 @@ sixel_ward_metal_pairs(float const *input, unsigned int count,
         [encoder setBuffer:sixel_ward_metal_cache offset:0 atIndex:1];
         [encoder setBytes:params length:sizeof(params) atIndex:2];
         [encoder dispatchThreadgroups:MTLSizeMake(count, 1, 1)
-                 threadsPerThreadgroup:MTLSizeMake(32, 1, 1)];
+                 threadsPerThreadgroup:MTLSizeMake(
+                     sixel_ward_metal_rows.threadExecutionWidth, 1, 1)];
         [encoder endEncoding];
         encoder = [command computeCommandEncoder];
         if (encoder == nil)
