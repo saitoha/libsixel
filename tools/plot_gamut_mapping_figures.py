@@ -43,6 +43,9 @@ FLAGS = ["--threading-policy=greedy:global_budget=1", "-.float32",
          "--sampling-policy=full-frame", "--binning-policy=none",
          "-F", "none", "-a", "off", "-_", "none", "-~", "none",
          "-0", "soft", "-t", "rgb", "-p", "256", "-=", "balanced:B2"]
+# The aim comparison varies palette size and the -U suboptions; clip keeps
+# the default gamut policy, where the aims differ from the mapped colors.
+AIM_FLAGS = FLAGS[:-4] + ["-=", "balanced:B2"]
 
 
 def run(argv, **kwargs):
@@ -735,6 +738,187 @@ def photograph(probe, source, tmp, figures, measurements):
     (measurements / "rose.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
+SRGB_TO_XYZ = np.array([[.4124564, .3575761, .1804375],
+                        [.2126729, .7151522, .0721750],
+                        [.0193339, .1191920, .9503041]])
+AIM_VARIANTS = (("default", "srgb"), ("diffusion=aim", "srgb:diffusion=aim"),
+                ("samples=shown", "srgb:samples=shown"),
+                ("both", "srgb:diffusion=aim:samples=shown"))
+AIM_BLUR_SIGMA = 2.0
+
+
+def decode_srgb(values):
+    return np.where(values <= .04045, values / 12.92,
+                    ((values + .055) / 1.055) ** 2.4)
+
+
+def cielab(linear):
+    """CIELAB D65 of linear sRGB; a measurement transform, not a mapper."""
+    t = (linear @ SRGB_TO_XYZ.T) / SRGB_TO_XYZ.sum(axis=1)
+    d = 6 / 29
+    f = np.where(t > d ** 3, np.cbrt(t), t / (3 * d * d) + 4 / 29)
+    return np.stack([116 * f[..., 1] - 16, 500 * (f[..., 0] - f[..., 1]),
+                     200 * (f[..., 1] - f[..., 2])], axis=-1)
+
+
+def ciede2000(lab1, lab2):
+    l1, a1, b1 = np.moveaxis(lab1, -1, 0)
+    l2, a2, b2 = np.moveaxis(lab2, -1, 0)
+    c7 = ((np.hypot(a1, b1) + np.hypot(a2, b2)) / 2) ** 7
+    g = .5 * (1 - np.sqrt(c7 / (c7 + 25. ** 7)))
+    a1, a2 = (1 + g) * a1, (1 + g) * a2
+    c1, c2 = np.hypot(a1, b1), np.hypot(a2, b2)
+    h1 = np.degrees(np.arctan2(b1, a1)) % 360
+    h2 = np.degrees(np.arctan2(b2, a2)) % 360
+    zero = c1 * c2 == 0
+    dh = (h2 - h1 + 180) % 360 - 180
+    dh = np.where(zero, 0, dh)
+    big_h = 2 * np.sqrt(c1 * c2) * np.sin(np.radians(dh / 2))
+    hsum = h1 + h2
+    hm = np.where(zero, hsum, np.where(np.abs(h1 - h2) <= 180, hsum / 2,
+                  np.where(hsum < 360, (hsum + 360) / 2, (hsum - 360) / 2)))
+    lm, cm = (l1 + l2) / 2, (c1 + c2) / 2
+    t = (1 - .17 * np.cos(np.radians(hm - 30)) + .24 * np.cos(np.radians(2 * hm))
+         + .32 * np.cos(np.radians(3 * hm + 6))
+         - .20 * np.cos(np.radians(4 * hm - 63)))
+    sl = 1 + .015 * (lm - 50) ** 2 / np.sqrt(20 + (lm - 50) ** 2)
+    sc, sh = 1 + .045 * cm, 1 + .015 * cm * t
+    rt = (-np.sin(np.radians(60 * np.exp(-((hm - 275) / 25) ** 2))) *
+          2 * np.sqrt(cm ** 7 / (cm ** 7 + 25. ** 7)))
+    dl, dc = (l2 - l1) / sl, (c2 - c1) / sc
+    dh = big_h / sh
+    return np.sqrt(dl ** 2 + dc ** 2 + dh ** 2 + rt * dc * dh)
+
+
+def gaussian_blur(linear, sigma=AIM_BLUR_SIGMA):
+    """Separable Gaussian in linear light; edges repeat their last pixel."""
+    radius = int(3 * sigma)
+    kernel = np.exp(-.5 * (np.arange(-radius, radius + 1) / sigma) ** 2)
+    kernel /= kernel.sum()
+    padded = np.pad(linear, ((radius, radius), (radius, radius), (0, 0)),
+                    mode="edge")
+    rows = sum(kernel[i] * padded[i:i + linear.shape[0]]
+               for i in range(kernel.size))
+    return sum(kernel[i] * rows[:, i:i + linear.shape[1]]
+               for i in range(kernel.size))
+
+
+def aim_feedback(directory):
+    """Draw the one-channel arithmetic of a residual; values are didactic."""
+    fig, axes = plt.subplots(2, 1, figsize=(10, 4.6), sharex=True)
+    fig.subplots_adjust(left=.03, right=.97, top=.86, bottom=.12, hspace=.75)
+    fig.suptitle("What the next pixel is asked to repay (one channel)",
+                 fontsize=15)
+    rows = (("Default: the source is the goal", 1.25,
+             "source − palette = +0.25, every pixel", "#be185d"),
+            ("diffusion=aim: the shown aim is the goal", 1.0,
+             "aim − palette = 0", "#0f766e"))
+    for ax, (title, goal, label, color) in zip(axes, rows):
+        ax.set(xlim=(.55, 1.4), ylim=(-1, 1), yticks=[])
+        for side in ("left", "right", "top"):
+            ax.spines[side].set_visible(False)
+        ax.axvspan(1.0, 1.4, color="#f1f5f9")
+        ax.axvline(1.0, color="#64748b", lw=1.2)
+        ax.text(1.2, .72, "outside the -U gamut", ha="center", fontsize=9,
+                color="#475569")
+        ax.set_title(title, loc="left", fontsize=11, color="#172033")
+        ax.plot([1.25], [0], "o", ms=10, mfc="white", mec="#be185d", mew=2)
+        ax.text(1.25, -.62, "source S", ha="center", fontsize=9)
+        ax.plot([1.0], [0], "s", ms=9, color="#2563eb")
+        ax.text(1.0, -.62, "palette = shown", ha="center", fontsize=9)
+        if goal != 1.0:
+            ax.annotate("", (1.0, .32), (goal, .32), arrowprops={
+                "arrowstyle": "->", "color": color, "lw": 2})
+        ax.text(.6, .3, label, fontsize=10, color=color, weight="bold")
+    axes[1].set_xlabel("channel value in the working space")
+    save_plot(fig, directory / "aim-feedback.svg")
+
+
+def aim_comparison(build, inputs, figures, measurements):
+    """Encode the -U aim variants and measure their local average color.
+
+    The reference is the shown clip of the source: the color the receiver
+    would display with an unlimited palette. Blurring both sides first
+    measures what dithering promises, a local average, rather than single
+    pixels that dithering deliberately leaves wrong.
+    """
+    results = []
+    panels = {}
+    manifest = {
+        "schema": 1,
+        "scope": "Illustrative encodings, not independent test expectations",
+        "destination": "srgb", "gamut": "clip (default)",
+        "flags": AIM_FLAGS, "dither": "fs",
+        "metric": "CIEDE2000 between Gaussian-blurred linear-light output and "
+                  "the blurred shown clip of the source",
+        "blur_sigma_px": AIM_BLUR_SIGMA,
+        "versions": {"numpy": np.__version__,
+                     "matplotlib": matplotlib.__version__,
+                     "pillow": pillow_version},
+        "implementation_sources": {
+            name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+            for name in ("src/target-color.c", "src/dither.c",
+                         "src/encoder.c", "src/palette.c")},
+        "outside_fraction": {},
+    }
+    for name, source, reference_linear in inputs:
+        shape = reference_linear.shape
+        outside = np.any((reference_linear < 0) | (reference_linear > 1),
+                         axis=-1)
+        reference_linear = np.clip(reference_linear, 0, 1)
+        reference = cielab(gaussian_blur(reference_linear))
+        for colors in (16, 64):
+            for label, spec in AIM_VARIANTS:
+                sixel = run([build / "converters/img2sixel", source, *AIM_FLAGS,
+                             "-p", colors, "-d", "fs", "-U", spec])
+                png = run([build / "converters/sixel2png", "-T", "srgb"],
+                          input=sixel)
+                decoded = np.asarray(Image.open(io.BytesIO(png)).convert("RGB"))
+                assert decoded.shape[:2] == shape[:2]
+                linear = decode_srgb(decoded / 255.)
+                error = ciede2000(reference, cielab(gaussian_blur(linear)))
+                results.append({
+                    "image": name, "colors": colors, "variant": label,
+                    "output_colorspace": spec,
+                    "blurred_delta_e00_mean": round(float(error.mean()), 3),
+                    "blurred_delta_e00_max": round(float(error.max()), 2),
+                    "blurred_delta_e00_mean_outside": round(
+                        float(error[outside].mean()), 3),
+                    "decoded_rgb_sha256": hashlib.sha256(
+                        decoded.tobytes()).hexdigest()})
+                if name == "p3-hue-lightness" and colors == 64:
+                    panels[label] = (decoded, error)
+        manifest["outside_fraction"][name] = round(float(outside.mean()), 4)
+    manifest["results"] = results
+    (measurements / "aims.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    labels = [label for label, _ in AIM_VARIANTS]
+    fig, axes = plt.subplots(2, len(labels), figsize=(12, 4.8))
+    fig.subplots_adjust(left=.07, right=.92, top=.82, bottom=.04,
+                        wspace=.045, hspace=.12)
+    fig.suptitle("Same P3 pattern, sRGB output with clip, 64 colors, FS",
+                 fontsize=15)
+    fig.text(.495, .9, "Lower row: CIEDE2000 between Gaussian-blurred output "
+             "and the blurred shown clip (σ = 2 px)", ha="center",
+             fontsize=10, color="#475569")
+    for m, label in enumerate(labels):
+        decoded, error = panels[label]
+        axes[0, m].imshow(decoded, interpolation="nearest")
+        axes[0, m].set_title(label, fontsize=11)
+        image = axes[1, m].imshow(error, cmap="magma", vmin=0, vmax=20,
+                                  interpolation="nearest")
+        axes[1, m].text(4, 90, "mean %.2f" % error.mean(), color="white",
+                        fontsize=9)
+        for row in range(2):
+            axes[row, m].set(xticks=[], yticks=[])
+    axes[0, 0].set_ylabel("Decoded", fontsize=10)
+    axes[1, 0].set_ylabel("Blurred ΔE00", fontsize=10)
+    bar = fig.add_axes([.93, .06, .012, .34])
+    fig.colorbar(image, cax=bar)
+    save_plot(fig, figures / "aim-comparison.svg")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-dir", type=Path, default=ROOT)
@@ -825,6 +1009,18 @@ def main():
                 grid[y, x + 1, 0, 3:] - grid[y, x, 0, 3:])),
         }
         encode_comparison(build, source, continuous, figures, manifest)
+        aim_feedback(figures)
+        with Image.open(rose) as image:
+            rose_rgb = np.asarray(image) / 255.
+            rose_icc = tmp / "rose-aim.icc"
+            rose_icc.write_bytes(image.info["icc_profile"])
+        rose_linear = sample(probe, rose_rgb, rose_icc)[:, 0, :3]
+        aim_comparison(build, (
+            ("p3-hue-lightness", source,
+             continuous[:, 0, :3].reshape(96, 192, 3)),
+            ("rose-adobe-rgb", rose,
+             rose_linear.reshape(rose_rgb.shape[0], rose_rgb.shape[1], 3))),
+            figures, measurements)
         clipping_detail(build, probe, profile, profile_path, figures,
                         measurements, manifest)
         (measurements / "examples.json").write_text(

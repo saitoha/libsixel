@@ -23,6 +23,8 @@ img2sixel image.png -U icc:path=/path/to/profile.icc:gamut=local-minde
 img2sixel image.png -U auto:gamut=local-minde:timeout_ms=200
 ```
 
+Three further suboptions choose where the shown result of the destination is used; [gamut aims](#gamut-aims-for-diffusion-and-clustering) owns them.
+
 `local-minde`, `edge-seeker` and `ray-trace` identify specific algorithms, not space selectors. Explicit selection does not permit substitution of another algorithm. A future recommendation change belongs to `auto`. There is no `oklch` alias, because Oklch is a coordinate representation shared by distinct algorithms.
 
 ## Numeric contract
@@ -63,7 +65,7 @@ ICC LUT profiles cannot use `local-minde`, `edge-seeker` or `ray-trace`: a bound
 
 The mapper belongs to the shared encoder library, not the loader. Its immutable object owns the destination matrices and endpoint ranges. Separate encoders have separate policy objects; palette workers only read them. Changing gamut policy invalidates incompatible palette and delta caches. No environment access or allocation occurs in per-color mapping.
 
-With `local-minde`, `edge-seeker` or `ray-trace`, encoding owns a private float frame. A standalone `gamut` filter is placed after geometry and working-space preparation in the planner graph; it maps visible source pixels before lookup/diffusion. A [target color policy](../palette-application/target-color-policy.md) other than `source` omits this filter and applies the mapper to diffusion and clustering targets instead. Palette-construction samples are also mapped before clustering. The existing sampling policy still determines the sample source: full-frame uses the preprocessed frame, while adaptive-grid uses its loaded-frame samples. The mapper does not silently change that policy or move adaptive sampling after resizing. Omitted pixels are excluded from mapping.
+With `local-minde`, `edge-seeker` or `ray-trace`, encoding owns a private float frame. A standalone `gamut` filter is placed after geometry and working-space preparation in the planner graph; it maps visible source pixels before lookup/diffusion. `diffusion=aim` omits this filter and applies the mapper to the [diffusion aim](#gamut-aims-for-diffusion-and-clustering) instead. Palette-construction samples are also mapped before clustering. The existing sampling policy still determines the sample source: full-frame uses the preprocessed frame, while adaptive-grid uses its loaded-frame samples. The mapper does not silently change that policy or move adaptive sampling after resizing. Omitted pixels are excluded from mapping.
 
 Adjacent float colorspace and gamut filters can run as separate tile stages under the [encoder thread budget](../../threading/encoder.md#float-colorspace-transactions). The producer runs ordinary colorspace filters and a consumer runs ordinary gamut filters; neither their loops nor their numerical operations are fused. One-slot, small, byte, alpha-plane and incompatible-binding cases retain sequential execution. Mapping without a preceding conversion remains a standalone filter, including linear input with automatic linear working space. Both paths retain the same successful float bits and restore sequential failure precedence after draining any queued work.
 
@@ -90,6 +92,59 @@ The [pipeline diagram](../../concepts/gamut-mapping/README.md#where-the-mapper-s
 | `sixel2png -T` | Interprets decoded numbers. It does not apply a second gamut mapping. |
 
 The mapper uses the selected CPU float palette/high-color paths and their existing admission rules. The mapping itself runs in float under every precision policy; `--precision-policy=8bit` rounds the mapped result to gamma bytes at palette application. `auto` and `clip` do not introduce a mapper or force float. RGB101 rounding remains at the output boundary unless an explicit snap policy requests earlier projection.
+
+## Gamut aims for diffusion and clustering
+
+The **gamut aim** of a color is what the receiver shows for it: the color itself when its `-U` codes lie inside `[0, 1]` within `2e-7`, otherwise `interpret(clamp01(encode(map(S))))`. `map` is the selected gamut mapper, or the identity under `auto` and `clip`, where the wire-range clamp bounds the color; `encode` and `interpret` are the transforms the palette owner uses for the same `-U`. The aim is computed in double precision and returned to the coordinates of the view it replaces. A representable color keeps its source bits, and wire quantization to RGB101 is not part of the aim. The [conceptual explanation](../../concepts/gamut-mapping/README.md#aiming-at-what-the-receiver-shows) shows why diffusion and clustering may want it.
+
+| Suboption | Compact | Values | Effect |
+| --- | --- | --- | --- |
+| `diffusion` | `D` | `input` (default), `aim` | `aim` keeps the unmapped working view as lookup input, adds `aim - source` to each diffused residual, and gives out-of-gamut application palette entries their aims. |
+| `samples` | `S` | `mapped` (default), `shown` | `shown` replaces each visible clustering sample by its aim instead of its mapper result. |
+| `aim_method` | `M` | `exact` (default), `lut`, `auto` | Evaluates aims per pixel or through a verified 3D LUT; `auto` uses the LUT when visible pixels outnumber four times its nodes. |
+
+`SIXEL_OUTPUT_COLORSPACE_DIFFUSION`, `SIXEL_OUTPUT_COLORSPACE_SAMPLES` and `SIXEL_OUTPUT_COLORSPACE_AIM_METHOD` supply defaults; explicit suboptions win, and repeating `-U` replaces them with its base. With the defaults, output is identical to omitting the suboptions. The encoder's dither contract trace reports them as `gamut_diffusion`, `gamut_samples`, `gamut_aim_method` and whether an aim offset plane was published, `gamut_aim_offset`.
+
+```sh
+img2sixel image.png -U srgb:diffusion=aim
+img2sixel image.png -U display-p3:Daim:Sshown
+img2sixel image.png -U srgb:gamut=ray-trace:diffusion=aim:aim_method=lut
+```
+
+### Diffusion contract
+
+With `diffusion=aim`, the candidate passed to lookup is the working-view source plus accumulated error; the residual sent onward is that candidate minus the chosen palette color plus the offset `aim - source`. A component offset below `1e-6` in magnitude is round-off and is treated as zero, and an all-zero plane is dropped. The offset plane is computed once per frame, is read-only and is independent of band geometry; transparent pixels receive zero. When `-W` is an ICC profile, aims are computed in linear sRGB and expressed through the same profile as the source, so the profile's own A2B/B2A asymmetry does not enter the offset.
+
+Generated and fixed application palettes are replaced by their aims after point C and before output preparation. Under `clip` a generated representative can lie outside the destination, and its float value is then not what the receiver shows; measuring the residual between a shown aim and an unshown entry would feed the clipped-away difference back as error. Representable entries keep their bits and wire values are unchanged. Explicit ICC output then scores registers through A2B as described in [output color space](output-colorspace.md), which already gives lookup and diffusion the shown color of every in-gamut register.
+
+`diffusion=aim` requires CPU float32 error diffusion with FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes, a Sierra kernel or LSO2. `--precision-policy=8bit` with one of these kernels is an error, and so is `--gpu-policy=force`; `auto` GPU selection keeps the CPU path. Positional and no-dither methods have no residual. Byte gamma sRGB input with an sRGB `-U` is its own aim, so its byte path is kept. The `-0` clamp policy bounds the combined correction before lookup; the offset is added after lookup and is not itself limited.
+
+### Clustering contract
+
+With `samples=shown`, each visible clustering sample is replaced by its aim, expressed in `-X`, before palette construction. Under `auto` and `clip` this is the only point-A treatment and changes which colors the quantizer sees; under a mapper the aim of a sample differs from its mapped value only by the encode/interpret round trip. Byte RGBA alpha-key samples are converted through a temporary float copy. A fixed mapfile palette has no samples and is unchanged. Point C still checks the generated palette.
+
+### LUT method and cost
+
+The LUT covers the bounding box of the visible pixels in the coordinates of the view, with 33 points per axis. A cell is interpolated only when all eight corners and the center lie inside the `-U` gamut and the interpolated center agrees with the exact aim within Delta E OK `0.001`; every other cell, and therefore every gamut boundary, is evaluated exactly per pixel. Because representable colors are their own aims, the LUT acts as a verified membership cache. The center check samples the cell rather than bounding it; use `exact` when a transform may have structure finer than one cell.
+
+| Item | `exact` | `lut` |
+| --- | --- | --- |
+| Per visible pixel | One `-U` encode; for an out-of-gamut color, a mapper call, a second encode and one interpret | One trilinear interpolation, or the exact path in rejected cells |
+| Setup | None | `33^3` node and `32^3` center evaluations |
+| Memory | One offset plane, 12 bytes per pixel for RGB float32 | The offset plane plus about 0.5 MB of nodes and cell flags |
+
+Named and ICC destinations evaluate through XYZ and cost more per pixel than builtin ones. The offset plane exists only for one palette application.
+
+### Limits
+
+The aims do not reproduce mapping before lookup: lookup still reads the unmapped color. The quality effect depends on the image, palette size and gamut policy, and the [illustrated measurements](../../concepts/gamut-mapping/README.md#what-the-measurements-show) include cases where each suboption is worse than the default. Evaluate with the [measurement policy](../../quality/measurement-policy.md) rather than assuming a gain. High-color output does not consume aims.
+
+| Implementation entry | Responsibility |
+| --- | --- |
+| [`src/target-color.c`](../../../src/target-color.c) | Owns the aim evaluator: encode/interpret, LUT build and verification, offsets and in-place aims. |
+| [`sixel_dither_apply_palette`](../../../src/dither.c) | Decides whether an offset is needed, rejects byte or forced-GPU diffusion and publishes the frame offset plane. |
+| [`sixel_palette_map_aim`](../../../src/palette.c) | Replaces application palette entries by their aims with a consistent byte view. |
+| [`sixel_encoder_map_target_samples`](../../../src/encoder.c) | Replaces clustering samples by their aims, including byte alpha-key samples. |
 
 ## Evaluation boundary
 
@@ -171,6 +226,14 @@ Use the [quality measurement policy](../../quality/measurement-policy.md) and [n
 | GM-62 | One-slot, small and byte-input cases decline tile admission without changing the frame. | [tests/color/gamut/0066_pipeline_fallback.t](../../../tests/color/gamut/0066_pipeline_fallback.t) ([tests/color/gamut/0066_pipeline_fallback.c](../../../tests/color/gamut/0066_pipeline_fallback.c)) |
 | GM-63 | The independent mapping node follows the final working-space conversion and precedes palette join or dithering after the encoder's post-schedule replan, including a one-slot schedule. | [tests/color/gamut/0068_filter_dag.t](../../../tests/color/gamut/0068_filter_dag.t) ([tests/color/gamut/0068_filter_dag.c](../../../tests/color/gamut/0068_filter_dag.c)) |
 | GM-64 | The packed float32 mapper matches scalar results bit for bit after float storage across named, SMPTE-C and matrix/TRC ICC destinations, three mapping policies, five workspaces and samples on both sides of gamut edges, including signed zero. The scalar reference rereads the completed float plane in a separate pass so loop vectorization cannot forward an unrounded double from input generation. | [tests/color/gamut/0060_float32_scalar_equivalence.t](../../../tests/color/gamut/0060_float32_scalar_equivalence.t) ([tests/color/gamut/0060_float32_scalar_equivalence.c](../../../tests/color/gamut/0060_float32_scalar_equivalence.c)) |
+| GM-65 | Explicit default gamut aim suboptions keep the output of an encode without them. | [tests/cli/dither-options/0044_gamut_target_default_output.t](../../../tests/cli/dither-options/0044_gamut_target_default_output.t) |
+| GM-66 | `diffusion=aim` publishes a nonzero offset for out-of-gamut colors and changes diffusion. | [tests/cli/dither-options/0045_gamut_diffusion_aim_offset.t](../../../tests/cli/dither-options/0045_gamut_diffusion_aim_offset.t) |
+| GM-67 | A LUT aim produces the same output as exact evaluation. | [tests/cli/dither-options/0046_gamut_lut_matches_exact.t](../../../tests/cli/dither-options/0046_gamut_lut_matches_exact.t) |
+| GM-68 | An identity `-U` keeps byte sRGB output unchanged under both aims. | [tests/cli/dither-options/0047_gamut_aim_identity_byte_output.t](../../../tests/cli/dither-options/0047_gamut_aim_identity_byte_output.t) |
+| GM-69 | `samples=shown` alone leaves diffusion on the mapped input. | [tests/cli/dither-options/0048_gamut_samples_keep_diffusion.t](../../../tests/cli/dither-options/0048_gamut_samples_keep_diffusion.t) |
+| GM-70 | Byte error diffusion rejects `diffusion=aim` with a diagnostic. | [tests/cli/dither-options/0049_gamut_aim_rejects_byte_diffusion.t](../../../tests/cli/dither-options/0049_gamut_aim_rejects_byte_diffusion.t) |
+| GM-71 | Byte RGBA alpha-key clustering samples take their aims. | [tests/cli/dither-options/0050_gamut_samples_alpha_key.t](../../../tests/cli/dither-options/0050_gamut_samples_alpha_key.t) |
+| GM-72 | Palette aims clamp an entry outside sRGB to its shown color and keep a representable entry bit for bit. | [tests/color/gamut/0098_palette_aim.t](../../../tests/color/gamut/0098_palette_aim.t) ([tests/color/gamut/0098_palette_aim.c](../../../tests/color/gamut/0098_palette_aim.c)) |
 
 Reference comparisons allow absolute error `3e-5` per canonical linear-sRGB channel for independently rounded matrices and binary-search endpoints. The matrix/TRC ICC case allows `3e-4` for its additional 15.16 colorant quantization; the mapped-centroid checks allow `4e-5` after float storage and workspace conversion. These budgets remain separate from the membership and local-MINDE search tolerances above.
 
@@ -183,3 +246,6 @@ The scalar reference generator and stored vectors are [gamut-reference.py](../..
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | GMQ-01 | Compact and environment suboptions bind the same mapper and emit identical images, with separate sRGB image sanity. | [tests/cli/option-syntax/0083_output_gamut_image_regression.t](../../../tests/cli/option-syntax/0083_output_gamut_image_regression.t) |
+| GMQ-02 | Compact and environment `diffusion` values bind the same aim and emit identical images. | [tests/cli/option-syntax/0092_output_gamut_diffusion_image_regression.t](../../../tests/cli/option-syntax/0092_output_gamut_diffusion_image_regression.t) |
+| GMQ-03 | Compact and environment `samples` values bind the same aim and emit identical images. | [tests/cli/option-syntax/0093_output_gamut_samples_image_regression.t](../../../tests/cli/option-syntax/0093_output_gamut_samples_image_regression.t) |
+| GMQ-04 | Compact and environment `aim_method` values reach the dither and emit identical images. | [tests/cli/option-syntax/0094_output_gamut_aim_method_image_regression.t](../../../tests/cli/option-syntax/0094_output_gamut_aim_method_image_regression.t) |

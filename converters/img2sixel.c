@@ -494,24 +494,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "    provide environment defaults.\n"
     },
     {
-        'Y',
-        "target-color-policy",
-        "-Y POLICY, --target-color-policy=POLICY\n"
-        "    choose the target of dither error and palette clustering:\n"
-        "      source -> the source in -W/-X (default)\n"
-        "      gamut  -> correct colors outside the -U gamut\n"
-        "      full   -> also correct -U encode/interpret mismatch\n"
-        "      auto   -> measure the mismatch, then use gamut or full\n"
-        "    Lookup keeps the source; targets need CPU float32 diffusion.\n"
-        "    :method=exact|lut|auto (:Mvalue), default exact; lut\n"
-        "    interpolates verified in-gamut cells, edges stay exact.\n"
-        "    :lut_size=N (:SN), 5-65, default 33.\n"
-        "    :tolerance=DE (:TDE), Delta E OK 0-0.1, default 0.001.\n"
-        "    SIXEL_TARGET_COLOR_POLICY, SIXEL_TARGET_COLOR_METHOD,\n"
-        "    SIXEL_TARGET_COLOR_LUT_SIZE and SIXEL_TARGET_COLOR_TOLERANCE\n"
-        "    provide environment defaults.\n"
-    },
-    {
         '_',
         "snap-policy",
         "-_ POLICY, --snap-policy=POLICY\n"
@@ -1346,6 +1328,15 @@ static cli_option_help_t const g_option_help_table[] = {
         "         edge-seeker, ray-trace;\n"
         "    SIXEL_OUTPUT_COLORSPACE_GAMUT supplies its default.\n"
         "    mapping needs CPU float and a supported matrix/TRC gamut.\n"
+        "    all: diffusion=input(default)|aim (compact D) diffuses toward\n"
+        "         the shown in-gamut aim of out-of-gamut colors;\n"
+        "         aim needs float32 error diffusion.\n"
+        "    all: samples=mapped(default)|shown (compact S) clusters the\n"
+        "         shown in-gamut aims instead of the mapped samples.\n"
+        "    all: aim_method=exact(default)|lut|auto (compact M) evaluates\n"
+        "         aims directly or through a verified 3D LUT.\n"
+        "    SIXEL_OUTPUT_COLORSPACE_DIFFUSION, _SAMPLES and _AIM_METHOD\n"
+        "    supply their defaults.\n"
         "    Named/ICC destinations use CPU float; ICC snap needs matrix/TRC.\n"
         "      auto[:timeout_ms=N] -> negotiate only with stdout's TTY\n"
         "    auto: timeout_ms=T, decimal 1..10000, default 200 ms per\n"
@@ -1505,6 +1496,21 @@ static cli_env_help_t const g_env_help_table[] = {
         "Output gamut policy: auto (clip), clip, local-minde, edge-seeker,\n"
         "ray-trace.\n"
         "Explicit -U gamut=G overrides this environment default."
+    },
+    {
+        "SIXEL_OUTPUT_COLORSPACE_DIFFUSION",
+        "Output gamut diffusion input: input (default) or aim.\n"
+        "Explicit -U diffusion=D overrides this environment default."
+    },
+    {
+        "SIXEL_OUTPUT_COLORSPACE_SAMPLES",
+        "Output gamut clustering samples: mapped (default) or shown.\n"
+        "Explicit -U samples=S overrides this environment default."
+    },
+    {
+        "SIXEL_OUTPUT_COLORSPACE_AIM_METHOD",
+        "Output gamut aim evaluation: exact (default), lut or auto.\n"
+        "Explicit -U aim_method=M overrides this environment default."
     },
     {
         "SIXEL_OUTPUT_COLORSPACE_ICC_PATH",
@@ -2532,23 +2538,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "Soft dither feedback headroom boundary, 1.0-16.0."
     },
     {
-        "SIXEL_TARGET_COLOR_POLICY",
-        "Target of dither error and clustering: source, gamut, full,\n"
-        "auto. Default source."
-    },
-    {
-        "SIXEL_TARGET_COLOR_METHOD",
-        "Target evaluation: exact, lut, auto. Default exact."
-    },
-    {
-        "SIXEL_TARGET_COLOR_LUT_SIZE",
-        "Target LUT points per axis, 5-65. Default 33."
-    },
-    {
-        "SIXEL_TARGET_COLOR_TOLERANCE",
-        "Target tolerance in Delta E OK, 0-0.1. Default 0.001."
-    },
-    {
         "SIXEL_PALETTE_SNAP_POLICY",
         "Control palette snap target search. Accepts 'reversible' for\n"
         "legacy fixed points or 'nearest'/'auto' for nearby fixed points\n"
@@ -2743,7 +2732,7 @@ static char const g_img2sixel_optstring[] =
     "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:a:_:~:G:j:x:J:y:z:K:"
     "kil:T:t:ugvSn:"
     "PE:U:B:N:A:+:Z:C:D@:"
-    "OVX:W:Y:H%:1:2:3:4:5:";
+    "OVX:W:H%:1:2:3:4:5:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -3758,7 +3747,6 @@ img2sixel_main(int argc, char *argv[])
         {"merge-policy",          required_argument,  &long_opt, 'F'},
         {"cover-policy",          required_argument,  &long_opt, 'a'},
         {"clamp-policy",          required_argument,  &long_opt, '0'},
-        {"target-color-policy",   required_argument,  &long_opt, 'Y'},
         {"snap-policy",           required_argument,  &long_opt, '_'},
         {"mapfile",               required_argument,  &long_opt, 'm'},
         {"mapfile-output",        required_argument,  &long_opt, 'M'},
@@ -4233,7 +4221,6 @@ unknown_option_error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
-            "                 [-Y targetcolorpolicy]\n"
             "                 [-B bgcolor] [-N backgroundpolicy]\n"
             "                 [-A alphapolicy]\n"
             "                 [-+ left,top]\n"

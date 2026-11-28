@@ -33,11 +33,13 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_read_icc(char const *path, sixel_color_def_t **definition);
 
 /* Parse converter syntax and load an owned ICC endpoint transactionally.
- * Common CMS receives bytes only; file I/O and option grammar stay here. */
+ * Common CMS receives bytes only; file I/O and option grammar stay here.
+ * SUBOPTIONS, when not NULL, receives the resolved suboptions without the
+ * borrowed path. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_option_parse(char const *text, int decoder, int *base,
-                         sixel_color_def_t **definition, int *gamut,
-                         int *bpc);
+                         sixel_color_def_t **definition,
+                         sixel_color_file_options_t *suboptions);
 
 #endif
 

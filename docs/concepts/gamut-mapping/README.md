@@ -194,7 +194,7 @@ The diagram describes generated palettes on the CPU float path. The three blue b
 | Point | Input and placement | Why it is needed |
 | --- | --- | --- |
 | A: construction samples | A private clustering view is converted to `-X`, then gamut-mapped before palette construction. | Let the quantizer allocate its limited representatives to achievable target colors. |
-| B: application pixels | The owned float frame completes geometry preprocessing and its planned working-space conversion, then visible pixels are mapped before palette application. A [target color policy](../../encoder/palette-application/target-color-policy.md) other than `source` maps only the diffusion target and leaves lookup on the source. | Ask lookup and dither to reproduce the mapped target, rather than continually compensate for an impossible source color. |
+| B: application pixels | The owned float frame completes geometry preprocessing and its planned working-space conversion, then visible pixels are mapped before palette application. With `-U ...:diffusion=aim`, B is skipped and the mapped color becomes the [aim of diffusion](#aiming-at-what-the-receiver-shows) instead. | Ask lookup and dither to reproduce the mapped target, rather than continually compensate for an impossible source color. |
 | C: application palette | Representatives are mapped after construction, merge, cover and workspace conversion, before output colors are prepared. | A new representative can fall outside the destination even when its input samples fit, especially when operations use nonlinear coordinates. |
 
 Sampling controls which pixels reach A. Adaptive-grid sampling uses the loaded-frame sampling branch; full-frame sampling uses the processed frame from B. The mapper does not move adaptive sampling after resize. A sample already mapped by B normally takes A's in-gamut identity path rather than undergoing another deliberate contraction.
@@ -206,6 +206,55 @@ Inside each mapping call, the implementation temporarily converts the input trip
 The placement is therefore more precise than “map before `-W`.” Mapping already precedes clustering and lookup, but A operates on the `-X` view and B on the preprocessed working view. Changing a coordinate representation is color-preserving; choosing a replacement color is not. Resize and mapping can produce different results when reordered because mapping is nonlinear. The implemented B placement lets resize finish before choosing the application target colors.
 
 Implementation navigation is maintained in the [reference's pipeline section](../../encoder/output/gamut-mapping.md#pipeline-and-policy-boundaries), alongside policy ownership and exact supported-path contracts.
+
+## Aiming at what the receiver shows
+
+Gamut mapping decides which color should replace one that the output cannot show. Error diffusion and palette construction have their own ideas of which color they are trying to reproduce, and by default those ideas still involve the original source. The `-U` suboptions `diffusion=aim` and `samples=shown` let them aim at the color the receiver will actually show instead. This section explains when that matters; the [reference](../../encoder/output/gamut-mapping.md#gamut-aims-for-diffusion-and-clustering) owns the exact contract.
+
+### A debt no palette color can repay
+
+Error diffusion works like a running account. For each pixel it compares the color it wanted with the palette color it chose and passes the difference to the next pixels. A slightly too dark pixel is repaid by slightly brighter neighbors, so the local average matches the source.
+
+That bookkeeping assumes the wanted color can be reached on average. Take the P3 pattern of the earlier example with default `-U srgb`, whose `auto` policy is `clip`. A saturated P3 green has a red channel well below zero in sRGB. The receiver can show at most zero, so every pixel in that region leaves the same debt behind, and the debt never shrinks. The next pixels are pushed toward ever more extreme choices to repay it, which can only land on wrong neighboring colors. The [clamp policy](../../encoder/palette-application/clamp-policy.md) bounds how far the debt grows, but whatever survives the bound still drags the neighbors' colors.
+
+![Two number lines for one channel. In the default row the source lies outside the gamut at 1.25 and the shown palette color at 1.0, so each pixel passes on +0.25. In the diffusion=aim row the goal is the shown aim at 1.0 and nothing is passed on.](figures/aim-feedback.svg)
+
+The **aim** of a color is what the receiver shows for it. A representable color is its own aim. An out-of-gamut color is mapped by the selected `gamut` policy, encoded for `-U`, clamped to the wire range and interpreted back; under `clip` the result is simply the clipped color. With `diffusion=aim`, lookup still reads the original color, but the debt is measured against the aim: only the part of the error that a shown color could repay is passed on.
+
+For the same reason, `diffusion=aim` also replaces palette entries outside the gamut by their aims. Under `clip` a palette representative can itself lie outside sRGB, and the receiver shows its clipped color. Measuring the debt between a shown aim and an unshown palette value would bring the clipped-away difference straight back. Representable entries and the transmitted palette numbers are not changed.
+
+### Spending the palette on shown colors
+
+Palette construction faces a related choice. Under `clip`, point A does not map the clustering samples, so the quantizer places representatives among colors that the receiver cannot show; they are clipped only at output. `samples=shown` replaces each sample by its aim before clustering, so representatives are spent on the colors that will actually appear. Under `local-minde`, `edge-seeker` or `ray-trace`, point A already maps the samples, and their aims differ only by the encode/interpret round trip.
+
+| Pipeline point | Default | With the suboption |
+| --- | --- | --- |
+| A: construction samples | Mapped by the gamut policy; unchanged under `clip` | `samples=shown`: replaced by their aims |
+| B: application pixels | Mapped before lookup | `diffusion=aim`: not mapped; lookup reads the source and diffusion measures against the aim |
+| C: application palette | Mapped by the gamut policy | `diffusion=aim`: entries outside the gamut become their aims |
+
+### What the measurements show
+
+Correcting the debt is not automatically better. Lookup still reads the original color, a different set of choices then repays a smaller debt, and a palette built from clipped samples loses the spread that the original colors gave it. The figure compares the four combinations on the 192 × 96 P3 pattern, encoded for sRGB with `clip`, 64 colors and Floyd–Steinberg diffusion under the fixed encoding flags of this chapter.
+
+![Four decoded images of the P3 hue/lightness pattern and, below each, a heat map of local color error. Mean blurred CIEDE2000 is 1.48 for the default, 1.28 for diffusion=aim, 1.82 for samples=shown and 1.53 for both.](figures/aim-comparison.svg)
+
+Dithering promises a correct local average, not correct single pixels, so the comparison blurs both the decoded image and the shown reference with a Gaussian of σ = 2 pixels in linear light before taking CIEDE2000. The reference is the source clipped to sRGB: the best that the receiver could show with an unlimited palette. The blur radius is a choice for this illustration, not a viewing-distance model or a quality threshold.
+
+| Input | Colors | default | `diffusion=aim` | `samples=shown` | both |
+| --- | --- | --- | --- | --- | --- |
+| P3 pattern, 91.5% outside sRGB | 16 | 4.45 / 16.6 | 4.43 / 19.5 | 4.90 / 24.8 | 4.78 / 24.7 |
+| P3 pattern | 64 | 1.48 / 9.2 | **1.28** / 8.2 | 1.82 / 6.9 | 1.53 / 6.9 |
+| Adobe RGB rose, 20.7% outside sRGB | 16 | 3.38 / 29.2 | 3.41 / 29.5 | 3.33 / 26.5 | 3.32 / 26.2 |
+| Adobe RGB rose | 64 | 1.64 / 15.9 | 1.64 / 18.6 | 1.75 / 21.2 | 1.72 / 22.6 |
+
+Each cell gives the mean and maximum blurred CIEDE2000. Three observations follow:
+
+- `diffusion=aim` helps most where most pixels are out of gamut and the palette has room to represent the shown colors: the 64-color pattern improves its mean by about 14%. With 16 colors or on the photograph the mean changes by about 1%, too little to read as a gain, and some maxima rise.
+- `samples=shown` makes the pattern worse at both sizes. For the rose it lowers the maximum at 16 colors and raises it at 64.
+- No combination wins everywhere, which is why both suboptions default to the existing behavior.
+
+These are two images, one encoder configuration and one metric. They show what the mechanism does, not a recommendation. The exact values, flags and decoded-image hashes are kept in the [aim measurement record](measurements/aims.json).
 
 ## Device gamut, palette reachability and snap are different limits
 
@@ -239,7 +288,7 @@ Photo: [*Rose Nostalgie from Tantau*, Berthold Werner](https://commons.wikimedia
 
 All comparison outputs are encoded sRGB illustrations. A color-managed viewer is needed for meaningful display. The [Adobe RGB rose input](figures/rose-adobe-rgb.png), [P3 hue/lightness PNG](figures/p3-hue-lightness.png) and [P3 red shading PNG](figures/p3-red-shading.png) are provided as input data, not as sRGB previews; their embedded ICC profiles must be honored. None of the sRGB figures claims to show the original out-of-gamut colors. The continuous-color previews use 8-bit sRGB image storage; the JSON retains floating-point coordinates. Browser scaling, screen characteristics and ambient light can make subtle differences harder to see, which is why the first example includes numerical coordinates.
 
-The figures are generated by [plot_gamut_mapping_figures.py](../../../tools/plot_gamut_mapping_figures.py). It compiles [gamut_mapping_samples.c](../../../tools/gamut_mapping_samples.c) against a built static libsixel to call the actual mapper, then runs the built converters for the encoded comparison. It does not carry a second implementation of the mapping algorithms. The continuous `RGB clip` row applies destination-channel bounding directly; it is explicitly not an emulation of the encoder's entire `clip` pipeline.
+The figures are generated by [plot_gamut_mapping_figures.py](../../../tools/plot_gamut_mapping_figures.py). It compiles [gamut_mapping_samples.c](../../../tools/gamut_mapping_samples.c) against a built static libsixel to call the actual mapper, then runs the built converters for the encoded comparison. It does not carry a second implementation of the mapping algorithms; the aim comparison likewise encodes with the built converters and only implements its blur and CIEDE2000 measurement. The continuous `RGB clip` row applies destination-channel bounding directly; it is explicitly not an emulation of the encoder's entire `clip` pipeline.
 
 From a configured and built Autotools tree with the static library and converters, install NumPy, Matplotlib and Pillow into a maintainer Python environment, then run:
 

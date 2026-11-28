@@ -590,25 +590,6 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto soft hard none' -- "${cur}" ) )
     }
 
-    _img2sixel_complete_target_color_policy()
-    {
-        local item prefix candidate
-
-        if [[ ${cur} == *:* ]]; then
-            item="${cur##*:}"
-            prefix="${cur%"${item}"}"
-            for candidate in method= method=exact method=lut method=auto \
-                lut_size= lut_size=17 lut_size=33 lut_size=65 \
-                tolerance= tolerance=0.001 tolerance=0.01 \
-                Mexact Mlut Mauto S33 T0.001; do
-                [[ ${candidate} == ${item}* ]] || continue
-                COMPREPLY+=("${prefix}${candidate}")
-            done
-            return 0
-        fi
-        COMPREPLY=( $( compgen -W 'source gamut full auto' -- "${cur}" ) )
-    }
-
     _img2sixel_complete_snap_policy()
     {
         local base item key value prefix candidate candidates
@@ -819,10 +800,6 @@ _img2sixel()
         ;;
     -0|--clamp-policy)
         _img2sixel_complete_clamp_policy
-        return 0
-        ;;
-    -Y|--target-color-policy)
-        _img2sixel_complete_target_color_policy
         return 0
         ;;
     '-_'|--snap-policy)
@@ -1088,7 +1065,14 @@ _img2sixel()
                         ${color_prefix}gamut=edge-seeker
                         ${color_prefix}Gedge-seeker
                         ${color_prefix}gamut=ray-trace
-                        ${color_prefix}Gray-trace"
+                        ${color_prefix}Gray-trace
+                        ${color_prefix}diffusion=input
+                        ${color_prefix}diffusion=aim ${color_prefix}Daim
+                        ${color_prefix}samples=mapped
+                        ${color_prefix}samples=shown ${color_prefix}Sshown
+                        ${color_prefix}aim_method=exact
+                        ${color_prefix}aim_method=lut ${color_prefix}Mlut
+                        ${color_prefix}aim_method=auto ${color_prefix}Mauto"
             case ${cur%%:*} in
             [iI]|[iI][cC]|[iI][cC][cC])
                 color_prefix=${cur%:*}:
@@ -1154,7 +1138,6 @@ _img2sixel()
                                    -F --merge-policy \
                                    -a --cover-policy \
                                    -0 --clamp-policy \
-                                   -Y --target-color-policy \
                                    -_ --snap-policy \
                                    -m --mapfile \
                                    -M --mapfile-output \

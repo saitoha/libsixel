@@ -609,23 +609,6 @@ typedef int SIXELSTATUS;
                                                 */
 #define SIXEL_OPTFLAG_CLAMP_POLICY     ('0')  /* -0, --clamp-policy:
                                                   dither error limiting */
-#define SIXEL_OPTFLAG_TARGET_COLOR_POLICY ('Y')  /*
-                                                  -Y POLICY,
-                                                  --target-color-policy=POLICY:
-                                                  target colors for dither
-                                                  error and clustering:
-                                                    source (default), gamut,
-                                                    full, auto
-                                                  suboptions:
-                                                    method (or Mvalue):
-                                                      exact (default), lut,
-                                                      auto
-                                                    lut_size (or Svalue):
-                                                      5..65 (default 33)
-                                                    tolerance (or Tvalue):
-                                                      Delta E OK 0..0.1
-                                                      (default 0.001)
-                                                */
 #define SIXEL_OPTFLAG_SNAP_POLICY       ('_')  /*
                                                   -_ POLICY,
                                                   --snap-policy=POLICY:

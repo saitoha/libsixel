@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "scope": "Illustrative encodings, not independent test expectations",
+  "destination": "srgb",
+  "gamut": "clip (default)",
+  "flags": [
+    "--threading-policy=greedy:global_budget=1",
+    "-.float32",
+    "-L",
+    "builtin:cms_engine=builtin:cms_target=srgb-linear:prefer_8bit=0!",
+    "-Q",
+    "kmeans:seed=1",
+    "-X",
+    "oklab",
+    "-W",
+    "oklab",
+    "--sampling-policy=full-frame",
+    "--binning-policy=none",
+    "-F",
+    "none",
+    "-a",
+    "off",
+    "-_",
+    "none",
+    "-~",
+    "none",
+    "-0",
+    "soft",
+    "-t",
+    "rgb",
+    "-=",
+    "balanced:B2"
+  ],
+  "dither": "fs",
+  "metric": "CIEDE2000 between Gaussian-blurred linear-light output and the blurred shown clip of the source",
+  "blur_sigma_px": 2.0,
+  "versions": {
+    "numpy": "2.2.6",
+    "matplotlib": "3.10.5",
+    "pillow": "12.2.0"
+  },
+  "implementation_sources": {
+    "src/target-color.c": "7a9df632001f5875c6c07b6c09cab9a5ca59982df6580962a6196b4920b600ac",
+    "src/dither.c": "19b176bdbda306cf81be74d6321d155e1659edde4bd2a69c13bc52e9bf08d3e9",
+    "src/encoder.c": "0a06d1fba0734c68efc78ac5a61c22217b1f9c0364ea6ab31c048f4290ca8b06",
+    "src/palette.c": "6bbcb21c1aa41f969f4b70cc44517963708102fa149466ade6993df6593103b0"
+  },
+  "outside_fraction": {
+    "p3-hue-lightness": 0.9152,
+    "rose-adobe-rgb": 0.2072
+  },
+  "results": [
+    {
+      "image": "p3-hue-lightness",
+      "colors": 16,
+      "variant": "default",
+      "output_colorspace": "srgb",
+      "blurred_delta_e00_mean": 4.449,
+      "blurred_delta_e00_max": 16.57,
+      "blurred_delta_e00_mean_outside": 4.405,
+      "decoded_rgb_sha256": "8c140d48de52a34a0d3114b0f5376ad5d33b96d54ca1baabc664bc9cf30d86de"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 16,
+      "variant": "diffusion=aim",
+      "output_colorspace": "srgb:diffusion=aim",
+      "blurred_delta_e00_mean": 4.425,
+      "blurred_delta_e00_max": 19.54,
+      "blurred_delta_e00_mean_outside": 4.382,
+      "decoded_rgb_sha256": "36dbeac651073e25a9e9216714cca265df761647e8f7f536c6a62338220de058"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 16,
+      "variant": "samples=shown",
+      "output_colorspace": "srgb:samples=shown",
+      "blurred_delta_e00_mean": 4.904,
+      "blurred_delta_e00_max": 24.75,
+      "blurred_delta_e00_mean_outside": 4.898,
+      "decoded_rgb_sha256": "b5af32d30b419efd4c9289dfdc72d49409d1859c7e87c6a54400b8ec9d664583"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 16,
+      "variant": "both",
+      "output_colorspace": "srgb:diffusion=aim:samples=shown",
+      "blurred_delta_e00_mean": 4.782,
+      "blurred_delta_e00_max": 24.71,
+      "blurred_delta_e00_mean_outside": 4.764,
+      "decoded_rgb_sha256": "4b7c0d5f5595b8a78c7e5889a3b44cd3ad62b6f312f14f56cb94ae9fe139c345"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 64,
+      "variant": "default",
+      "output_colorspace": "srgb",
+      "blurred_delta_e00_mean": 1.483,
+      "blurred_delta_e00_max": 9.15,
+      "blurred_delta_e00_mean_outside": 1.417,
+      "decoded_rgb_sha256": "8b2e205002ee3958e991efb39d0659e37c3c41aba65b880cda686cf4b19e38f1"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 64,
+      "variant": "diffusion=aim",
+      "output_colorspace": "srgb:diffusion=aim",
+      "blurred_delta_e00_mean": 1.278,
+      "blurred_delta_e00_max": 8.15,
+      "blurred_delta_e00_mean_outside": 1.201,
+      "decoded_rgb_sha256": "167fd105a0d9d6e19bacf45e2c3904e8cec90c35be89acc9e7c3b0faac115965"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 64,
+      "variant": "samples=shown",
+      "output_colorspace": "srgb:samples=shown",
+      "blurred_delta_e00_mean": 1.816,
+      "blurred_delta_e00_max": 6.9,
+      "blurred_delta_e00_mean_outside": 1.77,
+      "decoded_rgb_sha256": "c43174c2f9f0a2d65e16210c1dea695e2a97efe118607aac6c4621837303bbb2"
+    },
+    {
+      "image": "p3-hue-lightness",
+      "colors": 64,
+      "variant": "both",
+      "output_colorspace": "srgb:diffusion=aim:samples=shown",
+      "blurred_delta_e00_mean": 1.531,
+      "blurred_delta_e00_max": 6.9,
+      "blurred_delta_e00_mean_outside": 1.458,
+      "decoded_rgb_sha256": "5f6b84ae7d1ecf62f7bc1152db3453dfff65a4af7b53c94db96086e883c94a02"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 16,
+      "variant": "default",
+      "output_colorspace": "srgb",
+      "blurred_delta_e00_mean": 3.375,
+      "blurred_delta_e00_max": 29.19,
+      "blurred_delta_e00_mean_outside": 3.774,
+      "decoded_rgb_sha256": "86e8447247f97cdfaac2a99be0e7ffb021c08cb61c1b1efff6dff1a829a369a3"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 16,
+      "variant": "diffusion=aim",
+      "output_colorspace": "srgb:diffusion=aim",
+      "blurred_delta_e00_mean": 3.409,
+      "blurred_delta_e00_max": 29.51,
+      "blurred_delta_e00_mean_outside": 3.763,
+      "decoded_rgb_sha256": "5445ce0cd0aa88d0592e92dce7e5f4aac6c78b2adbd5646a9722b4b8dc7b3a07"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 16,
+      "variant": "samples=shown",
+      "output_colorspace": "srgb:samples=shown",
+      "blurred_delta_e00_mean": 3.327,
+      "blurred_delta_e00_max": 26.52,
+      "blurred_delta_e00_mean_outside": 3.946,
+      "decoded_rgb_sha256": "611a48c920e495b09517dfaec20ffe43308014eba765e06b649ce380abc19e1f"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 16,
+      "variant": "both",
+      "output_colorspace": "srgb:diffusion=aim:samples=shown",
+      "blurred_delta_e00_mean": 3.321,
+      "blurred_delta_e00_max": 26.21,
+      "blurred_delta_e00_mean_outside": 3.943,
+      "decoded_rgb_sha256": "993e224a683632d48f7db375062d4857c65d3c61ecfe0b2066d4959481d77af0"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 64,
+      "variant": "default",
+      "output_colorspace": "srgb",
+      "blurred_delta_e00_mean": 1.638,
+      "blurred_delta_e00_max": 15.86,
+      "blurred_delta_e00_mean_outside": 1.664,
+      "decoded_rgb_sha256": "a7a0d6b0c9bb22b9c641a73b1cfb604acd0fcdf15343a8ac73a230cfcf1ec1e4"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 64,
+      "variant": "diffusion=aim",
+      "output_colorspace": "srgb:diffusion=aim",
+      "blurred_delta_e00_mean": 1.636,
+      "blurred_delta_e00_max": 18.55,
+      "blurred_delta_e00_mean_outside": 1.654,
+      "decoded_rgb_sha256": "9adb0ae376d00038b4780b297f16fa601f38e05bb7d4c7cbff04fa109e657436"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 64,
+      "variant": "samples=shown",
+      "output_colorspace": "srgb:samples=shown",
+      "blurred_delta_e00_mean": 1.75,
+      "blurred_delta_e00_max": 21.18,
+      "blurred_delta_e00_mean_outside": 1.827,
+      "decoded_rgb_sha256": "15c2b0682ea5f5514f98e1510c9e9e50b466bb2869708e510b4bffdcac0f505b"
+    },
+    {
+      "image": "rose-adobe-rgb",
+      "colors": 64,
+      "variant": "both",
+      "output_colorspace": "srgb:diffusion=aim:samples=shown",
+      "blurred_delta_e00_mean": 1.723,
+      "blurred_delta_e00_max": 22.57,
+      "blurred_delta_e00_mean_outside": 1.788,
+      "decoded_rgb_sha256": "934e63857f04c284e1d80d3ec10ae207a18ae671bec49eb4391d36a14121ba64"
+    }
+  ]
+}

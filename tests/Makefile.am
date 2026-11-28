@@ -1652,6 +1652,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0066_PIPELINE_FALLBACK \
     -DBUILD_TEST_0067_PIPELINE_MASK \
     -DBUILD_TEST_0068_FILTER_DAG \
+    -DBUILD_TEST_0098_PALETTE_AIM \
     -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
     -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
     -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
@@ -7324,6 +7325,7 @@ test_runner_SOURCES = \
     color/gamut/0056_ray_geometry.c \
     color/gamut/0065_pipeline_overlap.c \
     color/gamut/0068_filter_dag.c \
+    color/gamut/0098_palette_aim.c \
     color/gamut/0027_edge_matrix_icc.c \
     _support/processing/gamut/gamut_encode_common.h \
     _support/quant/palette/destination_snap/0001_destination.c \

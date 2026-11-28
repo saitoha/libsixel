@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify that a gamut-stage target LUT matches exact evaluation.
-# Policy: docs/encoder/palette-application/target-color-policy.md
+# Verify that a gamut aim LUT matches exact evaluation.
+# Policy: docs/encoder/output/gamut-mapping.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,15 +15,15 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 data="${TOP_SRCDIR}/tests/data/color-numeric"
 # Display P3 primaries lie outside the default sRGB -U gamut.
 p3_image="${data}/cg-expanded-p3-binary.png"
-out="${ARTIFACT_LOCAL_DIR}/0046-target-$$"
+out="${ARTIFACT_LOCAL_DIR}/0046-gamut-aim-$$"
 
 # In-gamut LUT nodes carry zero offsets and boundaries stay exact.
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Ygamut -dfs -p4 "${p3_image}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -U srgb:Daim -dfs -p4 "${p3_image}" \
     >"${out}-gamut.six" || {
     printf '\n%s\n' "not ok 1 - exact gamut conversion failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Ygamut:Mlut:S5 -dfs -p4 "${p3_image}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -U srgb:Daim:Mlut -dfs -p4 "${p3_image}" \
     >"${out}-gamut_lut.six" || {
     printf '\n%s\n' "not ok 1 - gamut LUT conversion failed"
     exit 0

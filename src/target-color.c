@@ -49,10 +49,6 @@
  * and matrix pairs can straddle a code boundary by a few ulps. */
 #define SIXEL_TARGET_COLOR_CODE_EPSILON 2e-7
 
-/* Auto probes the encode/interpret pair on this many codes per axis. */
-#define SIXEL_TARGET_COLOR_PROBE 9
-
-#define SIXEL_TARGET_COLOR_CACHE 8
 
 struct sixel_target_color {
     sixel_allocator_t *allocator;
@@ -61,7 +57,6 @@ struct sixel_target_color {
     int builtin_space;
     sixel_gamut_t *gamut;         /* NULL selects wire-code clipping */
     sixel_target_color_options_t options;
-    signed char resolved[SIXEL_TARGET_COLOR_CACHE];
 };
 
 typedef struct sixel_target_color_lut {
@@ -134,9 +129,10 @@ sixel_target_color_inside(double const codes[3])
     return 1;
 }
 
-/* Evaluate one triplet. INSIDE reports gamut membership of the source. */
+/* Evaluate the aim of one triplet. INSIDE reports gamut membership of the
+ * input. */
 static int
-sixel_target_color_eval(sixel_target_color_t const *target, int policy,
+sixel_target_color_eval(sixel_target_color_t const *target,
                         double const input[3], double output[3],
                         int colorspace, int *inside)
 {
@@ -154,8 +150,8 @@ sixel_target_color_eval(sixel_target_color_t const *target, int policy,
     if (inside != NULL) {
         *inside = member;
     }
-    if (member && policy == SIXEL_TARGET_COLOR_POLICY_GAMUT) {
-        /* Gamut-only correction keeps representable colors bit-exact. */
+    if (member) {
+        /* A representable color is its own aim, bit for bit. */
         memcpy(output, input, sizeof(result));
         return 1;
     }
@@ -216,14 +212,15 @@ sixel_target_color_new(sixel_target_color_t **out,
         return SIXEL_BAD_ARGUMENT;
     }
     *out = NULL;
-    if (options->policy < SIXEL_TARGET_COLOR_POLICY_SOURCE ||
-            options->policy > SIXEL_TARGET_COLOR_POLICY_AUTO ||
+    if (options->aim < SIXEL_TARGET_COLOR_AIM_SOURCE ||
+            options->aim > SIXEL_TARGET_COLOR_AIM_GAMUT ||
+            options->cluster < SIXEL_TARGET_COLOR_CLUSTER_SOURCE ||
+            options->cluster > SIXEL_TARGET_COLOR_CLUSTER_GAMUT ||
             options->method < SIXEL_TARGET_COLOR_METHOD_EXACT ||
             options->method > SIXEL_TARGET_COLOR_METHOD_AUTO ||
             options->lut_size < SIXEL_TARGET_COLOR_LUT_SIZE_MIN ||
             options->lut_size > SIXEL_TARGET_COLOR_LUT_SIZE_MAX ||
-            !(options->tolerance >= 0.0) ||
-            options->tolerance > SIXEL_TARGET_COLOR_TOLERANCE_MAX) {
+            !(options->tolerance >= 0.0)) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (output_icc == NULL && output_definition == SIXEL_NAMED_COLOR_SRGB &&
@@ -240,7 +237,6 @@ sixel_target_color_new(sixel_target_color_t **out,
     sixel_allocator_ref(allocator);
     target->options = *options;
     target->builtin_space = output_colorspace;
-    memset(target->resolved, -1, sizeof(target->resolved));
     status = SIXEL_BAD_ALLOCATION;
     if (output_icc != NULL || output_definition != SIXEL_NAMED_COLOR_SRGB) {
         /* Named and ICC destinations use the device definition exactly as
@@ -330,65 +326,20 @@ sixel_target_color_free(sixel_target_color_t *target)
     sixel_allocator_unref(allocator);
 }
 
-/* Measure what the gamut stage leaves uncorrected. Two probes are needed:
- * receiver colors (interpreted -U codes) expose pairs that do not
- * round-trip inside the -U gamut, and source colors (an sRGB grid) whose
- * codes land inside [0,1] expose encoders that collapse or clip inside
- * the device transform, where the code range cannot see it. Colors whose
- * codes leave [0,1] are corrected by both stages and must not decide. */
-static int
-sixel_target_color_measure(sixel_target_color_t const *target,
-                           int colorspace, double *maximum)
+void
+sixel_target_color_get_axes(sixel_target_color_t const *target,
+                            sixel_target_color_axes_t *axes)
 {
-    double grid[3];
-    double color[3];
-    double result[3];
-    double delta;
-    int probe;
-    int inside;
-    int r;
-    int g;
-    int b;
-    int last;
-
-    last = SIXEL_TARGET_COLOR_PROBE - 1;
-    *maximum = 0.0;
-    for (probe = 0; probe < 2; ++probe) {
-        for (r = 0; r <= last; ++r) {
-            for (g = 0; g <= last; ++g) {
-                for (b = 0; b <= last; ++b) {
-                    grid[0] = (double)r / last;
-                    grid[1] = (double)g / last;
-                    grid[2] = (double)b / last;
-                    if (probe == 0
-                            ? !sixel_target_color_interpret(target, grid,
-                                                            color,
-                                                            colorspace)
-                            : !sixel_color_convert(color, grid,
-                                                   SIXEL_COLORSPACE_SRGB,
-                                                   colorspace)) {
-                        return 0;
-                    }
-                    if (!sixel_target_color_eval(target,
-                            SIXEL_TARGET_COLOR_POLICY_FULL, color, result,
-                            colorspace, &inside)) {
-                        return 0;
-                    }
-                    if (probe == 1 && !inside) {
-                        continue;
-                    }
-                    if (!sixel_target_color_delta_e(color, result,
-                                                    colorspace, &delta)) {
-                        return 0;
-                    }
-                    if (delta > *maximum) {
-                        *maximum = delta;
-                    }
-                }
-            }
-        }
+    if (axes == NULL) {
+        return;
     }
-    return 1;
+    if (target == NULL) {
+        axes->aim = SIXEL_TARGET_COLOR_AIM_SOURCE;
+        axes->cluster = SIXEL_TARGET_COLOR_CLUSTER_SOURCE;
+        return;
+    }
+    axes->aim = target->options.aim;
+    axes->cluster = target->options.cluster;
 }
 
 void
@@ -406,64 +357,6 @@ sixel_target_color_is_identity(sixel_target_color_t const *target,
 {
     return target != NULL && target->device == NULL &&
         target->builtin_space == colorspace;
-}
-
-SIXELSTATUS
-sixel_target_color_resolve(sixel_target_color_t *target, int colorspace,
-                           int *policy)
-{
-    double maximum;
-    int resolved;
-
-    if (target == NULL || policy == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (target->options.policy != SIXEL_TARGET_COLOR_POLICY_AUTO) {
-        *policy = target->options.policy;
-        return SIXEL_OK;
-    }
-    if (colorspace >= 0 && colorspace < SIXEL_TARGET_COLOR_CACHE &&
-            target->resolved[colorspace] >= 0) {
-        *policy = target->resolved[colorspace];
-        return SIXEL_OK;
-    }
-    if (sixel_target_color_is_identity(target, colorspace)) {
-        /* Identical definitions have no encode/interpret deviation. */
-        resolved = SIXEL_TARGET_COLOR_POLICY_GAMUT;
-    } else if (!sixel_target_color_measure(target, colorspace, &maximum)) {
-        /* A pair that cannot even round-trip its own codes is corrected
-         * exactly rather than assumed to be an identity. */
-        resolved = SIXEL_TARGET_COLOR_POLICY_FULL;
-    } else {
-        resolved = maximum <= target->options.tolerance
-            ? SIXEL_TARGET_COLOR_POLICY_GAMUT
-            : SIXEL_TARGET_COLOR_POLICY_FULL;
-    }
-    if (colorspace >= 0 && colorspace < SIXEL_TARGET_COLOR_CACHE) {
-        target->resolved[colorspace] = (signed char)resolved;
-    }
-    *policy = resolved;
-    return SIXEL_OK;
-}
-
-int
-sixel_target_color_apply(sixel_target_color_t const *target, int policy,
-                         double const input[3], double output[3],
-                         int colorspace)
-{
-    if (target == NULL || input == NULL || output == NULL) {
-        return 0;
-    }
-    if (policy == SIXEL_TARGET_COLOR_POLICY_SOURCE) {
-        memcpy(output, input, 3u * sizeof(double));
-        return 1;
-    }
-    if (policy != SIXEL_TARGET_COLOR_POLICY_GAMUT &&
-            policy != SIXEL_TARGET_COLOR_POLICY_FULL) {
-        return 0;
-    }
-    return sixel_target_color_eval(target, policy, input, output,
-                                   colorspace, NULL);
 }
 
 static size_t
@@ -497,14 +390,14 @@ sixel_target_color_lut_dispose(sixel_target_color_t const *target,
 /*
  * Build a LUT over the bounding box of the visible source. A cell is used
  * only when its eight corners and its center lie inside the -U gamut and
- * the trilinear target at the center agrees with the exact target within
- * the tolerance. Every other cell, and therefore every gamut boundary,
- * falls back to exact evaluation. Under the gamut policy every usable node
- * has a zero offset, so the LUT reduces to a verified membership cache.
+ * the trilinear aim at the center agrees with the exact aim within the
+ * tolerance. Every other cell, and therefore every gamut boundary, falls
+ * back to exact evaluation. A color inside the gamut is its own aim, so
+ * every usable node has a zero offset and the LUT is a verified membership
+ * cache that saves the per-pixel encode.
  */
 static SIXELSTATUS
 sixel_target_color_lut_build(sixel_target_color_t const *target,
-                             int policy,
                              float const *pixels, size_t count,
                              int colorspace, unsigned char const *hidden,
                              size_t hidden_count,
@@ -576,7 +469,7 @@ sixel_target_color_lut_build(sixel_target_color_t const *target,
                 node[1] = lut->lo[1] + lut->step[1] * g;
                 node[2] = lut->lo[2] + lut->step[2] * b;
                 inside = 0;
-                ok = sixel_target_color_eval(target, policy, node, result,
+                ok = sixel_target_color_eval(target, node, result,
                                              colorspace, &inside);
                 /* A box corner may be a nonphysical color. It only
                  * disables interpolation for the cells that touch it. */
@@ -610,7 +503,7 @@ sixel_target_color_lut_build(sixel_target_color_t const *target,
                 node[1] = lut->lo[1] + lut->step[1] * (g + 0.5);
                 node[2] = lut->lo[2] + lut->step[2] * (b + 0.5);
                 inside = 0;
-                if (!sixel_target_color_eval(target, policy, node, result,
+                if (!sixel_target_color_eval(target, node, result,
                                              colorspace, &inside) ||
                         !inside) {
                     continue;
@@ -692,7 +585,6 @@ sixel_target_color_run(sixel_target_color_t *target,
     double offset[3];
     size_t nodes;
     size_t i;
-    int policy;
     int use_lut;
     int c;
 
@@ -706,31 +598,20 @@ sixel_target_color_run(sixel_target_color_t *target,
     if (nonzero != NULL) {
         *nonzero = 0;
     }
-    status = sixel_target_color_resolve(target, colorspace, &policy);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    if (policy == SIXEL_TARGET_COLOR_POLICY_SOURCE) {
-        if (write_offset && count != 0u) {
-            memset(output, 0, count * 3u * sizeof(float));
-        }
-        return SIXEL_OK;
-    }
     memset(&lut, 0, sizeof(lut));
     nodes = (size_t)target->options.lut_size *
         (size_t)target->options.lut_size * (size_t)target->options.lut_size;
-    /* Gamut-only correction still pays one encode per pixel to test
-     * membership, so both stages honor the method. */
+    /* The aim still pays one encode per pixel to test membership. */
     use_lut = target->options.method == SIXEL_TARGET_COLOR_METHOD_LUT ||
         (target->options.method == SIXEL_TARGET_COLOR_METHOD_AUTO &&
          count / 4u > nodes);
     if (use_lut) {
-        status = sixel_target_color_lut_build(target, policy, pixels,
+        status = sixel_target_color_lut_build(target, pixels,
             count, colorspace, hidden, hidden_count, &lut);
         if (SIXEL_FAILED(status)) {
             if (status == SIXEL_BAD_INPUT) {
                 sixel_helper_set_additional_message(
-                    "target color: nonfinite source sample.");
+                    "gamut aim: nonfinite source sample.");
             }
             return status;
         }
@@ -753,10 +634,10 @@ sixel_target_color_run(sixel_target_color_t *target,
             for (c = 0; c < 3; ++c) {
                 result[c] = source[c] + offset[c];
             }
-        } else if (!sixel_target_color_eval(target, policy, source,
-                                            result, colorspace, NULL)) {
+        } else if (!sixel_target_color_eval(target, source, result,
+                                            colorspace, NULL)) {
             sixel_helper_set_additional_message(
-                "target color: cannot evaluate the -U target "
+                "gamut aim: cannot evaluate the -U aim "
                 "for a source color.");
             status = SIXEL_BAD_INPUT;
             break;
@@ -769,7 +650,7 @@ sixel_target_color_run(sixel_target_color_t *target,
         }
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "target color: target leaves the float32 range.");
+                "gamut aim: aim leaves the float32 range.");
             break;
         }
         for (c = 0; c < 3; ++c) {

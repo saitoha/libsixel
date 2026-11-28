@@ -578,7 +578,6 @@ SIXEL_OPTFLAG_BINNING_POLICY  = '5'  # -5 POLICY, --binning-policy=POLICY
 SIXEL_OPTFLAG_MERGE_POLICY    = 'F'  # -F POLICY, --merge-policy=POLICY
 SIXEL_OPTFLAG_COVER_POLICY    = 'a'  # -a POLICY, --cover-policy=POLICY
 SIXEL_OPTFLAG_CLAMP_POLICY    = '0'  # -0 POLICY, --clamp-policy=POLICY
-SIXEL_OPTFLAG_TARGET_COLOR_POLICY = 'Y'  # -Y POLICY, --target-color-policy=POLICY
 SIXEL_OPTFLAG_SNAP_POLICY     = '_'  # -_ POLICY, --snap-policy=POLICY
 SIXEL_OPTFLAG_BACKGROUND_POLICY = 'N'  # -N POLICY, --background-policy=POLICY
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:

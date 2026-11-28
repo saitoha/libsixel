@@ -224,7 +224,6 @@ final class Constants
     public const SIXEL_OPTFLAG_MERGE_POLICY = 'F';
     public const SIXEL_OPTFLAG_COVER_POLICY = 'a';
     public const SIXEL_OPTFLAG_CLAMP_POLICY = '0';
-    public const SIXEL_OPTFLAG_TARGET_COLOR_POLICY = 'Y';
     public const SIXEL_OPTFLAG_SNAP_POLICY = '_';
     public const SIXEL_OPTFLAG_CROP = 'c';
     public const SIXEL_OPTFLAG_WIDTH = 'w';

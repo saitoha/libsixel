@@ -192,7 +192,6 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_TERMINAL_POLICY,
     SIXEL_OPTION_SCHEMA_COLORSYNC_NATIVE_GAMMA,
     SIXEL_OPTION_SCHEMA_CLAMP_POLICY,
-    SIXEL_OPTION_SCHEMA_TARGET_COLOR_POLICY,
     SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
     SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE,
     SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE,
@@ -568,6 +567,11 @@ typedef struct sixel_color_file_options {
     int path_override;
     int gamut;
     int bpc;
+    /* Output only: where the gamut replacement is used. Zero keeps the
+     * mapped lookup input, mapped clustering samples and exact aims. */
+    int diffusion;
+    int samples;
+    int aim_method;
 } sixel_color_file_options_t;
 
 typedef struct sixel_clipboard_policy_options {

@@ -40,6 +40,14 @@ sixel_palette_map_gamut(sixel_palette_t *palette,
                         struct sixel_gamut const *mapper, int colorspace,
                         int pixelformat);
 
+/* Replace every application entry by its -U gamut aim. A representable
+ * entry is retained bit for bit; NULL target is a no-op. */
+struct sixel_target_color;
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_map_aim(sixel_palette_t *palette,
+                      struct sixel_target_color *target, int colorspace,
+                      int pixelformat);
+
 struct sixel_final_merge_cluster;
 typedef struct sixel_final_merge_cluster sixel_final_merge_cluster_t;
 

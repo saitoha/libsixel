@@ -593,40 +593,6 @@ The threshold is accepted but inactive with hard and none.
 provide defaults. Explicit options take precedence. A repeated option
 resets its suboptions before applying environment defaults again.
 .TP 5
-.B \-Y \fIPOLICY\fP, \-\-target\-color\-policy=\fIPOLICY\fP
-choose the target color of error diffusion and palette clustering.
-Palette lookup always consumes the source in \fB-W\fP; the target is the
-color the \fB-U\fP receiver reproduces for that source, taken back to
-\fB-W\fP (or to \fB-X\fP for clustering samples).
-Values are \fBsource\fP (default; no correction), \fBgamut\fP (correct
-colors outside the \fB-U\fP gamut through the selected \fB-U gamut=\fP
-mapper or wire-code clipping), \fBfull\fP (also correct encode/interpret
-pairs that are not exact inverses, such as ICC A2B/B2A asymmetry or
-approximated TRC inverses) and \fBauto\fP (measure that mismatch and use
-\fBgamut\fP when it stays within the tolerance, otherwise \fBfull\fP).
-Wire quantization is not part of the target.
-.br
-A target other than \fBsource\fP requires CPU float32 error diffusion with
-one of the error-diffusion kernels; \fB--precision-policy=8bit\fP and a
-forced GPU application report an error. Dither methods without error
-diffusion keep only the clustering target.
-.br
-Suboption \fBmethod\fP (short form \fBM\fIVALUE\fP) selects
-\fBexact\fP (default; per-pixel transforms), \fBlut\fP (a 3D LUT over the
-visible source bounds) or \fBauto\fP (LUT when pixels outnumber four times
-its nodes). A LUT cell is interpolated only when its corners and center
-lie inside the \fB-U\fP gamut and the center agrees with the exact target
-within the tolerance; all other pixels, including every gamut boundary,
-are evaluated exactly.
-Suboption \fBlut_size\fP (short form \fBS\fIN\fP) sets 5 through 65
-points per axis; default 33. Suboption \fBtolerance\fP (short form
-\fBT\fIDE\fP) sets the Delta E OK bound from 0 through 0.1; default 0.001.
-.br
-\fBSIXEL_TARGET_COLOR_POLICY\fP, \fBSIXEL_TARGET_COLOR_METHOD\fP,
-\fBSIXEL_TARGET_COLOR_LUT_SIZE\fP and \fBSIXEL_TARGET_COLOR_TOLERANCE\fP
-provide defaults. Explicit options take precedence. A repeated option
-resets its suboptions before applying environment defaults again.
-.TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
 and palette files in Adobe Color Table (*.act), JASC/RIFF PAL (*.pal),
@@ -1653,6 +1619,21 @@ Mapping does not enable palette snap
 or limit diffusion compensation. Explicit mapping also applies after
 CLI auto resolves the destination.
 .PP
+All output spaces also accept diffusion=input|aim (compact D),
+samples=mapped|shown (compact S) and aim_method=exact|lut|auto (compact M).
+The gamut aim of a color inside the destination gamut is the color itself;
+an out-of-gamut color aims at the mapped color as the output codes show it.
+Diffusion=aim adds the difference between the aim and the source to the
+diffused error, so neighboring pixels compensate for the gamut error; it
+requires float32 error diffusion, replaces the gamut mapping before lookup and
+replaces out-of-gamut palette entries by their shown colors.
+Samples=shown clusters the aims instead of the mapped samples.
+Aim_method=lut evaluates aims through a verified 3D LUT;
+auto selects lut when the image has more than four pixels per LUT node.
+The defaults input, mapped and exact keep the mapping described above.
+SIXEL_OUTPUT_COLORSPACE_DIFFUSION, SIXEL_OUTPUT_COLORSPACE_SAMPLES and
+SIXEL_OUTPUT_COLORSPACE_AIM_METHOD supply the defaults.
+.PP
 .br
 \fICOLORSPACE\fP is one of them:
 .br
@@ -1950,6 +1931,18 @@ library terminal-discovery policy.
 .B SIXEL_OUTPUT_COLORSPACE_GAMUT
 Default for the -U gamut=G suboption: auto (clip), clip, local-minde,
 edge-seeker or ray-trace.
+Explicit -U tuning overrides it.
+.TP
+.B SIXEL_OUTPUT_COLORSPACE_DIFFUSION
+Default for the -U diffusion=D suboption: input or aim.
+Explicit -U tuning overrides it.
+.TP
+.B SIXEL_OUTPUT_COLORSPACE_SAMPLES
+Default for the -U samples=S suboption: mapped or shown.
+Explicit -U tuning overrides it.
+.TP
+.B SIXEL_OUTPUT_COLORSPACE_AIM_METHOD
+Default for the -U aim_method=M suboption: exact, lut or auto.
 Explicit -U tuning overrides it.
 .TP 5
 .B SIXEL_OUTPUT_COLORSPACE_ICC_PATH
@@ -2868,19 +2861,6 @@ The \fB-0\fP option takes precedence.
 .B SIXEL_DITHER_CLAMP_THRESHOLD
 Default soft headroom factor, from 1 through 16; default 1.01.
 An explicit \fB-0 soft:threshold=FACTOR\fP takes precedence.
-.TP 5
-.B SIXEL_TARGET_COLOR_POLICY
-Default target color policy: source, gamut, full or auto.
-The \fB-Y\fP option takes precedence.
-.TP 5
-.B SIXEL_TARGET_COLOR_METHOD
-Default target evaluation method: exact, lut or auto.
-.TP 5
-.B SIXEL_TARGET_COLOR_LUT_SIZE
-Default target LUT points per axis, from 5 through 65; default 33.
-.TP 5
-.B SIXEL_TARGET_COLOR_TOLERANCE
-Default target tolerance in Delta E OK, from 0 through 0.1; default 0.001.
 .TP 5
 .B SIXEL_PALETTE_SNAP_POLICY
 .br

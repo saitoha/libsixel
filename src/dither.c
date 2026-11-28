@@ -4454,6 +4454,7 @@ sixel_dither_apply_palette(
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
     int target_needed = 0;
+    sixel_target_color_axes_t target_axes;
     int target_nonzero = 0;
     float *target_offset = NULL;
     float *target_pixels = NULL;
@@ -4659,8 +4660,11 @@ sixel_dither_apply_palette(
     float_backend_available =
         sixel_dither_method_supports_float_pipeline(dither);
     /* Byte sources are bounded gamma sRGB. With the same -U definition
-     * their target is the source itself, so the byte path is kept. */
+     * they are their own aim, so the byte path is kept. A cluster-only
+     * policy leaves diffusion on the source. */
+    sixel_target_color_get_axes(dither->target_color, &target_axes);
     target_needed = dither->target_color != NULL &&
+        target_axes.aim == SIXEL_TARGET_COLOR_AIM_GAMUT &&
         sixel_dither_method_diffuses_error(dither->method_for_diffuse) &&
         (source_has_float || dither->icc_workspace != NULL ||
          !sixel_target_color_is_identity(dither->target_color,
@@ -4669,15 +4673,15 @@ sixel_dither_apply_palette(
     if (target_needed &&
             (dither->apply_8bit != 0 || float_backend_available == 0)) {
         sixel_helper_set_additional_message(
-            "target-color-policy requires float32 error diffusion; "
+            "-U diffusion=aim requires float32 error diffusion; "
             "precision-policy=8bit fixes byte feedback.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (target_needed && dither->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
         sixel_helper_set_additional_message(
-            "target-color-policy requires CPU error diffusion; "
-            "gpu-policy=force cannot apply target offsets.");
+            "-U diffusion=aim requires CPU error diffusion; "
+            "gpu-policy=force cannot apply aim offsets.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -4908,7 +4912,7 @@ sixel_dither_apply_palette(
                     (int)(3U * sizeof(float)) ||
                 total_pixels > SIZE_MAX / (3U * sizeof(float))) {
             sixel_helper_set_additional_message(
-                "target-color-policy requires RGB float32 diffusion.");
+                "-U diffusion=aim requires RGB float32 diffusion.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }

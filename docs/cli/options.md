@@ -66,7 +66,6 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 | `-~`, `--lookup-policy` | advanced | Choose the nearest-palette-color search. | [Lookup policy](../encoder/palette-application/lookup-policy/README.md) |
 | `-W`, `--working-colorspace` | advanced | Color space in which palette colors are chosen and errors diffused. | [Working color space](../encoder/palette-application/working-colorspace/README.md) |
 | `-0`, `--clamp-policy` | advanced | Limit error-diffusion feedback. | [Clamp policy](../encoder/palette-application/clamp-policy.md) |
-| `-Y`, `--target-color-policy` | advanced | Aim diffusion and clustering at the `-U` reproduction. | [Target color policy](../encoder/palette-application/target-color-policy.md) |
 
 ### SIXEL output
 

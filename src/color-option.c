@@ -104,8 +104,8 @@ end:
 
 SIXELSTATUS
 sixel_color_option_parse(char const *text, int decoder, int *base,
-                         sixel_color_def_t **definition, int *gamut,
-                         int *bpc)
+                         sixel_color_def_t **definition,
+                         sixel_color_file_options_t *suboptions)
 {
     sixel_option_argument_schema_t const *schema;
     sixel_option_argument_resolution_t resolution;
@@ -155,11 +155,10 @@ sixel_color_option_parse(char const *text, int decoder, int *base,
         goto end;
     }
 publish:
-    if (gamut != NULL) {
-        *gamut = options.gamut;
-    }
-    if (bpc != NULL) {
-        *bpc = options.bpc;
+    if (suboptions != NULL) {
+        /* The path borrows the resolution, which ends with this call. */
+        *suboptions = options;
+        suboptions->path = NULL;
     }
     *base = resolution.resolved_base_value;
     *definition = candidate;

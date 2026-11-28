@@ -2745,6 +2745,7 @@ int test_gamut_0065_pipeline_overlap(int argc, char **argv);
 int test_gamut_0066_pipeline_fallback(int argc, char **argv);
 int test_gamut_0067_pipeline_mask(int argc, char **argv);
 int test_gamut_0068_filter_dag(int argc, char **argv);
+int test_gamut_0098_palette_aim(int argc, char **argv);
 
 
 int test_gamut_0013_matrix_icc(int argc, char **argv);
@@ -12852,6 +12853,8 @@ static test_entry_t const test_entries[] = {
       test_gamut_0067_pipeline_mask },
     { "gamut/0068_filter_dag",
       test_gamut_0068_filter_dag },
+    { "gamut/0098_palette_aim",
+      test_gamut_0098_palette_aim },
 
 
     { "gamut/0013_matrix_icc",

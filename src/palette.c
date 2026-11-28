@@ -76,6 +76,7 @@
 #include "palette-kmedoids.h"
 #include "palette-private.h"
 #include "gamut.h"
+#include "target-color.h"
 #include "allocator.h"
 #include "options.h"
 #include "status.h"
@@ -2544,6 +2545,28 @@ sixel_palette_project_output(sixel_palette_t const *palette,
 /* emacs Local Variables:      */
 /* Map the continuous application palette before lookup borrows it. Wire
  * quantization remains separate, and entry order/duplicates remain intact. */
+/* Publish mapped continuous entries with a consistent byte view. */
+static void
+sixel_palette_publish_mapped(sixel_palette_storage_t *storage,
+                             float const *mapped, int pixelformat)
+{
+    unsigned int i;
+    int c;
+
+    sixel_palette_clear_output(storage);
+    memcpy(storage->entries_float32, mapped,
+        storage->entry_count * 3u * sizeof(float));
+    /* Mutable byte access has a reconciliation contract: stale bytes would
+     * be interpreted as a caller edit and destroy the mapped float view. */
+    for (i = 0; i < storage->entry_count; ++i) {
+        for (c = 0; c < 3; ++c) {
+            storage->entries[i * 3u + (unsigned int)c] =
+                sixel_pixelformat_float_channel_to_byte(pixelformat, c,
+                    mapped[i * 3u + (unsigned int)c]);
+        }
+    }
+}
+
 SIXELSTATUS
 sixel_palette_map_gamut(sixel_palette_t *palette,
                         sixel_gamut_t const *mapper, int colorspace,
@@ -2580,18 +2603,44 @@ sixel_palette_map_gamut(sixel_palette_t *palette,
             mapped[i * 3u + (unsigned int)c] = (float)output[c];
         }
     }
-    sixel_palette_clear_output(storage);
-    memcpy(storage->entries_float32, mapped,
-        storage->entry_count * 3u * sizeof(float));
-    /* Mutable byte access has a reconciliation contract: stale bytes would
-     * be interpreted as a caller edit and destroy the mapped float view. */
-    for (i = 0; i < storage->entry_count; ++i) {
-        for (c = 0; c < 3; ++c) {
-            storage->entries[i * 3u + (unsigned int)c] =
-                sixel_pixelformat_float_channel_to_byte(pixelformat, c,
-                    mapped[i * 3u + (unsigned int)c]);
-        }
+    sixel_palette_publish_mapped(storage, mapped, pixelformat);
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_palette_map_aim(sixel_palette_t *palette,
+                      sixel_target_color_t *target, int colorspace,
+                      int pixelformat)
+{
+    sixel_palette_storage_t *storage;
+    float mapped[SIXEL_PALETTE_MAX * 3];
+    SIXELSTATUS status;
+
+    if (target == NULL) {
+        return SIXEL_OK;
     }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage == NULL || storage->entries_float32 == NULL ||
+            storage->entries == NULL || storage->depth != 3 ||
+            storage->float_depth != 3 * (int)sizeof(float) ||
+            storage->entry_count > SIXEL_PALETTE_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (storage->entry_count == 0u) {
+        return SIXEL_OK;
+    }
+    memcpy(mapped, storage->entries_float32,
+        storage->entry_count * 3u * sizeof(float));
+    /* Diffusion measures its residual against these entries. Under clip an
+     * entry outside the -U gamut is not what the receiver shows, and
+     * pairing it with a shown aim would feed the clipped-away difference
+     * back as error. The aim makes the entry the shown color. */
+    status = sixel_target_color_map_rgbf32(target, mapped,
+        (size_t)storage->entry_count, colorspace, NULL, 0u);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    sixel_palette_publish_mapped(storage, mapped, pixelformat);
     return SIXEL_OK;
 }
 

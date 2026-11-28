@@ -79,7 +79,7 @@ The foundations the rest of the documentation builds on, in reading order from v
 - [Transfer functions and gamma](concepts/colorspace/transfer-functions.md) explains why images are gamma-encoded, the common transfer curves, and when arithmetic needs linear light.
 - [Primaries and white points](concepts/colorspace/primaries-and-white-points.md) explains chromaticity diagrams, common gamuts and white points, and how they determine RGB-to-XYZ conversion.
 - [Color management basics](concepts/color-management/README.md) explains ICC profiles, chromatic adaptation, rendering intents, and where libsixel manages color.
-- [Gamut mapping](concepts/gamut-mapping/README.md) illustrates how out-of-gamut colors are brought into range and compares the mapping methods libsixel offers.
+- [Gamut mapping](concepts/gamut-mapping/README.md) illustrates how out-of-gamut colors are brought into range, compares the mapping methods libsixel offers, and shows how diffusion and clustering can aim at the colors the receiver shows.
 
 ### Color difference
 
@@ -177,13 +177,12 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 - [GPU LSO2 diffusion](encoder/palette-application/dithering/lso2-gpu.md) describes four-phase spatial error propagation, gain knots and GPU-only execution; each fixed kernel has its own GPU component page beside it.
 - [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, each error-diffusion and positional method, and their cost and measured quality.
 - [Dither clamp policy](encoder/palette-application/clamp-policy.md) explains `-0` and how extended source values and diffusion feedback are clamped.
-- [Target color policy](encoder/palette-application/target-color-policy.md) explains `-Y` and how diffusion and clustering aim at the color the `-U` receiver reproduces.
 
 ### SIXEL output
 
 - [Encoding policy](encoder/output/encode-policy/README.md) explains `-E` and how six-row masks are serialized, with measured trade-offs.
 - [Output color space](encoder/output/output-colorspace.md) explains `-U`, the output color spaces, and how receivers interpret palette values.
-- [Output gamut mapping](encoder/output/gamut-mapping.md) specifies the `-U` gamut policies and their numeric contracts.
+- [Output gamut mapping](encoder/output/gamut-mapping.md) specifies the `-U` gamut policies, their numeric contracts and the gamut aims used by diffusion and clustering.
 - [Delta encoding (6delta)](encoder/output/delta-encoding.md) explains `--update-policy` and how frames are updated incrementally.
 - [OR-mode output](encoder/output/or-mode/README.md) explains `-O`, index-bit composition, receiver compatibility, and the X68030 console it was designed for.
 - [High-color output](encoder/output/high-color/README.md) explains `-I`, how high-color streams use palette registers, and their measured cost.

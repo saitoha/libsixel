@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify that byte error diffusion rejects a target with a diagnostic.
-# Policy: docs/encoder/palette-application/target-color-policy.md
+# Verify that byte error diffusion rejects diffusion=aim with a diagnostic.
+# Policy: docs/encoder/output/gamut-mapping.md
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,19 +15,19 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 data="${TOP_SRCDIR}/tests/data/color-numeric"
 # Display P3 primaries lie outside the default sRGB -U gamut.
 p3_image="${data}/cg-expanded-p3-binary.png"
-out="${ARTIFACT_LOCAL_DIR}/0049-target-$$"
+out="${ARTIFACT_LOCAL_DIR}/0049-gamut-aim-$$"
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --precision-policy=8bit -Yfull -dfs -p4 "${p3_image}" \
+    --precision-policy=8bit -U srgb:diffusion=aim -dfs -p4 "${p3_image}" \
     2>&1 >"${out}-byte.six") || status=$?
 test "${status}" -ne 0 || {
-    printf '\n%s\n' "not ok 1 - byte diffusion accepted a target"
+    printf '\n%s\n' "not ok 1 - byte diffusion accepted a gamut aim"
     exit 0
 }
-case "${message}" in *"target-color-policy requires float32 error diffusion"*) true ;; *) false ;; esac || {
+case "${message}" in *"-U diffusion=aim requires float32 error diffusion"*) true ;; *) false ;; esac || {
     printf '\n%s\n' "not ok 1 - byte diffusion rejection lacks its diagnostic"
     exit 0
 }
-printf '\n%s\n' "ok 1 - byte diffusion rejects a target with a diagnostic"
+printf '\n%s\n' "ok 1 - byte diffusion rejects a gamut aim with a diagnostic"
 exit 0
