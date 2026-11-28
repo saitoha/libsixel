@@ -3035,18 +3035,93 @@ end:
     return pass;
 }
 
+static int ycbcr_resize_fail_at;
+
+static void *
+ycbcr_resize_malloc(size_t bytes)
+{
+    if (ycbcr_resize_fail_at > 0 && --ycbcr_resize_fail_at == 0) {
+        return NULL;
+    }
+    return malloc(bytes);
+}
+
+static int
+test_ycbcr_resize_allocation(int layout)
+{
+    unsigned char y[] = {25, 60, 110, 170}, uv[] = {55, 203};
+    sixel_ycbcr_frame_view_t view = {sizeof(view), layout, 2, 2, 3,
+        {{y, sizeof(y), 0, 2}, {uv, 1, 0, 1}, {uv + 1, 1, 0, 1}}, NULL};
+    sixel_ycbcr_frame_view_t got = {0};
+    sixel_color_def_t *rgb = sixel_color_def_new_named("srgb");
+    sixel_ycbcr_def_t *def = y422_test_definition(SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_LIMITED, 0, rgb);
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_t *frame = NULL;
+    int n, p, pass = 0;
+
+    if (layout == SIXEL_PIXELFORMAT_NV12) {
+        view.plane_count = 2;
+        view.planes[1].buffer_bytes = 2;
+        view.planes[1].stride_bytes = 2;
+    }
+    view.definition = def;
+    got.struct_size = sizeof(got);
+    if (def == NULL ||
+        sixel_allocator_new(&allocator, ycbcr_resize_malloc,
+                            NULL, NULL, NULL) ||
+        sixel_frame_new(&frame, allocator) ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view)) {
+        goto end;
+    }
+    /* Fail the output, horizontal coefficients, and row cache allocations
+     * in turn, retrying on the same frame with the same borrowed planes. */
+    for (n = 1; n <= 3; ++n) {
+        ycbcr_resize_fail_at = n;
+        if (sixel_frame_resize_float32(frame, 1, 1, SIXEL_RES_BILINEAR) !=
+                SIXEL_BAD_ALLOCATION ||
+            sixel_frame_get_ycbcr(frame, &got) ||
+            got.definition != def || got.width != 2 || got.height != 2 ||
+            got.pixelformat != layout || got.plane_count != view.plane_count ||
+            sixel_frame_get_pixels(frame) != y) {
+            goto end;
+        }
+        for (p = 0; p < (int)view.plane_count; ++p) {
+            if (got.planes[p].base != view.planes[p].base ||
+                got.planes[p].buffer_bytes != view.planes[p].buffer_bytes ||
+                got.planes[p].row0_offset != view.planes[p].row0_offset ||
+                got.planes[p].stride_bytes != view.planes[p].stride_bytes) {
+                goto end;
+            }
+        }
+    }
+    pass = sixel_frame_resize_float32(frame, 1, 1, SIXEL_RES_BILINEAR) ==
+            SIXEL_OK &&
+        sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+        sixel_frame_get_width(frame) == 1 && sixel_frame_get_height(frame) == 1;
+end:
+    ycbcr_resize_fail_at = 0;
+    sixel_frame_unref(frame);
+    sixel_allocator_unref(allocator);
+    sixel_ycbcr_def_free(def);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 /* Independent 5x3 -> 2x2 triangle weights at output pixel centers.
  * The full-resolution RGB oracle is built separately from the YCbCr codes. */
 static int
 test_ycbcr420_resize(sixel_frame_t *source, sixel_frame_t *legacy,
-                     float const *reference, sixel_color_def_t *rgb)
+                     float const *reference, sixel_color_def_t *rgb,
+                     sixel_ycbcr422_counts_t *counts, int extended)
 {
     static int const wx[2][5] = {{7, 9, 5, 1, 0}, {0, 1, 5, 9, 7}};
     static int const wy[2][3] = {{5, 3, 0}, {0, 3, 5}};
     float expected[12];
     float const *pixels, *old_pixels;
     double sum;
-    int x, y, sx, sy, c, i;
+    unsigned int converted = counts->rgb_pixels;
+    int x, y, sx, sy, c, i, negative = 0, above_white = 0;
 
     if (sixel_frame_resize_float32(source, 2, 2, SIXEL_RES_BILINEAR) ||
         sixel_frame_resize_float32(legacy, 2, 2, SIXEL_RES_BILINEAR) ||
@@ -3054,7 +3129,8 @@ test_ycbcr420_resize(sixel_frame_t *source, sixel_frame_t *legacy,
         sixel_frame_get_height(source) != 2 ||
         sixel_frame_get_pixelformat(source) != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
         sixel_frame_get_colorspace(source) !=
-            SIXEL_FRAME_COLORSPACE_PROFILE_RGB) {
+            SIXEL_FRAME_COLORSPACE_PROFILE_RGB ||
+        counts->rgb_pixels - converted != 4u) {
         return 0;
     }
     pixels = (float const *)(void *)sixel_frame_get_pixels(source);
@@ -3071,6 +3147,8 @@ test_ycbcr420_resize(sixel_frame_t *source, sixel_frame_t *legacy,
                 }
                 i = (y * 2 + x) * 3 + c;
                 expected[i] = (float)(sum / 176.0);
+                negative |= expected[i] < 0.0f;
+                above_white |= expected[i] > 1.0f;
                 if (!(fabsf(pixels[i] - expected[i]) <= 4e-7f &&
                       fabsf(pixels[i] - old_pixels[i]) <= 4e-7f)) {
                     fprintf(stderr, "YCbCr resize sample %d differs\n", i);
@@ -3079,7 +3157,8 @@ test_ycbcr420_resize(sixel_frame_t *source, sixel_frame_t *legacy,
             }
         }
     }
-    return test_ycbcr_encoded_rgb(source, expected, rgb);
+    return (!extended || (negative && above_white)) &&
+        test_ycbcr_encoded_rgb(source, expected, rgb);
 }
 
 /* The weight tables are calculated from chroma centers at 0,2,4 or
@@ -3090,8 +3169,13 @@ static int
 test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
                int resize)
 {
-    static int const cb[2][3] = {{92, 128, 208}, {172, 116, 164}};
-    static int const cr[2][3] = {{188, 120, 84}, {100, 180, 148}};
+    static int const full_cb[2][3] = {{92, 128, 208}, {172, 116, 164}};
+    static int const full_cr[2][3] = {{188, 120, 84}, {100, 180, 148}};
+    static int const limited_cb[2][3] = {{8, 21, 44}, {12, 53, 27}};
+    static int const limited_cr[2][3] = {{224, 242, 220}, {212, 221, 244}};
+    int limited = resize == 2;
+    int const (*cb)[3] = limited ? limited_cb : full_cb;
+    int const (*cr)[3] = limited ? limited_cr : full_cr;
     static double const left[2][6] = {
         {0, 0.5, 0, 0.5, 0, 0}, {0, 0.25, 0.75, 0.25, 0.75, 0}
     };
@@ -3107,7 +3191,8 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
          {v_plane, sizeof(v_plane), 2, 6}}, NULL};
     sixel_ycbcr_frame_view_t cloned = {0};
     sixel_ycbcr_def_config_t color = {sizeof(color), SIXEL_YCBCR_ENCODING_BT709,
-        SIXEL_YCBCR_RANGE_FULL, xphase, yphase, NULL};
+        limited ? SIXEL_YCBCR_RANGE_LIMITED : SIXEL_YCBCR_RANGE_FULL,
+        xphase, yphase, NULL};
     sixel_color_def_t *rgb = NULL;
     sixel_ycbcr_def_t *definition = NULL;
     sixel_frame_t *frame = NULL, *grid = NULL, *full = NULL;
@@ -3125,7 +3210,8 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
     memset(uv_plane, 239, sizeof(uv_plane));
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
-            y_plane[1 + y * 8 + x] = 55 + 31 * y + 11 * x;
+            y_plane[1 + y * 8 + x] = limited
+                ? (x < 2 ? y * 4 : 250 - y * 3) : (55 + 31 * y + 11 * x);
         }
     }
     for (y = 0; y < 2; ++y) {
@@ -3195,11 +3281,14 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
             y0 = nearest ? y / 2 : 0;
             wx = nearest ? 0 : left[xphase][x];
             wy = nearest ? 0 : bottom[yphase][y];
-            luma = (55 + 31 * y + 11 * x) / 255.0;
+            luma = limited ? (y_plane[1 + y * 8 + x] - 16) / 219.0 :
+                y_plane[1 + y * 8 + x] / 255.0;
             u = ((1 - wy) * ((1 - wx) * cb[y0][x0] + wx * cb[y0][x1]) +
-                 wy * ((1 - wx) * cb[1][x0] + wx * cb[1][x1]) - 128) / 255;
+                 wy * ((1 - wx) * cb[1][x0] + wx * cb[1][x1]) - 128) /
+                (limited ? 224 : 255);
             v = ((1 - wy) * ((1 - wx) * cr[y0][x0] + wx * cr[y0][x1]) +
-                 wy * ((1 - wx) * cr[1][x0] + wx * cr[1][x1]) - 128) / 255;
+                 wy * ((1 - wx) * cr[1][x0] + wx * cr[1][x1]) - 128) /
+                (limited ? 224 : 255);
             expected[i] = (float)(luma + 1.5748 * v);
             expected[i + 1] = (float)(luma - 0.18732427293 * u -
                                       0.46812427293 * v);
@@ -3213,7 +3302,8 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
             goto end;
         }
     }
-    pass = resize ? test_ycbcr420_resize(frame, full, expected, rgb) :
+    pass = resize ? test_ycbcr420_resize(frame, full, expected, rgb,
+                                         &counts, limited) :
         test_ycbcr_encoded_rgb(frame, expected, rgb);
 end:
     sixel_frame_unref((sixel_frame_t *)copy);
@@ -5210,8 +5300,15 @@ test_frame_0014_clone_float(int argc, char **argv)
         } else if (strcmp(argv[2], "yv12") == 0) {
             c = SIXEL_PIXELFORMAT_YV12;
         }
+        if (strcmp(argv[3], "resize-failure") == 0) {
+            return test_ycbcr_resize_allocation(c);
+        }
+        if (strcmp(argv[3], "resize-nearest-chroma") == 0) {
+            return test_ycbcr420(c, 1, 1, 1, 0, 1);
+        }
         if (strcmp(argv[3], "resize") == 0) {
-            return test_ycbcr420(c, 0, 1, 0, 0, 1);
+            return test_ycbcr420(c, 0, 1, 0, 0, 1) ||
+                   test_ycbcr420(c, 1, 0, 0, 0, 2);
         }
         if (strcmp(argv[3], "nearest") == 0) {
             return test_ycbcr420(c, 1, 0, 1, 0, 0);

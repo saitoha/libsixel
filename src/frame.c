@@ -2946,33 +2946,6 @@ sixel_frame_decode_ycbcr_sample(float *out, float y, float cb, float cr,
     out[2] = y + coefficients[3] * cb;
 }
 
-/* Interpolate at positions (1 << shift)*k + phase/2 in luma coordinates.
- * The integer weights represent a distance in half-luma-sample units. */
-static void
-sixel_frame_ycbcr_axis(int pixel, int phase, int shift, int count, int nearest,
-                       int *first, int *second, float *weight)
-{
-    int pos, fraction, period;
-
-    pos = 2 * pixel - phase;
-    if (pos < 0) {
-        pos = 0;
-    }
-    period = 2 << shift;
-    fraction = pos & (period - 1);
-    *first = pos >> (shift + 1);
-    *second = *first + 1 < count ? *first + 1 : *first;
-    if (nearest) {
-        if (fraction > period / 2) {
-            *first = *second;
-        }
-        *second = *first;
-        *weight = 0.0f;
-    } else {
-        *weight = fraction * (shift == 1 ? 0.25f : 0.125f);
-    }
-}
-
 static void
 sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
     int first_y, int end_y, int step, sixel_frame_t const *grid, int grid_step,
@@ -3005,7 +2978,7 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
             y0 = y1 = y;
             wy = 0.0f;
         } else {
-            sixel_frame_ycbcr_axis(y, frame->ycbcr->chroma_y_half,
+            sixel_scale_ycbcr_axis(y, frame->ycbcr->chroma_y_half,
                                    y_shift, ch, nearest, &y0, &y1, &wy);
         }
         /* Normalize the plane and byte order before interpolating chroma.
@@ -3045,7 +3018,7 @@ sixel_frame_decode_ycbcr_planes(sixel_frame_t const *frame, float *out,
                     triplet[0] - 128.0f, triplet[2] - 128.0f, coefficients);
                 continue;
             }
-            sixel_frame_ycbcr_axis(x, frame->ycbcr->chroma_x_half,
+            sixel_scale_ycbcr_axis(x, frame->ycbcr->chroma_x_half,
                                    x_shift, cw, nearest, &x0, &x1, &wx);
             x0 *= spacing;
             x1 *= spacing;
@@ -4338,12 +4311,13 @@ sixel_frame_ycbcr_read_row(void *opaque, int y, float *out)
 /* Preserve the decoded RGB coordinates and publish only a complete resize. */
 static SIXELSTATUS
 sixel_frame_resize_ycbcr(sixel_frame_t *frame, int width, int height,
-                        int method)
+                        int method, int rows)
 {
     sixel_ycbcr_resize_source_t source;
+    sixel_ycbcr_frame_view_t view = {0};
     sixel_color_def_t *rgb;
     float *pixels;
-    size_t bytes;
+    size_t bytes, i;
     SIXELSTATUS status;
 
     if ((frame->format.layout != SIXEL_PIXELFORMAT_YUV420P &&
@@ -4374,9 +4348,28 @@ sixel_frame_resize_ycbcr(sixel_frame_t *frame, int width, int height,
     source.frame = frame;
     sixel_frame_ycbcr_matrix(frame->ycbcr, &source.luma_offset,
                              &source.luma_scale, source.coefficients);
-    status = sixel_scale_bilinear_rgbf32_rows(pixels, frame->width,
-        frame->height, width, height, sixel_frame_ycbcr_read_row,
-        &source, frame->allocator);
+    if (rows) {
+        status = sixel_scale_bilinear_rgbf32_rows(pixels, frame->width,
+            frame->height, width, height, sixel_frame_ycbcr_read_row,
+            &source, frame->allocator);
+    } else {
+        view.struct_size = sizeof(view);
+        status = sixel_frame_get_ycbcr(frame, &view);
+        if (status == SIXEL_OK) {
+            status = sixel_scale_bilinear_ycbcr420(pixels, &view, width,
+                height, frame->ycbcr->chroma_x_half,
+                frame->ycbcr->chroma_y_half,
+                frame->ycbcr->nearest_chroma, frame->allocator);
+        }
+        if (status == SIXEL_OK) {
+            for (i = 0; i < bytes / sizeof(float); i += 3) {
+                sixel_frame_decode_ycbcr_sample(pixels + i,
+                    (pixels[i] - source.luma_offset) * source.luma_scale,
+                    pixels[i + 1] - 128.0f, pixels[i + 2] - 128.0f,
+                    source.coefficients);
+            }
+        }
+    }
     if (SIXEL_FAILED(status)) {
         sixel_cdef_free(rgb);
         sixel_allocator_free(frame->allocator, pixels);
@@ -4386,7 +4379,8 @@ sixel_frame_resize_ycbcr(sixel_frame_t *frame, int width, int height,
         (void)sixel_atomic_fetch_add_u32(&frame->ycbcr_counts->rgb_conversions,
             1U);
         (void)sixel_atomic_fetch_add_u32(&frame->ycbcr_counts->rgb_pixels,
-            (unsigned int)((size_t)frame->width * frame->height));
+            (unsigned int)(rows ? (size_t)frame->width * frame->height :
+                (size_t)width * height));
     }
     sixel_frame_release_owned_pixels(frame);
     sixel_frame_assign_layout(frame, SIXEL_PIXELFORMAT_RGBFLOAT32,
@@ -4399,13 +4393,25 @@ sixel_frame_resize_ycbcr(sixel_frame_t *frame, int width, int height,
     return SIXEL_OK;
 }
 
+/* Retain the RGB row implementation for comparisons and callers that
+ * need a source-coordinate RGB row before the resize. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_resize_ycbcr_rows(sixel_frame_t *frame, int width, int height)
+{
+    if (frame == NULL || frame->ycbcr == NULL || width < 1 || height < 1) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_frame_resize_ycbcr(frame, width, height,
+                                   SIXEL_RES_BILINEAR, 1);
+}
+
 /*
  * Resize a frame using float buffers. Callers must supply RGB float32 input
  * that already matches the intended resampling basis (linear RGB). The
  * planner is responsible for any required color conversions prior to calling
  * this routine. Unexpected pixelformats are rejected so that order mistakes
  * surface early. Borrowed I420 and NV12 can also be decoded and resized
- * in their decoded RGB coordinates with the bilinear row scaler.
+ * by filtering YCbCr planes before conversion into the original RGB basis.
  */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize_float32(
@@ -4476,7 +4482,7 @@ sixel_frame_resize_float32(
 
     if (frame->ycbcr != NULL) {
         status = sixel_frame_resize_ycbcr(frame, width, height,
-                                        method_for_resampling);
+                                         method_for_resampling, 0);
         goto end;
     }
 

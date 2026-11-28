@@ -61,6 +61,40 @@ sixel_scale_bilinear_rgbf32_rows(float *dst, int srcw, int srch,
     int dstw, int dsth, void (*read_row)(void *, int, float *),
     void *source, sixel_allocator_t *allocator);
 
+/* Interpolate at positions (1 << shift)*k + phase/2 in luma coordinates.
+ * The integer weights represent a distance in half-luma-sample units. */
+static inline void
+sixel_scale_ycbcr_axis(int pixel, int phase, int shift, int count, int nearest,
+                       int *first, int *second, float *weight)
+{
+    int pos, fraction, period;
+
+    pos = 2 * pixel - phase;
+    if (pos < 0) {
+        pos = 0;
+    }
+    period = 2 << shift;
+    fraction = pos & (period - 1);
+    *first = pos >> (shift + 1);
+    *second = *first + 1 < count ? *first + 1 : *first;
+    if (nearest) {
+        if (fraction > period / 2) {
+            *first = *second;
+        }
+        *second = *first;
+        *weight = 0.0f;
+    } else {
+        *weight = fraction * (shift == 1 ? 0.25f : 0.125f);
+    }
+}
+
+/* Store the resized Y, Cb and Cr in triplets without clipping or rounding
+ * to integer codes. The destination can then be converted to RGB in place. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_scale_bilinear_ycbcr420(float *dst, sixel_ycbcr_frame_view_t const *view,
+    int dstw, int dsth, int xphase, int yphase, int nearest,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API size_t
 sixel_scale_parallel_min_bytes(void);
 SIXEL_INTERNAL_API int

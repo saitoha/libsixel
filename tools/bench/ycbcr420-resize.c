@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 /* Compare host I420/NV12 conversion plus bilinear resize on the same input.
  * Build against a configured shared library:
- * cc -O2 -I"$build/include" tools/bench/ycbcr420-resize.c \
+ * cc -O2 -I"$build/include" -Iinclude -Isrc tools/bench/ycbcr420-resize.c \
  *   -L"$build/src/.libs" -Wl,-rpath,"$build/src/.libs" -lsixel -lm -o bench
- * Run ./bench [samples] with the same CPU budget for both routes.
+ * Run ./bench [samples] with the same CPU budget for all routes.
  * Timing excludes capture, frame setup and SIXEL encoding. Peak bytes
  * count live allocations through the frame allocator above setup. */
 #define _POSIX_C_SOURCE 200809L
@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "frame-normalize.h"
 
 enum { WIDTH = 1920, HEIGHT = 1080, WARMUP = 4, MAX_SAMPLES = 500 };
 
@@ -103,20 +104,24 @@ static int
 bench_resize(sixel_ycbcr_frame_view_t const *view, sixel_allocator_t *allocator,
              int width, int height, int samples)
 {
-    double times[2][MAX_SAMPLES], start, elapsed;
-    size_t peaks[2] = {0}, allocations[2] = {0};
+    static char const *const routes[] = {
+        "separate", "rgb_rows", "ycbcr_planes"
+    };
+    double times[3][MAX_SAMPLES], start, elapsed;
+    size_t peaks[3] = {0}, allocations[3] = {0};
     size_t i, count, base;
-    sixel_frame_t *frame[2] = {NULL, NULL};
+    sixel_frame_t *frame[3] = {NULL, NULL, NULL};
     float const *legacy, *fused;
+    SIXELSTATUS status;
     float error, max_error = 0;
     int run, pass, mode;
     char const *format = view->plane_count == 2 ? "nv12" : "i420";
 
     count = (size_t)width * height * 3u;
     for (run = -WARMUP; run < samples; ++run) {
-        for (pass = 0; pass < 2; ++pass) {
+        for (pass = 0; pass < 3; ++pass) {
             /* Alternate the order to reduce cache and thermal bias. */
-            mode = (run + WARMUP + pass) % 2;
+            mode = (run + WARMUP + pass) % 3;
             if (sixel_frame_new(&frame[mode], allocator) ||
                 sixel_frame_init_ycbcr_borrowed(frame[mode], view)) {
                 goto fail;
@@ -125,9 +130,14 @@ bench_resize(sixel_ycbcr_frame_view_t const *view, sixel_allocator_t *allocator,
             calls = 0;
             start = now_ms();
             if ((mode == 0 && sixel_frame_set_pixelformat(frame[mode],
-                                          SIXEL_PIXELFORMAT_RGBFLOAT32)) ||
-                sixel_frame_resize_float32(frame[mode], width, height,
-                                            SIXEL_RES_BILINEAR)) {
+                                          SIXEL_PIXELFORMAT_RGBFLOAT32))) {
+                goto fail;
+            }
+            status = mode == 1
+                ? sixel_frame_resize_ycbcr_rows(frame[mode], width, height)
+                : sixel_frame_resize_float32(frame[mode], width, height,
+                                             SIXEL_RES_BILINEAR);
+            if (SIXEL_FAILED(status)) {
                 goto fail;
             }
             elapsed = now_ms() - start;
@@ -141,27 +151,31 @@ bench_resize(sixel_ycbcr_frame_view_t const *view, sixel_allocator_t *allocator,
         }
         if (run == 0) {
             legacy = (float const *)(void *)sixel_frame_get_pixels(frame[0]);
-            fused = (float const *)(void *)sixel_frame_get_pixels(frame[1]);
-            for (i = 0; i < count; ++i) {
-                error = fabsf(legacy[i] - fused[i]);
-                if (!(error <= 1e-6f)) {
-                    fprintf(stderr, "%s %dx%d sample %zu differs: %g\n",
-                            format, width, height, i, error);
-                    goto fail;
-                }
-                if (error > max_error) {
-                    max_error = error;
+            for (mode = 1; mode < 3; ++mode) {
+                fused = (float const *)(void *)sixel_frame_get_pixels(
+                    frame[mode]);
+                for (i = 0; i < count; ++i) {
+                    error = fabsf(legacy[i] - fused[i]);
+                    if (!(error <= 1e-6f)) {
+                        fprintf(stderr, "%s %dx%d sample %zu differs: %g\n",
+                                format, width, height, i, error);
+                        goto fail;
+                    }
+                    if (error > max_error) {
+                        max_error = error;
+                    }
                 }
             }
         }
-        sixel_frame_unref(frame[0]);
-        sixel_frame_unref(frame[1]);
-        frame[0] = frame[1] = NULL;
+        for (mode = 0; mode < 3; ++mode) {
+            sixel_frame_unref(frame[mode]);
+            frame[mode] = NULL;
+        }
     }
-    for (mode = 0; mode < 2; ++mode) {
+    for (mode = 0; mode < 3; ++mode) {
         qsort(times[mode], samples, sizeof(double), compare_ms);
         printf("%s,%dx%d,%s,%d,%.3f,%.3f,%.2f,%zu,%.9g\n", format,
-            width, height, mode ? "fused" : "separate", samples,
+            width, height, routes[mode], samples,
             times[mode][samples / 2], times[mode][(samples * 95 + 99)/100 - 1],
             (double)allocations[mode] / samples, peaks[mode], max_error);
     }
@@ -169,6 +183,7 @@ bench_resize(sixel_ycbcr_frame_view_t const *view, sixel_allocator_t *allocator,
 fail:
     sixel_frame_unref(frame[0]);
     sixel_frame_unref(frame[1]);
+    sixel_frame_unref(frame[2]);
     return 0;
 }
 

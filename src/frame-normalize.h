@@ -62,6 +62,9 @@ sixel_frame_decode_ycbcr_copy(sixel_frame_t const *frame,
                                 sixel_allocator_t *allocator,
                                 sixel_frame_t **frame_out);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_resize_ycbcr_rows(sixel_frame_t *frame, int width, int height);
+
 /* A view owns its metadata and retains its immutable profile RGB source.
  * Consumers must replace storage before writing to the pixel plane. */
 SIXEL_INTERNAL_API SIXELSTATUS
