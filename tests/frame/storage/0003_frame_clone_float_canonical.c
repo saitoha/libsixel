@@ -3108,6 +3108,96 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* Decode the two SIXEL streams so palettes may choose different indexes. */
+static int
+test_ycbcr_auto_resize(sixel_frame_t *source, float *reference,
+                       sixel_ycbcr422_counts_t *counts, int mode)
+{
+    static int const wx[2][5] = {{7, 9, 5, 1, 0}, {0, 1, 5, 9, 7}};
+    static int const wy[2][3] = {{5, 3, 0}, {0, 3, 5}};
+    float expected[12];
+    int preserve = mode == 4, adaptive = mode == 5;
+    double value, sum, magnitude;
+    sixel_color_def_t *rgb = sixel_color_def_new_named(
+        preserve || adaptive ? "srgb" : "srgb-linear");
+    sixel_frame_t *control = NULL;
+    sixel_encoder_t *encoder[2] = {NULL, NULL};
+    sixel_output_t *output[2] = {NULL, NULL};
+    sixel_sequence_decoder_t *dec[2] = {NULL, NULL};
+    playback_test_buffer_t encoded[2] = {{0}};
+    unsigned char const *rgba[2];
+    size_t end;
+    unsigned int converted = counts->rgb_pixels;
+    unsigned int expected_pixels = preserve ? 4u : adaptive ? 30u : 15u;
+    int x, y, c, sx, sy, i, width, height, pass = 0;
+
+    for (y = 0; y < 2; ++y) {
+        for (x = 0; x < 2; ++x) {
+            for (c = 0; c < 3; ++c) {
+                sum = 0;
+                for (sy = 0; sy < 3; ++sy) {
+                    for (sx = 0; sx < 5; ++sx) {
+                        value = reference[(sy * 5 + sx) * 3 + c];
+                        if (!preserve) {
+                            magnitude = fabs(value);
+                            value = copysign(magnitude <= 0.04045
+                                ? magnitude / 12.92
+                                : pow((magnitude + 0.055) / 1.055, 2.4), value);
+                        }
+                        sum += value * wx[x][sx] * wy[y][sy];
+                    }
+                }
+                expected[(y * 2 + x) * 3 + c] = (float)(sum / 176);
+            }
+        }
+    }
+    if (rgb == NULL || sixel_frame_new(&control, NULL) ||
+        sixel_frame_init_rgbf32_borrowed(control,
+            adaptive ? reference : expected, adaptive ? 5 : 2,
+            adaptive ? 3 : 2, rgb)) {
+        goto end;
+    }
+    for (i = 0; i < 2; ++i) {
+        if (sixel_encoder_new(&encoder[i], NULL) ||
+            sixel_encoder_setopt(encoder[i], SIXEL_OPTFLAG_GPU_POLICY, "off") ||
+            sixel_encoder_setopt(encoder[i], SIXEL_OPTFLAG_DIFFUSION, "none") ||
+            sixel_encoder_setopt(encoder[i], SIXEL_OPTFLAG_SAMPLING_POLICY,
+                                 adaptive ? "adaptive-grid" : "full-frame") ||
+            (adaptive && sixel_encoder_setopt(encoder[i],
+                                              SIXEL_OPTFLAG_COLORS, "2")) ||
+            ((i == 0 || adaptive) &&
+             (sixel_encoder_setopt(encoder[i], SIXEL_OPTFLAG_WIDTH, "40%") ||
+              sixel_encoder_setopt(encoder[i], SIXEL_OPTFLAG_HEIGHT, "67%") ||
+              sixel_encoder_setopt(encoder[i], SIXEL_OPTFLAG_RESAMPLING,
+                                   "bilinear"))) ||
+            sixel_output_new(&output[i], playback_test_write,
+                             &encoded[i], NULL) ||
+            sixel_encoder_encode_frame(encoder[i], i == 0 ? source : control,
+                                       output[i]) ||
+            sixel_sequence_open(&dec[i], encoded[i].bytes,
+                                encoded[i].size, 1, NULL) ||
+            sixel_sequence_next(dec[i], &rgba[i], &width, &height, &end) ||
+            width != 2 || height != 2) {
+            goto end;
+        }
+    }
+    pass = memcmp(rgba[0], rgba[1], 16) == 0 &&
+        counts->rgb_resizes == 1 &&
+        counts->rgb_pixels - converted == expected_pixels &&
+        sixel_frame_get_width(source) == 5 &&
+        sixel_frame_get_height(source) == 3;
+end:
+    for (i = 0; i < 2; ++i) {
+        sixel_sequence_close(dec[i]);
+        sixel_output_unref(output[i]);
+        sixel_encoder_unref(encoder[i]);
+        free(encoded[i].bytes);
+    }
+    sixel_frame_unref(control);
+    sixel_color_def_free(rgb);
+    return pass;
+}
+
 /* Independent 5x3 -> 2x2 triangle weights at output pixel centers.
  * The full-resolution RGB oracle is built separately from the YCbCr codes. */
 static int
@@ -3301,6 +3391,10 @@ test_ycbcr420(int format, int xphase, int yphase, int nearest, int even,
                     i, pixels[i], expected[i]);
             goto end;
         }
+    }
+    if (resize >= 3) {
+        pass = test_ycbcr_auto_resize(frame, expected, &counts, resize);
+        goto end;
     }
     pass = resize ? test_ycbcr420_resize(frame, full, expected, rgb,
                                          &counts, limited) :
@@ -4676,13 +4770,16 @@ ycbcr420_lifecycle_frame(sixel_frame_t **frame, unsigned char **luma,
     int width = wide ? 14 : 5, height = wide ? 11 : 3;
     int chroma_rows = (height + 1) / 2;
     int yv12 = layout == SIXEL_PIXELFORMAT_YV12;
-    int spacing = yv12 ? 1 : 2;
+    int i420 = layout == SIXEL_PIXELFORMAT_YUV420P;
+    int nv12 = layout == SIXEL_PIXELFORMAT_NV12;
+    int planar = i420 || yv12;
+    int spacing = planar ? 1 : 2;
     int luma_pitch = width + 2;
     int chroma_pitch = ((width + 1) / 2) * spacing + 2;
     size_t luma_bytes = (size_t)luma_pitch * height;
     size_t chroma_bytes = (size_t)chroma_pitch * chroma_rows;
     sixel_ycbcr_frame_view_t view = {sizeof(view), layout,
-        width, height, yv12 ? 3u : 2u, {{0}}, definition};
+        width, height, planar ? 3u : 2u, {{0}}, definition};
     float *pixels;
     double ycode, cr, cb;
     int x, y, index;
@@ -4695,21 +4792,21 @@ ycbcr420_lifecycle_frame(sixel_frame_t **frame, unsigned char **luma,
     if (layout != SIXEL_PIXELFORMAT_RGBFLOAT32) {
         *luma = malloc(luma_bytes);
         *chroma = malloc(chroma_bytes);
-        if (yv12) {
+        if (planar) {
             *cb_plane = malloc(chroma_bytes);
         }
         if (*luma == NULL || *chroma == NULL ||
-                (yv12 && *cb_plane == NULL)) {
+                (planar && *cb_plane == NULL)) {
             return SIXEL_BAD_ALLOCATION;
         }
         for (y = 0; y < chroma_rows; ++y) {
             for (x = 0; x < (width + 1) / 2; ++x) {
                 index = (chroma_rows - 1 - y) * chroma_pitch + spacing * x;
-                (*chroma)[index] = 152 + 16 * y;
-                if (yv12) {
+                (*chroma)[index + nv12] = 152 + 16 * y;
+                if (planar) {
                     (*cb_plane)[index] = 100;
                 } else {
-                    (*chroma)[index + 1] = 100;
+                    (*chroma)[index + 1 - nv12] = 100;
                 }
             }
         }
@@ -4750,9 +4847,12 @@ ycbcr420_lifecycle_frame(sixel_frame_t **frame, unsigned char **luma,
         *chroma, chroma_bytes, (size_t)chroma_pitch * (chroma_rows - 1),
         -chroma_pitch
     };
-    if (yv12) {
+    if (planar) {
         view.planes[2] = view.planes[1];
-        view.planes[2].base = *cb_plane;
+        view.planes[2].base = i420 ? *chroma : *cb_plane;
+        if (i420) {
+            view.planes[1].base = *cb_plane;
+        }
     }
     sixel_frame_observe_ycbcr422(*frame, counts);
     return sixel_frame_init_ycbcr_borrowed(*frame, &view);
@@ -4772,7 +4872,9 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
     float scratch[24];
     size_t bytes;
     int width, height;
-    int planar = layout == SIXEL_PIXELFORMAT_NV21 ||
+    int planar = layout == SIXEL_PIXELFORMAT_YUV420P ||
+                 layout == SIXEL_PIXELFORMAT_NV12 ||
+                 layout == SIXEL_PIXELFORMAT_NV21 ||
                  layout == SIXEL_PIXELFORMAT_YV12 ||
                  layout == SIXEL_PIXELFORMAT_RGBFLOAT32;
     size_t i;
@@ -4875,7 +4977,8 @@ end:
 }
 
 static int
-y422_lifecycle_run(int mode, int layout, y422_capture_t *capture)
+y422_lifecycle_run(int mode, int layout, y422_capture_t *capture,
+                   int resize)
 {
     struct y422_lifecycle state = {0};
     struct sixel_encoder_prepare_test_hooks hooks = {0};
@@ -4932,6 +5035,11 @@ y422_lifecycle_run(int mode, int layout, y422_capture_t *capture)
         sixel_encoder_setopt(encoder,
                              SIXEL_OPTFLAG_UPDATE_POLICY, "delta:T0") ||
         (latest && sixel_encoder_set_6delta_plane_size(encoder, 4, 2)) ||
+        (resize &&
+         (sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_WIDTH, "60%") ||
+          sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_HEIGHT, "67%") ||
+          sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_RESAMPLING,
+                               "bilinear"))) ||
         sixel_output_new(&output, y422_lifecycle_write, &state, NULL) ||
         sixel_playback_config_init(&config, sizeof(config))) {
         goto end;
@@ -5012,6 +5120,10 @@ y422_lifecycle_run(int mode, int layout, y422_capture_t *capture)
             state.image_ops[i].rgb_conversions != (unsigned int)conversions ||
             state.palette_ops[i].rgb_conversions !=
                 (unsigned int)source_conversions ||
+            state.image_ops[i].rgb_resizes !=
+                (unsigned int)(resize != 0 && !rgb_reference) ||
+            (resize && !rgb_reference && state.image_ops[i].rgb_pixels !=
+                (resize == 2 ? 6u : 15u)) ||
             state.image_ops[i].rgb_copies != 0 ||
             (sparse && !rgb_reference &&
              state.palette_ops[i].rgb_pixels != 2) ||
@@ -5070,15 +5182,15 @@ test_y422_lifecycle(char const *name)
     } else {
         mode = Y422_RETRY_DELTA;
     }
-    pass = y422_lifecycle_run(mode, 0, &actual);
+    pass = y422_lifecycle_run(mode, 0, &actual, 0);
     if (pass && mode == Y422_RETRY_DELTA) {
-        pass = y422_lifecycle_run(Y422_RETRY_REFERENCE, 0, &reference) &&
+        pass = y422_lifecycle_run(Y422_RETRY_REFERENCE, 0, &reference, 0) &&
             ycbcr_capture_pixels(&actual, actual_pixels, 4, 2, 2) &&
             ycbcr_capture_pixels(&reference, reference_pixels, 4, 2, 2) &&
             memcmp(actual_pixels, reference_pixels, sizeof(actual_pixels)) == 0;
     }
     if (pass && mode == Y422_LATEST_RETRY) {
-        pass = y422_lifecycle_run(Y422_LATEST_REFERENCE, 0, &reference) &&
+        pass = y422_lifecycle_run(Y422_LATEST_REFERENCE, 0, &reference, 0) &&
             ycbcr_capture_pixels(&actual, actual_pixels, 4, 2, 2) &&
             ycbcr_capture_pixels(&reference, reference_pixels, 4, 2, 2) &&
             memcmp(actual_pixels, reference_pixels, sizeof(actual_pixels)) == 0;
@@ -5209,29 +5321,33 @@ end:
 }
 
 static int
-test_ycbcr420_lifecycle(char const *name, int layout)
+test_ycbcr420_lifecycle(char const *name, int layout, int resize)
 {
 #if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
     y422_capture_t actual = {0}, reference = {0};
     unsigned char actual_pixels[2][60], reference_pixels[2][60];
     int mode = Y422_RETRY_DELTA;
-    int pass;
+    int pass, width = resize ? 3 : 5, height = resize ? 2 : 3;
+    size_t frame_bytes = (size_t)width * height * 4u;
 
     if (strcmp(name, "prepared") == 0) {
         mode = Y422_PREPARED_CANCEL;
     } else if (strcmp(name, "allocation") == 0) {
         mode = Y422_SAMPLE_ALLOC_FAIL;
     }
-    pass = y422_lifecycle_run(mode, layout, &actual);
+    pass = y422_lifecycle_run(mode, layout, &actual, resize);
     if (pass && mode == Y422_RETRY_DELTA) {
         pass = y422_lifecycle_run(Y422_RETRY_REFERENCE,
-                                  SIXEL_PIXELFORMAT_RGBFLOAT32, &reference) &&
-            ycbcr_capture_pixels(&actual, actual_pixels, 5, 3, 2) &&
-            ycbcr_capture_pixels(&reference, reference_pixels, 5, 3, 2) &&
+                                  SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                  &reference, resize) &&
+            ycbcr_capture_pixels(&actual, actual_pixels, width, height, 2) &&
+            ycbcr_capture_pixels(&reference, reference_pixels,
+                                 width, height, 2) &&
             memcmp(actual_pixels, reference_pixels,
-                   sizeof(actual_pixels)) == 0 &&
-            actual.painted[0] == 15 && actual.painted[1] > 0 &&
-            actual.painted[1] < 15 && actual.painted[1] == reference.painted[1];
+                   2u * frame_bytes) == 0 &&
+            actual.painted[0] == (size_t)width * height &&
+            actual.painted[1] == reference.painted[1] &&
+            (resize || (actual.painted[1] > 0 && actual.painted[1] < 15));
     }
     if (!pass) {
         fprintf(stderr, "4:2:0 playback %s failed: %s\n", name,
@@ -5243,6 +5359,7 @@ test_ycbcr420_lifecycle(char const *name, int layout)
 #else
     (void)name;
     (void)layout;
+    (void)resize;
     return 77;
 #endif
 }
@@ -5286,7 +5403,7 @@ test_frame_0014_clone_float(int argc, char **argv)
                test_ycbcr_singleton_axis(1, c);
     }
     if (argc == 3 && strcmp(argv[1], "yv12-lifecycle") == 0) {
-        return test_ycbcr420_lifecycle(argv[2], SIXEL_PIXELFORMAT_YV12);
+        return test_ycbcr420_lifecycle(argv[2], SIXEL_PIXELFORMAT_YV12, 0);
     }
     if (argc == 3 && strcmp(argv[1], "ycbcr-shared") == 0) {
         return test_ycbcr_shared_planes(strcmp(argv[2], "limit") == 0);
@@ -5299,6 +5416,21 @@ test_frame_0014_clone_float(int argc, char **argv)
             c = SIXEL_PIXELFORMAT_NV21;
         } else if (strcmp(argv[2], "yv12") == 0) {
             c = SIXEL_PIXELFORMAT_YV12;
+        }
+        if (strcmp(argv[3], "auto-resize") == 0) {
+            return test_ycbcr420(c, 0, 1, 0, 0, 3);
+        }
+        if (strcmp(argv[3], "auto-preserve") == 0) {
+            return test_ycbcr420(c, 0, 1, 0, 0, 4);
+        }
+        if (strcmp(argv[3], "auto-adaptive") == 0) {
+            return test_ycbcr420(c, 0, 1, 0, 0, 5);
+        }
+        if (strcmp(argv[3], "auto-delta") == 0) {
+            return test_ycbcr420_lifecycle("retry", c, 1);
+        }
+        if (strcmp(argv[3], "auto-delta-preserve") == 0) {
+            return test_ycbcr420_lifecycle("retry", c, 2);
         }
         if (strcmp(argv[3], "resize-failure") == 0) {
             return test_ycbcr_resize_allocation(c);
@@ -5341,7 +5473,7 @@ test_frame_0014_clone_float(int argc, char **argv)
         return test_ycbcr_deferred_cancel_alloc(c);
     }
     if (argc == 3 && strcmp(argv[1], "nv21-lifecycle") == 0) {
-        return test_ycbcr420_lifecycle(argv[2], SIXEL_PIXELFORMAT_NV21);
+        return test_ycbcr420_lifecycle(argv[2], SIXEL_PIXELFORMAT_NV21, 0);
     }
     if (argc == 3 && strcmp(argv[1], "ycbcr422-lifecycle") == 0) {
         return test_y422_lifecycle(argv[2]);

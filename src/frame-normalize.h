@@ -50,6 +50,7 @@ typedef struct sixel_ycbcr422_counts {
     sixel_atomic_u32_t rgb_conversions;
     sixel_atomic_u32_t rgb_pixels;
     sixel_atomic_u32_t rgb_copies;
+    sixel_atomic_u32_t rgb_resizes;
 } sixel_ycbcr422_counts_t;
 
 SIXEL_INTERNAL_API void
@@ -64,6 +65,14 @@ sixel_frame_decode_ycbcr_copy(sixel_frame_t const *frame,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_resize_ycbcr_rows(sixel_frame_t *frame, int width, int height);
+
+sixel_frame_t *
+sixel_frame_get_resize_source(sixel_frame_t const *frame);
+
+SIXELSTATUS
+sixel_frame_prepare_ycbcr_resize(sixel_frame_t *frame,
+    sixel_allocator_t *allocator, int width, int height, int preserve,
+    sixel_frame_t **result);
 
 /* A view owns its metadata and retains its immutable profile RGB source.
  * Consumers must replace storage before writing to the pixel plane. */

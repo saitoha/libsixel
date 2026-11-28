@@ -61,7 +61,7 @@ static sixel_filter_vtbl_t const sixel_filter_resize_vtbl = {
     NULL
 };
 
-static void
+void
 sixel_filter_resize_compute_target(const sixel_filter_resize_config_t *config,
                                    int src_width,
                                    int src_height,

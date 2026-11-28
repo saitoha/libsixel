@@ -71,6 +71,7 @@ struct sixel_frame {
     int ncolors;                    /* palette colors */
     struct sixel_frame_pixel_format format;
     unsigned int cms_history;
+    sixel_frame_t *resize_source;  /* original frame before private resize */
     /*
      * Timeline metadata can be updated by the loader while worker threads
      * sample or quantize shared frames. Keep these fields atomic so that

@@ -284,6 +284,11 @@ set -- \
     frame/storage/0142_ycbcr_i420_resize_allocation.t \
     frame/storage/0143_ycbcr_nv12_resize_allocation.t \
     frame/storage/0144_ycbcr_nv12_resize_nearest_chroma.t \
+    frame/storage/0145_ycbcr_i420_auto_resize.t \
+    frame/storage/0146_ycbcr_nv12_auto_preserve.t \
+    frame/storage/0147_ycbcr_i420_auto_delta.t \
+    frame/storage/0148_ycbcr_nv12_auto_delta_preserve.t \
+    frame/storage/0149_ycbcr_i420_auto_adaptive.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

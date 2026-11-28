@@ -7138,6 +7138,7 @@ sixel_encoder_sample_frame(
     SIXELSTATUS status;
     sixel_frame_t *owned;
     sixel_frame_t **cache;
+    sixel_frame_t *loaded;
     sixel_filter_sample_grid_t grid;
     int step;
     sixel_filter_sample_config_t config;
@@ -7175,6 +7176,25 @@ sixel_encoder_sample_frame(
         encoder->method_for_diffuse == SIXEL_DIFFUSE_LSO2 &&
         sixel_encoder_gpu_diffusion_eligible(encoder,
             encoder->method_for_diffuse);
+
+    loaded = sixel_frame_get_resize_source(frame);
+    if (palette_source == NULL && loaded != NULL &&
+            source == SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME) {
+        /* Adaptive sampling still observes the original encoded RGB grid.
+         * Float samples do not add byte-only solid-region representatives.
+         * Sample directly from the borrowed planes without a full decode. */
+        sixel_filter_sample_plan_grid(&config, sixel_frame_get_width(loaded),
+                                     sixel_frame_get_height(loaded), &grid);
+        owned = NULL;
+        status = sixel_frame_sample_ycbcr(loaded, allocator, (int)grid.stride,
+                                         NULL, 0, &owned);
+        if (status == SIXEL_OK) {
+            status = sixel_sample_stream_take_owned(samples, &owned,
+                                                     policy, source);
+        }
+        sixel_frame_unref(owned);
+        return status;
+    }
 
     if (palette_source != NULL &&
         sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(frame))) {
@@ -17774,20 +17794,47 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
     return status;
 }
 
-/* Decode after dequeue, before a job can clone, crop or sample the frame.
- * The original packed storage stays with the caller. A speculative retry
- * works from the pristine RGB copy and reuses the same palette source. */
+/* Decode after dequeue, before a job can clone or crop the frame. Keep
+ * the prepared RGB for speculative retries. Adaptive sampling can still
+ * consult the borrowed planes until the caller receives completion. */
 static SIXELSTATUS
-sixel_encoder_pipeline_decode_ycbcr(sixel_encoder_frame_pipeline_t *pipeline,
-                                    sixel_frame_t *frame,
-                                    sixel_frame_t **decoded)
+sixel_encoder_prepare_ycbcr(sixel_encoder_t const *encoder,
+                            sixel_frame_t *frame, sixel_frame_t **decoded)
 {
+    sixel_filter_resize_config_t resize;
+    SIXELSTATUS status;
+    int width, height, preserve, layout;
+
     *decoded = NULL;
-    if (!sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(frame))) {
+    if (frame == NULL) {
         return SIXEL_OK;
     }
-    return sixel_frame_decode_ycbcr_copy(frame,
-        pipeline->encoder->allocator, decoded);
+    layout = sixel_frame_get_pixelformat(frame);
+    if (!sixel_pixelformat_is_ycbcr(layout)) {
+        return SIXEL_OK;
+    }
+    if ((layout == SIXEL_PIXELFORMAT_YUV420P ||
+         layout == SIXEL_PIXELFORMAT_NV12) &&
+        encoder->method_for_resampling == SIXEL_RES_BILINEAR &&
+        !(encoder->clipwidth > 0 && encoder->clipheight > 0)) {
+        resize = (sixel_filter_resize_config_t){
+            encoder->pixelwidth, encoder->pixelheight,
+            encoder->percentwidth, encoder->percentheight,
+            encoder->method_for_resampling
+        };
+        sixel_filter_resize_compute_target(&resize,
+            sixel_frame_get_width(frame), sixel_frame_get_height(frame),
+            &width, &height);
+        preserve = sixel_runtime_policy_resize_precision(
+            SIXEL_RUNTIME_RESIZE_PRECISION_FLOAT_WORK) ==
+            SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE;
+        status = sixel_frame_prepare_ycbcr_resize(frame, encoder->allocator,
+            width, height, preserve, decoded);
+        if (status != SIXEL_NOT_IMPLEMENTED) {
+            return status;
+        }
+    }
+    return sixel_frame_decode_ycbcr_copy(frame, encoder->allocator, decoded);
 }
 
 /* Serial counterpart of the prepare-ahead worker for one frame. */
@@ -17800,7 +17847,8 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status;
     sixel_frame_t *decoded;
 
-    status = sixel_encoder_pipeline_decode_ycbcr(pipeline, frame, &decoded);
+    status = sixel_encoder_prepare_ycbcr(pipeline->encoder,
+                                         frame, &decoded);
     if (status != SIXEL_OK) {
         pipeline->encoder->sixdelta_refinement_needed = 0;
         pipeline->encoder->sixdelta_painted_pixels = 0u;
@@ -18032,8 +18080,8 @@ sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
     if (slot->metadata.cancelled != 0) {
         return;
     }
-    slot->bind_status = sixel_encoder_pipeline_decode_ycbcr(
-        pipeline, slot->frame, &decoded);
+    slot->bind_status = sixel_encoder_prepare_ycbcr(
+        pipeline->encoder, slot->frame, &decoded);
     if (SIXEL_FAILED(slot->bind_status)) {
         slot->work_frame = NULL;
         return;
@@ -21756,8 +21804,7 @@ sixel_encoder_encode_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
     decoded = NULL;
     if (frame != NULL &&
         sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(frame))) {
-        status = sixel_frame_decode_ycbcr_copy(frame, encoder->allocator,
-                                                &decoded);
+        status = sixel_encoder_prepare_ycbcr(encoder, frame, &decoded);
         if (SIXEL_FAILED(status)) {
             encoder->sixdelta_refinement_needed = 0;
             encoder->sixdelta_painted_pixels = 0u;
