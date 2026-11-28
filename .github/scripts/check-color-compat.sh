@@ -292,6 +292,8 @@ set -- \
     frame/storage/0150_ycbcr_i420_rgb8_signal.t \
     frame/storage/0151_ycbcr_nv12_rgb8_transfer.t \
     frame/storage/0152_ycbcr_i420_rgb8_linear.t \
+    frame/storage/0153_ycbcr_rgb8_host_fast.t \
+    frame/storage/0154_ycbcr_rgb8_srgb_thresholds.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

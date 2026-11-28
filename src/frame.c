@@ -51,6 +51,7 @@
 #include "loader-common.h"
 #include "options.h"
 #include "scale.h"
+#include "cpu.h"
 #include "sixel_atomic.h"
 
 /* Stream metadata is shared by frames and clones. Parsing an ICC profile
@@ -3078,10 +3079,14 @@ sixel_frame_ycbcr_matrix(sixel_ycbcr_def_t const *definition,
     coefficients[3] = (float)(2.0 * (1.0 - kb) / chroma_divisor);
 }
 
+#define SIXEL_YCBCR_SRGB_BINS 4096
+
 struct sixel_ycbcr_rgb8 {
     sixel_allocator_t *allocator;
     sixel_scale_host_filter_t *filter[3];
     float *row;
+    float srgb_threshold[256];
+    unsigned char srgb_bin[SIXEL_YCBCR_SRGB_BINS];
     int sw, sh, width, height, xphase, yphase, nearest, order;
 };
 
@@ -3107,6 +3112,67 @@ sixel_ycbcr_rgb8_free(sixel_ycbcr_rgb8_t *converter)
         sixel_allocator_free(allocator, converter);
         sixel_allocator_unref(allocator);
     }
+}
+
+static unsigned char
+sixel_ycbcr_rgb8_quantize(float value)
+{
+    /* A callback can produce NaN. Map it to black without casting NaN. */
+    if (!(value > 0.0f)) {
+        return 0;
+    }
+    if (value >= 1.0f) {
+        return 255;
+    }
+    return (unsigned char)(value * 255.0f + 0.5f);
+}
+
+/* Find the first representable value rounding to each higher RGB8 code
+ * using the original floating-point encoder. The steepest sRGB segment
+ * crosses at most one byte boundary in a bin of width 1/4096. */
+static void
+sixel_ycbcr_rgb8_prepare_srgb(sixel_ycbcr_rgb8_t *c)
+{
+    int code, bin;
+    float lo, hi, mid;
+
+    lo = 0.0f;
+    for (code = 0; code < 255; ++code) {
+        hi = 1.0f;
+        while ((mid = lo + (hi - lo) * 0.5f) > lo && mid < hi) {
+            if (sixel_ycbcr_rgb8_quantize(
+                    (float)sixel_color_encode_srgb(mid)) > code) {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
+        }
+        c->srgb_threshold[code] = hi;
+        lo = hi;
+    }
+    c->srgb_threshold[255] = 2.0f;
+    code = 0;
+    for (bin = 0; bin < SIXEL_YCBCR_SRGB_BINS; ++bin) {
+        if (bin * (1.0f / SIXEL_YCBCR_SRGB_BINS) >= c->srgb_threshold[code]) {
+            ++code;
+        }
+        c->srgb_bin[bin] = (unsigned char)code;
+    }
+}
+
+static unsigned char
+sixel_ycbcr_rgb8_pack_srgb(sixel_ycbcr_rgb8_t const *c, float value)
+{
+    unsigned int code;
+
+    if (!(value > 0.0f)) {
+        return 0;
+    }
+    if (value >= 1.0f) {
+        return 255;
+    }
+    code = c->srgb_bin[(unsigned int)(value * SIXEL_YCBCR_SRGB_BINS)];
+    return (unsigned char)(code + (value >= c->srgb_threshold[code]));
 }
 
 SIXELAPI SIXELSTATUS
@@ -3167,6 +3233,7 @@ sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
             return SIXEL_BAD_ALLOCATION;
         }
     }
+    sixel_ycbcr_rgb8_prepare_srgb(c);
     *converter = c;
     return SIXEL_OK;
 }
@@ -3182,19 +3249,6 @@ sixel_ycbcr_rgb8_linear_row(void *context, int y, float *out)
     source->to_linear(source->context, out, source->frame->width);
 }
 
-static unsigned char
-sixel_ycbcr_rgb8_quantize(float value)
-{
-    /* A callback can produce NaN. Map it to black without casting NaN. */
-    if (!(value > 0.0f)) {
-        return 0;
-    }
-    if (value >= 1.0f) {
-        return 255;
-    }
-    return (unsigned char)(value * 255.0f + 0.5f);
-}
-
 SIXELAPI SIXELSTATUS
 sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
     sixel_frame_t const *source, unsigned char *dst, size_t dst_bytes,
@@ -3202,9 +3256,10 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
 {
     sixel_ycbcr_rgb8_source_t input;
     sixel_frame_plane_view_t const *plane;
-    float *yuv[3], *row;
+    float const *yuv[3];
+    float *row;
     size_t row_bytes;
-    int i, x, y, nv12, offset, spacing, plane_index;
+    int i, x, y, nv12, offset, spacing, plane_index, simd_level;
 
     if (converter == NULL || source == NULL || source->ycbcr == NULL ||
         dst == NULL ||
@@ -3225,6 +3280,7 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
         source->transparent_mask != NULL || source->alpha != NULL) {
         return SIXEL_NOT_IMPLEMENTED;
     }
+    simd_level = sixel_cpu_simd_level();
     input.frame = source;
     input.to_linear = to_linear;
     input.context = context;
@@ -3233,7 +3289,7 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
     for (y = 0; y < converter->height; ++y) {
         if (converter->order == SIXEL_YCBCR_RESIZE_LINEAR) {
             row = sixel_scale_host_filter_row(converter->filter[0], y,
-                NULL, 0, 0, sixel_ycbcr_rgb8_linear_row, &input);
+                NULL, 0, 0, sixel_ycbcr_rgb8_linear_row, &input, simd_level);
         } else {
             for (i = 0; i < 3; ++i) {
                 plane_index = nv12 && i == 2 ? 1 : i;
@@ -3242,7 +3298,15 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
                 offset = nv12 && i == 2;
                 yuv[i] = sixel_scale_host_filter_row(converter->filter[i], y,
                     sixel_frame_ycbcr_row(plane, 0) + offset,
-                    plane->stride_bytes, spacing, NULL, NULL);
+                    plane->stride_bytes, spacing, NULL, NULL, simd_level);
+            }
+            if (to_linear == NULL) {
+                sixel_scale_pack_ycbcr_rgb8(dst, yuv, converter->width,
+                    input.offset, input.scale, input.matrix, simd_level);
+                if (y + 1 < converter->height) {
+                    dst += stride;
+                }
+                continue;
             }
             row = converter->row;
             for (x = 0; x < converter->width; ++x) {
@@ -3250,17 +3314,13 @@ sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
                     (yuv[0][x] - input.offset) * input.scale,
                     yuv[1][x] - 128.0f, yuv[2][x] - 128.0f, input.matrix);
             }
-            if (to_linear != NULL) {
-                to_linear(context, row, converter->width);
-            }
-        }
-        if (to_linear != NULL) {
-            for (x = 0; x < (int)row_bytes; ++x) {
-                row[x] = (float)sixel_color_encode_srgb(row[x]);
-            }
+            to_linear(context, row, converter->width);
         }
         for (x = 0; x < (int)row_bytes; ++x) {
-            dst[(size_t)y * stride + x] = sixel_ycbcr_rgb8_quantize(row[x]);
+            dst[x] = sixel_ycbcr_rgb8_pack_srgb(converter, row[x]);
+        }
+        if (y + 1 < converter->height) {
+            dst += stride;
         }
     }
     return SIXEL_OK;

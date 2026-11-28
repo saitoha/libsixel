@@ -3261,6 +3261,165 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* Exercise full NEON blocks, the scalar tail, and the filter's edge taps.
+ * The existing float resize provides a separate reference implementation. */
+static int
+test_ycbcr_rgb8_host_fast(void)
+{
+    enum { SW = 60, SH = 6, CW = SW / 2 };
+    unsigned char luma[SW * SH], cb[CW * SH / 2], cr[CW * SH / 2];
+    unsigned char uv[SW * SH / 2], output[SW * SH * 3];
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *def = NULL;
+    sixel_ycbcr_def_config_t cfg = {sizeof(cfg), SIXEL_YCBCR_ENCODING_BT709,
+        SIXEL_YCBCR_RANGE_LIMITED, 0, 1, NULL};
+    sixel_ycbcr_frame_view_t view = {sizeof(view), 0, SW, SH, 0, {{0}}, NULL};
+    sixel_ycbcr_rgb8_t *converter = NULL;
+    sixel_frame_t *source = NULL, *reference = NULL;
+    float const *pixels;
+    float value;
+    int x, y, layout, ratio, i, width, height, expected, pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb");
+    cfg.rgb = rgb;
+    if (rgb == NULL || (def = sixel_ycbcr_def_new(&cfg)) == NULL ||
+        sixel_frame_new(&source, NULL) || sixel_frame_new(&reference, NULL)) {
+        goto end;
+    }
+    view.definition = def;
+    view.planes[0] = (sixel_frame_plane_view_t){luma, sizeof(luma), 0, SW};
+    for (y = 0; y < SH; ++y) {
+        for (x = 0; x < SW; ++x) {
+            luma[y * SW + x] = (unsigned char)(((31 * x) ^ (71 * y)) & 255);
+        }
+    }
+    for (i = 0; i < CW * SH / 2; ++i) {
+        uv[2 * i] = cb[i] = (unsigned char)((13 * i) & 255);
+        uv[2 * i + 1] = cr[i] = (unsigned char)((59 * i + 19) & 255);
+    }
+    for (layout = 0; layout < 2; ++layout) {
+        view.pixelformat = layout ? SIXEL_PIXELFORMAT_NV12 :
+            SIXEL_PIXELFORMAT_YUV420P;
+        view.plane_count = layout ? 2u : 3u;
+        view.planes[1] = layout ?
+            (sixel_frame_plane_view_t){uv, sizeof(uv), 0, SW} :
+            (sixel_frame_plane_view_t){cb, sizeof(cb), 0, CW};
+        view.planes[2] = (sixel_frame_plane_view_t){cr, sizeof(cr), 0, CW};
+        if (sixel_frame_init_ycbcr_borrowed(source, &view)) {
+            goto end;
+        }
+        for (ratio = 1; ratio <= 3; ++ratio) {
+            width = SW / ratio;
+            height = SH / ratio;
+            if (sixel_frame_init_ycbcr_borrowed(reference, &view) ||
+                sixel_frame_resize_float32(reference, width, height,
+                                           SIXEL_RES_BILINEAR) ||
+                sixel_ycbcr_rgb8_new(&converter, source, width, height,
+                                    SIXEL_YCBCR_RESIZE_SIGNAL, NULL) ||
+                sixel_ycbcr_rgb8_run(converter, source, output,
+                    (size_t)width * height * 3u, (size_t)width * 3u,
+                    NULL, NULL)) {
+                goto end;
+            }
+            pixels = (float const *)(void *)sixel_frame_get_pixels(reference);
+            if (pixels == NULL) {
+                goto end;
+            }
+            for (i = 0; i < width * height * 3; ++i) {
+                value = pixels[i] < 0 ? 0 : pixels[i] > 1 ? 1 : pixels[i];
+                expected = (int)(255.0f * value + 0.5f);
+                if (output[i] != expected) {
+                    fprintf(stderr, "ratio %d, byte %d expected %d got %u\n",
+                            ratio, i, expected, (unsigned int)output[i]);
+                    goto end;
+                }
+            }
+            sixel_ycbcr_rgb8_free(converter);
+            converter = NULL;
+        }
+    }
+    pass = 1;
+end:
+    sixel_ycbcr_rgb8_free(converter);
+    sixel_frame_unref(reference);
+    sixel_frame_unref(source);
+    sixel_ycbcr_def_free(def);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static void
+ycbcr_rgb8_known_linear_row(void *context, float *rgb, int width)
+{
+    memcpy(rgb, context, (size_t)width * 3u * sizeof(float));
+}
+
+/* Check samples on both sides of every RGB8 rounding boundary. The callback
+ * controls the exact linear inputs independently of YCbCr reconstruction. */
+static int
+test_ycbcr_rgb8_srgb_thresholds(void)
+{
+    enum { WIDTH = 256 };
+    unsigned char y[WIDTH] = {0}, uv[WIDTH] = {0}, output[WIDTH * 3];
+    float input[WIDTH * 3];
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *def = NULL;
+    sixel_ycbcr_def_config_t cfg = {sizeof(cfg), SIXEL_YCBCR_ENCODING_BT601,
+        SIXEL_YCBCR_RANGE_FULL, 0, 0, NULL};
+    sixel_ycbcr_frame_view_t view = {sizeof(view), SIXEL_PIXELFORMAT_NV12,
+        WIDTH, 1, 2, {{y, sizeof(y), 0, WIDTH}, {uv, sizeof(uv), 0, WIDTH}},
+        NULL};
+    sixel_ycbcr_rgb8_t *converter = NULL;
+    sixel_frame_t *frame = NULL;
+    double signal, boundary;
+    int i, pass = 0;
+
+    rgb = sixel_color_def_new_named("srgb");
+    cfg.rgb = rgb;
+    if (rgb == NULL || (def = sixel_ycbcr_def_new(&cfg)) == NULL ||
+        sixel_frame_new(&frame, NULL)) {
+        goto end;
+    }
+    view.definition = def;
+    if (sixel_frame_init_ycbcr_borrowed(frame, &view) ||
+        sixel_ycbcr_rgb8_new(&converter, frame, WIDTH, 1,
+                            SIXEL_YCBCR_RESIZE_SIGNAL, NULL)) {
+        goto end;
+    }
+    for (i = 0; i < 255; ++i) {
+        signal = (i + 0.5) / 255.0;
+        boundary = signal <= 0.04045 ? signal / 12.92 :
+                   pow((signal + 0.055) / 1.055, 2.4);
+        /* Leave room for the float sRGB value rounded before packing. */
+        input[3 * i] = (float)(boundary - 4e-7);
+        input[3 * i + 1] = (float)(boundary + 4e-7);
+        input[3 * i + 2] = (float)(i / 255.0);
+    }
+    input[765] = NAN;
+    input[766] = -0.5f;
+    input[767] = 1.5f;
+    if (sixel_ycbcr_rgb8_run(converter, frame, output, sizeof(output),
+            sizeof(output), ycbcr_rgb8_known_linear_row, input)) {
+        goto end;
+    }
+    for (i = 0; i < 255; ++i) {
+        if (output[3 * i] != i || output[3 * i + 1] != i + 1) {
+            fprintf(stderr, "sRGB boundary %d got %u, %u at %.9g and %.9g\n",
+                    i, (unsigned int)output[3 * i],
+                    (unsigned int)output[3 * i + 1],
+                    (double)input[3 * i], (double)input[3 * i + 1]);
+            goto end;
+        }
+    }
+    pass = output[765] == 0 && output[766] == 0 && output[767] == 255;
+end:
+    sixel_ycbcr_rgb8_free(converter);
+    sixel_frame_unref(frame);
+    sixel_ycbcr_def_free(def);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 /* Decode the two SIXEL streams so palettes may choose different indexes. */
 static int
 test_ycbcr_auto_resize(sixel_frame_t *source, float *reference,
@@ -5569,6 +5728,12 @@ test_frame_0014_clone_float(int argc, char **argv)
             c = SIXEL_PIXELFORMAT_NV21;
         } else if (strcmp(argv[2], "yv12") == 0) {
             c = SIXEL_PIXELFORMAT_YV12;
+        }
+        if (strcmp(argv[3], "rgb8-host-fast") == 0) {
+            return test_ycbcr_rgb8_host_fast();
+        }
+        if (strcmp(argv[3], "rgb8-srgb-thresholds") == 0) {
+            return test_ycbcr_rgb8_srgb_thresholds();
         }
         if (strcmp(argv[3], "rgb8-signal") == 0) {
             return test_ycbcr_rgb8(c == SIXEL_PIXELFORMAT_NV12,

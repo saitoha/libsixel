@@ -36,6 +36,7 @@ Operations are split into a SIMD table and a GPU table, so neither grows too wid
 | SAMPLE-VARY-POINTS | Test whether sample points lie in a solid region | done | done | done | done | planned | |
 | SAMPLE-VARY-RGB | Test RGB sample points through channel planes and table lookups | done | done | n/a | done | planned | SSE2 has no byte shuffle; the AVX2 port uses `vpshufb`. |
 | SCALE-RESAMPLE | Accumulate and normalize separable resampling passes for byte and float pixels | done | done | done | done | planned | The 256-bit resampler uses AVX and runs at the AVX runtime level. |
+| SCALE-YCBCR-RGB8 | Convert filtered YCbCr rows to RGB888 | done | done | planned | planned | planned | Signal-domain output without a transfer callback. |
 
 <!-- accel-ledger-end -->
 

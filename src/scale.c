@@ -2690,7 +2690,7 @@ sixel_scale_bilinear_ycbcr420(float *dst, sixel_ycbcr_frame_view_t const *view,
 struct sixel_scale_host_filter {
     sixel_bilinear_taps_t *horizontal, *vertical;
     float *ring, *input, *output;
-    int width, channels, ring_rows, next;
+    int width, channels, ring_rows, next, luma_ratio;
 };
 
 void
@@ -2710,7 +2710,7 @@ sixel_scale_host_filter_new(int sw, int sh, int dw, int dh, int channels,
     int xphase, int yphase, int nearest, sixel_allocator_t *allocator)
 {
     sixel_scale_host_filter_t *filter;
-    int i, k, axis, src[2], dst[2], phase[2];
+    int i, k, skip, axis, src[2], dst[2], phase[2];
     size_t row_samples, samples;
     sixel_bilinear_taps_t *taps[2], *t;
 
@@ -2720,6 +2720,9 @@ sixel_scale_host_filter_new(int sw, int sh, int dw, int dh, int channels,
     }
     filter->width = dw;
     filter->channels = channels;
+    if (channels == 1 && xphase < 0 && sw % dw == 0) {
+        filter->luma_ratio = sw / dw;
+    }
     filter->ring_rows = (2 * sh + dh - 1) / dh + 1;
     row_samples = (size_t)dw * channels;
     samples = (filter->ring_rows + 1u) * row_samples;
@@ -2749,18 +2752,149 @@ sixel_scale_host_filter_new(int sw, int sh, int dw, int dh, int channels,
             if (phase[axis] >= 0) {
                 sixel_scale_chroma_taps(t, src[axis], phase[axis], nearest);
             }
+            /* The general footprint includes zero-weight endpoints.
+             * Remove them so identity and interpolation are explicit. */
+            while (channels == 1 && t->weights[t->count - 1] == 0.0) {
+                --t->count;
+            }
+            skip = 0;
+            while (channels == 1 && t->weights[skip] == 0.0) {
+                ++skip;
+            }
+            t->first += skip;
+            t->count -= skip;
             for (k = 0; k < t->count; ++k) {
-                t->weights[k] /= t->total;
+                t->weights[k] = t->weights[k + skip] / t->total;
             }
         }
     }
     return filter;
 }
 
+/* The one-to-three tap cases cover equal-size chroma, and most taps at
+ * common video shrink factors. Keep a compact loop for wide footprints. */
+static double
+sixel_scale_host_byte_dot(unsigned char const *p, int spacing,
+                          sixel_bilinear_taps_t const *taps)
+{
+    double const *w = taps->weights;
+    double sum;
+    int k;
+
+    switch (taps->count) {
+    case 1:
+        return p[0];
+    case 2:
+        return p[0] * w[0] + p[spacing] * w[1];
+    case 3:
+        return p[0] * w[0] + p[spacing] * w[1] + p[2 * spacing] * w[2];
+    case 4:
+        return p[0] * w[0] + p[spacing] * w[1] +
+               p[2 * spacing] * w[2] + p[3 * spacing] * w[3];
+    default:
+        sum = 0.0;
+        for (k = 0; k < taps->count; ++k) {
+            sum += p[k * spacing] * w[k];
+        }
+        return sum;
+    }
+}
+
+#ifdef SIXEL_USE_NEON
+/* Accel: SCALE-RESAMPLE neon */
+static void
+sixel_scale_host_luma_neon(float *out, unsigned char const *src,
+                           int ratio, int first, int end)
+{
+    uint8x8x2_t left2, right2;
+    uint8x8x3_t left3, right3;
+    uint16x8_t sum;
+    unsigned char const *p;
+    int x;
+#if !SIXEL_SIMD_NEON_A64
+    uint16_t codes[8];
+    int i;
+#endif
+
+    for (x = first; x < end; x += 8) {
+        p = src + ratio * x - 1;
+        if (ratio == 2) {
+            /* Two luma pixels per step and the inner [1, 3, 3, 1] taps. */
+            left2 = vld2_u8(p);
+            right2 = vld2_u8(p + 2);
+            sum = vmull_u8(left2.val[1], vdup_n_u8(3));
+            sum = vmlal_u8(sum, right2.val[0], vdup_n_u8(3));
+            sum = vaddw_u8(vaddw_u8(sum, left2.val[0]), right2.val[1]);
+            vst1q_f32(out + x, vmulq_n_f32(vcvtq_f32_u32(
+                vmovl_u16(vget_low_u16(sum))), 0.125f));
+            vst1q_f32(out + x + 4, vmulq_n_f32(vcvtq_f32_u32(
+                vmovl_u16(vget_high_u16(sum))), 0.125f));
+        } else {
+            /* Three luma pixels per step and the inner [1, 2, 3, 2, 1] taps.
+             * Divide exactly as on the scalar path before rounding to float. */
+            left3 = vld3_u8(p);
+            right3 = vld3_u8(p + 3);
+            sum = vmull_u8(left3.val[2], vdup_n_u8(3));
+            sum = vmlal_u8(sum, left3.val[1], vdup_n_u8(2));
+            sum = vmlal_u8(sum, right3.val[0], vdup_n_u8(2));
+            sum = vaddw_u8(vaddw_u8(sum, left3.val[0]), right3.val[1]);
+#if SIXEL_SIMD_NEON_A64
+            vst1q_f32(out + x, vdivq_f32(vcvtq_f32_u32(
+                vmovl_u16(vget_low_u16(sum))), vdupq_n_f32(9.0f)));
+            vst1q_f32(out + x + 4, vdivq_f32(vcvtq_f32_u32(
+                vmovl_u16(vget_high_u16(sum))), vdupq_n_f32(9.0f)));
+#else
+            vst1q_u16(codes, sum);
+            for (i = 0; i < 8; ++i) {
+                out[x + i] = (float)(codes[i] / 9.0);
+            }
+#endif
+        }
+    }
+}
+#endif
+
+static void
+sixel_scale_host_byte_row(sixel_scale_host_filter_t const *filter,
+    float *out, unsigned char const *bytes, int spacing, int simd_level)
+{
+    sixel_bilinear_taps_t const *taps;
+    int x = 0;
+#ifdef SIXEL_USE_NEON
+    int end;
+#endif
+
+    if (filter->luma_ratio == 1) {
+        for (x = 0; x < filter->width; ++x) {
+            out[x] = (float)bytes[x];
+        }
+        return;
+    }
+#ifdef SIXEL_USE_NEON
+    if (simd_level >= SIXEL_SIMD_LEVEL_NEON && filter->width >= 10 &&
+        (filter->luma_ratio == 2 || filter->luma_ratio == 3)) {
+        /* Leave the first and last pixels and any short tail to the exact
+         * edge footprints, including the unused lanes read by vld3_u8. */
+        end = 1 + ((filter->width - 2) / 8) * 8;
+        out[0] = (float)sixel_scale_host_byte_dot(bytes, 1,
+                                                filter->horizontal);
+        sixel_scale_host_luma_neon(out, bytes, filter->luma_ratio, 1, end);
+        x = end;
+    }
+#else
+    (void)simd_level;
+#endif
+    for (; x < filter->width; ++x) {
+        taps = &filter->horizontal[x];
+        out[x] = (float)sixel_scale_host_byte_dot(
+            bytes + taps->first * spacing, spacing, taps);
+    }
+}
+
 float *
 sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
     unsigned char const *row0, ptrdiff_t stride, int spacing,
-    void (*read_row)(void *, int, float *), void *context)
+    void (*read_row)(void *, int, float *), void *context, int simd_level)
 {
     sixel_bilinear_taps_t const *vertical, *taps;
     unsigned char const *bytes;
@@ -2768,6 +2902,7 @@ sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
     float const *rows[17];
     double sum;
     int channels, samples, x, c, k, base;
+    double const *w;
 
     if (y == 0) {
         filter->next = 0;
@@ -2793,15 +2928,8 @@ sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
             }
         } else {
             bytes = row0 + filter->next * stride;
-            for (x = 0; x < filter->width; ++x) {
-                taps = &filter->horizontal[x];
-                base = taps->first * spacing;
-                sum = 0.0;
-                for (k = 0; k < taps->count; ++k) {
-                    sum += bytes[base + k * spacing] * taps->weights[k];
-                }
-                *line++ = (float)sum;
-            }
+            sixel_scale_host_byte_row(filter, line, bytes, spacing,
+                                      simd_level);
         }
         ++filter->next;
     }
@@ -2809,14 +2937,144 @@ sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
         rows[k] = filter->ring + samples *
             ((vertical->first + k) % filter->ring_rows);
     }
-    for (x = 0; x < samples; ++x) {
-        sum = 0.0;
-        for (k = 0; k < vertical->count; ++k) {
-            sum += rows[k][x] * vertical->weights[k];
+    w = vertical->weights;
+    switch (vertical->count) {
+    case 1:
+        /* Only the RGB caller is allowed to edit its output row. */
+        if (read_row == NULL) {
+            return (float *)rows[0];
         }
-        filter->output[x] = (float)sum;
+        memcpy(filter->output, rows[0], (size_t)samples * sizeof(float));
+        break;
+    case 2:
+        for (x = 0; x < samples; ++x) {
+            filter->output[x] = (float)(rows[0][x] * w[0] + rows[1][x] * w[1]);
+        }
+        break;
+    case 3:
+        for (x = 0; x < samples; ++x) {
+            filter->output[x] = (float)(rows[0][x] * w[0] + rows[1][x] * w[1] +
+                                        rows[2][x] * w[2]);
+        }
+        break;
+    case 4:
+        for (x = 0; x < samples; ++x) {
+            filter->output[x] = (float)(rows[0][x] * w[0] + rows[1][x] * w[1] +
+                                        rows[2][x] * w[2] + rows[3][x] * w[3]);
+        }
+        break;
+    default:
+        for (x = 0; x < samples; ++x) {
+            sum = 0.0;
+            for (k = 0; k < vertical->count; ++k) {
+                sum += rows[k][x] * w[k];
+            }
+            filter->output[x] = (float)sum;
+        }
+        break;
     }
     return filter->output;
+}
+
+/* Accel: SCALE-YCBCR-RGB8 scalar */
+static unsigned char
+sixel_scale_sat_rgb8(float value)
+{
+    float saturated = value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
+
+#if SIXEL_SIMD_NEON_A64
+    return (unsigned char)fmaf(saturated, 255.0f, 0.5f);
+#else
+    return (unsigned char)(saturated * 255.0f + 0.5f);
+#endif
+}
+
+#ifdef SIXEL_USE_NEON
+/* Accel: SCALE-YCBCR-RGB8 neon */
+static inline uint16x4_t
+sixel_scale_sat_rgb8_neon(float32x4_t value)
+{
+    value = vmaxq_f32(vdupq_n_f32(0.0f),
+                     vminq_f32(vdupq_n_f32(1.0f), value));
+#if SIXEL_SIMD_NEON_A64
+    value = vfmaq_n_f32(vdupq_n_f32(0.5f), value, 255.0f);
+#else
+    value = vaddq_f32(vmulq_n_f32(value, 255.0f), vdupq_n_f32(0.5f));
+#endif
+    return vmovn_u32(vcvtq_u32_f32(value));
+}
+
+/* Accel: SCALE-YCBCR-RGB8 neon */
+static inline void
+sixel_scale_ycbcr_neon(float const *const planes[3], int x,
+    float offset, float scale, float const m[4], uint16x4_t rgb[3])
+{
+    float32x4_t y, cb, cr, r, g, b;
+
+    y = vmulq_n_f32(vsubq_f32(vld1q_f32(planes[0] + x),
+                             vdupq_n_f32(offset)), scale);
+    cb = vsubq_f32(vld1q_f32(planes[1] + x), vdupq_n_f32(128.0f));
+    cr = vsubq_f32(vld1q_f32(planes[2] + x), vdupq_n_f32(128.0f));
+#if SIXEL_SIMD_NEON_A64
+    /* Match the scalar rounding at half-byte boundaries on ARM64. */
+    r = vfmaq_n_f32(y, cr, m[0]);
+    g = vfmsq_n_f32(vfmsq_n_f32(y, cb, m[1]), cr, m[2]);
+    b = vfmaq_n_f32(y, cb, m[3]);
+#else
+    r = vaddq_f32(y, vmulq_n_f32(cr, m[0]));
+    g = vsubq_f32(vsubq_f32(y, vmulq_n_f32(cb, m[1])),
+                  vmulq_n_f32(cr, m[2]));
+    b = vaddq_f32(y, vmulq_n_f32(cb, m[3]));
+#endif
+    rgb[0] = sixel_scale_sat_rgb8_neon(r);
+    rgb[1] = sixel_scale_sat_rgb8_neon(g);
+    rgb[2] = sixel_scale_sat_rgb8_neon(b);
+}
+#endif
+
+/* Accel: SCALE-YCBCR-RGB8 scalar neon */
+void
+sixel_scale_pack_ycbcr_rgb8(unsigned char *dst, float const *const planes[3],
+    int width, float offset, float scale, float const matrix[4],
+    int simd_level)
+{
+    int x = 0;
+    float y, cb, cr, r, g, b;
+#ifdef SIXEL_USE_NEON
+    uint16x4_t lo[3], hi[3];
+    uint8x8x3_t rgb;
+    int i;
+
+    if (simd_level >= SIXEL_SIMD_LEVEL_NEON) {
+        for (; x <= width - 8; x += 8) {
+            sixel_scale_ycbcr_neon(planes, x, offset, scale, matrix, lo);
+            sixel_scale_ycbcr_neon(planes, x + 4, offset, scale, matrix, hi);
+            for (i = 0; i < 3; ++i) {
+                rgb.val[i] = vmovn_u16(vcombine_u16(lo[i], hi[i]));
+            }
+            vst3_u8(dst + 3 * x, rgb);
+        }
+    }
+#else
+    (void)simd_level;
+#endif
+    for (; x < width; ++x) {
+        y = (planes[0][x] - offset) * scale;
+        cb = planes[1][x] - 128.0f;
+        cr = planes[2][x] - 128.0f;
+#if SIXEL_SIMD_NEON_A64
+        r = fmaf(cr, matrix[0], y);
+        g = fmaf(-cr, matrix[2], fmaf(-cb, matrix[1], y));
+        b = fmaf(cb, matrix[3], y);
+#else
+        r = y + matrix[0] * cr;
+        g = y - matrix[1] * cb - matrix[2] * cr;
+        b = y + matrix[3] * cb;
+#endif
+        dst[3 * x] = sixel_scale_sat_rgb8(r);
+        dst[3 * x + 1] = sixel_scale_sat_rgb8(g);
+        dst[3 * x + 2] = sixel_scale_sat_rgb8(b);
+    }
 }
 
 static int

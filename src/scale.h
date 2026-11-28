@@ -110,7 +110,12 @@ sixel_scale_host_filter_free(sixel_scale_host_filter_t *filter,
 float *
 sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
     unsigned char const *row0, ptrdiff_t stride, int spacing,
-    void (*read_row)(void *, int, float *), void *context);
+    void (*read_row)(void *, int, float *), void *context, int simd_level);
+
+void
+sixel_scale_pack_ycbcr_rgb8(unsigned char *dst, float const *const planes[3],
+    int width, float offset, float scale, float const matrix[4],
+    int simd_level);
 
 SIXEL_INTERNAL_API size_t
 sixel_scale_parallel_min_bytes(void);
