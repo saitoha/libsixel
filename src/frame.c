@@ -3078,6 +3078,194 @@ sixel_frame_ycbcr_matrix(sixel_ycbcr_def_t const *definition,
     coefficients[3] = (float)(2.0 * (1.0 - kb) / chroma_divisor);
 }
 
+struct sixel_ycbcr_rgb8 {
+    sixel_allocator_t *allocator;
+    sixel_scale_host_filter_t *filter[3];
+    float *row;
+    int sw, sh, width, height, xphase, yphase, nearest, order;
+};
+
+typedef struct sixel_ycbcr_rgb8_source {
+    sixel_frame_t const *frame;
+    sixel_ycbcr_to_linear_fn to_linear;
+    void *context;
+    float offset, scale, matrix[4];
+} sixel_ycbcr_rgb8_source_t;
+
+SIXELAPI void
+sixel_ycbcr_rgb8_free(sixel_ycbcr_rgb8_t *converter)
+{
+    sixel_allocator_t *allocator;
+    int i;
+
+    if (converter != NULL) {
+        allocator = converter->allocator;
+        for (i = 0; i < 3; ++i) {
+            sixel_scale_host_filter_free(converter->filter[i], allocator);
+        }
+        sixel_allocator_free(allocator, converter->row);
+        sixel_allocator_free(allocator, converter);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
+    sixel_frame_t const *source, int width, int height, int order,
+    sixel_allocator_t *allocator)
+{
+    sixel_ycbcr_rgb8_t *c;
+    int i, filters, channels;
+
+    if (converter == NULL || source == NULL || source->ycbcr == NULL ||
+        width <= 0 || height <= 0 ||
+        (order != SIXEL_YCBCR_RESIZE_SIGNAL &&
+         order != SIXEL_YCBCR_RESIZE_LINEAR)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *converter = NULL;
+    if ((source->format.layout != SIXEL_PIXELFORMAT_YUV420P &&
+         source->format.layout != SIXEL_PIXELFORMAT_NV12) ||
+        width > source->width || height > source->height ||
+        source->width > 8LL * width || source->height > 8LL * height ||
+        source->transparent_mask != NULL || source->alpha != NULL) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    if (allocator == NULL) {
+        allocator = source->allocator;
+    }
+    c = sixel_allocator_calloc(allocator, 1, sizeof(*c));
+    if (c == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_allocator_ref(allocator);
+    c->allocator = allocator;
+    c->sw = source->width;
+    c->sh = source->height;
+    c->width = width;
+    c->height = height;
+    c->order = order;
+    c->xphase = source->ycbcr->chroma_x_half;
+    c->yphase = source->ycbcr->chroma_y_half;
+    c->nearest = source->ycbcr->nearest_chroma;
+    filters = order == SIXEL_YCBCR_RESIZE_LINEAR ? 1 : 3;
+    channels = order == SIXEL_YCBCR_RESIZE_LINEAR ? 3 : 1;
+    for (i = 0; i < filters; ++i) {
+        c->filter[i] = sixel_scale_host_filter_new(c->sw, c->sh, width,
+            height, channels, i ? c->xphase : -1, i ? c->yphase : -1,
+            c->nearest, allocator);
+        if (c->filter[i] == NULL) {
+            sixel_ycbcr_rgb8_free(c);
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+    if (order == SIXEL_YCBCR_RESIZE_SIGNAL) {
+        c->row = sixel_allocator_malloc(allocator,
+                                        (size_t)width * 3u * sizeof(float));
+        if (c->row == NULL) {
+            sixel_ycbcr_rgb8_free(c);
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+    *converter = c;
+    return SIXEL_OK;
+}
+
+static void
+sixel_ycbcr_rgb8_linear_row(void *context, int y, float *out)
+{
+    sixel_ycbcr_rgb8_source_t *source = context;
+
+    sixel_frame_decode_ycbcr_planes(source->frame, out, y, y + 1, 1, NULL, 0,
+                                   source->offset, source->scale,
+                                   source->matrix);
+    source->to_linear(source->context, out, source->frame->width);
+}
+
+static unsigned char
+sixel_ycbcr_rgb8_quantize(float value)
+{
+    /* A callback can produce NaN. Map it to black without casting NaN. */
+    if (!(value > 0.0f)) {
+        return 0;
+    }
+    if (value >= 1.0f) {
+        return 255;
+    }
+    return (unsigned char)(value * 255.0f + 0.5f);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
+    sixel_frame_t const *source, unsigned char *dst, size_t dst_bytes,
+    size_t stride, sixel_ycbcr_to_linear_fn to_linear, void *context)
+{
+    sixel_ycbcr_rgb8_source_t input;
+    sixel_frame_plane_view_t const *plane;
+    float *yuv[3], *row;
+    size_t row_bytes;
+    int i, x, y, nv12, offset, spacing, plane_index;
+
+    if (converter == NULL || source == NULL || source->ycbcr == NULL ||
+        dst == NULL ||
+        (converter->order == SIXEL_YCBCR_RESIZE_LINEAR && to_linear == NULL)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    row_bytes = (size_t)converter->width * 3u;
+    if (stride < row_bytes || dst_bytes < row_bytes ||
+        (dst_bytes - row_bytes) / stride < (size_t)(converter->height - 1)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    nv12 = source->format.layout == SIXEL_PIXELFORMAT_NV12;
+    if ((!nv12 && source->format.layout != SIXEL_PIXELFORMAT_YUV420P) ||
+        source->width != converter->sw || source->height != converter->sh ||
+        source->ycbcr->chroma_x_half != converter->xphase ||
+        source->ycbcr->chroma_y_half != converter->yphase ||
+        source->ycbcr->nearest_chroma != converter->nearest ||
+        source->transparent_mask != NULL || source->alpha != NULL) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    input.frame = source;
+    input.to_linear = to_linear;
+    input.context = context;
+    sixel_frame_ycbcr_matrix(source->ycbcr, &input.offset, &input.scale,
+                            input.matrix);
+    for (y = 0; y < converter->height; ++y) {
+        if (converter->order == SIXEL_YCBCR_RESIZE_LINEAR) {
+            row = sixel_scale_host_filter_row(converter->filter[0], y,
+                NULL, 0, 0, sixel_ycbcr_rgb8_linear_row, &input);
+        } else {
+            for (i = 0; i < 3; ++i) {
+                plane_index = nv12 && i == 2 ? 1 : i;
+                plane = &source->ycbcr_planes[plane_index];
+                spacing = 1 + (nv12 && i != 0);
+                offset = nv12 && i == 2;
+                yuv[i] = sixel_scale_host_filter_row(converter->filter[i], y,
+                    sixel_frame_ycbcr_row(plane, 0) + offset,
+                    plane->stride_bytes, spacing, NULL, NULL);
+            }
+            row = converter->row;
+            for (x = 0; x < converter->width; ++x) {
+                sixel_frame_decode_ycbcr_sample(row + 3 * x,
+                    (yuv[0][x] - input.offset) * input.scale,
+                    yuv[1][x] - 128.0f, yuv[2][x] - 128.0f, input.matrix);
+            }
+            if (to_linear != NULL) {
+                to_linear(context, row, converter->width);
+            }
+        }
+        if (to_linear != NULL) {
+            for (x = 0; x < (int)row_bytes; ++x) {
+                row[x] = (float)sixel_color_encode_srgb(row[x]);
+            }
+        }
+        for (x = 0; x < (int)row_bytes; ++x) {
+            dst[(size_t)y * stride + x] = sixel_ycbcr_rgb8_quantize(row[x]);
+        }
+    }
+    return SIXEL_OK;
+}
+
 /* Read source planes directly into the RGB allocation. The source and
  * destination may be the same frame for explicit layout conversion. */
 static SIXELSTATUS

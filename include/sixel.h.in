@@ -1894,6 +1894,39 @@ SIXELAPI SIXELSTATUS
 sixel_frame_get_ycbcr(sixel_frame_t const *frame,
                      sixel_ycbcr_frame_view_t *view);
 
+#define SIXEL_HAVE_YCBCR_RGB8 1
+#define SIXEL_YCBCR_RESIZE_SIGNAL 0
+#define SIXEL_YCBCR_RESIZE_LINEAR 1
+
+typedef struct sixel_ycbcr_rgb8 sixel_ycbcr_rgb8_t;
+
+/* Transform an RGB row in place from source signal to linear sRGB.
+ * A callback used on the allocation-free path must also avoid allocating. */
+typedef void (*sixel_ycbcr_to_linear_fn)(void *context, float *rgb,
+                                       int width);
+
+/* Prepare an I420/NV12 bilinear converter for the source dimensions,
+ * chroma positions and reconstruction method. Each output axis may stay the
+ * same or shrink by up to 8:1. The converter retains no source pixels.
+ * Pass NULL allocator to use the source frame's allocator. */
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_new(sixel_ycbcr_rgb8_t **converter,
+    sixel_frame_t const *source, int width, int height, int order,
+    sixel_allocator_t *allocator);
+
+/* Write RGB888 rows to caller-owned storage without internal allocations.
+ * The destination must not overlap any source plane. Run calls on a
+ * converter must be serialized. A NULL callback packs source RGB signal
+ * directly (SIGNAL order only). Otherwise apply the callback before or after
+ * filtering according to order, then encode sRGB and round to RGB888. */
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_rgb8_run(sixel_ycbcr_rgb8_t *converter,
+    sixel_frame_t const *source, unsigned char *dst, size_t dst_bytes,
+    size_t stride, sixel_ycbcr_to_linear_fn to_linear, void *context);
+
+SIXELAPI void
+sixel_ycbcr_rgb8_free(sixel_ycbcr_rgb8_t *converter);
+
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */

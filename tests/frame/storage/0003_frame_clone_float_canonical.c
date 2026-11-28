@@ -3108,6 +3108,159 @@ end:
     return pass ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static unsigned int ycbcr_rgb8_allocations;
+
+static void *
+ycbcr_rgb8_malloc(size_t bytes)
+{
+    ++ycbcr_rgb8_allocations;
+    return malloc(bytes);
+}
+
+static void *
+ycbcr_rgb8_calloc(size_t n, size_t bytes)
+{
+    ++ycbcr_rgb8_allocations;
+    return calloc(n, bytes);
+}
+
+static void *
+ycbcr_rgb8_realloc(void *ptr, size_t bytes)
+{
+    ++ycbcr_rgb8_allocations;
+    return realloc(ptr, bytes);
+}
+
+static void
+ycbcr_rgb8_square(void *context, float *rgb, int width)
+{
+    int i;
+
+    (void)context;
+    for (i = 0; i < width * 3; ++i) {
+        rgb[i] *= rgb[i];
+    }
+}
+
+/* Reference weights for 3 -> 2 triangle scaling and cosited chroma.
+ * Evaluate the nonlinear transform independently on either side of resize. */
+static int
+test_ycbcr_rgb8(int nv12, int order, int transfer)
+{
+    static int const weights[2][3] = {{5, 3, 0}, {0, 3, 5}};
+    unsigned char luma[] = {210, 70, 110, 0, 85, 160, 90, 0, 40, 96, 128};
+    unsigned char cb[] = {91, 138, 113, 159};
+    unsigned char cr[] = {140, 128, 102, 149};
+    unsigned char uv[] = {91, 140, 138, 128, 113, 102, 159, 149};
+    sixel_color_def_t *rgb = NULL;
+    sixel_ycbcr_def_t *def = NULL;
+    sixel_ycbcr_def_config_t cfg = {sizeof(cfg), SIXEL_YCBCR_ENCODING_BT601,
+        SIXEL_YCBCR_RANGE_FULL, 0, 0, NULL};
+    sixel_ycbcr_frame_view_t view = {sizeof(view), nv12 ?
+        SIXEL_PIXELFORMAT_NV12 : SIXEL_PIXELFORMAT_YUV420P, 3, 3,
+        nv12 ? 2u : 3u, {{0}}, NULL};
+    sixel_ycbcr_rgb8_t *converter = NULL;
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_t *frame = NULL;
+    sixel_ycbcr_to_linear_fn callback = transfer ? ycbcr_rgb8_square : NULL;
+    unsigned char output[15], expected[15];
+    unsigned int before;
+    int ix, iy, x, y, c, sample, axis, repeat, pass = 0;
+    double wx, wy, u, v, value, acc[3], p[3];
+
+    rgb = sixel_color_def_new_named("srgb");
+    if (rgb == NULL) {
+        goto end;
+    }
+    cfg.rgb = rgb;
+    def = sixel_ycbcr_def_new(&cfg);
+    if (def == NULL) {
+        goto end;
+    }
+    view.definition = def;
+    view.planes[0] = (sixel_frame_plane_view_t){luma, sizeof(luma), 8, -4};
+    view.planes[1] = nv12 ? (sixel_frame_plane_view_t){uv, sizeof(uv), 0, 4}
+        : (sixel_frame_plane_view_t){cb, sizeof(cb), 0, 2};
+    view.planes[2] = (sixel_frame_plane_view_t){cr, sizeof(cr), 0, 2};
+    if (sixel_allocator_new(&allocator, ycbcr_rgb8_malloc, ycbcr_rgb8_calloc,
+                            ycbcr_rgb8_realloc, free) ||
+        sixel_frame_new(&frame, allocator) ||
+        sixel_frame_init_ycbcr_borrowed(frame, &view) ||
+        sixel_ycbcr_rgb8_new(&converter, frame, 2, 2, order, allocator)) {
+        goto end;
+    }
+    before = ycbcr_rgb8_allocations;
+    memset(output, 0xa5, sizeof(output));
+    memset(expected, 0xa5, sizeof(expected));
+    if (!SIXEL_FAILED(sixel_ycbcr_rgb8_run(converter, frame, output,
+            sizeof(output) - 1, 9, callback, NULL)) ||
+        memcmp(output, expected, sizeof(output)) != 0) {
+        goto end;
+    }
+    for (repeat = 0; repeat < 3; ++repeat) {
+        luma[8] += 9;
+        for (y = 0; y < 2; ++y) {
+            for (x = 0; x < 2; ++x) {
+                acc[0] = acc[1] = acc[2] = 0;
+                for (iy = 0; iy < 3; ++iy) {
+                    wy = iy / 2.0;
+                    for (ix = 0; ix < 3; ++ix) {
+                        wx = ix / 2.0;
+                        u = v = -128.0;
+                        for (sample = 0; sample < 4; ++sample) {
+                            value = (sample & 1 ? wx : 1.0 - wx) *
+                                (sample & 2 ? wy : 1.0 - wy);
+                            u += cb[sample] * value;
+                            v += cr[sample] * value;
+                        }
+                        p[0] = luma[8 - 4 * iy + ix] + 1.402 * v;
+                        p[1] = luma[8 - 4 * iy + ix] -
+                            (0.114 * 1.772 * u + 0.299 * 1.402 * v) / 0.587;
+                        p[2] = luma[8 - 4 * iy + ix] + 1.772 * u;
+                        for (c = 0; c < 3; ++c) {
+                            value = p[c] / 255.0;
+                            if (order == SIXEL_YCBCR_RESIZE_LINEAR) {
+                                value *= value;
+                            }
+                            acc[c] += value * weights[y][iy] * weights[x][ix];
+                        }
+                    }
+                }
+                for (c = 0; c < 3; ++c) {
+                    value = acc[c] / 64;
+                    if (transfer) {
+                        if (order == SIXEL_YCBCR_RESIZE_SIGNAL) {
+                            value *= value;
+                        }
+                        value = value <= 0.0031308 ? 12.92 * value :
+                            1.055 * pow(value, 1.0 / 2.4) - 0.055;
+                    }
+                    value = value < 0.0 ? 0.0 : value > 1.0 ? 1.0 : value;
+                    expected[y * 9 + x * 3 + c] =
+                        (unsigned char)floor(255 * value + 0.5);
+                }
+            }
+        }
+        if (sixel_ycbcr_rgb8_run(converter, frame, output, sizeof(output), 9,
+                                 callback, NULL) ||
+            memcmp(output, expected, sizeof(output)) != 0) {
+            for (axis = 0; axis < (int)sizeof(output); ++axis) {
+                fprintf(stderr, "%d: %u != %u\n", axis, output[axis],
+                        expected[axis]);
+            }
+            goto end;
+        }
+    }
+    pass = ycbcr_rgb8_allocations == before;
+end:
+    sixel_ycbcr_rgb8_free(converter);
+    sixel_frame_unref(frame);
+    sixel_allocator_unref(allocator);
+    sixel_ycbcr_def_free(def);
+    sixel_color_def_free(rgb);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 /* Decode the two SIXEL streams so palettes may choose different indexes. */
 static int
 test_ycbcr_auto_resize(sixel_frame_t *source, float *reference,
@@ -5416,6 +5569,18 @@ test_frame_0014_clone_float(int argc, char **argv)
             c = SIXEL_PIXELFORMAT_NV21;
         } else if (strcmp(argv[2], "yv12") == 0) {
             c = SIXEL_PIXELFORMAT_YV12;
+        }
+        if (strcmp(argv[3], "rgb8-signal") == 0) {
+            return test_ycbcr_rgb8(c == SIXEL_PIXELFORMAT_NV12,
+                                  SIXEL_YCBCR_RESIZE_SIGNAL, 0);
+        }
+        if (strcmp(argv[3], "rgb8-transfer") == 0) {
+            return test_ycbcr_rgb8(c == SIXEL_PIXELFORMAT_NV12,
+                                  SIXEL_YCBCR_RESIZE_SIGNAL, 1);
+        }
+        if (strcmp(argv[3], "rgb8-linear") == 0) {
+            return test_ycbcr_rgb8(c == SIXEL_PIXELFORMAT_NV12,
+                                  SIXEL_YCBCR_RESIZE_LINEAR, 1);
         }
         if (strcmp(argv[3], "auto-resize") == 0) {
             return test_ycbcr420(c, 0, 1, 0, 0, 3);

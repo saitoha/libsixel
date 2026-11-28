@@ -95,6 +95,23 @@ sixel_scale_bilinear_ycbcr420(float *dst, sixel_ycbcr_frame_view_t const *view,
     int dstw, int dsth, int xphase, int yphase, int nearest,
     sixel_allocator_t *allocator);
 
+typedef struct sixel_scale_host_filter sixel_scale_host_filter_t;
+
+sixel_scale_host_filter_t *
+sixel_scale_host_filter_new(int sw, int sh, int dw, int dh, int channels,
+    int xphase, int yphase, int nearest, sixel_allocator_t *allocator);
+
+void
+sixel_scale_host_filter_free(sixel_scale_host_filter_t *filter,
+                            sixel_allocator_t *allocator);
+
+/* Read one output row. At y == 0 start a fresh frame. The input is either
+ * an 8-bit plane or a callback producing packed float RGB rows. */
+float *
+sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
+    unsigned char const *row0, ptrdiff_t stride, int spacing,
+    void (*read_row)(void *, int, float *), void *context);
+
 SIXEL_INTERNAL_API size_t
 sixel_scale_parallel_min_bytes(void);
 SIXEL_INTERNAL_API int

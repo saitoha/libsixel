@@ -2687,6 +2687,138 @@ sixel_scale_bilinear_ycbcr420(float *dst, sixel_ycbcr_frame_view_t const *view,
     return SIXEL_OK;
 }
 
+struct sixel_scale_host_filter {
+    sixel_bilinear_taps_t *horizontal, *vertical;
+    float *ring, *input, *output;
+    int width, channels, ring_rows, next;
+};
+
+void
+sixel_scale_host_filter_free(sixel_scale_host_filter_t *filter,
+                            sixel_allocator_t *allocator)
+{
+    if (filter != NULL) {
+        sixel_allocator_free(allocator, filter->horizontal);
+        sixel_allocator_free(allocator, filter->vertical);
+        sixel_allocator_free(allocator, filter->ring);
+        sixel_allocator_free(allocator, filter);
+    }
+}
+
+sixel_scale_host_filter_t *
+sixel_scale_host_filter_new(int sw, int sh, int dw, int dh, int channels,
+    int xphase, int yphase, int nearest, sixel_allocator_t *allocator)
+{
+    sixel_scale_host_filter_t *filter;
+    int i, k, axis, src[2], dst[2], phase[2];
+    size_t row_samples, samples;
+    sixel_bilinear_taps_t *taps[2], *t;
+
+    filter = sixel_allocator_calloc(allocator, 1, sizeof(*filter));
+    if (filter == NULL) {
+        return NULL;
+    }
+    filter->width = dw;
+    filter->channels = channels;
+    filter->ring_rows = (2 * sh + dh - 1) / dh + 1;
+    row_samples = (size_t)dw * channels;
+    samples = (filter->ring_rows + 1u) * row_samples;
+    filter->horizontal = sixel_allocator_malloc(allocator,
+                                                dw * sizeof(*t));
+    filter->vertical = sixel_allocator_malloc(allocator, dh * sizeof(*t));
+    filter->ring = sixel_allocator_malloc(allocator,
+        (samples + (size_t)sw * channels) * sizeof(float));
+    if (!filter->horizontal || !filter->vertical || !filter->ring) {
+        sixel_scale_host_filter_free(filter, allocator);
+        return NULL;
+    }
+    filter->output = filter->ring + filter->ring_rows * row_samples;
+    filter->input = filter->ring + samples;
+    src[0] = sw;
+    src[1] = sh;
+    dst[0] = dw;
+    dst[1] = dh;
+    phase[0] = xphase;
+    phase[1] = yphase;
+    taps[0] = filter->horizontal;
+    taps[1] = filter->vertical;
+    for (axis = 0; axis < 2; ++axis) {
+        for (i = 0; i < dst[axis]; ++i) {
+            t = &taps[axis][i];
+            sixel_scale_bilinear_taps(t, i, src[axis], dst[axis]);
+            if (phase[axis] >= 0) {
+                sixel_scale_chroma_taps(t, src[axis], phase[axis], nearest);
+            }
+            for (k = 0; k < t->count; ++k) {
+                t->weights[k] /= t->total;
+            }
+        }
+    }
+    return filter;
+}
+
+float *
+sixel_scale_host_filter_row(sixel_scale_host_filter_t *filter, int y,
+    unsigned char const *row0, ptrdiff_t stride, int spacing,
+    void (*read_row)(void *, int, float *), void *context)
+{
+    sixel_bilinear_taps_t const *vertical, *taps;
+    unsigned char const *bytes;
+    float *line;
+    float const *rows[17];
+    double sum;
+    int channels, samples, x, c, k, base;
+
+    if (y == 0) {
+        filter->next = 0;
+    }
+    channels = filter->channels;
+    samples = filter->width * channels;
+    vertical = &filter->vertical[y];
+    while (filter->next < vertical->first + vertical->count) {
+        line = filter->ring + (filter->next % filter->ring_rows) * samples;
+        if (read_row != NULL) {
+            read_row(context, filter->next, filter->input);
+            for (x = 0; x < filter->width; ++x) {
+                taps = &filter->horizontal[x];
+                base = taps->first * channels;
+                for (c = 0; c < channels; ++c) {
+                    sum = 0.0;
+                    for (k = 0; k < taps->count; ++k) {
+                        sum += filter->input[base + k * channels + c] *
+                               taps->weights[k];
+                    }
+                    *line++ = (float)sum;
+                }
+            }
+        } else {
+            bytes = row0 + filter->next * stride;
+            for (x = 0; x < filter->width; ++x) {
+                taps = &filter->horizontal[x];
+                base = taps->first * spacing;
+                sum = 0.0;
+                for (k = 0; k < taps->count; ++k) {
+                    sum += bytes[base + k * spacing] * taps->weights[k];
+                }
+                *line++ = (float)sum;
+            }
+        }
+        ++filter->next;
+    }
+    for (k = 0; k < vertical->count; ++k) {
+        rows[k] = filter->ring + samples *
+            ((vertical->first + k) % filter->ring_rows);
+    }
+    for (x = 0; x < samples; ++x) {
+        sum = 0.0;
+        for (k = 0; k < vertical->count; ++k) {
+            sum += rows[k][x] * vertical->weights[k];
+        }
+        filter->output[x] = (float)sum;
+    }
+    return filter->output;
+}
+
 static int
 sixel_scale_image_float32(
     float             /* out */ *dst,
