@@ -113,6 +113,8 @@ struct sixel_encoder_palette_test_hooks {
 struct sixel_playback_test_hooks {
     void (*waiting)(void *context);
     void *context;
+    /* Exercise the production fallback when a worker cannot start. */
+    int force_synchronous;
 };
 
 /* Helper-lane barriers for deterministic ownership tests. Install before
@@ -121,6 +123,8 @@ struct sixel_encoder_prepare_test_hooks {
     void (*begin)(void *context, uint64_t sequence);
     void (*complete)(void *context, uint64_t sequence, SIXELSTATUS status);
     void *context;
+    int (*predict_key)(void *context, uint64_t sequence, int predicted);
+    void (*retry)(void *context, uint64_t sequence);
 };
 
 /* Deferred producer rendezvous. No hook executes under a queue gate. */

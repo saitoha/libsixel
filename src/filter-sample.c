@@ -176,7 +176,7 @@ sixel_filter_sample_select_stride(
     return stride;
 }
 
-static void
+SIXEL_INTERNAL_API void
 sixel_filter_sample_plan_grid(sixel_filter_sample_config_t const *config,
     int width, int height, sixel_filter_sample_grid_t *grid)
 {

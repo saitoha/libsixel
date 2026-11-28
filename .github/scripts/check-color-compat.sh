@@ -219,6 +219,76 @@ set -- \
     frame/storage/0077_public_rgbf32_init_retry.t \
     frame/storage/0078_public_icc_input_direction.t \
     frame/storage/0079_public_rgbf32_owned_slice.t \
+    frame/storage/0080_ycbcr422_borrow.t \
+    frame/storage/0081_ycbcr422_bounds.t \
+    frame/storage/0082_ycbcr422_clone.t \
+    frame/storage/0083_ycbcr422_retry.t \
+    frame/storage/0084_ycbcr422_unsupported.t \
+    frame/storage/0085_ycbcr422_definition.t \
+    frame/storage/0086_ycbcr422_rgb_bt601.t \
+    frame/storage/0087_ycbcr422_rgb_bt709.t \
+    frame/storage/0088_ycbcr422_rgb_bt2020.t \
+    frame/storage/0089_ycbcr422_rgb_nearest.t \
+    frame/storage/0090_ycbcr422_rgb_transfer.t \
+    frame/storage/0091_ycbcr422_rgb_retry.t \
+    frame/storage/0092_ycbcr422_rgb_invalid.t \
+    frame/storage/0093_ycbcr422_encode.t \
+    frame/storage/0094_ycbcr422_odd_crop.t \
+    frame/storage/0095_ycbcr422_playback.t \
+    frame/storage/0096_ycbcr422_palette_source.t \
+    frame/storage/0097_ycbcr422_palette_mismatch.t \
+    frame/storage/0098_ycbcr422_delta.t \
+    frame/storage/0099_ycbcr422_operation_observer.t \
+    frame/storage/0100_ycbcr422_fixed_palette_source.t \
+    frame/storage/0101_ycbcr422_adaptive_source.t \
+    frame/storage/0102_ycbcr422_grid_icc.t \
+    frame/storage/0103_ycbcr422_cancel_queued.t \
+    frame/storage/0104_ycbcr422_cancel_prepared.t \
+    frame/storage/0105_ycbcr422_source_alloc_failure.t \
+    frame/storage/0106_ycbcr422_delta_reprepare.t \
+    frame/storage/0107_ycbcr422_latest_discard.t \
+    frame/storage/0108_ycbcr422_deferred_delta_yuyv.t \
+    frame/storage/0109_deferred_delta_rgbf32.t \
+    frame/storage/0110_ycbcr422_full_palette_rgb_copy.t \
+    frame/storage/0111_ycbcr422_auto_palette_grid_reuse.t \
+    frame/storage/0112_ycbcr422_sync_allocation_lifetime.t \
+    frame/storage/0113_ycbcr422_queued_allocation_lifetime.t \
+    frame/storage/0114_ycbcr_negative_stride.t \
+    frame/storage/0115_ycbcr_plane_bounds.t \
+    frame/storage/0116_ycbcr_view_lifetime.t \
+    frame/storage/0117_ycbcr_i420_linear.t \
+    frame/storage/0118_ycbcr_nv12_linear.t \
+    frame/storage/0119_ycbcr_nv12_nearest.t \
+    frame/storage/0120_ycbcr_yuv411p_linear.t \
+    frame/storage/0121_ycbcr_yuv411p_nearest.t \
+    frame/storage/0122_ycbcr_nv21_order.t \
+    frame/storage/0123_ycbcr_yv12_order.t \
+    frame/storage/0124_ycbcr_iyu2_order.t \
+    frame/storage/0125_ycbcr_shared_span_limit.t \
+    frame/storage/0126_ycbcr_shared_plane_clone.t \
+    frame/storage/0127_ycbcr420_mixed_phase_edges.t \
+    frame/storage/0128_ycbcr_nv21_delta_borrow.t \
+    frame/storage/0129_ycbcr_nv21_cancel_borrow.t \
+    frame/storage/0130_ycbcr_nv21_allocation_borrow.t \
+    frame/storage/0131_ycbcr_yuyv_deferred_cancel_alloc.t \
+    frame/storage/0132_ycbcr_uyvy_deferred_cancel_alloc.t \
+    frame/storage/0133_ycbcr_nv21_deferred_cancel_alloc.t \
+    frame/storage/0134_ycbcr_descriptor_lifetime.t \
+    frame/storage/0135_ycbcr_shared_span_boundary.t \
+    frame/storage/0136_ycbcr_420_singleton_linear.t \
+    frame/storage/0137_ycbcr_420_singleton_nearest.t \
+    frame/storage/0138_ycbcr_yv12_delta_borrow.t \
+    frame/storage/0139_ycbcr_yv12_cancel_borrow.t \
+    frame/storage/0140_ycbcr_i420_bilinear_resize.t \
+    frame/storage/0141_ycbcr_nv12_bilinear_resize.t \
+    frame/storage/0142_ycbcr_i420_resize_allocation.t \
+    frame/storage/0143_ycbcr_nv12_resize_allocation.t \
+    frame/storage/0144_ycbcr_nv12_resize_nearest_chroma.t \
+    frame/storage/0145_ycbcr_i420_auto_resize.t \
+    frame/storage/0146_ycbcr_nv12_auto_preserve.t \
+    frame/storage/0147_ycbcr_i420_auto_delta.t \
+    frame/storage/0148_ycbcr_nv12_auto_delta_preserve.t \
+    frame/storage/0149_ycbcr_i420_auto_adaptive.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

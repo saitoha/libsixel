@@ -130,6 +130,10 @@ sixel_filter_sample_init(sixel_filter_t *filter,
  * sums) exactly the histogram the CPU scan builds. Fails, leaving CELLS
  * unspecified, when no device is available or allocation or dispatch fails.
  */
+SIXEL_INTERNAL_API void
+sixel_filter_sample_plan_grid(sixel_filter_sample_config_t const *config,
+    int width, int height, sixel_filter_sample_grid_t *grid);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_sample_solid_gpu(
     unsigned char const /* in */  *pixels,

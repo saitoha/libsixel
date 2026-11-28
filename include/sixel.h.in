@@ -255,6 +255,17 @@ typedef int SIXELSTATUS;
 /* SIXEL band columns, a decode-only output; see sixel_decode_result_t. */
 #define SIXEL_PIXELFORMAT_BANDCOLUMNS (SIXEL_FORMATTYPE_PALETTE | 0x30)
 
+/* 8-bit YCbCr layouts for sixel_frame_init_ycbcr_borrowed(). */
+#define SIXEL_PIXELFORMAT_YUYV (SIXEL_FORMATTYPE_COLOR | 0x30)
+#define SIXEL_PIXELFORMAT_UYVY (SIXEL_FORMATTYPE_COLOR | 0x31)
+#define SIXEL_PIXELFORMAT_YUV420P (SIXEL_FORMATTYPE_COLOR | 0x32)
+#define SIXEL_PIXELFORMAT_NV12 (SIXEL_FORMATTYPE_COLOR | 0x33)
+#define SIXEL_PIXELFORMAT_YUV411P (SIXEL_FORMATTYPE_COLOR | 0x34)
+#define SIXEL_PIXELFORMAT_NV21 (SIXEL_FORMATTYPE_COLOR | 0x35)
+#define SIXEL_PIXELFORMAT_YV12 (SIXEL_FORMATTYPE_COLOR | 0x36)
+#define SIXEL_PIXELFORMAT_IYU2 (SIXEL_FORMATTYPE_COLOR | 0x37)
+#define SIXEL_FRAME_COLORSPACE_YCBCR 0x101
+
 /* palette type */
 #define SIXEL_PALETTETYPE_AUTO     0   /* choose palette type automatically */
 #define SIXEL_PALETTETYPE_HLS      1   /* HLS colorspace */
@@ -1788,7 +1799,7 @@ SIXELAPI void
 sixel_color_def_free(sixel_color_def_t *definition);
 
 /* Borrow mutable, tightly packed RGB float triplets in the supplied
- * definition. The frame copies the definition and does not convert the
+ * definition. The frame retains the definition and does not convert the
  * samples. Follow sixel_frame_init_borrowed() for the pixel lifetime.
  * The definition must support RGB input. A failed initialization leaves
  * the existing frame unchanged. */
@@ -1797,6 +1808,91 @@ SIXELAPI SIXELSTATUS
 sixel_frame_init_rgbf32_borrowed(sixel_frame_t *frame, float *pixels,
                                int width, int height,
                                sixel_color_def_t const *definition);
+
+#define SIXEL_HAVE_FRAME_INIT_YCBCR_BORROWED 1
+#define SIXEL_YCBCR_ENCODING_BT601      1
+#define SIXEL_YCBCR_ENCODING_BT709      2
+#define SIXEL_YCBCR_ENCODING_BT2020_NCL 3
+#define SIXEL_YCBCR_RANGE_LIMITED       1
+#define SIXEL_YCBCR_RANGE_FULL          2
+#define SIXEL_YCBCR_MAX_PLANES          4
+
+typedef struct sixel_ycbcr_def sixel_ycbcr_def_t;
+
+/* Chroma offsets use half-luma-sample units relative to the first luma
+ * sample of each group. Each subsampled axis accepts 0 (cosited) or
+ * the centered offset (1 at a 2:1 ratio, 3 at a 4:1 ratio). Other axes
+ * require 0. RGB describes the decoded samples. Chroma reconstruction
+ * extends edge samples. Nearest uses the preceding sample at a tie. */
+typedef struct sixel_ycbcr_def_config {
+    size_t struct_size;
+    int encoding;
+    int range;
+    int chroma_x_half;
+    int chroma_y_half;
+    sixel_color_def_t const *rgb;
+} sixel_ycbcr_def_config_t;
+
+/* The immutable definition retains RGB. Set struct_size to sizeof the
+ * config before calling either function. The getter borrows RGB for the
+ * lifetime of the definition. SIXEL_FRAME_YCBCR_CHROMA selects linear
+ * (default) or nearest at definition creation. */
+SIXELAPI sixel_ycbcr_def_t *
+sixel_ycbcr_def_new(sixel_ycbcr_def_config_t const *config);
+
+SIXELAPI SIXELSTATUS
+sixel_ycbcr_def_get(sixel_ycbcr_def_t const *definition,
+                   sixel_ycbcr_def_config_t *config);
+
+SIXELAPI void
+sixel_ycbcr_def_free(sixel_ycbcr_def_t *definition);
+
+typedef struct sixel_frame_plane_view {
+    void const *base;
+    size_t buffer_bytes;
+    size_t row0_offset;
+    ptrdiff_t stride_bytes;
+} sixel_frame_plane_view_t;
+
+typedef struct sixel_ycbcr_frame_view {
+    size_t struct_size;
+    int pixelformat;
+    int width;
+    int height;
+    unsigned int plane_count;
+    sixel_frame_plane_view_t planes[SIXEL_YCBCR_MAX_PLANES];
+    sixel_ycbcr_def_t const *definition;
+} sixel_ycbcr_frame_view_t;
+
+/* Set struct_size to sizeof the view. YUYV and UYVY require one plane and
+ * positive even width. YUV420P (I420) takes Y, Cb, Cr and YV12 takes
+ * Y, Cr, Cb. NV12 and NV21 take Y and interleaved CbCr or CrCb,
+ * respectively. These 4:2:0 layouts allow odd sizes and use ceil(width/2)
+ * by ceil(height/2) chroma samples. YUV411P takes Y, Cb, Cr, with
+ * ceil(width/4) chroma samples on every luma row. IYU2 takes one plane of
+ * Cb, Y, Cr triplets at full resolution, with both chroma offsets set
+ * to zero. Planes may share an allocation.
+ * Each plane has an accessible span starting at base, a logical row-zero
+ * offset and a signed byte stride. Only active bytes are required at the
+ * final row. Storage accounting includes the union of declared spans.
+ *
+ * Initialization copies the descriptor, retains the definition, and
+ * borrows the read-only pixels. Failure preserves the frame. Keep pixels
+ * alive until release, reinitialization or successful in-place conversion,
+ * and until playback completion for every admitted submission using them.
+ * Use SIXEL_PIXELFORMAT_RGBFLOAT32 for explicit in-place conversion. */
+SIXELAPI SIXELSTATUS
+sixel_frame_init_ycbcr_borrowed(sixel_frame_t *frame,
+    sixel_ycbcr_frame_view_t const *view);
+
+/* Set struct_size to sizeof the view. The returned plane and definition are
+ * borrowed until frame release, reinitialization or in-place conversion.
+ * On failure the output view stays intact. A clone owns tightly packed rows
+ * in logical order. get_pixels() returns row zero of the first plane.
+ * Use this view to obtain all planes, strides and storage metadata. */
+SIXELAPI SIXELSTATUS
+sixel_frame_get_ycbcr(sixel_frame_t const *frame,
+                     sixel_ycbcr_frame_view_t *view);
 
 /* get pixels */
 SIXELAPI unsigned char *
@@ -1843,7 +1939,10 @@ SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
 
 /* Set the pixel layout. Reapplying RGBFLOAT32 preserves float samples
- * and their current color definition. */
+ * and their current color definition. For YUYV or UYVY, RGBFLOAT32 decodes
+ * the declared range, horizontal chroma position and YCbCr encoding.
+ * The owned float samples retain the supplied RGB definition and extended
+ * range. Borrowed bytes are untouched. Failure leaves the frame unchanged. */
 SIXELAPI SIXELSTATUS
 sixel_frame_set_pixelformat(
     sixel_frame_t /* in */ *frame,
@@ -1925,7 +2024,12 @@ sixel_frame_resize(
     int            /* in */ height,
     int            /* in */ method_for_resampling);
 
-/* resize a frame in float precision with specified resampling filter */
+/* Resize a frame in float precision with the specified filter.
+ * Bilinear resizing also accepts borrowed I420 and NV12 without coverage.
+ * YCbCr samples are filtered before RGB conversion. Each dimension can
+ * stay the same or shrink by up to 8:1. On success
+ * the frame owns RGB float32 pixels in the decoded RGB definition.
+ * Failure preserves the original YCbCr frame and its borrowed planes. */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize_float32(
     sixel_frame_t  /* in */ *frame,
@@ -2271,7 +2375,9 @@ sixel_encoder_encode(
 
 #define SIXEL_HAVE_ENCODER_ENCODE_FRAME 1
 
-/* encode an initialized frame to SIXEL format */
+/* Encode an initialized frame to SIXEL format. Packed YUYV and UYVY are
+ * decoded into private RGB float32 storage, preserving the source frame
+ * and its bytes. Keep borrowed pixels alive throughout the call. */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode_frame(
     sixel_encoder_t /* in */ *encoder,
@@ -2302,14 +2408,18 @@ sixel_encoder_encode_frame(
  *
  * Ownership.  An admitted frame is referenced by the playback object and
  * may be modified by encoding; the caller must neither read nor modify it
- * until its completion callback has run.  Per-frame 6delta placement and
- * threshold limits are taken from the submission options, not from the
- * encoder at the time the frame is encoded.
+ * until its completion callback has run. YCbCr inputs are read into
+ * private RGB float32 storage after admission. Keep their borrowed buffers
+ * alive until completion. Per-frame 6delta placement and threshold limits
+ * are taken from the submission options at admission.
  *
  * While a playback object is attached, other calls on its encoder fail with
  * SIXEL_BAD_ARGUMENT; release the playback object to use the encoder
- * directly again.  The completion callback runs on a playback worker in
- * submission order; it must not call the playback object or its encoder.
+ * directly again. Completion callbacks run in submission order. The
+ * worker delivers them while active. A caller draining or cancelling after
+ * worker exit may deliver queued interruptions. Synchronous playback
+ * completes an admitted frame inside submit and returns its completion
+ * status. The callback must not call the playback object or its encoder.
  * sixel_helper_get_additional_message() inside the callback describes a
  * failed frame.  After a failure, frames not yet started complete with
  * SIXEL_INTERRUPTED and later admissions return the first failure status.
@@ -2416,10 +2526,12 @@ typedef struct sixel_playback_config {
 
 #define SIXEL_HAVE_PLAYBACK_PALETTE_SOURCE 1
 
-/* Optional palette_source is an independent, immutable RGB frame used only
+/* Optional palette_source is an independent, immutable frame used only
  * for palette sampling. Its geometry is independent of the submitted image:
  * output crop/resize do not apply to this source. Both frames must have the
- * same pixel format/colorspace. NULL samples the submitted image as usual.
+ * same pixel format/colorspace. YCbCr frames also require matching
+ * YCbCr encoding, range, chroma location and interpolation policy, and RGB
+ * definitions. NULL samples the submitted image as usual.
  * Playback retains the source through completion; borrowed pixels must remain
  * alive and unchanged until the done callback, including cancellation.
  * Adaptive sampling stays bounded; explicit full-frame samples this entire

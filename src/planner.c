@@ -37,6 +37,7 @@
 #include "compat_stub.h"
 #include "encoder.h"
 #include "frame.h"
+#include "frame-normalize.h"
 #include "gpu-palette.h"
 #include "loader-common.h"
 #include "options.h"
@@ -695,7 +696,8 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     planner->clip_active = (encoder->clipwidth > 0 && encoder->clipheight > 0)
         ? 1
         : 0;
-    planner->scale_active = (encoder->pixelwidth >= 0
+    planner->scale_active = sixel_frame_get_resize_source(frame) == NULL &&
+                            (encoder->pixelwidth >= 0
                             || encoder->pixelheight >= 0
                             || encoder->percentwidth >= 0
                             || encoder->percentheight >= 0)

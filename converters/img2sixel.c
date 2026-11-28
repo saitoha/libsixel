@@ -2094,6 +2094,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Environment-only compatibility setting; no dedicated CLI flag."
     },
     {
+        "SIXEL_FRAME_YCBCR_CHROMA",
+        "set packed 4:2:2 frame API chroma reconstruction to linear\n"
+        "(default) or nearest. Read when creating the stream definition."
+    },
+    {
         "SIXEL_LOADER_CMS_TARGET_COLORSPACE",
         "set loader CMS output colorspace after loader-side CMS conversion.\n"
         "Accepts srgb, srgb-linear, lab-d65, oklab, or din99d.\n"

@@ -2470,6 +2470,223 @@ sixel_helper_scale_image(
     return nret;
 }
 
+typedef struct sixel_bilinear_taps {
+    int first, count;
+    double weights[17];
+    double total;
+} sixel_bilinear_taps_t;
+
+/* Same centers, support and edge normalization as the float RGB scaler.
+ * With a shrink factor of at most eight the triangle spans at most 17 taps. */
+static void
+sixel_scale_bilinear_taps(sixel_bilinear_taps_t *taps, int pos,
+                         int src, int dst)
+{
+    int i, last;
+
+    taps->first = MAX((int)floor(((pos - 0.5) * src) / dst), 0);
+    last = MIN((int)floor(((pos + 1.5) * src) / dst), src - 1);
+    taps->count = last - taps->first + 1;
+    taps->total = 0.0;
+    for (i = 0; i < taps->count; ++i) {
+        taps->weights[i] = bilinear(fabs(
+            ((taps->first + i + 0.5) * dst - (pos + 0.5) * src) / src));
+        taps->total += taps->weights[i];
+    }
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_scale_bilinear_rgbf32_rows(float *dst, int srcw, int srch,
+    int dstw, int dsth, void (*read_row)(void *, int, float *),
+    void *source, sixel_allocator_t *allocator)
+{
+    sixel_bilinear_taps_t *horizontal, vertical;
+    sixel_bilinear_taps_t const *taps;
+    float *scratch, *row, *ring, *out;
+    float const *sample;
+    double r, g, b, weight;
+    size_t stride, ring_rows, offset;
+    int x, y, k, next_row = 0;
+
+    if (dstw < 1 || dsth < 1 || dstw > srcw || dsth > srch ||
+            srcw > 8 * dstw || srch > 8 * dsth) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    stride = (size_t)dstw * 3u;
+    ring_rows = (2u * srch + dsth - 1u) / dsth + 1u;
+    horizontal = sixel_allocator_malloc(allocator, dstw * sizeof(*horizontal));
+    scratch = sixel_allocator_malloc(allocator,
+        ((size_t)srcw * 3u + ring_rows * stride) * sizeof(float));
+    if (horizontal == NULL || scratch == NULL) {
+        sixel_allocator_free(allocator, horizontal);
+        sixel_allocator_free(allocator, scratch);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    row = scratch;
+    ring = scratch + (size_t)srcw * 3u;
+    for (x = 0; x < dstw; ++x) {
+        sixel_scale_bilinear_taps(&horizontal[x], x, srcw, dstw);
+    }
+
+    /* Successive vertical footprints share rows. Store only the rows
+     * intersecting the current footprint and read each source row once. */
+    for (y = 0; y < dsth; ++y) {
+        sixel_scale_bilinear_taps(&vertical, y, srch, dsth);
+        while (next_row < vertical.first + vertical.count) {
+            read_row(source, next_row, row);
+            out = ring + (next_row % ring_rows) * stride;
+            for (x = 0; x < dstw; ++x, out += 3) {
+                taps = &horizontal[x];
+                sample = row + (size_t)taps->first * 3u;
+                r = g = b = 0.0;
+                for (k = 0; k < taps->count; ++k, sample += 3) {
+                    weight = taps->weights[k];
+                    r += sample[0] * weight;
+                    g += sample[1] * weight;
+                    b += sample[2] * weight;
+                }
+                out[0] = (float)(r / taps->total);
+                out[1] = (float)(g / taps->total);
+                out[2] = (float)(b / taps->total);
+            }
+            ++next_row;
+        }
+        offset = (size_t)vertical.first % ring_rows;
+        for (x = 0; x < dstw; ++x, dst += 3) {
+            r = g = b = 0.0;
+            for (k = 0; k < vertical.count; ++k) {
+                sample = ring + ((offset + k) % ring_rows) * stride + x * 3u;
+                weight = vertical.weights[k];
+                r += sample[0] * weight;
+                g += sample[1] * weight;
+                b += sample[2] * weight;
+            }
+            dst[0] = (float)(r / vertical.total);
+            dst[1] = (float)(g / vertical.total);
+            dst[2] = (float)(b / vertical.total);
+        }
+    }
+    sixel_allocator_free(allocator, horizontal);
+    sixel_allocator_free(allocator, scratch);
+    return SIXEL_OK;
+}
+
+/* Compose the RGB raster's bilinear footprint with chroma reconstruction.
+ * Keep the original footprint's normalization, including truncated edges. */
+static void
+sixel_scale_chroma_taps(sixel_bilinear_taps_t *taps, int src,
+                       int phase, int nearest)
+{
+    sixel_bilinear_taps_t chroma = {0};
+    int count = (src + 1) / 2;
+    int first, second = 0, i;
+    float fraction;
+
+    chroma.total = taps->total;
+    for (i = 0; i < taps->count; ++i) {
+        sixel_scale_ycbcr_axis(taps->first + i, phase, 1, count, nearest,
+                              &first, &second, &fraction);
+        if (i == 0) {
+            chroma.first = first;
+        }
+        chroma.weights[first - chroma.first] +=
+            taps->weights[i] * (1.0 - fraction);
+        chroma.weights[second - chroma.first] += taps->weights[i] * fraction;
+    }
+    chroma.count = second - chroma.first + 1;
+    *taps = chroma;
+}
+
+/* Cache only horizontally filtered rows in the current vertical footprint.
+ * NV12 uses the original interleaved storage with a two-byte sample step. */
+static void
+sixel_scale_ycbcr_plane(float *dst, int dstw, int dsth,
+    sixel_frame_plane_view_t const *plane, int offset, int spacing,
+    int srcw, int srch, int xphase, int yphase, int nearest,
+    sixel_bilinear_taps_t *horizontal, float *ring, size_t ring_rows)
+{
+    sixel_bilinear_taps_t vertical;
+    sixel_bilinear_taps_t const *taps;
+    float const *rows[17];
+    float *line;
+    unsigned char const *row, *sample;
+    double sum;
+    int x, y, k, next_row = 0;
+
+    for (x = 0; x < dstw; ++x) {
+        sixel_scale_bilinear_taps(&horizontal[x], x, srcw, dstw);
+        if (xphase >= 0) {
+            sixel_scale_chroma_taps(&horizontal[x], srcw, xphase, nearest);
+        }
+    }
+    for (y = 0; y < dsth; ++y) {
+        sixel_scale_bilinear_taps(&vertical, y, srch, dsth);
+        if (yphase >= 0) {
+            sixel_scale_chroma_taps(&vertical, srch, yphase, nearest);
+        }
+        while (next_row < vertical.first + vertical.count) {
+            row = (unsigned char const *)plane->base + plane->row0_offset +
+                  next_row * plane->stride_bytes + offset;
+            line = ring + (next_row % ring_rows) * dstw;
+            for (x = 0; x < dstw; ++x) {
+                taps = &horizontal[x];
+                sample = row + taps->first * spacing;
+                sum = 0.0;
+                for (k = 0; k < taps->count; ++k) {
+                    sum += sample[k * spacing] * taps->weights[k];
+                }
+                line[x] = (float)(sum / taps->total);
+            }
+            ++next_row;
+        }
+        for (k = 0; k < vertical.count; ++k) {
+            rows[k] = ring + ((vertical.first + k) % ring_rows) * dstw;
+        }
+        for (x = 0; x < dstw; ++x, dst += 3) {
+            sum = 0.0;
+            for (k = 0; k < vertical.count; ++k) {
+                sum += rows[k][x] * vertical.weights[k];
+            }
+            *dst = (float)(sum / vertical.total);
+        }
+    }
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_scale_bilinear_ycbcr420(float *dst, sixel_ycbcr_frame_view_t const *view,
+    int dstw, int dsth, int xphase, int yphase, int nearest,
+    sixel_allocator_t *allocator)
+{
+    sixel_bilinear_taps_t *taps;
+    float *ring;
+    size_t ring_rows;
+    int nv12 = view->plane_count == 2;
+
+    if (dstw < 1 || dsth < 1 || dstw > view->width || dsth > view->height ||
+        view->width > 8 * dstw || view->height > 8 * dsth) {
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    ring_rows = (2u * view->height + dsth - 1u) / dsth + 1u;
+    taps = sixel_allocator_malloc(allocator, dstw * sizeof(*taps));
+    ring = sixel_allocator_malloc(allocator, ring_rows * dstw * sizeof(float));
+    if (taps == NULL || ring == NULL) {
+        sixel_allocator_free(allocator, taps);
+        sixel_allocator_free(allocator, ring);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_scale_ycbcr_plane(dst, dstw, dsth, &view->planes[0], 0, 1,
+        view->width, view->height, -1, -1, 0, taps, ring, ring_rows);
+    sixel_scale_ycbcr_plane(dst + 1, dstw, dsth, &view->planes[1], 0, 1 + nv12,
+        view->width, view->height, xphase, yphase, nearest,
+        taps, ring, ring_rows);
+    sixel_scale_ycbcr_plane(dst + 2, dstw, dsth, &view->planes[2 - nv12],
+        nv12, 1 + nv12, view->width, view->height, xphase, yphase, nearest,
+        taps, ring, ring_rows);
+    sixel_allocator_free(allocator, taps);
+    sixel_allocator_free(allocator, ring);
+    return SIXEL_OK;
+}
+
 static int
 sixel_scale_image_float32(
     float             /* out */ *dst,

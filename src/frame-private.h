@@ -53,6 +53,10 @@ struct sixel_frame {
         unsigned char *u8ptr;       /* loaded pixel data (byte) */
         float *f32ptr;              /* loaded pixel data (float32) */
     } pixels;
+    sixel_frame_t *pixel_owner;     /* retained source of a private view */
+    sixel_ycbcr_def_t *ycbcr;       /* shared immutable stream definition */
+    sixel_frame_plane_view_t ycbcr_planes[3]; /* active storage descriptors */
+    int ycbcr_width, ycbcr_height; /* active rectangle at acquisition */
     /* In-place crops keep backing storage beyond the logical rectangle.
      * Zero means the current layout describes the entire plane. Coverage
      * is either a binary mask or a straight alpha plane. */
@@ -67,6 +71,7 @@ struct sixel_frame {
     int ncolors;                    /* palette colors */
     struct sixel_frame_pixel_format format;
     unsigned int cms_history;
+    sixel_frame_t *resize_source;  /* original frame before private resize */
     /*
      * Timeline metadata can be updated by the loader while worker threads
      * sample or quantize shared frames. Keep these fields atomic so that
@@ -84,6 +89,7 @@ struct sixel_frame {
     float *alpha;                  /* owned straight fractional coverage */
     size_t alpha_count;            /* one finite [0,1] sample per pixel */
     sixel_allocator_t *allocator;   /* allocator object */
+    struct sixel_ycbcr422_counts *ycbcr_counts; /* optional observer */
 };
 
 #ifdef __cplusplus

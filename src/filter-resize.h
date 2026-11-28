@@ -43,6 +43,10 @@ typedef struct sixel_filter_resize_config {
     int method_for_resampling;
 } sixel_filter_resize_config_t;
 
+void
+sixel_filter_resize_compute_target(sixel_filter_resize_config_t const *config,
+    int src_width, int src_height, int *dst_width, int *dst_height);
+
 SIXELSTATUS
 sixel_filter_resize_init(sixel_filter_t *filter,
                          const sixel_filter_resize_config_t *config);

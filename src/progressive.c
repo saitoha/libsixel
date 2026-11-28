@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "progressive.h"
+#include "pixelformat.h"
 #include "progressive-measure.h"
 #include "encoder.h"
 #include "palette.h"
@@ -502,6 +503,10 @@ sixel_repair_context_bind(sixel_repair_context_t *context,
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (source != NULL &&
+        sixel_pixelformat_is_ycbcr(sixel_frame_get_pixelformat(source))) {
+        return SIXEL_NOT_IMPLEMENTED;
     }
     status = sixel_encoder_operation_enter(context->encoder,
                                            SIXEL_ENCODER_OPERATION_NORMAL);

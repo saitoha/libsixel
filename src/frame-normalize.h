@@ -26,6 +26,7 @@
 #define LIBSIXEL_FRAME_NORMALIZE_H
 
 #include <6cells.h>
+#include "sixel_atomic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +41,56 @@ sixel_frame_convert_pixels(sixel_frame_t *frame, int layout,
 /* Resolve an internal output/work format to an explicit conversion target. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_convert_workformat(sixel_frame_t *frame, int format);
+
+/* Optional per-source observation for the packed-frame regression tests.
+ * Install before handing the frame to an encoder and keep the counters
+ * alive until all operations have joined. Read the counts after joining. */
+typedef struct sixel_ycbcr422_counts {
+    sixel_atomic_u32_t packed_copies;
+    sixel_atomic_u32_t rgb_conversions;
+    sixel_atomic_u32_t rgb_pixels;
+    sixel_atomic_u32_t rgb_copies;
+    sixel_atomic_u32_t rgb_resizes;
+} sixel_ycbcr422_counts_t;
+
+SIXEL_INTERNAL_API void
+sixel_frame_observe_ycbcr422(sixel_frame_t *frame,
+                            sixel_ycbcr422_counts_t *counts);
+
+/* Produce a private RGB frame directly from YCbCr planes. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_decode_ycbcr_copy(sixel_frame_t const *frame,
+                                sixel_allocator_t *allocator,
+                                sixel_frame_t **frame_out);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_resize_ycbcr_rows(sixel_frame_t *frame, int width, int height);
+
+sixel_frame_t *
+sixel_frame_get_resize_source(sixel_frame_t const *frame);
+
+SIXELSTATUS
+sixel_frame_prepare_ycbcr_resize(sixel_frame_t *frame,
+    sixel_allocator_t *allocator, int width, int height, int preserve,
+    sixel_frame_t **result);
+
+/* A view owns its metadata and retains its immutable profile RGB source.
+ * Consumers must replace storage before writing to the pixel plane. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_view_profile_rgb(sixel_frame_t *frame,
+    sixel_allocator_t *allocator, sixel_frame_t **result);
+
+/* Decode the original raster coordinates selected by a sampling grid.
+ * A full decode can reuse the same source's previously decoded grid. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_sample_ycbcr(sixel_frame_t const *frame,
+    sixel_allocator_t *allocator, int step, sixel_frame_t const *grid,
+    int grid_step, sixel_frame_t **frame_out);
+
+/* Match storage layout, decoding policy and RGB definition. */
+SIXEL_INTERNAL_API int
+sixel_frame_ycbcr_matches(sixel_frame_t const *frame,
+                            sixel_frame_t const *source);
 
 /* Normalize packed gamma RGB/gray alpha for the native float encoder.
  * Metadata still decides whether alpha is interpreted. Fractional blending

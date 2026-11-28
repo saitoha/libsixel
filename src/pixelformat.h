@@ -28,6 +28,32 @@
 #include <sixel.h>
 #include "colorspace.h"
 
+static inline int
+sixel_pixelformat_ycbcr_planes(int layout)
+{
+    switch (layout) {
+    case SIXEL_PIXELFORMAT_YUYV:
+    case SIXEL_PIXELFORMAT_UYVY:
+    case SIXEL_PIXELFORMAT_IYU2:
+        return 1;
+    case SIXEL_PIXELFORMAT_NV12:
+    case SIXEL_PIXELFORMAT_NV21:
+        return 2;
+    case SIXEL_PIXELFORMAT_YUV420P:
+    case SIXEL_PIXELFORMAT_YUV411P:
+    case SIXEL_PIXELFORMAT_YV12:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+static inline int
+sixel_pixelformat_is_ycbcr(int layout)
+{
+    return sixel_pixelformat_ycbcr_planes(layout) != 0;
+}
+
 /* Internal sample representations for working buffers. The public frame
  * layout is RGBFLOAT32 for each of these coordinate systems. */
 #define SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x21)

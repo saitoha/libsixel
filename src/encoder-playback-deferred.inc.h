@@ -203,8 +203,8 @@ sixel_playback_producer_main(void *context)
         if (status == SIXEL_OK && sixel_playback_solve_cancelled(&cancel))
             status = SIXEL_INTERRUPTED;
         if (status == SIXEL_OK) {
-            status = sixel_encoder_frame_clone(slot->work_frame,
-                producer->pipeline->encoder->allocator, &slot->source);
+            status = sixel_encoder_pipeline_slot_save_source(producer->pipeline,
+                                                              slot);
         }
         if (status == SIXEL_OK) {
             if (producer->pipeline->encoder->prepare_test_hooks != NULL &&
@@ -272,8 +272,9 @@ sixel_playback_producer_main(void *context)
         slot->status = status;
         slot->prepared = slot->job->active != 0;
         if (SIXEL_FAILED(status)) sixel_status_take_message(&slot->message);
+        /* The consumer decides whether a failure is terminal. A cancellation
+         * can supersede a preparation error before the slot is claimed. */
         sixel_playback_producer_publish(producer, slot);
-        if (status != SIXEL_OK && status != SIXEL_INTERRUPTED) break;
         index ^= 1;
     }
     if (terminal) sixel_playback_producer_publish(producer, NULL);
@@ -431,6 +432,9 @@ sixel_encoder_frame_pipeline_run_deferred_legacy(
         if (entered) sixel_encoder_operation_leave(encoder);
         i = slot == &producer.slots[0] ? 0 : 1;
         sixel_encoder_pipeline_slot_clear(slot);
+        /* Stop the producer without granting another credit on failure. */
+        if (status != SIXEL_OK &&
+                (status != SIXEL_INTERRUPTED || entered)) break;
         (void)sixel_atomic_fetch_add_u32(&q->released[i], 1);
         if (!resolved) {
             /* An unclaimed/cancelled frame never applied its origin. Reset
@@ -444,8 +448,6 @@ sixel_encoder_frame_pipeline_run_deferred_legacy(
         } else {
             sixel_playback_ready_wake(q);
         }
-        if (status != SIXEL_OK &&
-                (status != SIXEL_INTERRUPTED || entered)) break;
     }
     sixel_playback_ready_stop(q);
     sixel_thread_join(&producer.thread);
