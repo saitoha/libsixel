@@ -8241,7 +8241,7 @@ sixel_encoder_set_output_transparent_policy(sixel_output_t *output,
     return sixel_output_set_encoder_options(output, &options);
 }
 
-/* force skips the size floor; the CPU/GPU cost comparison still applies. */
+/* force skips the size floor; the core also skips the CPU/GPU comparison. */
 static SIXELSTATUS
 sixel_encoder_set_output_gpu_body_threshold(sixel_output_t *output,
                                             sixel_encoder_t const *encoder)

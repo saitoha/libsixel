@@ -45,10 +45,11 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_test_clock(sixel_encoder_core_t *core,
     double (*clock)(void *), void *context);
 
-/* Requests GPU band composition for later frames; a core without it, or
- * without a usable device, keeps composing on the CPU. */
+/* Requests GPU band composition for later frames under policy (one of
+ * SIXEL_GPU_POLICY_*); a core without it, or without a usable device, keeps
+ * composing on the CPU. FORCE pins eligible WebGPU frames to the device. */
 SIXEL_INTERNAL_API void
-sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *core, int enabled);
+sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *core, int policy);
 
 /* Sets the minimum frame pixels for GPU body spelling; 0 admits every size.
  * Other core implementations ignore it. */

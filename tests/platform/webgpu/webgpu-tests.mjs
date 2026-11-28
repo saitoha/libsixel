@@ -43,6 +43,52 @@ function convert(createConverter, policy, method, lookup = 'none',
     });
 }
 
+// Entry points of the WebGPU body stage.
+const bodyStages = new Set([
+    'classify', 'count_spans', 'span_offsets', 'span_bases', 'write_spans',
+    'span_lengths', 'span_order', 'span_order_group', 'byte_offsets', 'span_write',
+]);
+
+// force also spells the body of a still image on the device, after palette
+// application. Tests of the earlier stages skip its passes, and seen tells
+// that the body has started, so later readbacks are its own.
+function trackBodyPasses() {
+    const device = GPUDevice.prototype;
+    const pass = GPUComputePassEncoder.prototype;
+    const create = device.createComputePipeline;
+    const createAsync = device.createComputePipelineAsync;
+    const setPipeline = pass.setPipeline;
+    const pipelines = new WeakSet(), passes = new WeakSet();
+    const tracker = {
+        seen: false,
+        isBody: encoder => passes.has(encoder),
+        restore() {
+            device.createComputePipeline = create;
+            device.createComputePipelineAsync = createAsync;
+            pass.setPipeline = setPipeline;
+        },
+    };
+    const note = (pipeline, descriptor) => {
+        if (bodyStages.has(descriptor.compute.entryPoint))
+            pipelines.add(pipeline);
+        return pipeline;
+    };
+    device.createComputePipeline = function (descriptor) {
+        return note(create.call(this, descriptor), descriptor);
+    };
+    device.createComputePipelineAsync = async function (descriptor) {
+        return note(await createAsync.call(this, descriptor), descriptor);
+    };
+    pass.setPipeline = function (pipeline) {
+        if (pipelines.has(pipeline)) {
+            passes.add(this);
+            tracker.seen = true;
+        }
+        return setPipeline.call(this, pipeline);
+    };
+    return tracker;
+}
+
 async function sha256(bytes) {
     const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
     return Array.from(digest, b => b.toString(16).padStart(2, '0')).join('');
@@ -69,10 +115,12 @@ function solidSamplingImage() {
 async function paletteByteEquivalence(createConverter) {
     const original = GPUQueue.prototype.submit;
     const dispatch = GPUComputePassEncoder.prototype.dispatchWorkgroups;
+    const body = trackBodyPasses();
     let submissions = 0;
     const multiGroupPasses = [];
     GPUComputePassEncoder.prototype.dispatchWorkgroups = function (...groups) {
-        if (groups.some(n => n > 1)) multiGroupPasses.push(groups[0]);
+        if (!body.isBody(this) && groups.some(n => n > 1))
+            multiGroupPasses.push(groups[0]);
         return dispatch.apply(this, groups);
     };
     GPUQueue.prototype.submit = function (...args) {
@@ -189,6 +237,7 @@ async function paletteByteEquivalence(createConverter) {
     } finally {
         GPUComputePassEncoder.prototype.dispatchWorkgroups = dispatch;
         GPUQueue.prototype.submit = original;
+        body.restore();
     }
 }
 
@@ -243,19 +292,21 @@ async function diffusionEquivalence(createConverter) {
     const proto = GPUComputePassEncoder.prototype;
     const original = proto.dispatchWorkgroups;
     const map = GPUBuffer.prototype.mapAsync;
+    const body = trackBodyPasses();
     const grids = [], reads = [];
     GPUBuffer.prototype.mapAsync = function (mode, ...args) {
-        if (mode === GPUMapMode.READ) reads.push(this.size);
+        if (mode === GPUMapMode.READ && !body.seen) reads.push(this.size);
         return map.call(this, mode, ...args);
     };
     proto.dispatchWorkgroups = function (...args) {
-        grids.push(args.slice(0, 2).join("x"));
+        if (!body.isBody(this)) grids.push(args.slice(0, 2).join("x"));
         return original.apply(this, args);
     };
     try {
         for (const [lookup, method, expected] of cases) {
             const before = grids.length;
             reads.length = 0;
+            body.seen = false;
             const bytes = await convert(createConverter, 'force', method, lookup);
             const hex = await sha256(bytes);
             // Builders precede initialization. Point phases select one of
@@ -271,6 +322,7 @@ async function diffusionEquivalence(createConverter) {
     } finally {
         GPUBuffer.prototype.mapAsync = map;
         proto.dispatchWorkgroups = original;
+        body.restore();
     }
 }
 
@@ -346,7 +398,7 @@ function bodyAnimation(width, height, frames) {
             if (i % 254 === 0) code(256);
             const x = i % width, y = Math.floor(i / width);
             const base = 8 * ((Math.floor(y / 6) + frame) & 1);
-            // Fine patterns give the first CPU frame many mask bytes to
+            // Fine patterns give the other frames many mask bytes to
             // spell, but gaps <= 9 merge to eight spans per band. The
             // 12-column stripes on frame two give 86 spans at width 1024.
             const color = frame === 1 ? Math.floor(x / 12) : x + 3 * y + frame;
@@ -375,10 +427,6 @@ async function bodySpellEquivalence(createConverter) {
     const setPipeline = pass.setPipeline;
     const dispatch = pass.dispatchWorkgroups;
     const copy = encoder.copyBufferToBuffer;
-    const bodyStages = new Set([
-        'classify', 'count_spans', 'span_offsets', 'span_bases', 'write_spans',
-        'span_lengths', 'span_order', 'span_order_group', 'byte_offsets', 'span_write',
-    ]);
     const createBuffer = device.createBuffer;
     const pipelines = new WeakMap(), passes = new WeakMap();
     const dispatches = new Map(), bandReadbacks = [];
@@ -468,21 +516,22 @@ async function bodySpellEquivalence(createConverter) {
             throw Error('WebGPU body did not dispatch span_order_group');
         if (!dispatches.has('span_order'))
             throw Error('WebGPU body did not dispatch span_order');
-        // A third attempt proves neither warm-up frame failed and put
-        // the consumer back on the CPU for the rest of the animation.
+        // A third attempt proves neither early frame failed and parked
+        // the consumer on the CPU for the rest of the animation.
         if (bandReadbacks.length < 3)
-            throw Error('WebGPU body did not complete both warm-up frames');
+            throw Error('WebGPU body did not complete its first two frames');
         // Resident route: every frame applied its palette into the plane
-        // without the per-chunk index readback. The device body bound the
-        // plane, and the CPU-measured first frame read it back once.
+        // without the per-chunk index readback. force measures no CPU
+        // chain, so the device body bound the plane on every frame and no
+        // host consumer read it back.
         if (route.resident < frames || route.readback)
             throw Error('palette indexes were not kept on the device: ' +
                 JSON.stringify(route));
-        if (route.bound < 3 || !route.synced)
-            throw Error('resident indexes missed the body or the CPU frame: ' +
+        if (route.bound !== frames || route.synced)
+            throw Error('force did not spell every frame on the device: ' +
                 JSON.stringify(route));
         const [groupSpans, singleSpans] = await Promise.all(
-            bandReadbacks.slice(0, 2).map(async bands => {
+            bandReadbacks.slice(1, 3).map(async bands => {
                 await bands.mapAsync(GPUMapMode.READ);
                 const bases = new Uint32Array(bands.getMappedRange());
                 const count = bases[4] - bases[0];
@@ -493,6 +542,19 @@ async function bodySpellEquivalence(createConverter) {
             throw Error('span_order_group fixture expected 86 spans, got ' + groupSpans);
         if (singleSpans !== 8)
             throw Error('span_order fixture expected 8 spans, got ' + singleSpans);
+        // auto emits the first frame on the CPU to measure its chain,
+        // which reads the plane back; this fixture's chain then admits
+        // the device for the following frames.
+        reset();
+        const auto = await encode('auto', animation, []);
+        if (await sha256(cpu) !== await sha256(auto))
+            throw Error('auto WebGPU SIXEL animation digest differs');
+        if (route.resident < frames || route.readback)
+            throw Error('auto kept no palette indexes on the device: ' +
+                JSON.stringify(route));
+        if (route.bound < 3 || !route.synced)
+            throw Error('auto resident indexes missed the body or the ' +
+                'CPU frame: ' + JSON.stringify(route));
         // One pixel row below the default auto floor of 262144 pixels, and
         // one row below a raised floor of 1048576.
         const tiny = bodyAnimation(511, 512, 3);

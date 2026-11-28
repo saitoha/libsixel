@@ -20,7 +20,7 @@ typedef struct sixel_indexed_core {
     SIXELSTATUS status;
     /* GPU band composition: requested per frame by the session, created on
      * first use, and disabled for this core after the device fails once. */
-    int gpu_body;
+    int gpu_body;  /* SIXEL_GPU_POLICY_*; OFF keeps the CPU. */
     size_t gpu_body_threshold;  /* Minimum frame pixels; 0 admits all. */
     int gpu_unavailable;
     sixel_body_gpu_t *gpu;
@@ -391,18 +391,23 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
         core->webgpu_body_warm = 0;
         core->webgpu_body_slow = 0;
     }
-    /* Recheck the CPU chain every sixteen frames. High resolution alone
-     * cannot pay for two GPU readbacks on a low-complexity scene, while a
-     * complex one pays for them well below a megapixel. */
-    if (core->webgpu_body_frames == 0) {
-        *cpu_start = sixel_timer_monotonic();
-        return 0;
-    }
+    /* A device failure parks the body on the CPU for fifteen frames under
+     * either policy. FORCE otherwise spells every eligible frame: it asks
+     * for the device to carry the work, not for the faster chain. */
     if (core->webgpu_body_frames < 0) {
         ++core->webgpu_body_frames;
         return 0;
     }
-    --core->webgpu_body_frames;
+    /* Under AUTO, recheck the CPU chain every sixteen frames. High
+     * resolution alone cannot pay for two GPU readbacks on a low-complexity
+     * scene, while a complex one pays for them well below a megapixel. */
+    if (core->gpu_body != SIXEL_GPU_POLICY_FORCE) {
+        if (core->webgpu_body_frames == 0) {
+            *cpu_start = sixel_timer_monotonic();
+            return 0;
+        }
+        --core->webgpu_body_frames;
+    }
     memset(&request, 0, sizeof(request));
     body = core->body;
     for (i = 0; i < ncolors; ++i)
@@ -427,7 +432,9 @@ sixel_indexed_core_webgpu_body(sixel_indexed_core_t *core,
      * before applying the steady-state comparison. One slow frame is not
      * a trend: device times of a 1920 x 1080 frame spread from 6.7 to
      * 10 ms around a CPU chain of 10 ms. */
-    if (core->webgpu_body_warm < 2) {
+    if (core->gpu_body == SIXEL_GPU_POLICY_FORCE) {
+        /* No comparison: the CPU chain is never measured. */
+    } else if (core->webgpu_body_warm < 2) {
         ++core->webgpu_body_warm;
     } else if (gpu_ms * 0.001 < core->webgpu_body_cpu_seconds) {
         core->webgpu_body_slow = 0;
@@ -687,12 +694,12 @@ sixel_encoder_core_test_clock(sixel_encoder_core_t *self,
 /* Internal: request GPU band composition for the next prepared frames.
  * Other core implementations ignore it. */
 SIXEL_INTERNAL_API void
-sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *self, int enabled)
+sixel_encoder_core_set_gpu_body(sixel_encoder_core_t *self, int policy)
 {
     if (self == NULL || self->vtbl != &g_indexed_core_vtbl) {
         return;
     }
-    ((sixel_indexed_core_t *)self)->gpu_body = enabled != 0;
+    ((sixel_indexed_core_t *)self)->gpu_body = policy;
 }
 
 /* Internal: minimum frame pixels for GPU body spelling. */

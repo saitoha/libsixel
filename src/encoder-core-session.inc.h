@@ -636,7 +636,7 @@ sixel_encode_resident_indexed(sixel_legacy_encode_request_t const *request)
     result.header.height = take.description.encoded_height;
     result.header.use_raster_attributes = 1;
     result.threads = sixel_threads_resolve();
-    result.gpu_body = request->dither->gpu_policy != SIXEL_GPU_POLICY_OFF;
+    result.gpu_body = request->dither->gpu_policy;
     status = sixel_output_publish_resolved(output, &result);
 end:
     sixel_indexed_frame_unref(result.image);
@@ -801,8 +801,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         if (SIXEL_FAILED(status)) goto end;
     }
     if (output->core != NULL) {
-        sixel_encoder_core_set_gpu_body(output->core,
-            dither->gpu_policy != SIXEL_GPU_POLICY_OFF);
+        sixel_encoder_core_set_gpu_body(output->core, dither->gpu_policy);
         sixel_encoder_core_set_gpu_body_threshold(output->core,
             output->gpu_body_threshold);
     }
@@ -910,8 +909,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         prepared->capture->options = body.options;
         prepared->capture->header = header;
         prepared->capture->threads = body.threads;
-        prepared->capture->gpu_body =
-            dither->gpu_policy != SIXEL_GPU_POLICY_OFF;
+        prepared->capture->gpu_body = dither->gpu_policy;
         image = NULL;
         emit_started = 0;
         ++dither->apply_count;
