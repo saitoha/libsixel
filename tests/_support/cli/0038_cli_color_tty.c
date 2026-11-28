@@ -66,6 +66,8 @@
  * Give that exchange its own budget; silent/flood test the short deadline. */
 #define COLOR_TTY_SUB_CANCEL_TIMEOUT_MS 2000
 #define COLOR_TTY_SUB_CANCEL_WATCHDOG_SECONDS 8
+/* The identity check allocates a second PTY and has no timing assertion. */
+#define COLOR_TTY_IDENTITY_WATCHDOG_SECONDS 8
 
 static volatile sig_atomic_t color_tty_cancelled;
 static volatile sig_atomic_t color_tty_inject_signal;
@@ -331,6 +333,7 @@ static int color_tty_child(char const *name, int command, int report)
     int flags;
     int pipes[2];
     int sub_cancel;
+    int watchdog;
     int output_copy;
     int other_master;
     int other_slave;
@@ -351,7 +354,11 @@ static int color_tty_child(char const *name, int command, int report)
     sigaction(SIGTERM, &action, NULL);
     sigaction(SIGUSR2, &action, NULL);
     /* A broken blocking-write implementation cannot hang the test suite. */
-    alarm(sub_cancel ? COLOR_TTY_SUB_CANCEL_WATCHDOG_SECONDS : 2);
+    watchdog = sub_cancel ? COLOR_TTY_SUB_CANCEL_WATCHDOG_SECONDS : 2;
+    if (strcmp(name, "identity") == 0) {
+        watchdog = COLOR_TTY_IDENTITY_WATCHDOG_SECONDS;
+    }
+    alarm((unsigned int)watchdog);
     flags = fcntl(STDOUT_FILENO, F_GETFL);
     memset(&original, 0, sizeof(original));
     if (tcgetattr(STDOUT_FILENO, &original) != 0 ||
@@ -748,8 +755,16 @@ static int color_tty_script(char const *name, int master, int command,
                (count == -1 &&
                 (errno == EAGAIN || errno == EWOULDBLOCK || errno == EIO));
     }
+    if (strcmp(name, "identity") == 0) {
+        if (!color_tty_expect_timeout(report, "d",
+                                      COLOR_TTY_IDENTITY_WATCHDOG_SECONDS)) {
+            color_tty_error("identity completion report");
+            return 0;
+        }
+        return 1;
+    }
     if (strcmp(name, "non-tty") == 0 || strcmp(name, "unrelated") == 0 ||
-        strcmp(name, "identity") == 0 || strcmp(name, "foreground") == 0 ||
+        strcmp(name, "foreground") == 0 ||
         strcmp(name, "inactive") == 0 || strcmp(name, "close-active") == 0) {
         return color_tty_expect(report, "d");
     }
