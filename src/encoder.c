@@ -9881,6 +9881,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     int clustering_colorspace;
     int working_colorspace;
     int prefer_float32;
+    int source_alpha_key;
     int reserve_alpha_key;
     int cluster_target;
     int palette_reqcolors;
@@ -9990,11 +9991,10 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
         request->quantize_model,
         effective_quantize_model);
     palette_reqcolors = request->capacity;
-    reserve_alpha_key =
-        palette_reqcolors > 1
-        && (sixel_encoder_frame_preserves_alpha_key(frame)
-            || (!request->from_map_image &&
-                request->delta_alpha_key));
+    source_alpha_key = sixel_encoder_frame_preserves_alpha_key(frame);
+    reserve_alpha_key = palette_reqcolors > 1 &&
+        (source_alpha_key ||
+         (!request->from_map_image && request->delta_alpha_key));
     if (reserve_alpha_key) {
         --palette_reqcolors;
     }
@@ -10085,8 +10085,13 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
      * including CMS output when the base preference is auto or 8bit. */
     prefer_float32 = request->prefer_float32 ||
         SIXEL_WORKFORMAT_IS_FLOAT32(sixel_frame_format(frame));
+    /* A delta-only key marks omissions, not source transparency. A
+     * profiled RGB sample still needs definition-aware conversion before
+     * the palette can use ordinary clustering and working coordinates. */
     if (!request->clustering_icc && reserve_alpha_key &&
-            !(*dither)->use_rgb101_palette) {
+            !(*dither)->use_rgb101_palette &&
+            (source_alpha_key || sixel_frame_get_colorspace(frame) !=
+                SIXEL_FRAME_COLORSPACE_PROFILE_RGB)) {
         clustering_colorspace = sixel_frame_get_colorspace(frame);
         palette_target_pixelformat = sixel_frame_format(frame);
     } else {
@@ -13004,17 +13009,25 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
         if (!publish || status != SIXEL_OK) {
             sixel_palette_store_job_cancel(job->context.own_palette);
         }
-        status = sixel_encoder_latest_join(&job->context, status);
-        if (job->context.own_palette != NULL) {
-            sixel_palette_store_job_result(job->context.own_palette, &own);
-            if (own.snapshot != NULL) {
-                job->context.palette =
-                    sixel_palette_snapshot_profile(own.snapshot)->construction;
-                sixel_palette_snapshot_unref(own.snapshot);
+        /* A discarded preparation only needs to join its borrowers.
+         * Recovering its palette can publish a stale snapshot for the
+         * same sequence and redo sampling before the real retry. */
+        if (publish) {
+            status = sixel_encoder_latest_join(&job->context, status);
+            if (job->context.own_palette != NULL) {
+                sixel_palette_store_job_result(job->context.own_palette, &own);
+                if (own.snapshot != NULL) {
+                    job->context.palette =
+                        sixel_palette_snapshot_profile(own.snapshot)
+                            ->construction;
+                    sixel_palette_snapshot_unref(own.snapshot);
+                }
             }
-            sixel_palette_store_job_release(job->context.own_palette);
         }
-        job->context.own_palette = NULL;
+        if (job->context.own_palette != NULL) {
+            sixel_palette_store_job_release(job->context.own_palette);
+            job->context.own_palette = NULL;
+        }
     }
     sixel_output_dispose_deferred(&job->context.deferred);
     free(job->context.resident_body.serialized);

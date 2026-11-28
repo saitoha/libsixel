@@ -246,6 +246,9 @@ set -- \
     frame/storage/0104_ycbcr422_cancel_prepared.t \
     frame/storage/0105_ycbcr422_source_alloc_failure.t \
     frame/storage/0106_ycbcr422_delta_reprepare.t \
+    frame/storage/0107_ycbcr422_latest_discard.t \
+    frame/storage/0108_ycbcr422_deferred_delta_yuyv.t \
+    frame/storage/0109_deferred_delta_rgbf32.t \
     frame/storage/0021_profile_retained_storage.t \
     frame/storage/0022_segmented_curve_retained_storage.t \
     frame/storage/0023_smptec_float_to_rgbfloat32.t \

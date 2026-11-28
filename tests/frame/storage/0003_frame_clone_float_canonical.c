@@ -2955,7 +2955,8 @@ enum {
     Y422_PLAYBACK,
     Y422_PALETTE,
     Y422_PALETTE_REJECT,
-    Y422_DELTA
+    Y422_DELTA,
+    Y422_DEFERRED_DELTA
 };
 
 typedef struct y422_capture {
@@ -2963,6 +2964,7 @@ typedef struct y422_capture {
     size_t painted[2];
     int completed;
     int failed;
+    int deferred_prepared;
 } y422_capture_t;
 
 static void
@@ -3035,6 +3037,17 @@ y422_fixture(sixel_frame_t **frame, int layout, int crop, int variant,
                                             crop ? 3 : 4, 2, rgb);
 }
 
+static void
+y422_deferred_prepared(void *context, uint64_t sequence, SIXELSTATUS status)
+{
+    y422_capture_t *capture = context;
+
+    /* The ordinary prepare-ahead helper starts with sequence two. */
+    if (sequence == 1 && status == SIXEL_OK) {
+        capture->deferred_prepared = 1;
+    }
+}
+
 static int
 y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
 {
@@ -3051,21 +3064,24 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
     sixel_ycbcr422_counts_t operations[3] = {{0}};
     unsigned char bytes[3][18] = {{0}}, original[3][18];
     float samples[3][24];
+    struct sixel_encoder_prepare_test_hooks hooks = {0};
     SIXELSTATUS status;
-    int i, count, packed, pass = 0;
+    int i, j, luma, count, packed, deferred, pass = 0;
 
     packed = layout != SIXEL_PIXELFORMAT_RGBFLOAT32;
     count = mode >= Y422_PLAYBACK ? 2 : 1;
+    deferred = mode == Y422_DEFERRED_DELTA;
     rgb = sixel_color_def_new_named("srgb");
     definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
         SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
     if (definition == NULL || sixel_encoder_new(&encoder, NULL) ||
-        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
+                             deferred ? "auto" : "off") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_PALETTE_TYPE, "rgb") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "16") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SAMPLING_POLICY,
-                             "full-frame") ||
+                             deferred ? "adaptive-grid" : "full-frame") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
             ahead ? "greedy:B2:prepare=ahead" : "greedy:B2:prepare=serial") ||
         sixel_output_new(&output, playback_test_write, &capture->stream,
@@ -3076,16 +3092,35 @@ y422_capture_run(y422_capture_t *capture, int layout, int mode, int ahead)
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_CROP, "3x2+1+0")) {
         goto end;
     }
-    if (mode == Y422_DELTA &&
+    if ((mode == Y422_DELTA || deferred) &&
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
                              "delta:T0")) {
         goto end;
+    }
+    if (deferred) {
+        if (sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_PRECISION_POLICY,
+                                 "float32")) {
+            goto end;
+        }
+        hooks.context = capture;
+        hooks.complete = y422_deferred_prepared;
+        encoder->prepare_test_hooks = &hooks;
     }
     for (i = 0; i < count; ++i) {
         if (y422_fixture(&image[i], layout, mode == Y422_CROP && !packed,
                          i, definition, rgb, bytes[i], samples[i],
                          &operations[i])) {
             goto end;
+        }
+        if (deferred) {
+            /* Opaque neutral luma changes uniformly between the frames. */
+            luma = 100 + 20 * i;
+            for (j = 0; j < 24; ++j) {
+                samples[i][j] = luma / 255.0f;
+            }
+            for (j = 0; j < 18; ++j) {
+                bytes[i][j] = j % 2 == 0 ? luma : 128;
+            }
         }
         sixel_frame_set_frame_no(image[i], i);
         sixel_frame_set_multiframe(image[i], count > 1);
@@ -3222,6 +3257,38 @@ y422_capture_pixels(y422_capture_t const *capture, unsigned char rgba[2][32],
 end:
     sixel_sequence_close(decoder);
     return pass;
+}
+
+static int
+test_y422_deferred_delta(int layout)
+{
+#if SIXEL_ENABLE_THREADS && SIXEL_ENCODER_PREPARE_AHEAD_SUPPORTED
+    y422_capture_t capture = {0};
+    unsigned char pixels[2][32];
+    int i, j, pass = 0;
+
+    if (!y422_capture_run(&capture, layout, Y422_DEFERRED_DELTA, 1) ||
+        !capture.deferred_prepared ||
+        !y422_capture_pixels(&capture, pixels, 4, 2)) {
+        goto end;
+    }
+    /* SIXEL registers round each channel to an integral percentage. */
+    for (i = 0; i < 2; ++i) {
+        for (j = 0; j < 32; ++j) {
+            if (j % 4 == 3 ? pixels[i][j] != 255 :
+                abs(pixels[i][j] - (100 + 20 * i)) > 2) {
+                goto end;
+            }
+        }
+    }
+    pass = 1;
+end:
+    free(capture.stream.bytes);
+    return pass ? EXIT_SUCCESS : EXIT_FAILURE;
+#else
+    (void)layout;
+    return 77;
+#endif
 }
 
 static int
@@ -3513,7 +3580,16 @@ enum {
     Y422_PREPARED_CANCEL,
     Y422_RETRY_DELTA,
     Y422_RETRY_REFERENCE,
-    Y422_SAMPLE_ALLOC_FAIL
+    Y422_SAMPLE_ALLOC_FAIL,
+    Y422_LATEST_RETRY,
+    Y422_LATEST_REFERENCE
+};
+
+enum {
+    Y422_LATEST_SOURCE_WIDTH = 32,
+    Y422_LATEST_SOURCE_HEIGHT = 16,
+    /* A target of 32 gives step four in both axes. */
+    Y422_LATEST_SOURCE_SAMPLES = 32
 };
 
 struct y422_lifecycle {
@@ -3522,7 +3598,7 @@ struct y422_lifecycle {
     unsigned char *image[2], *palette[2];
     sixel_ycbcr422_counts_t image_ops[2], palette_ops[2];
     SIXELSTATUS result[2];
-    int callbacks, retried;
+    int callbacks, retried, second_builds;
 };
 
 static int y422_alloc_failures;
@@ -3577,6 +3653,18 @@ y422_retried(void *context, uint64_t sequence)
 }
 
 static void
+y422_fault_first_second_build(void *context, uint64_t sequence,
+                              sixel_palette_job_test_hooks_t *hooks)
+{
+    struct y422_lifecycle *state = context;
+
+    if (sequence == 2 && state->second_builds++ == 0) {
+        hooks->completion_status = SIXEL_BAD_ALLOCATION;
+        hooks->completion_retryable = 1;
+    }
+}
+
+static void
 y422_release_capture(sixel_playback_result_t const *result, void *context)
 {
     struct y422_lifecycle *state = context;
@@ -3584,6 +3672,7 @@ y422_release_capture(sixel_playback_result_t const *result, void *context)
 
     if (slot < 2) {
         state->result[slot] = result->status;
+        state->capture->painted[slot] = result->painted_pixels;
         /* Recycle both caller-owned allocations at the public boundary. */
         free(state->image[slot]);
         free(state->palette[slot]);
@@ -3594,19 +3683,24 @@ y422_release_capture(sixel_playback_result_t const *result, void *context)
 
 static int
 y422_lifecycle_submit(struct y422_lifecycle *state,
-    sixel_playback_t *playback, int index, int fail_source)
+    sixel_playback_t *playback, int index, int fail_source, int latest)
 {
     sixel_frame_t *image = NULL, *palette = NULL;
     sixel_color_def_t *rgb = NULL;
     sixel_ycbcr_def_t *definition = NULL;
     sixel_playback_options_t options;
     float scratch[24];
-    size_t bytes = fail_source ? 14u * 11u * 2u : 18u;
+    size_t bytes;
+    int width, height;
+    size_t i;
     int ok = 0;
 
     rgb = sixel_color_def_new_named("srgb");
     definition = sixel_ycbcr_def_new(SIXEL_YCBCR_ENCODING_BT709,
         SIXEL_YCBCR_RANGE_FULL, SIXEL_CHROMA_LOCATION_CENTER, rgb);
+    width = latest ? Y422_LATEST_SOURCE_WIDTH : 14;
+    height = latest ? Y422_LATEST_SOURCE_HEIGHT : 11;
+    bytes = fail_source || latest ? (size_t)width * height * 2u : 18u;
     state->image[index] = malloc(18u);
     state->palette[index] = calloc(1u, bytes);
     if (definition == NULL || state->image[index] == NULL ||
@@ -3616,13 +3710,21 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
         sixel_playback_options_init(&options, sizeof(options))) {
         goto end;
     }
-    if (fail_source) {
+    if (fail_source || latest) {
+        if (latest) {
+            memset(state->palette[index], 128, bytes);
+            for (i = 0; i < bytes; i += 2u) {
+                state->palette[index][i] = i % (2u * width) < (size_t)width
+                    ? 80 : 160;
+            }
+        }
         if (sixel_frame_new(&palette, NULL)) {
             goto end;
         }
         sixel_frame_observe_ycbcr422(palette, &state->palette_ops[index]);
         if (sixel_frame_init_ycbcr422_borrowed(palette, state->palette[index],
-                bytes, 14, 11, 28, SIXEL_PIXELFORMAT_YUYV, definition)) {
+                bytes, width, height, (size_t)width * 2u,
+                SIXEL_PIXELFORMAT_YUYV, definition)) {
             goto end;
         }
     } else if (y422_fixture(&palette, SIXEL_PIXELFORMAT_YUYV, 0, 2,
@@ -3633,6 +3735,12 @@ y422_lifecycle_submit(struct y422_lifecycle *state,
     sixel_frame_set_frame_no(image, index);
     sixel_frame_set_multiframe(image, 1);
     options.palette_source = palette;
+    if (latest) {
+        /* Leave the first frame outside the retained rectangle so that the
+         * second frame's predicted omission key becomes stale. */
+        options.flags = SIXEL_PLAYBACK_OPTION_ORIGIN;
+        options.origin_x = index == 0;
+    }
     ok = sixel_playback_submit(playback, image, SIXEL_PLAYBACK_WAIT, 5000,
                                 &options) == SIXEL_OK;
 end:
@@ -3648,17 +3756,21 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
 {
     struct y422_lifecycle state = {0};
     struct sixel_encoder_prepare_test_hooks hooks = {0};
+    struct sixel_encoder_palette_test_hooks palette_hooks = {0};
     sixel_playback_config_t config;
     sixel_allocator_t *allocator = NULL;
     sixel_encoder_t *encoder = NULL;
     sixel_output_t *output = NULL;
     sixel_playback_t *playback = NULL;
     SIXELSTATUS status;
-    int i, count, conversions, ahead, cancel, fail_source, initialized = 0;
+    int i, count, conversions, ahead, cancel, fail_source, latest;
+    int initialized = 0;
     int pass = 0;
 
     state.capture = capture;
-    ahead = mode == Y422_PREPARED_CANCEL || mode == Y422_RETRY_DELTA;
+    latest = mode == Y422_LATEST_RETRY || mode == Y422_LATEST_REFERENCE;
+    ahead = mode == Y422_PREPARED_CANCEL || mode == Y422_RETRY_DELTA ||
+        mode == Y422_LATEST_RETRY;
     cancel = mode == Y422_QUEUED_CANCEL || mode == Y422_PREPARED_CANCEL;
     fail_source = mode == Y422_SAMPLE_ALLOC_FAIL;
     count = fail_source ? 1 : 2;
@@ -3670,20 +3782,22 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
         return 0;
     }
     initialized = 1;
-    state.gate.writer_open = fail_source || mode == Y422_RETRY_REFERENCE;
+    state.gate.writer_open = fail_source || (!ahead && !cancel);
     y422_alloc_failures = 0;
     if ((fail_source && sixel_allocator_new(&allocator, y422_fail_grid_malloc,
                                              NULL, NULL, NULL)) ||
         sixel_encoder_new(&encoder, allocator) ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+            mode == Y422_LATEST_RETRY ? "greedy:B8:prepare=ahead" :
             ahead ? "greedy:B2:prepare=ahead" : "greedy:B2:prepare=serial") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY, "off") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_SAMPLING_POLICY,
-                             "adaptive-grid") ||
+                             latest ? "auto" : "adaptive-grid") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none") ||
         sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "16") ||
         sixel_encoder_setopt(encoder,
                              SIXEL_OPTFLAG_UPDATE_POLICY, "delta:T0") ||
+        (latest && sixel_encoder_set_6delta_plane_size(encoder, 4, 2)) ||
         sixel_output_new(&output, y422_lifecycle_write, &state, NULL) ||
         sixel_playback_config_init(&config, sizeof(config))) {
         goto end;
@@ -3692,18 +3806,26 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
     hooks.complete = y422_lifecycle_prepared;
     if (mode == Y422_RETRY_DELTA) {
         hooks.predict_key = y422_predict_key;
-        hooks.retry = y422_retried;
+    }
+    hooks.retry = y422_retried;
+    if (mode == Y422_LATEST_RETRY) {
+        palette_hooks.context = &state;
+        palette_hooks.build = y422_fault_first_second_build;
+        encoder->palette_test_hooks = &palette_hooks;
+    }
+    if (latest) {
+        config.palette_mode = SIXEL_PLAYBACK_PALETTE_LATEST;
     }
     encoder->prepare_test_hooks = &hooks;
     config.done = y422_release_capture;
     config.done_context = &state;
     if (sixel_playback_new(&playback, encoder, output, &config, NULL) ||
-        !y422_lifecycle_submit(&state, playback, 0, fail_source)) {
+        !y422_lifecycle_submit(&state, playback, 0, fail_source, latest)) {
         goto end;
     }
     if (!fail_source) {
         if (!gpu_ahead_wait(&state.gate, &state.gate.writer_entered) ||
-            !y422_lifecycle_submit(&state, playback, 1, 0) ||
+            !y422_lifecycle_submit(&state, playback, 1, 0, latest) ||
             (ahead && (!gpu_ahead_wait(&state.gate,
                                       &state.gate.helper_complete) ||
                        state.gate.prepared_status != SIXEL_OK)) ||
@@ -3719,7 +3841,14 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
         (!fail_source && state.result[1] !=
             (cancel ? SIXEL_INTERRUPTED : SIXEL_OK)) ||
         (fail_source && y422_alloc_failures != 1) ||
-        (mode == Y422_RETRY_DELTA && state.retried != 1)) {
+        (mode == Y422_RETRY_DELTA && state.retried != 1) ||
+        (mode == Y422_LATEST_RETRY &&
+            (state.retried != 1 || state.second_builds != 2 ||
+             capture->painted[1] != 8))) {
+        fprintf(stderr, "Drain 0x%x, frames 0x%x/0x%x, retries %d, builds %d, "
+                        "second source %u pixels\n",
+                status, state.result[0], state.result[1], state.retried,
+                state.second_builds, (unsigned)state.palette_ops[1].rgb_pixels);
         goto end;
     }
     for (i = 0; i < count; ++i) {
@@ -3729,7 +3858,9 @@ y422_lifecycle_run(int mode, y422_capture_t *capture)
             state.palette_ops[i].rgb_conversions !=
                 (unsigned int)(fail_source ? 0 : conversions) ||
             state.image_ops[i].packed_copies != 0 ||
-            state.palette_ops[i].packed_copies != 0) {
+            state.palette_ops[i].packed_copies != 0 ||
+            (latest && state.palette_ops[i].rgb_pixels !=
+                Y422_LATEST_SOURCE_SAMPLES)) {
             goto end;
         }
     }
@@ -3766,12 +3897,20 @@ test_y422_lifecycle(char const *name)
         mode = Y422_PREPARED_CANCEL;
     } else if (strcmp(name, "allocation") == 0) {
         mode = Y422_SAMPLE_ALLOC_FAIL;
+    } else if (strcmp(name, "latest-retry") == 0) {
+        mode = Y422_LATEST_RETRY;
     } else {
         mode = Y422_RETRY_DELTA;
     }
     pass = y422_lifecycle_run(mode, &actual);
     if (pass && mode == Y422_RETRY_DELTA) {
         pass = y422_lifecycle_run(Y422_RETRY_REFERENCE, &reference) &&
+            y422_capture_pixels(&actual, actual_pixels, 4, 2) &&
+            y422_capture_pixels(&reference, reference_pixels, 4, 2) &&
+            memcmp(actual_pixels, reference_pixels, sizeof(actual_pixels)) == 0;
+    }
+    if (pass && mode == Y422_LATEST_RETRY) {
+        pass = y422_lifecycle_run(Y422_LATEST_REFERENCE, &reference) &&
             y422_capture_pixels(&actual, actual_pixels, 4, 2) &&
             y422_capture_pixels(&reference, reference_pixels, 4, 2) &&
             memcmp(actual_pixels, reference_pixels, sizeof(actual_pixels)) == 0;
@@ -3809,6 +3948,10 @@ test_frame_0014_clone_float(int argc, char **argv)
     unsigned char background[] = {10, 20, 30};
     int result;
 
+    if (argc == 3 && strcmp(argv[1], "ycbcr422-deferred-delta") == 0) {
+        return test_y422_deferred_delta(strcmp(argv[2], "yuyv") == 0
+            ? SIXEL_PIXELFORMAT_YUYV : SIXEL_PIXELFORMAT_RGBFLOAT32);
+    }
     if (argc == 3 && strcmp(argv[1], "ycbcr422-lifecycle") == 0) {
         return test_y422_lifecycle(argv[2]);
     }
