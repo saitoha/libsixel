@@ -121,15 +121,22 @@ sixel_filter_palette_colors_apply(sixel_filter_t *filter,
                     input->pixelformat, input->colorspace,
                     filter->output.pixelformat, config->target_colorspace);
             }
-            frame_if = sixel_frame_as_interface(input->frame);
-            status = frame_if->vtbl->clone(frame_if, allocator, &clone_if);
+            if (config->convert &&
+                    input->colorspace == SIXEL_FRAME_COLORSPACE_PROFILE_RGB) {
+                /* The profile converter renders directly to new pixels. */
+                status = sixel_frame_view_profile_rgb(input->frame, allocator,
+                                                       &clone);
+            } else {
+                frame_if = sixel_frame_as_interface(input->frame);
+                status = frame_if->vtbl->clone(frame_if, allocator, &clone_if);
+                clone = (sixel_frame_t *)clone_if;
+            }
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            if (clone_if == NULL) {
+            if (clone == NULL) {
                 return SIXEL_BAD_ALLOCATION;
             }
-            clone = (sixel_frame_t *)clone_if;
             if (config->convert) {
                 status = sixel_frame_convert_pixels(clone,
                     config->target_layout, config->target_colorspace);

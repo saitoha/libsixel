@@ -2383,8 +2383,11 @@ sixel_encoder_encode_frame(
  *
  * While a playback object is attached, other calls on its encoder fail with
  * SIXEL_BAD_ARGUMENT; release the playback object to use the encoder
- * directly again.  The completion callback runs on a playback worker in
- * submission order; it must not call the playback object or its encoder.
+ * directly again. Completion callbacks run in submission order. The
+ * worker delivers them while active. A caller draining or cancelling after
+ * worker exit may deliver queued interruptions. Synchronous playback
+ * completes an admitted frame inside submit and returns its completion
+ * status. The callback must not call the playback object or its encoder.
  * sixel_helper_get_additional_message() inside the callback describes a
  * failed frame.  After a failure, frames not yet started complete with
  * SIXEL_INTERRUPTED and later admissions return the first failure status.

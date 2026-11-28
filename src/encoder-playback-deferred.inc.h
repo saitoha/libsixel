@@ -203,8 +203,8 @@ sixel_playback_producer_main(void *context)
         if (status == SIXEL_OK && sixel_playback_solve_cancelled(&cancel))
             status = SIXEL_INTERRUPTED;
         if (status == SIXEL_OK) {
-            status = sixel_encoder_frame_clone(slot->work_frame,
-                producer->pipeline->encoder->allocator, &slot->source);
+            status = sixel_encoder_pipeline_slot_save_source(producer->pipeline,
+                                                              slot);
         }
         if (status == SIXEL_OK) {
             if (producer->pipeline->encoder->prepare_test_hooks != NULL &&

@@ -53,6 +53,7 @@ struct sixel_frame {
         unsigned char *u8ptr;       /* loaded pixel data (byte) */
         float *f32ptr;              /* loaded pixel data (float32) */
     } pixels;
+    sixel_frame_t *pixel_owner;     /* retained source of a private view */
     sixel_ycbcr_def_t *ycbcr;       /* shared immutable stream definition */
     size_t stride_bytes;            /* packed 4:2:2 source row pitch */
     int packed_width, packed_height; /* active rectangle at acquisition */

@@ -7189,9 +7189,14 @@ sixel_encoder_sample_frame(
             }
         }
         if (*cache == NULL) {
-            status = sixel_frame_sample_ycbcr422(frame, allocator, step, cache);
+            status = sixel_frame_sample_ycbcr422(frame, allocator, step,
+                step == 1 ? palette_source->packed_grid : NULL,
+                palette_source->packed_grid_step, cache);
             if (SIXEL_FAILED(status)) {
                 return status;
+            }
+            if (step > 1) {
+                palette_source->packed_grid_step = step;
             }
         }
         /* Palette construction reads the cached raster. Its colorspace
@@ -18059,6 +18064,35 @@ sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
     }
 }
 
+/* Keep a retry source distinct from the work frame's mutable metadata.
+ * Decoded packed RGB goes through out-of-place working conversion. Crop
+ * and gamut paths may mutate the input before then and need private pixels. */
+static SIXELSTATUS
+sixel_encoder_pipeline_slot_save_source(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_pipeline_slot_t *slot)
+{
+    sixel_encoder_t *encoder;
+    sixel_frame_t *work = NULL;
+    SIXELSTATUS status;
+
+    encoder = pipeline->encoder;
+    if (!sixel_pixelformat_is_ycbcr422(
+            sixel_frame_get_pixelformat(slot->frame)) ||
+            (encoder->clipwidth > 0 && encoder->clipheight > 0) ||
+            encoder->gamut_mapper != NULL) {
+        return sixel_encoder_frame_clone(slot->work_frame, encoder->allocator,
+                                         &slot->source);
+    }
+    status = sixel_frame_view_profile_rgb(slot->work_frame, encoder->allocator,
+                                          &work);
+    if (status == SIXEL_OK) {
+        slot->source = slot->work_frame;
+        slot->work_frame = work;
+    }
+    return status;
+}
+
 static int
 sixel_encoder_prepare_ahead_main(void *arg)
 {
@@ -18111,9 +18145,8 @@ sixel_encoder_prepare_ahead_main(void *arg)
         /* Without a pristine copy a missed prediction could not be
          * repaired, so leave such a frame to serial preparation. */
         if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_frame_clone(slot->work_frame,
-                                               ahead->encoder->allocator,
-                                               &slot->source);
+            status = sixel_encoder_pipeline_slot_save_source(ahead->pipeline,
+                                                              slot);
         }
         if (slot->prepare_lease.threads != 0) {
             sixel_thread_budget_leave(&clone_budget);
@@ -21979,7 +22012,9 @@ sixel_playback_new(sixel_playback_t **playback,
     if (object->pipeline.initialized != 0) {
         object->pipeline.handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
         object->pipeline.queue_limit = (int)object->capacity;
-        if (sixel_thread_create(&object->pipeline.thread,
+        if ((encoder->playback_test_hooks == NULL ||
+                !encoder->playback_test_hooks->force_synchronous) &&
+            sixel_thread_create(&object->pipeline.thread,
                                 sixel_encoder_frame_pipeline_worker,
                                 &object->pipeline) == SIXEL_OK) {
             object->pipeline.started = 1;

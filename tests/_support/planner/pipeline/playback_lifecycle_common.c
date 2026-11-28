@@ -114,7 +114,7 @@ playback_lifecycle_test(int mode)
 {
 #if SIXEL_ENABLE_THREADS
     struct lifecycle_state s;
-    struct sixel_playback_test_hooks hooks;
+    struct sixel_playback_test_hooks hooks = {0};
     sixel_playback_config_t config;
     sixel_playback_options_t options;
     sixel_playback_stats_t stats;

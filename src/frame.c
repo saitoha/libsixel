@@ -76,8 +76,7 @@ static void
 sixel_frame_release_owned_palette(sixel_frame_t *frame);
 static void
 sixel_frame_release_replaced_pixels(sixel_frame_t *frame,
-                                    void *replacement,
-                                    int storage_owned);
+                                    void *replacement);
 static void
 sixel_frame_release_replaced_palette(sixel_frame_t *frame,
                                      unsigned char *replacement,
@@ -133,13 +132,24 @@ sixel_frame_get_pixels_view(sixel_frame_t const *frame,
 static SIXELSTATUS
 sixel_frame_measure_storage(sixel_frame_t const *frame,
                             size_t *storage_bytes);
+/* Options for materializing a packed source or sharing a decoded raster.
+ * A NULL options pointer requests the ordinary deep clone. */
+typedef struct sixel_frame_clone_options {
+    int step;
+    sixel_frame_t *owner;
+    sixel_frame_t const *grid;
+    int grid_step;
+} sixel_frame_clone_options_t;
+
 static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
-                  sixel_frame_t **frame_out, int decode_step);
+                  sixel_frame_t **frame_out,
+                  sixel_frame_clone_options_t const *options);
 static SIXELSTATUS
 sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
-                                sixel_frame_t *destination, int step);
+                                sixel_frame_t *destination, int step,
+                                sixel_frame_t const *grid, int grid_step);
 static void
 sixel_frame_vtbl_ref(sixel_frame_interface_t *frame);
 static void
@@ -340,6 +350,10 @@ sixel_frame_release_owned_pixels(sixel_frame_t *frame)
     if (frame->owns_pixels != 0) {
         sixel_allocator_free(frame->allocator, pixels);
     }
+    if (frame->pixel_owner != NULL) {
+        sixel_frame_unref(frame->pixel_owner);
+        frame->pixel_owner = NULL;
+    }
     frame->pixels.u8ptr = NULL;
     frame->pixel_extent = 0;
     frame->owns_pixels = 1;
@@ -361,8 +375,7 @@ sixel_frame_release_owned_palette(sixel_frame_t *frame)
 
 static void
 sixel_frame_release_replaced_pixels(sixel_frame_t *frame,
-                                    void *replacement,
-                                    int storage_owned)
+                                    void *replacement)
 {
     void *pixels;
 
@@ -383,12 +396,7 @@ sixel_frame_release_replaced_pixels(sixel_frame_t *frame,
      * the pointer has been installed.
      */
     if (pixels != replacement) {
-        if (storage_owned != 0) {
-            sixel_allocator_free(frame->allocator, pixels);
-        }
-        frame->pixels.u8ptr = NULL;
-        frame->pixel_extent = 0;
-        frame->owns_pixels = 1;
+        sixel_frame_release_owned_pixels(frame);
     }
 }
 
@@ -982,7 +990,7 @@ sixel_frame_vtbl_clone(sixel_frame_interface_t *frame,
 
     *frame_out = NULL;
     storage = sixel_frame_from_interface_const(frame);
-    status = sixel_frame_clone(storage, allocator, &clone, 0);
+    status = sixel_frame_clone(storage, allocator, &clone, NULL);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -1194,15 +1202,14 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
     return SIXEL_OK;
 }
 
-/*
- * Deep-copy frame storage for worker and palette-side mutations.  The copy
- * deliberately clears handoff_shareable because the clone is private to the
- * caller and can be transformed in place.
- */
+/* Copy frame metadata and coverage for a private worker frame. Its pixels
+ * can be copied, decoded from packed rows, or shared with a retained
+ * immutable source. Keep handoff metadata private in all cases. */
 static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
-                  sixel_frame_t **frame_out, int decode_step)
+                  sixel_frame_t **frame_out,
+                  sixel_frame_clone_options_t const *options)
 {
     SIXELSTATUS status;
     sixel_frame_t *clone;
@@ -1217,8 +1224,9 @@ sixel_frame_clone(sixel_frame_t const *frame,
     size_t pixel_bytes;
     size_t palette_bytes;
     size_t mask_bytes;
-    int row, column;
+    int row, column, decode_step;
 
+    decode_step = options == NULL ? 0 : options->step;
     status = SIXEL_BAD_ARGUMENT;
     clone = NULL;
     source_pixels = NULL;
@@ -1289,6 +1297,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
     clone->loop_count = timeline.loop_count;
     clone->multiframe = timeline.multiframe;
     clone->handoff_shareable = 0;
+    clone->ycbcr_counts = frame->ycbcr_counts;
 
     entries = sixel_frame_palette_entries(frame);
     if (view.palette != NULL && entries > 0) {
@@ -1318,10 +1327,17 @@ sixel_frame_clone(sixel_frame_t const *frame,
     if (decode_step) {
         clone->width = (view.width - 1) / decode_step + 1;
         clone->height = (view.height - 1) / decode_step + 1;
-        status = sixel_frame_decode_ycbcr422_into(frame, clone, decode_step);
+        status = sixel_frame_decode_ycbcr422_into(frame, clone, decode_step,
+            options->grid, options->grid_step);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
+    } else if (options != NULL && options->owner != NULL) {
+        clone->pixel_owner = options->owner;
+        sixel_frame_ref(clone->pixel_owner);
+        clone->pixels.f32ptr = frame->pixels.f32ptr;
+        clone->pixel_extent = frame->pixel_extent;
+        clone->owns_pixels = 0;
     } else if (view.width > 0 && view.height > 0) {
         if (frame->ycbcr != NULL) {
             /* Dimension setters keep this rectangle inside the original
@@ -1356,9 +1372,14 @@ sixel_frame_clone(sixel_frame_t const *frame,
             status = SIXEL_BAD_ALLOCATION;
             goto error;
         }
-        if (frame->ycbcr != NULL && frame->ycbcr_counts != NULL) {
-            (void)sixel_atomic_fetch_add_u32(
-                &frame->ycbcr_counts->packed_copies, 1U);
+        if (frame->ycbcr_counts != NULL) {
+            if (frame->ycbcr != NULL) {
+                (void)sixel_atomic_fetch_add_u32(
+                    &frame->ycbcr_counts->packed_copies, 1U);
+            } else if (SIXEL_WORKFORMAT_IS_FLOAT32(view.pixelformat)) {
+                (void)sixel_atomic_fetch_add_u32(
+                    &frame->ycbcr_counts->rgb_copies, 1U);
+            }
         }
         if (frame->ycbcr != NULL &&
                 frame->stride_bytes != clone->stride_bytes) {
@@ -1448,17 +1469,44 @@ sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
                                 sixel_allocator_t *allocator,
                                 sixel_frame_t **frame_out)
 {
-    return sixel_frame_clone(frame, allocator, frame_out, 1);
+    return sixel_frame_sample_ycbcr422(frame, allocator, 1, NULL, 0, frame_out);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_view_profile_rgb(sixel_frame_t *frame,
+    sixel_allocator_t *allocator, sixel_frame_t **result)
+{
+    sixel_frame_clone_options_t options = {0};
+
+    if (frame == NULL || frame->format.rgb == NULL ||
+            frame->format.layout != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+            frame->pixels.f32ptr == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    options.owner = frame;
+    return sixel_frame_clone(frame, allocator, result, &options);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_sample_ycbcr422(sixel_frame_t const *frame,
-    sixel_allocator_t *allocator, int step, sixel_frame_t **frame_out)
+    sixel_allocator_t *allocator, int step, sixel_frame_t const *grid,
+    int grid_step, sixel_frame_t **frame_out)
 {
-    if (step < 1) {
+    sixel_frame_clone_options_t options = {0};
+
+    if (frame == NULL || frame->ycbcr == NULL || step < 1 ||
+            (grid != NULL && (step != 1 || grid_step < 2 ||
+             grid->format.layout != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+             grid->pixels.f32ptr == NULL ||
+             grid->format.rgb != frame->ycbcr->rgb ||
+             grid->width != (frame->width - 1) / grid_step + 1 ||
+             grid->height != (frame->height - 1) / grid_step + 1))) {
         return SIXEL_BAD_ARGUMENT;
     }
-    return sixel_frame_clone(frame, allocator, frame_out, step);
+    options.step = step;
+    options.grid = grid;
+    options.grid_step = grid_step;
+    return sixel_frame_clone(frame, allocator, frame_out, &options);
 }
 
 /* constructor of frame object */
@@ -1641,11 +1689,10 @@ sixel_frame_install_pixels(sixel_frame_t *frame, void *pixels,
 
     old_pixels_owned = frame->owns_pixels;
     old_palette_owned = frame->owns_palette;
+    sixel_frame_release_replaced_pixels(frame, pixels);
     if (is_float != 0) {
-        sixel_frame_release_replaced_pixels(frame, pixels, old_pixels_owned);
         frame->pixels.f32ptr = (float *)pixels;
     } else {
-        sixel_frame_release_replaced_pixels(frame, pixels, old_pixels_owned);
         frame->pixels.u8ptr = (unsigned char *)pixels;
     }
     /* Retain an already owned allocation on same-pointer initialization.
@@ -2722,7 +2769,8 @@ sixel_frame_decode_ycbcr_sample(float *out, float y, float cb, float cr,
  * destination may be the same frame for explicit layout conversion. */
 static SIXELSTATUS
 sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
-                                sixel_frame_t *destination, int step)
+                                sixel_frame_t *destination, int step,
+                                sixel_frame_t const *grid, int grid_step)
 {
     /* Luma weights from the 601, 709 and 2020 NCL encodings. */
     static double const weights[][2] = {
@@ -2738,7 +2786,9 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
     float cb, cr, odd_cb, odd_cr;
     size_t bytes;
     int y, x, uyvy, cb_offset, cr_offset, limited, centered;
-    int pair_x, odd;
+    int pair_x, odd, grid_x, grid_y;
+    size_t converted;
+    float const *grid_row;
     SIXELSTATUS status;
 
     status = sixel_frame_validate_size("packed YCbCr conversion",
@@ -2776,19 +2826,37 @@ sixel_frame_decode_ycbcr422_into(sixel_frame_t const *frame,
     right_weight = centered ? 0.25f : 0.5f;
 
     if (frame->ycbcr_counts != NULL) {
+        converted = bytes / (3u * sizeof(float));
+        if (grid != NULL) {
+            converted -= (size_t)grid->width * grid->height;
+        }
         (void)sixel_atomic_fetch_add_u32(
             &frame->ycbcr_counts->rgb_conversions, 1U);
         (void)sixel_atomic_fetch_add_u32(&frame->ycbcr_counts->rgb_pixels,
-            (unsigned int)(bytes / (3u * sizeof(float))));
+            (unsigned int)converted);
     }
     out = pixels;
-    if (step > 1) {
+    if (step > 1 || grid != NULL) {
         /* Select in the source raster before reconstructing chroma. The
          * adjacent sample is still the original adjacent pair, not the
          * next grid point. Only the selected luma is converted. */
+        grid_y = 0;
         for (y = 0; y < frame->height; y += step) {
             row = frame->pixels.u8ptr + (size_t)y * frame->stride_bytes;
+            grid_row = NULL;
+            if (grid != NULL && y == grid_y) {
+                grid_row = grid->pixels.f32ptr +
+                    (size_t)(y / grid_step) * grid->width * 3u;
+                grid_y += grid_step;
+            }
+            grid_x = 0;
             for (x = 0; x < frame->width; x += step, out += 3) {
+                if (grid_row != NULL && x == grid_x) {
+                    memcpy(out, grid_row, 3u * sizeof(float));
+                    grid_row += 3;
+                    grid_x += grid_step;
+                    continue;
+                }
                 odd = x & 1;
                 pair_x = x - odd;
                 pair = row + (size_t)pair_x * 2u;
@@ -2860,7 +2928,7 @@ sixel_frame_set_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
     if (frame != NULL && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
         if (frame->ycbcr != NULL) {
-            return sixel_frame_decode_ycbcr422_into(frame, frame, 1);
+            return sixel_frame_decode_ycbcr422_into(frame, frame, 1, NULL, 0);
         }
         if (frame->format.layout == pixelformat) {
             return SIXEL_OK;

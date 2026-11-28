@@ -49,6 +49,7 @@ typedef struct sixel_ycbcr422_counts {
     sixel_atomic_u32_t packed_copies;
     sixel_atomic_u32_t rgb_conversions;
     sixel_atomic_u32_t rgb_pixels;
+    sixel_atomic_u32_t rgb_copies;
 } sixel_ycbcr422_counts_t;
 
 SIXEL_INTERNAL_API void
@@ -61,10 +62,18 @@ sixel_frame_decode_ycbcr422_copy(sixel_frame_t const *frame,
                                 sixel_allocator_t *allocator,
                                 sixel_frame_t **frame_out);
 
-/* Decode only the original raster coordinates selected by a sampling grid. */
+/* A view owns its metadata and retains its immutable profile RGB source.
+ * Consumers must replace storage before writing to the pixel plane. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_view_profile_rgb(sixel_frame_t *frame,
+    sixel_allocator_t *allocator, sixel_frame_t **result);
+
+/* Decode the original raster coordinates selected by a sampling grid.
+ * A full decode can reuse the same source's previously decoded grid. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_sample_ycbcr422(sixel_frame_t const *frame,
-    sixel_allocator_t *allocator, int step, sixel_frame_t **frame_out);
+    sixel_allocator_t *allocator, int step, sixel_frame_t const *grid,
+    int grid_step, sixel_frame_t **frame_out);
 
 /* Match storage layout, decoding policy and RGB definition. */
 SIXEL_INTERNAL_API int

@@ -43,6 +43,7 @@ typedef struct sixel_palette_source {
     sixel_frame_t *frame;
     sixel_frame_t *packed_full;
     sixel_frame_t *packed_grid;
+    int packed_grid_step;
 } sixel_palette_source_t;
 
 /* Prepare at the sampling policy's original boundary: adaptive-grid before
